@@ -1,4 +1,5 @@
 import {
+	testBasicSeq,
 	testLongNumberDirect,
 	testLongNumberSeq,
 	testNumberFilterSeq,
@@ -20,25 +21,4 @@ const div = () => {
 	log(40);
 };
 
-const obj = {
-	a: "a string",
-	"kebab-var": {
-		name: {
-			first: "Alex",
-			last: "kebab-Son",
-		},
-		d: 42,
-		e: true,
-	},
-	x: 1234567890,
-	y: 6.283185,
-};
-
-const s = JS.stringify(obj);
-div();
-log("Object:");
-log(obj);
-div();
-log("JS.stringify:");
-log(s);
-div();
+await testBasicSeq();

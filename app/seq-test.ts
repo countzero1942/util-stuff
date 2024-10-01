@@ -1,6 +1,6 @@
 import { log, logln } from "@/utils/log";
 import { round } from "@/utils/math";
-import { NumberFilterSeq, NumSeq } from "@/utils/seq";
+import { ArraySeq, NumberFilterSeq, NumSeq } from "@/utils/seq";
 
 const div = () => {
 	logln(30);
@@ -11,6 +11,86 @@ const logHead = (head: string) => {
 	log(head);
 	div();
 };
+
+export const testBasicSeq = async (): Promise<void> =>
+	new Promise(resolve => {
+		{
+			logHead("NumSeq.from(5, 15)");
+			const arr = NumSeq.from(5, 15).toArray();
+			log(arr);
+		}
+
+		{
+			logHead("NumSeq.range(0, 10)");
+			const arr = NumSeq.range(0, 10).toArray();
+			log(arr);
+		}
+
+		{
+			logHead("NumSeq.count(12)");
+			const arr = NumSeq.count(12).toArray();
+			log(arr);
+		}
+
+		{
+			logHead("NumSeq.loop(5)");
+			const arr = NumSeq.loop(5).toArray();
+			log(arr);
+		}
+
+		{
+			logHead("NumSeq.count(10).map(x => x*2)");
+			const arr = NumSeq.count(10)
+				.map(x => x * 2)
+				.toArray();
+			log(arr);
+		}
+
+		{
+			logHead("NumSeq.count(10).map(x => `<${x}>`");
+			const arr = NumSeq.count(10)
+				.map(x => `<${x}>`)
+				.toArray();
+			log(arr);
+		}
+
+		{
+			logHead("ArrSeq of $ with map and imap");
+			const arr = ArraySeq.from(["abc", "cde", "mno", "yyz"])
+				.map(s => s.toUpperCase())
+				.imap((i, s) => `${i}: "${s}"`)
+				.toArray();
+			log(arr);
+		}
+
+		{
+			logHead("NumSeq.filter(x => x % 2 === 0)");
+			const arr = NumSeq.count(10)
+				.filter(x => x % 2 === 0)
+				.toArray();
+			log(arr);
+		}
+
+		{
+			logHead("NumSeq.count(10).skip(5)");
+			const arr = NumSeq.count(10).skip(5).toArray();
+			log(arr);
+		}
+
+		{
+			logHead("NumSeq.count(10).take(5)");
+			const arr = NumSeq.count(10).take(5).toArray();
+			log(arr);
+		}
+
+		{
+			logHead("NumSeq.count(20).skip(10).take(5)");
+			const arr = NumSeq.count(20).skip(10).take(5).toArray();
+			log(arr);
+		}
+
+		resolve();
+	});
 
 export const testNumbers = async (): Promise<void> =>
 	new Promise(resolve => {

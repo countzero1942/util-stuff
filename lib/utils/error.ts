@@ -1,6 +1,5 @@
 import JS from "@/utils/js";
 import { getType } from "@/utils/types";
-import { log } from "console";
 
 /**
  * Puts together the Error.name and Error.message
@@ -33,7 +32,7 @@ export type ErrorType = {
  *
  * @param error The thrown error object: can be string, Error,
  * javascript Errors, custom extended Error, custom class or Object
- * @returns
+ * @returns ErrorType Object
  */
 export const getError = (error: any): ErrorType => {
 	const getReturn = (

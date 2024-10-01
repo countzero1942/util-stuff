@@ -2,6 +2,12 @@ import { log, logh } from "@/utils/log";
 import { clamp } from "@/utils/math";
 import memoizee from "memoizee";
 
+/**
+ * Gets string with a number of tabs repeating.
+ * Function is memoized with 5s timer.
+ *
+ * @param numOfTabs The number of tab chars in the string
+ */
 export const getTabIndentString = memoizee(
 	(numOfTabs: number): string => {
 		log(`--> Get tab string of size: ${numOfTabs}`);
@@ -10,6 +16,13 @@ export const getTabIndentString = memoizee(
 	{ maxAge: 5000 }
 );
 
+/**
+ * Converts starting spaces to tabs
+ *
+ * @param text String to convert
+ * @param tabSize Number of spaces per tab
+ * @returns Converted string
+ */
 export const spacesToTabs = (
 	text: string,
 	tabSize: number
