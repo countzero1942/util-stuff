@@ -1,0 +1,23 @@
+{
+	"name": "util-stuff",
+	"version": "1.0.0",
+	"main": "index.ts",
+	"type": "module",
+	"scripts": {
+		"build": "tsc",
+		"dev": "tsx ./app/index.ts"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"description": "",
+	"devDependencies": {
+		"@types/memoizee": "^0.4.11",
+		"@types/node": "^22.7.4",
+		"tsx": "^4.19.1",
+		"typescript": "^5.6.2"
+	},
+	"dependencies": {
+		"memoizee": "^0.4.17"
+	}
+}

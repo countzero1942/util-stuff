@@ -1,0 +1,30 @@
+{
+	"compilerOptions": {
+		"target": "ES2023",
+		"module": "ES2022",
+		"lib": ["ES2023"],
+		"allowJs": true,
+		"outDir": "build",
+		"rootDir": ".",
+		"strict": true,
+		"noUncheckedIndexedAccess": true,
+		"allowSyntheticDefaultImports": true,
+		// "isolatedModules": true,
+		"noEmit": true,
+		"incremental": true,
+		"sourceMap": true,
+		"noImplicitAny": true,
+		"esModuleInterop": true,
+		"resolveJsonModule": true,
+		"skipLibCheck": false /* Skip type checking all .d.ts files. */,
+		"moduleResolution": "Node",
+		"baseUrl": ".",
+		"paths": {
+			"@/app/*": ["app/*"],
+			"@/utils/*": ["lib/utils/*"],
+			"@/types/*": ["lib/types/*"]
+		}
+	},
+	"include": ["**/*.ts"],
+	"exclude": ["node_modules"]
+}
