@@ -5,20 +5,44 @@ import {
 	testNumberFilterSeq,
 	testNumbers,
 } from "@/app/seq-test";
+import {
+	cubicNumTriangularSeq,
+	logTriangularSeq,
+	squareNumTriangularSeq,
+	squareSumTriangularSeq,
+	triangularsSeq,
+} from "@/app/seq-triangular";
+import {
+	testCustomZipFunction,
+	testNewZipSeq,
+	testSeqZipChained,
+	testSeqZipFunctionToZipSeq,
+} from "@/app/seq-zip";
 import JS from "@/utils/js";
-import { log } from "@/utils/log";
+import { log, logh, logln } from "@/utils/log";
 import { round } from "@/utils/math";
-
-const count = 100_000_000;
-
-// await testLongNumberSeq(count);
-
-// await testNumberFilterSeq(count);
-
-// await testLongNumberDirect(count);
+import { MathProdSeq, NumSeq, Seq } from "@/utils/seq";
 
 const div = () => {
-	log(40);
+	logln(40);
 };
 
-await testBasicSeq();
+// const count = 100_000_000;
+// await testLongNumberSeq(count);
+// await testNumberFilterSeq(count);
+// await testLongNumberDirect(count);
+
+// logSquareNumTriangularSeq(med);
+// logSquareSumTriangularSeq(100_000_000);
+// logCubicNumTriangularSeq(10_000);
+
+// testNewZipSeq();
+// div();
+// testSeqZipFunctionToZipSeq();
+
+// logTriangularSeq(100);
+
+// testCustomZipFunction();
+// testNewZipSeq();
+// testSeqZipFunctionToZipSeq();
+testSeqZipChained();

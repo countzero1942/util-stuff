@@ -14,12 +14,7 @@ export const logln = (length: number = 20) =>
  * @param data The args to log, or if a single number, a line.
  */
 export const log = (...data: any) => {
-	const arg1 = data[0];
-	if (arg1 !== undefined && typeof arg1 === "number") {
-		logln(arg1);
-	} else {
-		console.log(...data);
-	}
+	console.log(...data);
 };
 
 /**

@@ -1,3 +1,5 @@
+import { log } from "console";
+
 /**
  * Seq base class. Holds functional methods: 'map', 'filter', etc.
  * These chain together Seq instances: MapSeq, FilterSeq, etc.
@@ -13,7 +15,7 @@ export abstract class Seq<T> {
 	 * @returns readonly array of Seq element
 	 */
 	public toArray(): readonly T[] {
-		return Array.from(this.gen());
+		return Array.from(this);
 	}
 
 	[Symbol.iterator]() {
@@ -74,6 +76,93 @@ export abstract class Seq<T> {
 	 */
 	public take(takeCount: number) {
 		return new TakeSeq(this, takeCount);
+	}
+
+	// TSeqA extends Seq<any>
+	public zip<TSeqB extends Seq<any>, TOut>(
+		seqB: TSeqB,
+		fn: (a: T, b: SeqType<TSeqB>) => TOut
+	) {
+		return new ZipSeq(this, seqB, fn);
+	}
+
+	public first() {
+		for (const x of this) {
+			return x;
+		}
+
+		return undefined;
+	}
+
+	public firstOrThrow() {
+		for (const x of this) {
+			return x;
+		}
+
+		throw Error("Empty Seq: fistOrThrow");
+	}
+
+	public last() {
+		let v: T | undefined = undefined;
+
+		for (const x of this) {
+			v = x;
+		}
+
+		return v;
+	}
+
+	public lastOrThrow(): T {
+		let v: T | undefined = undefined;
+
+		for (const x of this) {
+			v = x;
+		}
+
+		if (v !== undefined) {
+			return v;
+		}
+
+		throw Error("Empty Seq: lastOrThrow");
+	}
+
+	public reduce(fn: (acc: T, current: T) => T, accStart: T) {
+		let v = accStart;
+		for (const x of this) {
+			v = fn(v, x);
+		}
+		return v;
+	}
+
+	public foreach(fn: (x: T) => void) {
+		for (const x of this) {
+			fn(x);
+		}
+	}
+
+	public log(max?: number) {
+		let c = 1;
+		max = max ?? Number.MAX_SAFE_INTEGER;
+		for (const x in this) {
+			if (c <= max) {
+				log(x);
+			}
+		}
+	}
+
+	public count() {
+		let c = 0;
+		for (const x of this) {
+			c++;
+		}
+		return c;
+	}
+
+	public hasElements() {
+		for (const x of this) {
+			return true;
+		}
+		return false;
 	}
 }
 
@@ -149,34 +238,6 @@ export class FilterSeq<T> extends Seq<T> {
 	public override *gen() {
 		for (const x of this.seq) {
 			if (this.fn(x)) yield x;
-		}
-	}
-}
-
-/**
- * Class used to directly filter a number Seq
- */
-export class NumberFilterSeq extends Seq<number> {
-	/**
-	 * NumberFilterSeq constructor.
-	 *
-	 * @param min The min number
-	 * @param max The max number
-	 * @param fn The filter function
-	 */
-	constructor(
-		public readonly min: number,
-		public readonly max: number,
-		public readonly fn: (x: number) => boolean
-	) {
-		super();
-	}
-
-	public override *gen() {
-		const min = this.min;
-		const max = this.max;
-		for (let n = min; n <= max; n++) {
-			if (this.fn(n)) yield n;
 		}
 	}
 }
@@ -342,5 +403,118 @@ export class NumSeq extends Seq<number> {
 	 */
 	public static loop(exclEnd: number) {
 		return new NumSeq(0, exclEnd - 1);
+	}
+}
+
+/**
+ * Class used to directly filter a number Seq
+ */
+export class NumberFilterSeq extends Seq<number> {
+	/**
+	 * NumberFilterSeq constructor.
+	 *
+	 * @param min The min number
+	 * @param max The max number
+	 * @param fn The filter function
+	 */
+	constructor(
+		public readonly min: number,
+		public readonly max: number,
+		public readonly fn: (x: number) => boolean
+	) {
+		super();
+	}
+
+	public override *gen() {
+		const min = this.min;
+		const max = this.max;
+		for (let n = min; n <= max; n++) {
+			if (this.fn(n)) yield n;
+		}
+	}
+}
+
+export class MathSumSeq extends Seq<number> {
+	constructor(public fn: (n: number) => number) {
+		super();
+	}
+
+	public override *gen() {
+		let i = 1;
+		let sum = 0;
+		while (true) {
+			sum += this.fn(i);
+			yield sum;
+			i++;
+		}
+	}
+
+	public static from(fn: (n: number) => number) {
+		return new MathSumSeq(fn);
+	}
+}
+
+export class MathProdSeq extends Seq<number> {
+	constructor(public fn: (n: number) => number) {
+		super();
+	}
+
+	public override *gen() {
+		let i = 1;
+		let prod = 1;
+		while (true) {
+			prod *= this.fn(i);
+			yield prod;
+			i++;
+		}
+	}
+
+	public static from(fn: (n: number) => number) {
+		return new MathProdSeq(fn);
+	}
+}
+
+export type SeqType<T> = T extends Seq<infer U> ? U : never;
+
+/**
+ * Class used to Zip two Seqs together
+ */
+export class ZipSeq<
+	T extends Seq<any>,
+	U extends Seq<any>,
+	TOut
+> extends Seq<TOut> {
+	/**
+	 * ZipSeq constructor
+	 *
+	 * @param SeqA First Seq to zip
+	 * @param SeqB Second Seq to zip
+	 * @param fn Zip mapping function
+	 */
+	constructor(
+		public readonly SeqA: T,
+		public readonly SeqB: U,
+		public readonly fn: (a: SeqType<T>, b: SeqType<U>) => TOut
+	) {
+		super();
+	}
+
+	public override *gen() {
+		const itA = this.SeqA.gen();
+		const itB = this.SeqB.gen();
+
+		while (true) {
+			const aRes = itA.next();
+			const bRes = itB.next();
+
+			if (aRes.done === true) {
+				break;
+			}
+			if (bRes.done === true) {
+				break;
+			}
+
+			yield this.fn(aRes.value, bRes.value);
+		}
 	}
 }
