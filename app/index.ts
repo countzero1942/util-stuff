@@ -17,6 +17,7 @@ import {
 	testNewZipSeq,
 	testSeqZipChained,
 	testSeqZipFunctionToZipSeq,
+	testZipManyPrototype,
 } from "@/app/seq-zip";
 import JS from "@/utils/js";
 import { log, logh, logln } from "@/utils/log";
@@ -45,4 +46,6 @@ const div = () => {
 // testCustomZipFunction();
 // testNewZipSeq();
 // testSeqZipFunctionToZipSeq();
-testSeqZipChained();
+//testSeqZipChained();
+
+testZipManyPrototype();

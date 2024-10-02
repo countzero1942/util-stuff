@@ -7,6 +7,7 @@ import {
 	SeqType,
 	ZipSeq,
 } from "@/utils/seq";
+import { toFixedArray } from "@/utils/types";
 
 const div = () => {
 	logln(40);
@@ -24,6 +25,147 @@ const ftup = <T extends any[]>(
 		return [a, b, c];
 	});
 }
+
+function zipmany<T1, T2, T3, T4, T5, TOut>(
+	fn: (a: T1, b: T2, c: T3, d: T4, e: T5) => TOut,
+	seq1: Seq<T1>,
+	seq2: Seq<T2>,
+	seq3: Seq<T3>,
+	seq4: Seq<T4>,
+	seq5: Seq<T5>
+): TOut;
+function zipmany<T1, T2, T3, T4, TOut>(
+	fn: (a: T1, b: T2, c: T3, d: T4) => TOut,
+	seq1: Seq<T1>,
+	seq2: Seq<T2>,
+	seq3: Seq<T3>,
+	seq4: Seq<T4>
+): TOut;
+function zipmany<T1, T2, T3, TOut>(
+	fn: (a: T1, b: T2, c: T3) => TOut,
+	seq1: Seq<T1>,
+	seq2: Seq<T2>,
+	seq3: Seq<T3>
+): TOut;
+function zipmany<T1, T2, TOut>(
+	fn: (a: T1, b: T2) => TOut,
+	seq1: Seq<T1>,
+	seq2: Seq<T2>
+): TOut;
+function zipmany<T, TOut>(
+	fn: (...args: any) => TOut,
+	...seqs: Seq<T>[]
+): TOut {
+	const arr: any[] = [];
+
+	for (const seq of seqs) {
+		arr.push(seq.firstOrThrow());
+	}
+
+	return fn(...arr);
+}
+
+export const testZipManyPrototype = () => {
+	const seq1 = NumSeq.count(10);
+	const seq2 = seq1.map(x => x.toString());
+	const seq3 = seq1.map(x => x ** 2);
+	const seq4 = seq1.map(x => x ** 3);
+	const seq5 = seq1.map(x => x % 2 === 0);
+
+	logh("Test Zip Many Prototype");
+
+	const seqs = [seq1, seq2, seq3, seq4, seq5];
+	for (const seq of seqs) {
+		seq.log();
+		div();
+	}
+	log();
+
+	// @ts-expect-error
+	const val1 = zipmany(count => {
+		return { count };
+	}, seq1);
+
+	const val2 = zipmany(
+		(count, str) => {
+			return { count, str };
+		},
+		seq1,
+		seq2
+	);
+
+	const val3 = zipmany(
+		(count, str, square) => {
+			return { count, str, square };
+		},
+		seq1,
+		seq2,
+		seq3
+	);
+
+	const val4 = zipmany(
+		(count, str, square, cube) => {
+			return { count, str, square, cube };
+		},
+		seq1,
+		seq2,
+		seq3,
+		seq4
+	);
+
+	const val5 = zipmany(
+		(count, str, square, cube, truthy) => {
+			return { count, str, square, cube, truthy };
+		},
+		seq1,
+		seq2,
+		seq3,
+		seq4,
+		seq5
+	);
+
+	logh("Values");
+	const vals = [val1, val2, val3, val4, val5];
+	for (const v of vals) {
+		log(v);
+		div();
+	}
+};
+
+/**
+ * This is a painful mess
+ *
+ * @param args
+ * @param fn
+ * @returns
+ */
+const fseq = <T extends Seq<any>[], U extends SeqType<T>[]>(
+	args: [...T],
+	fn: (args: [...U]) => string
+) => {
+	const l = args.length;
+	switch (args.length) {
+		case 0:
+			throw Error("Too few args");
+		case 1:
+			{
+				const seq1 = args[0];
+				fn(seq1.first());
+			}
+			break;
+		case 2:
+			{
+				const seq1 = args[0];
+				const seq2 = args[1];
+				//fn([seq1.first(), seq2.first()]);
+			}
+			break;
+		default:
+			throw Error("Too many args");
+	}
+
+	return "string";
+};
 
 const f1 = <T extends any[]>(
 	args: [...T],

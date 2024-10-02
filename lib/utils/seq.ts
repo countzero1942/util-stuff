@@ -143,7 +143,7 @@ export abstract class Seq<T> {
 	public log(max?: number) {
 		let c = 1;
 		max = max ?? Number.MAX_SAFE_INTEGER;
-		for (const x in this) {
+		for (const x of this) {
 			if (c <= max) {
 				log(x);
 			}
@@ -478,10 +478,14 @@ export type SeqType<T> = T extends Seq<infer U> ? U : never;
 
 /**
  * Class used to Zip two Seqs together
+ *
+ * @param TSeqA The type of the first Seq
+ * @param TSeqB The type of the second Seq
+ * @param TOut The final element type of the Seq
  */
 export class ZipSeq<
-	T extends Seq<any>,
-	U extends Seq<any>,
+	TSeqA extends Seq<any>,
+	TSeqB extends Seq<any>,
 	TOut
 > extends Seq<TOut> {
 	/**
@@ -492,9 +496,62 @@ export class ZipSeq<
 	 * @param fn Zip mapping function
 	 */
 	constructor(
-		public readonly SeqA: T,
-		public readonly SeqB: U,
-		public readonly fn: (a: SeqType<T>, b: SeqType<U>) => TOut
+		public readonly SeqA: TSeqA,
+		public readonly SeqB: TSeqB,
+		public readonly fn: (
+			a: SeqType<TSeqA>,
+			b: SeqType<TSeqB>
+		) => TOut
+	) {
+		super();
+	}
+
+	public override *gen() {
+		const itA = this.SeqA.gen();
+		const itB = this.SeqB.gen();
+
+		while (true) {
+			const aRes = itA.next();
+			const bRes = itB.next();
+
+			if (aRes.done === true) {
+				break;
+			}
+			if (bRes.done === true) {
+				break;
+			}
+
+			yield this.fn(aRes.value, bRes.value);
+		}
+	}
+}
+
+/**
+ * Class used to Zip two Seqs together
+ *
+ * @param TSeqA The type of the first Seq
+ * @param TSeqB The type of the second Seq
+ * @param TOut The final element type of the Seq
+ */
+export class ZipManySeq<
+	TSeqA extends Seq<any>,
+	TSeqB extends Seq<any>,
+	TOut
+> extends Seq<TOut> {
+	/**
+	 * ZipSeq constructor
+	 *
+	 * @param SeqA First Seq to zip
+	 * @param SeqB Second Seq to zip
+	 * @param fn Zip mapping function
+	 */
+	constructor(
+		public readonly SeqA: TSeqA,
+		public readonly SeqB: TSeqB,
+		public readonly fn: (
+			a: SeqType<TSeqA>,
+			b: SeqType<TSeqB>
+		) => TOut
 	) {
 		super();
 	}
