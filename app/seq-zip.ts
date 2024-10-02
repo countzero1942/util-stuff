@@ -55,14 +55,36 @@ function zipmany<T1, T2, TOut>(
 function zipmany<T, TOut>(
 	fn: (...args: any) => TOut,
 	...seqs: Seq<T>[]
-): TOut {
-	const arr: any[] = [];
+): TOut[] {
+	const iters = seqs.map(seq => seq.gen());
+	const length = iters.length;
+	const argArray = new Array(length);
 
-	for (const seq of seqs) {
-		arr.push(seq.firstOrThrow());
+	const valuesArray: TOut[] = [];
+
+	let cont = true;
+	while (true) {
+		let argArrayIndex = 0;
+		for (const iter of iters) {
+			const res = iter.next();
+			if (res.done) {
+				cont = false;
+				break;
+			}
+
+			argArray[argArrayIndex] = res.value;
+
+			argArrayIndex++;
+		}
+
+		if (cont) {
+			valuesArray.push(fn(...argArray));
+		} else {
+			break;
+		}
 	}
 
-	return fn(...arr);
+	return valuesArray;
 }
 
 export const testZipManyPrototype = () => {
