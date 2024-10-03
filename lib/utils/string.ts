@@ -93,3 +93,18 @@ export const splitStringOnce = (
 		return arr;
 	}
 };
+
+/**
+ * Formats number according to:
+ *
+ * ```ts
+ * export const formatNum = (x: number) => {
+ *	   return Intl.NumberFormat().format(x);
+ * };
+ * ```
+ * @param n Number to format
+ * @returns String format of 'n'
+ */
+export const formatNum = (n: number) => {
+	return Intl.NumberFormat().format(n);
+};

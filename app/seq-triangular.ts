@@ -1,10 +1,7 @@
 import { log, logh } from "@/utils/log";
 import { round } from "@/utils/math";
 import { MathSumSeq, NumSeq, Seq } from "@/utils/seq";
-
-const format = (x: number) => {
-	return Intl.NumberFormat().format(x);
-};
+import { formatNum } from "@/utils/string";
 
 const sumOfDigits = (x: number) => {
 	const s = x.toString();
@@ -35,7 +32,7 @@ export const triangularsSeq = (count: number) => {
 		.imap((i, sum) => {
 			const num = i + 1;
 			const digitsum = sumOfDigits(sum);
-			return { num, sum: format(sum), digitsum };
+			return { num, sum: formatNum(sum), digitsum };
 		});
 	return seq;
 };
@@ -52,7 +49,7 @@ export const squareNumTriangularSeq = (count: number) => {
 			const { num, sum } = x;
 			const root = Math.sqrt(num);
 			const digitsum = sumOfDigits(sum);
-			return { num, root, sum: format(sum), digitsum };
+			return { num, root, sum: formatNum(sum), digitsum };
 		});
 	return seq;
 };
@@ -69,7 +66,7 @@ export const squareSumTriangularSeq = (count: number) => {
 			const { num, sum } = x;
 			const root = Math.sqrt(sum);
 			const digitsum = sumOfDigits(sum);
-			return { num, sum: format(sum), root, digitsum };
+			return { num, sum: formatNum(sum), root, digitsum };
 		});
 	return seq;
 };
@@ -86,7 +83,7 @@ export const cubicNumTriangularSeq = (count: number) => {
 			const { num, sum } = x;
 			const root = Math.cbrt(num);
 			const digitsum = sumOfDigits(sum);
-			return { num, root, sum: format(sum), digitsum };
+			return { num, root, sum: formatNum(sum), digitsum };
 		});
 	return seq;
 };
@@ -103,7 +100,7 @@ export const cubicSumTriangularSeq = (count: number) => {
 			const { num, sum } = x;
 			const root = Math.sqrt(sum);
 			const digitsum = sumOfDigits(sum);
-			return { num, sum: format(sum), root, digitsum };
+			return { num, sum: formatNum(sum), root, digitsum };
 		});
 	return seq;
 };

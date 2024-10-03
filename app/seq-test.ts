@@ -92,6 +92,77 @@ export const testBasicSeq = async (): Promise<void> =>
 		resolve();
 	});
 
+export const testNegativeSeqs = async (): Promise<void> =>
+	new Promise(resolve => {
+		{
+			logHead("NumSeq.from(15, 5)");
+			const arr = NumSeq.from(5, 15).toArray();
+			log(arr);
+		}
+
+		{
+			logHead("NumSeq.range(10, 0)");
+			const arr = NumSeq.range(0, 10).toArray();
+			log(arr);
+		}
+
+		{
+			logHead("NumSeq.count(-12)");
+			const arr = NumSeq.count(12).toArray();
+			log(arr);
+		}
+
+		{
+			logHead("NumSeq.loop(-5)");
+			const arr = NumSeq.loop(5).toArray();
+			log(arr);
+		}
+
+		{
+			logHead("NumSeq.count(-10).map(x => x*2)");
+			const arr = NumSeq.count(10)
+				.map(x => x * 2)
+				.toArray();
+			log(arr);
+		}
+
+		{
+			logHead("NumSeq.count(-10).map(x => `<${x}>`");
+			const arr = NumSeq.count(10)
+				.map(x => `<${x}>`)
+				.toArray();
+			log(arr);
+		}
+
+		{
+			logHead("NumSeq.count(-10).filter(x => x % 2 === 0)");
+			const arr = NumSeq.count(-10)
+				.filter(x => x % 2 === 0)
+				.toArray();
+			log(arr);
+		}
+
+		{
+			logHead("NumSeq.count(-10).skip(5)");
+			const arr = NumSeq.count(-10).skip(5).toArray();
+			log(arr);
+		}
+
+		{
+			logHead("NumSeq.count(-10).take(5)");
+			const arr = NumSeq.count(10).take(5).toArray();
+			log(arr);
+		}
+
+		{
+			logHead("NumSeq.count(-20).skip(10).take(5)");
+			const arr = NumSeq.count(20).skip(10).take(5).toArray();
+			log(arr);
+		}
+
+		resolve();
+	});
+
 export const testNumbers = async (): Promise<void> =>
 	new Promise(resolve => {
 		{

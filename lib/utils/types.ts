@@ -195,6 +195,9 @@ export type FixedLengthArray<
  * Casts a dynamic array to a fixed array based on its length.
  * This is to narrows the type in the destructured tuple,
  * eliminating the '| undefined' part.
+ *
+ * Will throw Error if L > arr.length
+ *
  * @param arr The array to cast
  * @param length The length to cast the array to
  * @returns The array cast to FixedLengthArray type
@@ -207,5 +210,11 @@ export const toFixedArray = <
 	arr: TArray,
 	length: L
 ) => {
+	if (length > arr.length) {
+		throw RangeError(
+			"FixedLengthArray L greater than 'arr.length'"
+		);
+	}
+
 	return arr as unknown as FixedLengthArray<T, L>;
 };

@@ -33,28 +33,28 @@ function zipmany<T1, T2, T3, T4, T5, TOut>(
 	seq3: Seq<T3>,
 	seq4: Seq<T4>,
 	seq5: Seq<T5>
-): TOut;
+): TOut[];
 function zipmany<T1, T2, T3, T4, TOut>(
 	fn: (a: T1, b: T2, c: T3, d: T4) => TOut,
 	seq1: Seq<T1>,
 	seq2: Seq<T2>,
 	seq3: Seq<T3>,
 	seq4: Seq<T4>
-): TOut;
+): TOut[];
 function zipmany<T1, T2, T3, TOut>(
 	fn: (a: T1, b: T2, c: T3) => TOut,
 	seq1: Seq<T1>,
 	seq2: Seq<T2>,
 	seq3: Seq<T3>
-): TOut;
+): TOut[];
 function zipmany<T1, T2, TOut>(
 	fn: (a: T1, b: T2) => TOut,
 	seq1: Seq<T1>,
 	seq2: Seq<T2>
-): TOut;
-function zipmany<T, TOut>(
+): TOut[];
+function zipmany<TOut>(
 	fn: (...args: any) => TOut,
-	...seqs: Seq<T>[]
+	...seqs: Seq<any>[]
 ): TOut[] {
 	const iters = seqs.map(seq => seq.gen());
 	const length = iters.length;
@@ -87,16 +87,9 @@ function zipmany<T, TOut>(
 	return valuesArray;
 }
 
-export const testZipManyPrototype = () => {
-	const seq1 = NumSeq.count(10);
-	const seq2 = seq1.map(x => x.toString());
-	const seq3 = seq1.map(x => x ** 2);
-	const seq4 = seq1.map(x => x ** 3);
-	const seq5 = seq1.map(x => x % 2 === 0);
+const logZipSeqsWithFunction = (seqs: readonly Seq<any>[]) => {
+	const [seq1, seq2, seq3, seq4, seq5] = toFixedArray(seqs, 5);
 
-	logh("Test Zip Many Prototype");
-
-	const seqs = [seq1, seq2, seq3, seq4, seq5];
 	for (const seq of seqs) {
 		seq.log();
 		div();
@@ -152,6 +145,53 @@ export const testZipManyPrototype = () => {
 		log(v);
 		div();
 	}
+};
+
+export const testZipManyProtoToArray = () => {
+	const seq1 = NumSeq.count(10);
+	const seq2 = seq1.map(x => x.toString());
+	const seq3 = seq1.map(x => x ** 2);
+	const seq4 = seq1.map(x => x ** 3);
+	const seq5 = seq1.map(x => x % 2 === 0);
+	const seq6 = seq1.map(x => x ** 3);
+
+	logh("Test Zip Many ProtoToArray");
+
+	const seqs = [seq1, seq2, seq3, seq4, seq5, seq6];
+
+	logZipSeqsWithFunction(seqs);
+};
+
+export const testZipManyProtoUnevenSeqsToArray = () => {
+	const seq1 = NumSeq.count(10);
+	const seq1b = NumSeq.count(7);
+	const seq1c = NumSeq.count(5);
+	const seq2 = seq1.map(x => x.toString());
+	const seq3 = seq1.map(x => x ** 2);
+	const seq4 = seq1b.map(x => x ** 3);
+	const seq5 = seq1c.map(x => x % 2 === 0);
+
+	logh("Test Zip Many Prototype");
+
+	const seqs = [seq1, seq2, seq3, seq4, seq5];
+
+	logZipSeqsWithFunction(seqs);
+};
+
+export const testZipManyProtoUnevenAndEmptySeqsToArray = () => {
+	const seq1 = NumSeq.count(10);
+	const seq1b = NumSeq.count(7);
+	const seq1c = NumSeq.count(0);
+	const seq2 = seq1.map(x => x.toString());
+	const seq3 = seq1b.map(x => x ** 2);
+	const seq4 = seq1c.map(x => x ** 3);
+	const seq5 = seq1c.map(x => x % 2 === 0);
+
+	logh("Test Zip Many Prototype");
+
+	const seqs = [seq1, seq2, seq3, seq4, seq5];
+
+	logZipSeqsWithFunction(seqs);
 };
 
 /**

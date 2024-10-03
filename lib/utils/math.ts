@@ -25,3 +25,12 @@ export const round = (x: number, places: number = 0) => {
 			return Math.round(x * pow) / pow;
 	}
 };
+
+export const isZero = (x: number, significantDigits?: number) => {
+	switch (true) {
+		case significantDigits !== undefined:
+			return round(x, significantDigits) === 0;
+		default:
+			Math.abs(x) < Number.EPSILON;
+	}
+};

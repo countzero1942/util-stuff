@@ -1,3 +1,4 @@
+import { FixedLengthArray } from "@/utils/types";
 import { log } from "console";
 
 /**
@@ -339,6 +340,11 @@ export class NumSeq extends Seq<number> {
 	 * @param max Maximum number in Seq
 	 * @param inc Increment value
 	 */
+
+	// private coercedMin: number;
+	// private coercedMax: number;
+	// private coercedInc: number;
+
 	constructor(
 		public min: number,
 		public max: number,
@@ -346,6 +352,24 @@ export class NumSeq extends Seq<number> {
 	) {
 		super();
 	}
+
+	private setCoercedMinMaxInc = (): void => {
+		const getSafeInce = (inc: number) => {
+			// Test
+		};
+
+		const inc = Math.abs(this.inc);
+
+		switch (true) {
+			case this.min < this.max:
+
+			case this.min > this.max:
+				const inc = this.inc < 0;
+
+			default:
+				break;
+		}
+	};
 
 	public override *gen() {
 		for (let n = this.min; n <= this.max; n += this.inc) {
