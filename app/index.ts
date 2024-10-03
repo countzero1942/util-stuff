@@ -200,56 +200,140 @@ function randomInteger(min: number, max: number) {
 }
 
 /**
- * Generates a 13 Sig Dig String from 0 to 1
+ * Generates a 13 or 14 Sig Dig string for testing
+ * 15 or 16 precision numbers.
  *
- * String will be in the form of "0.1234567895123"
+ * String will be in the form of:
  *
- * So the length of the string will be 2 more than
- * the number of significant digits
+ * "baseNegative10" -> "0.1234567895123"
  *
- * @param sigDigits Default 13 for 15 significant digits.
- * Can change the value to 14 for 16 sig digit false positives!
+ * "anyBase" -> "1.234567895123"
+ *
+ * @param sigDigits 13 or 14 sigDigits for testing
+ * 15 or 16 precision numbers.
  * @returns
  */
-const generateRandom13SigDigitNumberString = (sigDigits = 13) => {
-	const strs: string[] = [];
-	strs.push("0.");
-
-	for (let i = 0; i < sigDigits; i++) {
-		const n = i === 0 ? randomInteger(1, 9) : randomInteger(1, 9);
-		strs.push(n.toString());
+const generateRandom13Or14SigDigitNumberBaseString = (
+	sigDigits = 13,
+	basePower: "baseNegative10" | "anyBase" = "baseNegative10"
+) => {
+	switch (sigDigits) {
+		case 13:
+		case 14:
+			break;
+		default:
+			throw Error("SigDigits must be 13 or 14");
 	}
+
+	const strs: string[] = [];
+	switch (basePower) {
+		case "baseNegative10":
+			{
+				strs.push("0.");
+
+				for (let i = 0; i < sigDigits; i++) {
+					const n =
+						i === 0 ? randomInteger(1, 9) : randomInteger(1, 9);
+					strs.push(n.toString());
+				}
+			}
+			break;
+		case "anyBase":
+			{
+				for (let i = 0; i < sigDigits; i++) {
+					const n =
+						i === 0 ? randomInteger(1, 9) : randomInteger(1, 9);
+
+					strs.push(n.toString());
+					if (i == 0) {
+						strs.push(".");
+					}
+				}
+			}
+			break;
+	}
+
 	return strs.join("");
 };
 
 /**
+ *	Here we test numbers of a power of 10^-1
  *
- * @param s A 13 char decimal string: e.g.: "0.1234567895123"
+ * The neighbors are tested in the range of Number.Epsilon
+ *
+ * From the 'baseNumberString' parameter, all permutations
+ * of the last two digits will be added on. All 100 neighbor
+ * numbers will be tested for equality within +/- epsilon.
+ *
+ * All 15 precision neighbor numbers will be distinct
+ * and will therefore not pass the "areEqual" equality test.
+ *
+ * All 16 precision neighbor numbers will not be distinct
+ * and will therefore yield false positives in the "areEqual"
+ * equality test
+ *
+ * Function will throw Error on unexpected result (which
+ * should never happen.)
+ *
+ * @param baseNumberString A 13 or 14 digit decimal base string: e.g.: "0.1234567895123".
+ * (The leading '0' is not counted: it is not a significant digit.)
+ *
+ * 13 base digits -> 15 precision; 14 base digits -> 16 precision
+ *
+ * The string must begin with "0.nnnnnnnnnnnnn" so it is a power
+ * of 10^-1.
+ *
+ * This string must not begin with "0.0..." because this will
+ * lower the testing number's power of 10 and affect test results.
  */
-const testPrec15NeighborNumbersAgainstAreEqual = (
-	s: string = "0.1234567895123",
-	loglevel: "minimal" | "verbose" | "verbose-no-throw" = "verbose"
+const testPrec15Or16NeighborNumbersAgainstAreEqual = (
+	baseNumberString: string = "0.1234567895123",
+	loglevel:
+		| "none"
+		| "minimal"
+		| "verbose"
+		| "verbose-no-throw" = "verbose"
 ) => {
 	// const s = "0.1234567895123"; => 13 SigDig & 15 char length
 	//           123456789012345678901234567890
 
-	if (s.startsWith("0.0")) {
-		log(`=======> CAN NOT USE BASE STRING: "${s}"`);
+	const validNumberString = /^0\.\d{13,14}$/;
+
+	if (!validNumberString.test(baseNumberString)) {
+		log(`=======> CAN NOT USE BASE STRING: "${baseNumberString}"`);
 		log(
 			"Any digit string starting with '0.0...' will lower testing range."
 		);
 		log("Test numbers must be a power of 10^-1");
-		log("If a number string starts with '0.0nnnn' it is 10^-2");
+		log();
+		log("The number of significt digits in the string");
+		log("must also be either 13 or 14, which maps to");
+		log("the 15 and 16 precision test.");
 		return;
 	}
 
-	const expectedIsEqual: boolean = s.length <= 15 ? false : true;
+	// 15 $ length => 13 digits -> 15 precision level
+	// 16 $ length => 14 digits -> 16 precision level
+	// Above validation eliminates other lengths
+	const getPrecisionTestLevel = () => {
+		switch (baseNumberString.length) {
+			case 15:
+				return 15;
+			case 16:
+				return 16;
+			default:
+				throw "Never";
+		}
+	};
+
+	const expectedIsEqual: boolean =
+		getPrecisionTestLevel() == 15 ? false : true;
 
 	const nums: number[] = [];
 
 	for (let i = 0; i <= 9; i++) {
 		for (let j = 0; j <= 9; j++) {
-			const numstr = `${s}${i.toString()}${j.toString()}`;
+			const numstr = `${baseNumberString}${i.toString()}${j.toString()}`;
 			nums.push(Number(numstr));
 		}
 	}
@@ -260,6 +344,7 @@ const testPrec15NeighborNumbersAgainstAreEqual = (
 			const b = nums[i];
 			if (a !== undefined && b !== undefined) {
 				switch (loglevel) {
+					case "none":
 					case "minimal":
 						{
 							const isEq = isEqual(a, b);
@@ -299,18 +384,183 @@ const testPrec15NeighborNumbersAgainstAreEqual = (
 		}
 	} // for 1 .. 100
 
-	log(
-		`Number base: "${s}", total digit precision: ${s.length} -> PASSED`
-	);
-	log(
-		`All 100 tests matched expected 'areEqual(a,b)' ` +
-			`result: ${expectedIsEqual}`
-	);
-	const msg: string = expectedIsEqual
-		? "All neighbor numbers > 15 digit precision: SHOULD FALSELY BE EQUAL"
-		: "All neighbor numbers in 15 digit precision: SHOULD NOT BE EQUAL";
-	log(msg);
-	div();
+	switch (loglevel) {
+		case "none":
+			break;
+		case "minimal":
+		case "verbose":
+		case "verbose-no-throw":
+			log(
+				`Number base: "${baseNumberString}", total digit precision: ${baseNumberString.length} -> PASSED`
+			);
+			log(
+				`All 100 tests matched expected 'areEqual(a,b)' ` +
+					`result: ${expectedIsEqual}`
+			);
+			const msg: string = expectedIsEqual
+				? "All neighbor numbers > 15 digit precision: SHOULD FALSELY BE EQUAL"
+				: "All neighbor numbers in 15 digit precision: SHOULD NOT BE EQUAL";
+			log(msg);
+			div();
+			break;
+	}
+};
+
+/**
+ *	Here we test neighbor numbers for "areEqual" of any power of 10
+ *
+ * The neighbors are tested in the range of a relative Number.Epsilon
+ *
+ * From the 'baseNumberString' parameter, all permutations
+ * of the last two digits will be added on. Then all 100 neighbor
+ * numbers will be tested for equality within +/- its relative epsilon.
+ *
+ * All 15 precision neighbor numbers will be distinct
+ * and will therefore not pass the "areEqual" equality test.
+ *
+ * All 16 precision neighbor numbers will not be distinct
+ * and will therefore yield false positives in the "areEqual"
+ * equality test
+ *
+ * Function will throw Error on unexpected result (which
+ * should never happen.)
+ *
+ * @param baseNumberString A 13 or 14 char decimal string:
+ * e.g.: "1.234567895123".
+ *
+ * 13 base digits -> 15 precision; 14 base digits -> 16 precision
+ *
+ * This string must not begin with "0.nnn..." because this will
+ * lower the testing number's power of 10, which will affect
+ * the test.
+ */
+const testPrec15Or16NeighborNumbersAreEqualOfAnyPowerOfTen = (
+	baseNumberString: string = "1.234567895123",
+	loglevel:
+		| "none"
+		| "minimal"
+		| "verbose"
+		| "verbose-no-throw" = "verbose"
+) => {
+	// const s = "1.234567895123"; => 13 SigDig & 14 char length
+	//            1 23456789012345678901234567890
+
+	const validNumberString = /^[1-9]\.\d{12,13}$/;
+
+	if (!validNumberString.test(baseNumberString)) {
+		log(`=======> CAN NOT USE BASE STRING: "${baseNumberString}"`);
+		log("Any digit string starting with '0.123...' will lower");
+		log(
+			"the testing number's power of 10. This will affect the test."
+		);
+		log("The first digit must be a non-zero number.");
+		log();
+		log("The number of significt digits in the string");
+		log("must also be either 13 or 14, which maps to");
+		log("the 15 and 16 precision test.");
+		return;
+	}
+
+	// 14 $ length => 13 digits -> 15 precision level
+	// 15 $ length => 14 digits -> 16 precision level
+	// Above validation eliminates other lengths
+	const getPrecisionTestLevel = () => {
+		switch (baseNumberString.length) {
+			case 14:
+				return 15;
+			case 15:
+				return 16;
+			default:
+				throw "Never";
+		}
+	};
+
+	const expectedIsEqual: boolean =
+		getPrecisionTestLevel() == 15 ? false : true;
+
+	const nums: number[] = [];
+
+	for (let i = 0; i <= 9; i++) {
+		for (let j = 0; j <= 9; j++) {
+			const numstr = `${baseNumberString}${i.toString()}${j.toString()}`;
+			nums.push(Number(numstr));
+		}
+	}
+
+	const getErrorMsg = () => {
+		return (
+			`Unexpected result: baseNumberString: ` +
+			`${baseNumberString}`
+		);
+	};
+
+	for (let i = 0; i < 100; i++) {
+		if (i > 0) {
+			const a = nums[i - 1];
+			const b = nums[i];
+			if (a !== undefined && b !== undefined) {
+				switch (loglevel) {
+					case "none":
+					case "minimal":
+						{
+							const isEq = isEqual(a, b);
+							if (isEq !== expectedIsEqual) {
+								throw Error("Unexpected Result");
+							}
+						}
+						break;
+					case "verbose":
+						{
+							log(`a: ${a}`);
+							log(`b: ${b}`);
+							log("     123456789012345");
+							const isEq = isEqual(a, b);
+							log(`ARE EQUAL: ${isEq}`);
+							div();
+							if (isEq !== expectedIsEqual) {
+								throw Error("Unexpected Result");
+							}
+						}
+						break;
+					case "verbose-no-throw":
+						{
+							log(`a: ${a}`);
+							log(`b: ${b}`);
+							log("     123456789012345");
+							const isEq = isEqual(a, b);
+							log(`ARE EQUAL: ${isEq}`);
+							div();
+							if (isEq !== expectedIsEqual) {
+								log("================> UNEXPECTED RESULT");
+							}
+						}
+						break;
+				}
+			}
+		}
+	} // for 1 .. 100
+
+	switch (loglevel) {
+		case "none":
+			break;
+		case "minimal":
+		case "verbose":
+		case "verbose-no-throw":
+			log(
+				`Number base: "${baseNumberString}", ` +
+					`total digit precision: ${baseNumberString.length} -> PASSED`
+			);
+			log(
+				`All 100 tests matched expected 'areEqual(a,b)' ` +
+					`result: ${expectedIsEqual}`
+			);
+			const msg: string = expectedIsEqual
+				? "All neighbor numbers > 15 digit precision: SHOULD FALSELY BE EQUAL"
+				: "All neighbor numbers in 15 digit precision: SHOULD NOT BE EQUAL";
+			log(msg);
+			div();
+			break;
+	}
 };
 
 log(`Epsilon: ${Number.EPSILON}`);
@@ -334,12 +584,16 @@ try {
 	// log(`s: "${s}", len: ${s.length}`);
 	// log("    1234567890123");
 
-	for (let i = 0; i < 200000; i++) {
-		const s = generateRandom13SigDigitNumberString(
-			randomInteger(13, 14)
+	for (let i = 0; i < 20; i++) {
+		const baseString = generateRandom13Or14SigDigitNumberBaseString(
+			randomInteger(13, 14),
+			"baseNegative10"
 		);
 		log("Test: ", formatNum(i + 1));
-		testPrec15NeighborNumbersAgainstAreEqual(s, "minimal");
+		testPrec15Or16NeighborNumbersAgainstAreEqual(
+			baseString,
+			"minimal"
+		);
 	}
 } catch (error) {
 	log(getError(error));
