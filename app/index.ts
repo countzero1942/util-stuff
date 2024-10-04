@@ -27,6 +27,11 @@ import { log, logh, logln } from "@/utils/log";
 import { round } from "@/utils/math";
 import { MathProdSeq, NumSeq, Seq } from "@/utils/seq";
 import { formatNum } from "@/utils/string";
+import { toFixedArray } from "@/utils/types";
+import { getRandomValues } from "crypto";
+import { merge } from "moderndash";
+import test from "node:test";
+import { DeepPartial } from "utility-types";
 
 const div = () => {
 	logln(40);
@@ -82,12 +87,13 @@ const logRounded = (n: number, digits: number) => {
 };
 
 const getRelativeEspilon = (n: number): number => {
+	// ceil bc no shift happens at 10^-1 => log must be 1
 	const log = Math.ceil(Math.log10(n));
 	const relEpsilon = Number.EPSILON * 10 ** log;
 	return relEpsilon;
 };
 
-const isEqual = (a: number, b: number): boolean => {
+const areEqual = (a: number, b: number): boolean => {
 	const logA = Math.ceil(Math.log10(a));
 	const logB = Math.ceil(Math.log10(a));
 	if (logA !== logB) {
@@ -103,7 +109,7 @@ const precisionRound = (n: number, sigDigits: number) => {
 	// sig-digs - num-digs = round
 	// 6 - 9 = -3
 	// try: num-digs = ceil(log10)
-	const numDigits = Math.ceil(Math.log10(n));
+	const numDigits = Math.floor(Math.log10(n));
 	const r = sigDigits - numDigits;
 	return round(n, r);
 };
@@ -121,7 +127,7 @@ const logPreciscionRound = (n: number, sigDigits: number) => {
 	log(`  precRound - clearPrecRound = ${Math.abs(pr - cleanPR)}`);
 	log(`  relEpsilon:                  ${relEps}`);
 	div();
-	log(`   ARE EQUAL: ${isEqual(pr, cleanPR)}`);
+	log(`   ARE EQUAL: ${areEqual(pr, cleanPR)}`);
 };
 
 const logPrecisionRoundRange = (
@@ -164,7 +170,7 @@ const logPlusMinusRelEps = (n: number) => {
 	log(`   relEps:   ${relEps}`);
 	log(`   a - b =   ${Math.abs(n - cleanN)}`);
 	div();
-	log(`   IS EQUAL: ${isEqual(n, cleanN)}`);
+	log(`   IS EQUAL: ${areEqual(n, cleanN)}`);
 	div();
 	log();
 };
@@ -288,14 +294,12 @@ const generateRandom13Or14SigDigitNumberBaseString = (
  */
 const testPrec15Or16NeighborNumbersAgainstAreEqual = (
 	baseNumberString: string = "0.1234567895123",
-	loglevel:
-		| "none"
-		| "minimal"
-		| "verbose"
-		| "verbose-no-throw" = "verbose"
+	loglevel: "none" | "minimal" | "verbose" = "verbose"
 ) => {
 	// const s = "0.1234567895123"; => 13 SigDig & 15 char length
 	//           123456789012345678901234567890
+
+	const usePrecisionRound = true;
 
 	const validNumberString = /^0\.\d{13,14}$/;
 
@@ -342,44 +346,38 @@ const testPrec15Or16NeighborNumbersAgainstAreEqual = (
 		if (i > 0) {
 			const a = nums[i - 1];
 			const b = nums[i];
-			if (a !== undefined && b !== undefined) {
-				switch (loglevel) {
-					case "none":
-					case "minimal":
-						{
-							const isEq = isEqual(a, b);
-							if (isEq !== expectedIsEqual) {
-								throw Error("Unexpected Result");
-							}
+			if (a === undefined || b === undefined) throw "Never";
+
+			switch (loglevel) {
+				case "none":
+				case "minimal":
+					{
+						const isEq = areEqual(a, b);
+						if (isEq !== expectedIsEqual) {
+							throw Error("Unexpected Result");
 						}
-						break;
-					case "verbose":
-						{
-							log(`a: ${a}`);
-							log(`b: ${b}`);
-							log("     123456789012345");
-							const isEq = isEqual(a, b);
-							log(`ARE EQUAL: ${isEq}`);
-							div();
-							if (isEq !== expectedIsEqual) {
-								throw Error("Unexpected Result");
-							}
+					}
+					break;
+				case "verbose":
+					{
+						log(`a: ${a}`);
+						log(`b: ${b}`);
+						log("-----123456789012345");
+						const relEps = getRelativeEspilon(a);
+						const amb = Math.abs(a - b);
+						log(
+							`a - b =  ${amb} : <= Epsilon: ${amb <= relEps}`
+						);
+						log(`Epsilon: ${relEps}`);
+						const isEq = areEqual(a, b);
+						logln(20);
+						log(`===ARE EQUAL: ${isEq}`);
+						div();
+						if (isEq !== expectedIsEqual) {
+							throw Error("Unexpected Result");
 						}
-						break;
-					case "verbose-no-throw":
-						{
-							log(`a: ${a}`);
-							log(`b: ${b}`);
-							log("     123456789012345");
-							const isEq = isEqual(a, b);
-							log(`ARE EQUAL: ${isEq}`);
-							div();
-							if (isEq !== expectedIsEqual) {
-								log("================> UNEXPECTED RESULT");
-							}
-						}
-						break;
-				}
+					}
+					break;
 			}
 		}
 	} // for 1 .. 100
@@ -389,22 +387,131 @@ const testPrec15Or16NeighborNumbersAgainstAreEqual = (
 			break;
 		case "minimal":
 		case "verbose":
-		case "verbose-no-throw":
 			log(
-				`Number base: "${baseNumberString}", total digit precision: ${baseNumberString.length} -> PASSED`
+				`Number base: "${baseNumberString}":\n` +
+					`   total digit precision: ` +
+					`${baseNumberString.length} -> PASSED`
 			);
 			log(
 				`All 100 tests matched expected 'areEqual(a,b)' ` +
 					`result: ${expectedIsEqual}`
 			);
 			const msg: string = expectedIsEqual
-				? "All neighbor numbers > 15 digit precision: SHOULD FALSELY BE EQUAL"
-				: "All neighbor numbers in 15 digit precision: SHOULD NOT BE EQUAL";
+				? "All neighbor numbers > 15 digit precision:\n" +
+				  "   SHOULD BE INDISTINCT AND FALSELY EQUAL"
+				: "All neighbor numbers in 15 digit precision:\n" +
+				  "   SHOULD BE DISTINCT AND NOT EQUAL";
+
 			log(msg);
+			div();
+			log();
 			div();
 			break;
 	}
 };
+
+const retrieveAreEqualDetails = (
+	a: number,
+	b: number,
+	expectedAreEqualOutcome: boolean
+) => {
+	const relEpsilon = getRelativeEspilon(a);
+	const deltaAB = Math.abs(a - b);
+	const ratio = expectedAreEqualOutcome
+		? Math.round((deltaAB / relEpsilon) * 100)
+		: Math.round((relEpsilon / deltaAB) * 100);
+	const ratioMsg = expectedAreEqualOutcome
+		? `   ratio of delta(a,b)/relEpisolon: ${ratio}%`
+		: `   ratio of relEpisolon/delta(a,b): ${ratio}%`;
+	const areEq = areEqual(a, b);
+	return {
+		relEps: relEpsilon,
+		deltaAB,
+		ratio,
+		areEq,
+	};
+};
+
+const logAndRetrieveAreEqualDetails = (
+	a: number,
+	b: number,
+	expectedAreEqualOutcome: boolean,
+	testNumber: number
+) => {
+	const { relEps, deltaAB, ratio, areEq } = retrieveAreEqualDetails(
+		a,
+		b,
+		expectedAreEqualOutcome
+	);
+
+	log(`a: ${a}`);
+	log(`b: ${b}`);
+	log("----123456789012345");
+	// const relEps = getRelativeEspilon(a);
+	// const deltaAB = Math.abs(a - b);
+	// const ratio = expectedIsEqual
+	// 	? Math.round((deltaAB / relEps) * 100)
+	// 	: Math.round((relEps / deltaAB) * 100);
+	log(
+		`delta(a - b) =  ${deltaAB} : <= relEps: ${deltaAB <= relEps}`
+	);
+	log(`relEpsilon:     ${relEps}`);
+	const ratioMsg = expectedAreEqualOutcome
+		? `   ratio of delta(a,b)/relEpisolon: ${ratio}%`
+		: `   ratio of relEpisolon/delta(a,b): ${ratio}%`;
+	log(ratioMsg);
+	// const isEq = areEqual(a, b);
+	logln(20);
+	log(`===(${testNumber}/100) ARE EQUAL: ${areEq}`);
+	div();
+	return {
+		a,
+		b,
+		expectedAreEqualOutcome,
+		relEps,
+		deltaAB,
+		ratio,
+		areEq,
+	};
+};
+
+// const logAndRetrieveAreEqualDetails = (
+// 	a: number,
+// 	b: number,
+// 	expectedIsEqual: boolean,
+// 	testNumber: number
+// ) => {
+// 	log(`a: ${a}`);
+// 	log(`b: ${b}`);
+// 	log("----123456789012345");
+// 	const relEps = getRelativeEspilon(a);
+// 	const deltaAB = Math.abs(a - b);
+// 	const ratio = expectedIsEqual
+// 		? Math.round((deltaAB / relEps) * 100)
+// 		: Math.round((relEps / deltaAB) * 100);
+// 	log(
+// 		`delta(a - b) =  ${deltaAB} : <= relEps: ${deltaAB <= relEps}`
+// 	);
+// 	log(`relEpsilon:     ${relEps}`);
+// 	const ratioMsg = expectedIsEqual
+// 		? `   ratio of delta(a,b)/relEpisolon: ${ratio}%`
+// 		: `   ratio of relEpisolon/delta(a,b): ${ratio}%`;
+// 	log(ratioMsg);
+// 	const isEq = areEqual(a, b);
+// 	logln(20);
+// 	log(`===(${testNumber}/100) ARE EQUAL: ${isEq}`);
+// 	div();
+// 	return {
+// 		a,
+// 		b,
+// 		expectedIsEqual,
+// 		relEps,
+// 		deltaAB,
+// 		ratio,
+// 	};
+// };
+
+type LogLevel = "none" | "minimal" | "verbose" | "verbose-no-throw";
 
 /**
  *	Here we test neighbor numbers for "areEqual" of any power of 10
@@ -436,6 +543,7 @@ const testPrec15Or16NeighborNumbersAgainstAreEqual = (
  */
 const testPrec15Or16NeighborNumbersAreEqualOfAnyPowerOfTen = (
 	baseNumberString: string = "1.234567895123",
+	power: number = -1,
 	loglevel:
 		| "none"
 		| "minimal"
@@ -458,13 +566,13 @@ const testPrec15Or16NeighborNumbersAreEqualOfAnyPowerOfTen = (
 		log("The number of significt digits in the string");
 		log("must also be either 13 or 14, which maps to");
 		log("the 15 and 16 precision test.");
-		return;
+		throw Error("Number Base String Error");
 	}
 
 	// 14 $ length => 13 digits -> 15 precision level
 	// 15 $ length => 14 digits -> 16 precision level
 	// Above validation eliminates other lengths
-	const getPrecisionTestLevel = () => {
+	const getPrecisionLevel = () => {
 		switch (baseNumberString.length) {
 			case 14:
 				return 15;
@@ -474,15 +582,18 @@ const testPrec15Or16NeighborNumbersAreEqualOfAnyPowerOfTen = (
 				throw "Never";
 		}
 	};
+	const precisionLevel = getPrecisionLevel();
 
-	const expectedIsEqual: boolean =
-		getPrecisionTestLevel() == 15 ? false : true;
+	const expectedAreEqualOutcome: boolean =
+		precisionLevel == 15 ? false : true;
 
 	const nums: number[] = [];
 
 	for (let i = 0; i <= 9; i++) {
 		for (let j = 0; j <= 9; j++) {
-			const numstr = `${baseNumberString}${i.toString()}${j.toString()}`;
+			const numstr =
+				`${baseNumberString}${i.toString()}` +
+				`${j.toString()}e${power}`;
 			nums.push(Number(numstr));
 		}
 	}
@@ -493,45 +604,49 @@ const testPrec15Or16NeighborNumbersAreEqualOfAnyPowerOfTen = (
 			`${baseNumberString}`
 		);
 	};
+	let maxratio: number = 0;
 
 	for (let i = 0; i < 100; i++) {
 		if (i > 0) {
 			const a = nums[i - 1];
 			const b = nums[i];
+			const testNumber = i + 1;
 			if (a !== undefined && b !== undefined) {
 				switch (loglevel) {
 					case "none":
 					case "minimal":
 						{
-							const isEq = isEqual(a, b);
-							if (isEq !== expectedIsEqual) {
-								throw Error("Unexpected Result");
-							}
-						}
-						break;
-					case "verbose":
-						{
-							log(`a: ${a}`);
-							log(`b: ${b}`);
-							log("     123456789012345");
-							const isEq = isEqual(a, b);
-							log(`ARE EQUAL: ${isEq}`);
-							div();
-							if (isEq !== expectedIsEqual) {
+							const { ratio, areEq } = retrieveAreEqualDetails(
+								a,
+								b,
+								expectedAreEqualOutcome
+							);
+							// const areEq = areEqual(a, b);
+							maxratio = Math.max(maxratio, ratio);
+							if (areEq !== expectedAreEqualOutcome) {
 								throw Error("Unexpected Result");
 							}
 						}
 						break;
 					case "verbose-no-throw":
+					case "verbose":
 						{
-							log(`a: ${a}`);
-							log(`b: ${b}`);
-							log("     123456789012345");
-							const isEq = isEqual(a, b);
-							log(`ARE EQUAL: ${isEq}`);
-							div();
-							if (isEq !== expectedIsEqual) {
-								log("================> UNEXPECTED RESULT");
+							const { ratio, areEq } =
+								logAndRetrieveAreEqualDetails(
+									a,
+									b,
+									expectedAreEqualOutcome,
+									testNumber
+								);
+							maxratio = Math.max(maxratio, ratio);
+							// const isEq = areEqual(a, b);
+							if (
+								areEq !== expectedAreEqualOutcome &&
+								loglevel === "verbose"
+							) {
+								throw Error(
+									"Never: Unexpected AreEqual Outcome!"
+								);
 							}
 						}
 						break;
@@ -540,27 +655,51 @@ const testPrec15Or16NeighborNumbersAreEqualOfAnyPowerOfTen = (
 		}
 	} // for 1 .. 100
 
+	// REPORT //
+	////////////
+
 	switch (loglevel) {
 		case "none":
 			break;
 		case "minimal":
 		case "verbose":
 		case "verbose-no-throw":
+			logh("REPORT");
+			const ratioMsg = expectedAreEqualOutcome
+				? `Maximum ratio of delta(a, b)/relEpisolon (->): ${maxratio}%`
+				: `Maximum ratio of relEpisolon/delta(a, b) (<-): ${maxratio}%`;
+			log(ratioMsg);
+			div();
+
 			log(
-				`Number base: "${baseNumberString}", ` +
-					`total digit precision: ${baseNumberString.length} -> PASSED`
+				`Number base: "${baseNumberString}" x 10^(${power}):\n` +
+					`   total digit precision: ` +
+					`${precisionLevel} -> PASSED`
 			);
 			log(
 				`All 100 tests matched expected 'areEqual(a,b)' ` +
-					`result: ${expectedIsEqual}`
+					`outcome: ${expectedAreEqualOutcome}`
 			);
-			const msg: string = expectedIsEqual
-				? "All neighbor numbers > 15 digit precision: SHOULD FALSELY BE EQUAL"
-				: "All neighbor numbers in 15 digit precision: SHOULD NOT BE EQUAL";
+			const msg: string = expectedAreEqualOutcome
+				? "All neighbor numbers > 15 digit precision:\n" +
+				  "   SHOULD BE INDISTINCT AND FALSELY EQUAL"
+				: "All neighbor numbers in 15 digit precision:\n" +
+				  "   SHOULD BE DISTINCT AND NOT EQUAL";
+
 			log(msg);
+			div();
+			log();
 			div();
 			break;
 	}
+
+	return {
+		baseNumberString,
+		power,
+		expectedIsEqualOutcome: expectedAreEqualOutcome,
+		precisionLevel,
+		maxratio,
+	};
 };
 
 log(`Epsilon: ${Number.EPSILON}`);
@@ -568,33 +707,140 @@ div();
 // loopThruPowersOf10PlusFPErr(20);
 //logPrecisionRoundRange(n, 100, 5);
 
-try {
-	// test 15 prec neighbor numbers
-	// (13 char base string): expect false (should not be equal)
-	// testPrec15NeighborNumbersAgainstAreEqual("0.1234567895123", false);
-	// test 16 prec neighbor numbers
-	// (14 char base string): expect true (are falsely equal)
-	// testPrec15NeighborNumbersAgainstAreEqual("0.12345678951234", true);
+/**
+ * Args for TestNeighborNumbersAreEqual
+ */
+type ArgsTestNeighborNumbers = {
+	/**
+	 * Default: "random"
+	 */
+	precisionLevel: "15" | "16" | "random";
+	/**
+	 * Specifies Test Power-of-Ten selection
+	 */
+	power: {
+		/**
+		 * Default: "random-range"
+		 */
+		kind: "single" | "random-range";
+		/**
+		 * Used with 'kind' of "single"
+		 *
+		 * Default: -1 (Relative Epsilon = Number.Epsilon)
+		 */
+		single: number;
+		/**
+		 * Used with 'kind' of "random-range"
+		 */
+		range: {
+			/**
+			 * Min power-of-ten random range.
+			 *
+			 * Default: -200
+			 */
+			min: number;
+			/**
+			 * Max power-of-ten random range.
+			 *
+			 * Default: 200
+			 */
+			max: number;
+		};
+	};
+	/**
+	 * "none" | "minimal" | "verbose" | "verbose-no-throw"
+	 *
+	 * Default: "verbose"
+	 */
+	logLevel: LogLevel;
+	/**
+	 * Number of tests to run.
+	 *
+	 * Best to reduce 'logLevel' from "verbose"
+	 *
+	 * Default: 1
+	 */
+	numOfTests: number;
+};
 
-	// test 15 prec neighbor numbers
-	// (13 char base string): expect false (should not be equal)
-	// 0.09545014601900
-	//   1234567890123456
-	// const s = "0.09545014601900";
-	// log(`s: "${s}", len: ${s.length}`);
-	// log("    1234567890123");
+const TestNeighborNumbersAreEqual = (
+	args: DeepPartial<ArgsTestNeighborNumbers>
+) => {
+	const defaultTestNeighborNumbers: ArgsTestNeighborNumbers = {
+		precisionLevel: "random",
+		power: {
+			kind: "random-range",
+			single: -1,
+			range: {
+				min: -200,
+				max: 200,
+			},
+		},
+		logLevel: "verbose",
+		numOfTests: 1,
+	};
 
-	for (let i = 0; i < 20; i++) {
-		const baseString = generateRandom13Or14SigDigitNumberBaseString(
-			randomInteger(13, 14),
-			"baseNegative10"
-		);
-		log("Test: ", formatNum(i + 1));
-		testPrec15Or16NeighborNumbersAgainstAreEqual(
-			baseString,
-			"minimal"
-		);
+	const mergedArgs = merge(
+		defaultTestNeighborNumbers,
+		args
+	) as ArgsTestNeighborNumbers;
+
+	const { precisionLevel, power, logLevel, numOfTests } = mergedArgs;
+
+	try {
+		for (let i = 0; i < numOfTests; i++) {
+			const getBaseStringPrecisionDigits = () => {
+				switch (precisionLevel) {
+					case "15":
+						return 13;
+					case "16":
+						return 14;
+					case "random":
+						return randomInteger(13, 14);
+				}
+			};
+
+			const getNumberPowerOfTen = () => {
+				const { kind } = power;
+				switch (kind) {
+					case "single": {
+						const { single } = power;
+						return single;
+					}
+					case "random-range": {
+						const { min, max } = power.range;
+						return randomInteger(min, max);
+					}
+				}
+			};
+
+			const baseString =
+				generateRandom13Or14SigDigitNumberBaseString(
+					getBaseStringPrecisionDigits(),
+					"anyBase"
+				);
+
+			log(`Test (${formatNum(i + 1)}/${numOfTests})`);
+
+			testPrec15Or16NeighborNumbersAreEqualOfAnyPowerOfTen(
+				baseString,
+				getNumberPowerOfTen(),
+				logLevel
+			);
+		}
+	} catch (error) {
+		log(getError(error));
 	}
-} catch (error) {
-	log(getError(error));
-}
+};
+
+div();
+
+// TestNeighborNumbersAreEqual({
+// 	power: { kind: "single", single: -1 },
+// });
+
+TestNeighborNumbersAreEqual({
+	power: { kind: "random-range" },
+	numOfTests: 20,
+	logLevel: "minimal",
+});
