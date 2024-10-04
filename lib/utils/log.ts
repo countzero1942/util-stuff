@@ -28,3 +28,10 @@ export const logh = (header: string) => {
 	log(header);
 	log(line);
 };
+
+/**
+ * Quick line
+ */
+export const div = () => {
+	logln(40);
+};

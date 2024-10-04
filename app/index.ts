@@ -28,6 +28,7 @@ import { round } from "@/utils/math";
 import { MathProdSeq, NumSeq, Seq } from "@/utils/seq";
 import { formatNum } from "@/utils/string";
 import { toFixedArray } from "@/utils/types";
+import { ChildProcessWithoutNullStreams } from "child_process";
 import { getRandomValues } from "crypto";
 import { merge } from "moderndash";
 import test from "node:test";
@@ -702,8 +703,6 @@ const testPrec15Or16NeighborNumbersAreEqualOfAnyPowerOfTen = (
 	};
 };
 
-log(`Epsilon: ${Number.EPSILON}`);
-div();
 // loopThruPowersOf10PlusFPErr(20);
 //logPrecisionRoundRange(n, 100, 5);
 
@@ -712,14 +711,26 @@ div();
  */
 type ArgsTestNeighborNumbers = {
 	/**
-	 * Default: "random"
+	 * The precision level to test:
+	 *
+	 * `15`: all neighbor numbers are DISTINCT:
+	 *  `areEqual(a,b)` -> `true`
+	 *
+	 * `16`: all neighbor numbers are INDISTINCT:
+	 *  `areEqual(a,b)` -> `false`
+	 *
+	 * `random`: either `15` or `16`
+	 *
+	 * Default: `random`
 	 */
 	precisionLevel: "15" | "16" | "random";
 	/**
-	 * Specifies Test Power-of-Ten selection
+	 * Related to Power-of-Ten to test
 	 */
 	power: {
 		/**
+		 * Power-of-ten input kind
+		 *
 		 * Default: "random-range"
 		 */
 		kind: "single" | "random-range";
@@ -836,11 +847,16 @@ const TestNeighborNumbersAreEqual = (
 div();
 
 // TestNeighborNumbersAreEqual({
+// 	precisionLevel: "random",
 // 	power: { kind: "single", single: -1 },
 // });
 
-TestNeighborNumbersAreEqual({
-	power: { kind: "random-range" },
-	numOfTests: 20,
-	logLevel: "minimal",
-});
+// TestNeighborNumbersAreEqual({
+// 	power: { kind: "single", single: -1 },
+// });
+
+// TestNeighborNumbersAreEqual({
+// 	power: { kind: "random-range" },
+// 	numOfTests: 20,
+// 	logLevel: "minimal",
+// });
