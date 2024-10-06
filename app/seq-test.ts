@@ -1,5 +1,5 @@
 import { log, logln } from "@/utils/log";
-import { round } from "@/utils/math";
+import { fixedRound } from "@/utils/math";
 import { ArraySeq, NumberFilterSeq, NumSeq } from "@/utils/seq";
 
 const div = () => {
@@ -196,7 +196,7 @@ export const testNumbers = async (): Promise<void> =>
 			logHead("Has perfect Sixth root");
 
 			const getRoot = (x: number) => {
-				return round(Math.pow(x, 1.0 / 6.0), 12);
+				return fixedRound(Math.pow(x, 1.0 / 6.0), 12);
 			};
 
 			const hasPerfectRoot = (x: number): boolean => {
@@ -226,7 +226,7 @@ export const testLongNumberSeq = async (
 			div();
 
 			const getRoot = (x: number) => {
-				return round(Math.pow(x, 1.0 / 6.0), 12);
+				return fixedRound(Math.pow(x, 1.0 / 6.0), 12);
 			};
 
 			const hasPerfectRoot = (x: number): boolean => {
@@ -256,7 +256,7 @@ export const testNumberFilterSeq = async (
 			div();
 
 			const getRoot = (x: number) => {
-				return round(Math.pow(x, 1.0 / 6.0), 12);
+				return fixedRound(Math.pow(x, 1.0 / 6.0), 12);
 			};
 
 			const hasPerfectRoot = (x: number): boolean => {
@@ -287,7 +287,7 @@ export const testLongNumberDirect = async (
 		div();
 
 		const getRoot = (x: number) => {
-			return round(Math.pow(x, 1.0 / 6.0), 12);
+			return fixedRound(Math.pow(x, 1.0 / 6.0), 12);
 		};
 
 		const hasPerfectRoot = (x: number): boolean => {

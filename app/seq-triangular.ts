@@ -1,5 +1,5 @@
 import { log, logh } from "@/utils/log";
-import { round } from "@/utils/math";
+import { fixedRound } from "@/utils/math";
 import { MathSumSeq, NumSeq, Seq } from "@/utils/seq";
 import { formatNum } from "@/utils/string";
 
@@ -17,12 +17,12 @@ const sumOfDigits = (x: number) => {
 };
 
 const isPerfectSquare = (x: number) => {
-	const r = round(Math.sqrt(x), 12);
+	const r = fixedRound(Math.sqrt(x), 12);
 	return r === Math.floor(r);
 };
 
 const isPerfectCube = (x: number) => {
-	const r = round(Math.cbrt(x), 12);
+	const r = fixedRound(Math.cbrt(x), 12);
 	return r === Math.floor(r);
 };
 

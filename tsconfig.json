@@ -22,7 +22,8 @@
 		"paths": {
 			"@/app/*": ["app/*"],
 			"@/utils/*": ["lib/utils/*"],
-			"@/types/*": ["lib/types/*"]
+			"@/types/*": ["lib/types/*"],
+			"@/tests/*": ["tests/*"]
 		}
 	},
 	"include": ["**/*.ts"],

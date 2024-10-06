@@ -22,7 +22,6 @@ export const log = (...data: any) => {
  * @param header The text of the header
  */
 export const logh = (header: string) => {
-	log();
 	const line = "-".repeat(header.length);
 	log(line);
 	log(header);
