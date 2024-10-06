@@ -216,13 +216,24 @@ export function areEqual(a: number, b: number): boolean {
 		default:
 			const logA = Math.ceil(Math.log10(a));
 			const logB = Math.ceil(Math.log10(b));
+			// log(`===> a: ${a}, logA: ${logA}`);
+			// log(`===> b: ${b}, logA: ${logB}`);
 			if (Math.abs(logA - logB) > 1) {
 				return false;
 			}
 			// if (logA !== logB) {
 			// 	return false;
 			// }
-			const relativeEpsilon = 2 * Number.EPSILON * 10 ** logA;
+			const logX = Math.max(logA, logB);
+			// log(`===> logX: ${logX}`);
+			const relativeEpsilon = 2 * Number.EPSILON * 10 ** logX;
+			// log(`===> relEps: ${relativeEpsilon}`);
+			// log(`===> D(a,b): ${Math.abs(a - b)}`);
+			// log(
+			// 	`===> D(a,b)/relEps ${Math.round(
+			// 		(Math.abs(a - b) / relativeEpsilon) * 100
+			// 	)}%`
+			// );
 			return relativeEpsilon > 0
 				? Math.abs(a - b) < relativeEpsilon
 				: true;

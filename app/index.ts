@@ -165,7 +165,6 @@ const n = 123_123_123_123_123;
 //logPlusMinusRelEps(10.1 + 10.2);
 
 const loopThruPowersOf10PlusFPErr = (maxPower: number = 20) => {
-	const min = -maxPower;
 	const max = maxPower;
 	const err = 0.1 + 0.7;
 	logPlusMinusRelEps(err);
@@ -178,7 +177,7 @@ const loopThruPowersOf10PlusFPErr = (maxPower: number = 20) => {
 
 div();
 
-loopThruPowersOf10PlusFPErr(20);
+// loopThruPowersOf10PlusFPErr(20);
 // logPrecisionRoundRange(n, 100, 5);
 
 // TestNeighborNumbersAreEqual({
@@ -199,11 +198,12 @@ loopThruPowersOf10PlusFPErr(20);
 
 // TestNeighborNumbersAreEqual({
 // 	power: {
-// 		kind: "range",
-// 		range: { min: -325, max: -300 },
+// 		kind: "random-range",
+// 		range: { min: -300, max: 300 },
 // 	},
 // 	logLevel: "minimal",
-// 	precisionLevel: "15",
+// 	precisionLevel: "16",
+// 	numOfTests: 20,
 // });
 
 // TestNeighborNumbersAreEqual({
@@ -212,7 +212,7 @@ loopThruPowersOf10PlusFPErr(20);
 // 		range: { min: -200, max: 200 },
 // 	},
 // 	logLevel: "minimal",
-// 	precisionLevel: "16",
+// 	precisionLevel: "15",
 // 	numOfTests: 50,
 // });
 
