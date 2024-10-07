@@ -80,7 +80,7 @@ import { DeepPartial } from "utility-types";
 // TestNeighborNumbersAreEqual({
 // 	power: { kind: "single", single: -309 },
 // 	logLevel: "verbose",
-// 	precisionLevel: "15",
+// 	precisionKind: "16",
 // 	numOfTests: 1,
 // });
 
@@ -89,19 +89,29 @@ import { DeepPartial } from "utility-types";
 // 		kind: "random-range",
 // 		range: { min: -300, max: 300 },
 // 	},
-// 	logLevel: "minimal",
-// 	precisionLevel: "16",
-// 	numOfTests: 20,
+// 	logLevel: "verbose",
+// 	precisionKind: "random",
+// 	numOfTests: 1,
 // });
 
 // TestNeighborNumbersAreEqual({
 // 	power: {
 // 		kind: "random-range",
-// 		range: { min: -200, max: 200 },
+// 		range: { min: -307, max: 307 },
 // 	},
 // 	logLevel: "minimal",
-// 	precisionLevel: "15",
-// 	numOfTests: 50,
+// 	precisionKind: "random",
+// 	numOfTests: 10,
 // });
 
-loopThruPowersOf10PlusFPErr(base => base + 0.1 + 0.7);
+TestNeighborNumbersAreEqual({
+	power: {
+		kind: "random-range",
+		range: { min: -500, max: 500 },
+	},
+	logLevel: "none",
+	precisionKind: "random",
+	numOfTests: 100_000,
+});
+
+// loopThruPowersOf10PlusFPErr(base => base + 0.1 + 0.7);

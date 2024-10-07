@@ -178,7 +178,7 @@ export const testPrec15Or16NeighborNumbersAreEqualOfAnyPowerOfTen = (
 	// 14 $ length => 13 digits -> 15 precision level
 	// 15 $ length => 14 digits -> 16 precision level
 	// Above validation eliminates other lengths
-	const getPrecisionLevel = () => {
+	const getPrecision = () => {
 		switch (baseNumberString.length) {
 			case 14:
 				return 15;
@@ -188,10 +188,14 @@ export const testPrec15Or16NeighborNumbersAreEqualOfAnyPowerOfTen = (
 				throw "Never";
 		}
 	};
-	const precisionLevel = getPrecisionLevel();
+	const precision = getPrecision();
 
 	const expectedAreEqualOutcome: boolean =
-		precisionLevel == 15 ? false : true;
+		precision == 15 ? false : true;
+
+	//////////////////////
+	// Create Test Numbers
+	//////////////////////
 
 	const nums: number[] = [];
 
@@ -204,14 +208,12 @@ export const testPrec15Or16NeighborNumbersAreEqualOfAnyPowerOfTen = (
 		}
 	}
 
-	const getErrorMsg = () => {
-		return (
-			`Unexpected result: baseNumberString: ` +
-			`${baseNumberString}`
-		);
-	};
+	////////////
+	// TEST LOOP
+	////////////
 
 	let maxratio: number = 0;
+	let maxRatioPowerOfTen: number = 0;
 	let passedCount = 0;
 
 	for (let i = 1; i < 100; i++) {
@@ -220,6 +222,19 @@ export const testPrec15Or16NeighborNumbersAreEqualOfAnyPowerOfTen = (
 		const testNumber = i + 1;
 
 		if (a === undefined || b === undefined) throw "Never";
+
+		const updateAccumulators = (ratio: number, areEq: boolean) => {
+			if (!Number.isNaN(ratio)) {
+				if (ratio > maxratio) {
+					maxratio = ratio;
+					maxRatioPowerOfTen = power;
+				}
+				maxratio = Math.max(maxratio, ratio);
+			}
+			if (areEq === expectedAreEqualOutcome) {
+				passedCount++;
+			}
+		};
 
 		switch (loglevel) {
 			case "none":
@@ -230,13 +245,7 @@ export const testPrec15Or16NeighborNumbersAreEqualOfAnyPowerOfTen = (
 						b,
 						expectedAreEqualOutcome
 					);
-
-					if (!Number.isNaN(ratio)) {
-						maxratio = Math.max(maxratio, ratio);
-					}
-					if (areEq === expectedAreEqualOutcome) {
-						passedCount++;
-					}
+					updateAccumulators(ratio, areEq);
 				}
 				break;
 			case "verbose":
@@ -247,19 +256,17 @@ export const testPrec15Or16NeighborNumbersAreEqualOfAnyPowerOfTen = (
 						expectedAreEqualOutcome,
 						testNumber
 					);
-					maxratio = Math.max(maxratio, ratio);
-					if (areEq === expectedAreEqualOutcome) {
-						passedCount++;
-					}
+					updateAccumulators(ratio, areEq);
 				}
 				break;
 		}
 	}
 
-	// for 1 .. 100
+	///////////
+	// REPORT
+	///////////
 
-	// REPORT //
-	////////////
+	const testsCount = 99;
 
 	switch (loglevel) {
 		case "none":
@@ -267,38 +274,31 @@ export const testPrec15Or16NeighborNumbersAreEqualOfAnyPowerOfTen = (
 		case "minimal":
 		case "verbose":
 			{
-				logh("REPORT");
-				const ratioMsg = expectedAreEqualOutcome
-					? `Maximum ratio of delta(a, b)/relEpsilon (->): ${maxratio}%`
-					: `Maximum ratio of relEpsilon/delta(a, b) (<-): ${maxratio}%`;
-				log(ratioMsg);
-				div();
+				if (loglevel === "verbose") {
+					logh("REPORT");
+				}
 
-				const didPassAllTests = passedCount === 99;
+				const didPassAllTests = passedCount === testsCount;
 				const passedOrFailedMsg = didPassAllTests
 					? "PASSED"
 					: "==> FAILED! <==";
 
 				log(
 					`Number base: "${baseNumberString}" x 10^${power}:\n` +
-						`   precision: ${precisionLevel}\n` +
+						`   precision: ${precision}\n` +
 						`   tests passed: (${passedCount}/99) => ` +
 						`${passedOrFailedMsg}`
 				);
 				log(
-					`All tests should match expected 'areEqual(a,b)' ` +
+					`   expected 'areEqual(a,b)' ` +
 						`outcome: ${expectedAreEqualOutcome}`
 				);
-				const msg: string = expectedAreEqualOutcome
-					? "All neighbor numbers with 16 digit precision:\n" +
-					  "   SHOULD BE INDISTINCT AND FALSELY EQUAL"
-					: "All neighbor numbers with 15 digit precision:\n" +
-					  "   SHOULD BE DISTINCT AND NOT EQUAL";
-
-				log(msg);
+				const ratioMsg = expectedAreEqualOutcome
+					? `Maximum ratio of delta(a, b)/relEpsilon (->): ${maxratio}%`
+					: `Maximum ratio of relEpsilon/delta(a, b) (<-): ${maxratio}%`;
+				log(ratioMsg);
 				div();
 				log();
-				div();
 			}
 			break;
 	}
@@ -307,10 +307,121 @@ export const testPrec15Or16NeighborNumbersAreEqualOfAnyPowerOfTen = (
 		baseNumberString,
 		power,
 		expectedAreEqualOutcome,
-		precisionLevel,
 		maxratio,
+		maxRatioPowerOfTen,
 		passedCount,
+		testsCount: testsCount as typeof testsCount,
 	};
+};
+
+type BatchTest = {
+	precision: 15 | 16;
+	numTests: number;
+	numPassed: number;
+	maxRatio: number;
+	maxRatioPowerOfTen: number;
+};
+
+type BatchTestAccumulators = {
+	precision15: BatchTest;
+	precision16: BatchTest;
+};
+
+const updateBatchTestAccs = (
+	precision: 15 | 16,
+	maxratio: number,
+	maxRatioPowerOfTen: number,
+	passedCount: number,
+	testsCount: number,
+	btAcc: BatchTestAccumulators
+) => {
+	const didPass =
+		Math.round((passedCount / testsCount) * 100) === 100;
+	switch (precision) {
+		case 15:
+			if (
+				Number.isFinite(maxratio) &&
+				maxratio > btAcc.precision15.maxRatio
+			) {
+				btAcc.precision15.maxRatio = maxratio;
+				btAcc.precision15.maxRatioPowerOfTen = maxRatioPowerOfTen;
+			}
+			btAcc.precision15.numTests++;
+			btAcc.precision15.numPassed += didPass ? 1 : 0;
+			break;
+		case 16:
+			if (
+				Number.isFinite(maxratio) &&
+				maxratio > btAcc.precision16.maxRatio
+			) {
+				btAcc.precision16.maxRatio = maxratio;
+				btAcc.precision16.maxRatioPowerOfTen = maxRatioPowerOfTen;
+			}
+			btAcc.precision16.numTests++;
+			btAcc.precision16.numPassed += didPass ? 1 : 0;
+			break;
+	}
+};
+
+const logBatchTestResults = (accs: BatchTestAccumulators) => {
+	const logPrecisionDetails = (bt: BatchTest) => {
+		const {
+			precision,
+			maxRatio,
+			maxRatioPowerOfTen,
+			numPassed,
+			numTests,
+		} = bt;
+		const score = (numPassed / numTests) * 100;
+		const digits = Math.floor(Math.log10(numTests)) + 1;
+		const fixedPlaces = digits > 3 ? digits - 3 : 0;
+		// log(`===>digits: ${digits}`);
+		// log(`===>fixedPlaces: ${fixedPlaces}`);
+		const scoreMsg = score.toFixed(fixedPlaces);
+		log(`Precision ${precision}:`);
+		log(`   number of tests: ${formatNum(numTests)}`);
+		log(`   number passed: ${formatNum(numPassed)}`);
+		log(`   score: ${scoreMsg}%`);
+		const ratioMsg =
+			precision === 15
+				? "relEpsilon/delta(a, b) (<-)"
+				: "delta(a, b)/relEpsilon (->)";
+		log(`   max ratio of ${ratioMsg}: ${maxRatio}%`);
+		log(`   max ratio power of ten: 10^${maxRatioPowerOfTen}`);
+	};
+
+	logh("Nearest Neighbor Batch Test Results");
+
+	if (accs.precision15.numTests > 0) {
+		logPrecisionDetails(accs.precision15);
+	}
+	if (accs.precision16.numTests > 0) {
+		logPrecisionDetails(accs.precision16);
+	}
+};
+
+const logBatchTestsHead = () => {
+	div();
+	logh("NEAREST NEIGHBOR BATCH TEST");
+	log("Notes:");
+	log(
+		"   All neighbor numbers with 15 digit precision:\n" +
+			"      SHOULD BE DISTINCT AND NOT EQUAL"
+	);
+
+	log();
+	log(
+		"   All neighbor numbers with 16 digit precision:\n" +
+			"      SHOULD BE INDISTINCT AND CONSIDERED EQUAL"
+	);
+	log();
+	log(
+		"   This is the method used by the 'areEqual(a,b)' function\n" +
+			"   to filter out floating-point rounding errors."
+	);
+
+	div();
+	log();
 };
 
 /**
@@ -318,7 +429,7 @@ export const testPrec15Or16NeighborNumbersAreEqualOfAnyPowerOfTen = (
  */
 type ArgsTestNeighborNumbers = {
 	/**
-	 * The precision level to test:
+	 * The precision kind to test:
 	 *
 	 * `15`: all neighbor numbers are DISTINCT:
 	 *  `areEqual(a,b)` -> `true`
@@ -330,7 +441,7 @@ type ArgsTestNeighborNumbers = {
 	 *
 	 * Default: `random`
 	 */
-	precisionLevel: "15" | "16" | "random";
+	precisionKind: "15" | "16" | "random";
 	/**
 	 * Related to Power-of-Ten to test
 	 */
@@ -384,8 +495,12 @@ type ArgsTestNeighborNumbers = {
 export const TestNeighborNumbersAreEqual = (
 	args: DeepPartial<ArgsTestNeighborNumbers>
 ) => {
+	///////////////////////////////////////////
+	// Handle default args and merged overrides
+	///////////////////////////////////////////
+
 	const defaultTestNeighborNumbers: ArgsTestNeighborNumbers = {
-		precisionLevel: "random",
+		precisionKind: "random",
 		power: {
 			kind: "random-range",
 			single: -1,
@@ -403,9 +518,18 @@ export const TestNeighborNumbersAreEqual = (
 		args
 	) as ArgsTestNeighborNumbers;
 
-	const { precisionLevel, power, logLevel, numOfTests } = mergedArgs;
+	const {
+		precisionKind: precisionLevel,
+		power,
+		logLevel,
+		numOfTests,
+	} = mergedArgs;
 
-	const getTestCount = () => {
+	///////////////////
+	// Helper Functions
+	///////////////////
+
+	const getBatchTestCount = () => {
 		const { kind } = power;
 		switch (kind) {
 			case "single":
@@ -419,70 +543,115 @@ export const TestNeighborNumbersAreEqual = (
 		}
 	};
 
-	const testCount = getTestCount();
-	try {
-		for (let i = 0; i < testCount; i++) {
-			const getPrecision = (): 15 | 16 => {
-				switch (precisionLevel) {
-					case "15":
-						return 15;
-					case "16":
-						return 16;
-					case "random":
-						return randomInteger(15, 16) as 15 | 16;
-				}
-			};
-
-			const precision = getPrecision();
-
-			const getBaseStringPrecisionDigits = () => {
-				switch (precision) {
-					case 15:
-						return 13;
-					case 16:
-						return 14;
-				}
-			};
-
-			const getNumberPowerOfTen = () => {
-				const { kind } = power;
-				switch (kind) {
-					case "single": {
-						const { single } = power;
-						return single;
-					}
-					case "random-range": {
-						const { min, max } = power.range;
-						return randomInteger(min, max);
-					}
-					case "range": {
-						const { min } = power.range;
-						return min + i;
-					}
-				}
-			};
-
-			const baseString =
-				generateRandom13Or14SigDigitNumberBaseString(
-					getBaseStringPrecisionDigits()
-				);
-
-			const powerOfTen = getNumberPowerOfTen();
-
-			div();
-			log(`Batch Test (${formatNum(i + 1)}/${testCount})`);
-			log(
-				`   Power-of-ten: ${powerOfTen}, Precision: ${precision}`
-			);
-			div();
-
-			testPrec15Or16NeighborNumbersAreEqualOfAnyPowerOfTen(
-				baseString,
-				powerOfTen,
-				logLevel
-			);
+	const getPrecision = (): 15 | 16 => {
+		switch (precisionLevel) {
+			case "15":
+				return 15;
+			case "16":
+				return 16;
+			case "random":
+				return randomInteger(15, 16) as 15 | 16;
 		}
-	} catch (error) {
-		log(getError(error));
-	}
+	};
+	const getBaseStringPrecisionDigits = (precision: 15 | 16) => {
+		switch (precision) {
+			case 15:
+				return 13;
+			case 16:
+				return 14;
+		}
+	};
+
+	const getNumberPowerOfTen = (index: number) => {
+		const { kind } = power;
+		switch (kind) {
+			case "single": {
+				const { single } = power;
+				return single;
+			}
+			case "random-range": {
+				const { min, max } = power.range;
+				return randomInteger(min, max);
+			}
+			case "range": {
+				const { min } = power.range;
+				return min + index;
+			}
+		}
+	};
+
+	////////////////////////
+	// Batch Test Loop setup
+	////////////////////////
+
+	const batchTestCount = getBatchTestCount();
+
+	const accumulators: BatchTestAccumulators = {
+		precision15: {
+			precision: 15,
+			numTests: 0,
+			numPassed: 0,
+			maxRatio: 0,
+			maxRatioPowerOfTen: 0,
+		},
+		precision16: {
+			precision: 16,
+			numTests: 0,
+			numPassed: 0,
+			maxRatio: 0,
+			maxRatioPowerOfTen: 0,
+		},
+	};
+
+	//////////////////
+	// BATCH TEST LOOP
+	//////////////////
+
+	logBatchTestsHead();
+
+	for (let i = 0; i < batchTestCount; i++) {
+		const precision = getPrecision();
+
+		const baseString = generateRandom13Or14SigDigitNumberBaseString(
+			getBaseStringPrecisionDigits(precision)
+		);
+
+		const powerOfTen = getNumberPowerOfTen(i);
+
+		switch (logLevel) {
+			case "none":
+				break;
+			case "minimal":
+			case "verbose":
+				div();
+				log(`Batch Test (${formatNum(i + 1)}/${batchTestCount})`);
+				log(
+					`   Power-of-ten: ${powerOfTen}, Precision: ${precision}`
+				);
+				div();
+				break;
+		}
+
+		const {
+			maxratio,
+			maxRatioPowerOfTen,
+			passedCount,
+			testsCount,
+		} = testPrec15Or16NeighborNumbersAreEqualOfAnyPowerOfTen(
+			baseString,
+			powerOfTen,
+			logLevel
+		);
+
+		updateBatchTestAccs(
+			precision,
+			maxratio,
+			maxRatioPowerOfTen,
+			passedCount,
+			testsCount,
+			accumulators
+		);
+	} // Batch Test Loop
+
+	logBatchTestResults(accumulators);
 };
