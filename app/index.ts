@@ -78,10 +78,10 @@ import { DeepPartial } from "utility-types";
 // });
 
 // TestNeighborNumbersAreEqual({
-// 	power: { kind: "single", single: -309 },
-// 	logLevel: "verbose",
-// 	precisionKind: "16",
-// 	numOfTests: 1,
+// 	power: { kind: "single", single: 307 },
+// 	logLevel: "none",
+// 	precisionKind: "15",
+// 	numOfTests: 100_000,
 // });
 
 // TestNeighborNumbersAreEqual({
@@ -104,13 +104,23 @@ import { DeepPartial } from "utility-types";
 // 	numOfTests: 10,
 // });
 
+// TestNeighborNumbersAreEqual({
+// 	power: {
+// 		kind: "random-range",
+// 		range: { min: -500, max: 500 },
+// 	},
+// 	logLevel: "none",
+// 	precisionKind: "random",
+// 	numOfTests: 100_000,
+// });
+
 TestNeighborNumbersAreEqual({
 	power: {
 		kind: "random-range",
-		range: { min: -500, max: 500 },
+		range: { min: -320, max: 320 },
 	},
 	logLevel: "none",
-	precisionKind: "random",
+	precisionKind: "15",
 	numOfTests: 100_000,
 });
 

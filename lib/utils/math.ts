@@ -156,8 +156,8 @@ export function getRelativeEspilon(n: number): number {
 	}
 
 	const logN = Math.floor(Math.log10(n)) + 1;
-	const relEpsilon = 3 * Number.EPSILON * 10 ** logN;
-	return relEpsilon;
+	const relEpsilon = 2 * Number.EPSILON * 10 ** logN;
+	return relEpsilon > 1e-323 ? relEpsilon : 0;
 }
 
 /**
@@ -203,10 +203,10 @@ export function areEqual(a: number, b: number): boolean {
 			if (logA !== logB) {
 				return false;
 			}
-			const relativeEpsilon = 3 * Number.EPSILON * 10 ** logA;
+			const relativeEpsilon = 2 * Number.EPSILON * 10 ** logA;
 			// note: tiny numbers < 1e-308 can have a relEps of 0
 			// therefore we consider them indistinct and equal
-			return relativeEpsilon > 0
+			return relativeEpsilon > 1e-323
 				? Math.abs(a - b) < relativeEpsilon
 				: true;
 	}

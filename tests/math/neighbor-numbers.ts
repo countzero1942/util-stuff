@@ -90,20 +90,12 @@ const logAndRetrieveAreEqualDetails = (
 			: `---1.23456789012345`;
 
 	log(digitCountingStr);
-	// const relEps = getRelativeEspilon(a);
-	// const deltaAB = Math.abs(a - b);
-	// const ratio = expectedIsEqual
-	// 	? Math.round((deltaAB / relEps) * 100)
-	// 	: Math.round((relEps / deltaAB) * 100);
-	log(
-		`delta(a - b) =  ${deltaAB} : <= relEps: ${deltaAB <= relEps}`
-	);
+	log(`delta(a - b) =  ${deltaAB}`);
 	log(`relEpsilon:     ${relEps}`);
 	const ratioMsg = expectedAreEqualOutcome
 		? `   ratio of delta(a,b)/relEpisolon: ${ratio}%`
 		: `   ratio of relEpisolon/delta(a,b): ${ratio}%`;
 	log(ratioMsg);
-	// const isEq = areEqual(a, b);
 	logln(20);
 	log(`===(${testNumber}/100) ARE EQUAL: ${areEq}`);
 	div();
@@ -166,9 +158,6 @@ export const testPrec15Or16NeighborNumbersAreEqualOfAnyPowerOfTen = (
 	power: number = -1,
 	loglevel: "none" | "minimal" | "verbose" = "verbose"
 ) => {
-	// const s = "1.234567895123"; => 13 SigDig & 14 char length
-	//            1 23456789012345678901234567890
-
 	const validNumberString = /^[1-9]\.\d{12,13}$/;
 
 	if (!validNumberString.test(baseNumberString)) {
@@ -193,9 +182,9 @@ export const testPrec15Or16NeighborNumbersAreEqualOfAnyPowerOfTen = (
 	const expectedAreEqualOutcome: boolean =
 		precision == 15 ? false : true;
 
-	//////////////////////
+	////////////////////////
 	// Create Test Numbers
-	//////////////////////
+	////////////////////////
 
 	const nums: number[] = [];
 
@@ -208,9 +197,9 @@ export const testPrec15Or16NeighborNumbersAreEqualOfAnyPowerOfTen = (
 		}
 	}
 
-	////////////
+	//////////////
 	// TEST LOOP
-	////////////
+	//////////////
 
 	let maxratio: number = 0;
 	let maxRatioPowerOfTen: number = 0;
@@ -320,6 +309,7 @@ type BatchTest = {
 	numPassed: number;
 	maxRatio: number;
 	maxRatioPowerOfTen: number;
+	failedPowers: Set<number>;
 };
 
 type BatchTestAccumulators = {
@@ -333,32 +323,32 @@ const updateBatchTestAccs = (
 	maxRatioPowerOfTen: number,
 	passedCount: number,
 	testsCount: number,
+	powerOfTen: number,
 	btAcc: BatchTestAccumulators
 ) => {
 	const didPass =
 		Math.round((passedCount / testsCount) * 100) === 100;
+	const updateBatchTest = (batchTest: BatchTest) => {
+		if (
+			Number.isFinite(maxratio) &&
+			maxratio > batchTest.maxRatio
+		) {
+			batchTest.maxRatio = maxratio;
+			batchTest.maxRatioPowerOfTen = maxRatioPowerOfTen;
+		}
+		batchTest.numTests++;
+		batchTest.numPassed += didPass ? 1 : 0;
+		if (!didPass) {
+			batchTest.failedPowers.add(powerOfTen);
+		}
+	};
+
 	switch (precision) {
 		case 15:
-			if (
-				Number.isFinite(maxratio) &&
-				maxratio > btAcc.precision15.maxRatio
-			) {
-				btAcc.precision15.maxRatio = maxratio;
-				btAcc.precision15.maxRatioPowerOfTen = maxRatioPowerOfTen;
-			}
-			btAcc.precision15.numTests++;
-			btAcc.precision15.numPassed += didPass ? 1 : 0;
+			updateBatchTest(btAcc.precision15);
 			break;
 		case 16:
-			if (
-				Number.isFinite(maxratio) &&
-				maxratio > btAcc.precision16.maxRatio
-			) {
-				btAcc.precision16.maxRatio = maxratio;
-				btAcc.precision16.maxRatioPowerOfTen = maxRatioPowerOfTen;
-			}
-			btAcc.precision16.numTests++;
-			btAcc.precision16.numPassed += didPass ? 1 : 0;
+			updateBatchTest(btAcc.precision16);
 			break;
 	}
 };
@@ -371,12 +361,11 @@ const logBatchTestResults = (accs: BatchTestAccumulators) => {
 			maxRatioPowerOfTen,
 			numPassed,
 			numTests,
+			failedPowers,
 		} = bt;
 		const score = (numPassed / numTests) * 100;
 		const digits = Math.floor(Math.log10(numTests)) + 1;
 		const fixedPlaces = digits > 3 ? digits - 3 : 0;
-		// log(`===>digits: ${digits}`);
-		// log(`===>fixedPlaces: ${fixedPlaces}`);
 		const scoreMsg = score.toFixed(fixedPlaces);
 		log(`Precision ${precision}:`);
 		log(`   number of tests: ${formatNum(numTests)}`);
@@ -388,6 +377,14 @@ const logBatchTestResults = (accs: BatchTestAccumulators) => {
 				: "delta(a, b)/relEpsilon (->)";
 		log(`   max ratio of ${ratioMsg}: ${maxRatio}%`);
 		log(`   max ratio power of ten: 10^${maxRatioPowerOfTen}`);
+		if (failedPowers.size > 0) {
+			log(`   number of unique failures: ${failedPowers.size}:`);
+			const arr = Array.from(failedPowers).sort();
+
+			for (const failedPower of arr) {
+				log(`      10^${failedPower}`);
+			}
+		}
 	};
 
 	logh("Nearest Neighbor Batch Test Results");
@@ -495,9 +492,9 @@ type ArgsTestNeighborNumbers = {
 export const TestNeighborNumbersAreEqual = (
 	args: DeepPartial<ArgsTestNeighborNumbers>
 ) => {
-	///////////////////////////////////////////
+	/////////////////////////////////////////////
 	// Handle default args and merged overrides
-	///////////////////////////////////////////
+	/////////////////////////////////////////////
 
 	const defaultTestNeighborNumbers: ArgsTestNeighborNumbers = {
 		precisionKind: "random",
@@ -525,9 +522,9 @@ export const TestNeighborNumbersAreEqual = (
 		numOfTests,
 	} = mergedArgs;
 
-	///////////////////
+	/////////////////////
 	// Helper Functions
-	///////////////////
+	/////////////////////
 
 	const getBatchTestCount = () => {
 		const { kind } = power;
@@ -580,9 +577,9 @@ export const TestNeighborNumbersAreEqual = (
 		}
 	};
 
-	////////////////////////
+	//////////////////////////
 	// Batch Test Loop setup
-	////////////////////////
+	//////////////////////////
 
 	const batchTestCount = getBatchTestCount();
 
@@ -593,6 +590,7 @@ export const TestNeighborNumbersAreEqual = (
 			numPassed: 0,
 			maxRatio: 0,
 			maxRatioPowerOfTen: 0,
+			failedPowers: new Set<number>(),
 		},
 		precision16: {
 			precision: 16,
@@ -600,12 +598,13 @@ export const TestNeighborNumbersAreEqual = (
 			numPassed: 0,
 			maxRatio: 0,
 			maxRatioPowerOfTen: 0,
+			failedPowers: new Set<number>(),
 		},
 	};
 
-	//////////////////
+	////////////////////
 	// BATCH TEST LOOP
-	//////////////////
+	////////////////////
 
 	logBatchTestsHead();
 
@@ -649,6 +648,7 @@ export const TestNeighborNumbersAreEqual = (
 			maxRatioPowerOfTen,
 			passedCount,
 			testsCount,
+			powerOfTen,
 			accumulators
 		);
 	} // Batch Test Loop
