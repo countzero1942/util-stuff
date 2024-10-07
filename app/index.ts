@@ -73,9 +73,9 @@ import { DeepPartial } from "utility-types";
 // 	power: { kind: "single", single: -305 },
 // });
 
-// TestNeighborNumbersAreEqual({
-// 	power: { kind: "single", single: -1 },
-// });
+TestNeighborNumbersAreEqual({
+	power: { kind: "single", single: -1 },
+});
 
 // TestNeighborNumbersAreEqual({
 // 	power: { kind: "single", single: 307 },
@@ -114,14 +114,14 @@ import { DeepPartial } from "utility-types";
 // 	numOfTests: 100_000,
 // });
 
-TestNeighborNumbersAreEqual({
-	power: {
-		kind: "random-range",
-		range: { min: -320, max: 320 },
-	},
-	logLevel: "none",
-	precisionKind: "15",
-	numOfTests: 100_000,
-});
+// TestNeighborNumbersAreEqual({
+// 	power: {
+// 		kind: "random-range",
+// 		range: { min: -308, max: 307 },
+// 	},
+// 	logLevel: "none",
+// 	precisionKind: "random",
+// 	numOfTests: 100_000,
+// });
 
 // loopThruPowersOf10PlusFPErr(base => base + 0.1 + 0.7);

@@ -110,7 +110,7 @@ const logAndRetrieveAreEqualDetails = (
 	};
 };
 
-type LogLevel = "none" | "minimal" | "verbose";
+export type LogLevel = "none" | "minimal" | "verbose";
 
 const getCantUseBaseStringError = (baseNumberString: string) => {
 	return `
@@ -395,6 +395,7 @@ const logBatchTestResults = (accs: BatchTestAccumulators) => {
 	if (accs.precision16.numTests > 0) {
 		logPrecisionDetails(accs.precision16);
 	}
+	div();
 };
 
 const logBatchTestsHead = () => {
@@ -515,12 +516,7 @@ export const TestNeighborNumbersAreEqual = (
 		args
 	) as ArgsTestNeighborNumbers;
 
-	const {
-		precisionKind: precisionLevel,
-		power,
-		logLevel,
-		numOfTests,
-	} = mergedArgs;
+	const { precisionKind, power, logLevel, numOfTests } = mergedArgs;
 
 	/////////////////////
 	// Helper Functions
@@ -541,7 +537,7 @@ export const TestNeighborNumbersAreEqual = (
 	};
 
 	const getPrecision = (): 15 | 16 => {
-		switch (precisionLevel) {
+		switch (precisionKind) {
 			case "15":
 				return 15;
 			case "16":
