@@ -135,23 +135,28 @@ function isZero(n: number) {
  * in: 0.1 <= n <= 1.
  *
  * The relative epsilon is Number.Epsilon shifted to
- * the number's ten-based power.
+ * the number's ten-based power. If the power is -1
+ * it is multiplied by 10^0.
  *
- * @param n
- * @returns
+ * @param n The number to get the relative epsilon of
+ * @returns The relative epsilson
  */
 export function getRelativeEspilon(n: number): number {
 	// Number.Epsilon is for 15-prec numbers in: 0.1 <= n < 1
 	// So this is for numbers with a 10-based power of -1
-	// Therefore ceil is used to shift the -1 power to 0 to
+	// Therefore floor + 1 is used to shift the -1 power to 0 to
 	// preserve the default epsilon
 	// And this will also shift all other powers-of-ten and yeild
 	// the proper relative epsilon
 
 	// avoid log(0)! Compare against default epsilon in this case
 
-	const log = Math.ceil(Math.log10(n));
-	const relEpsilon = 2 * Number.EPSILON * 10 ** log;
+	if (n === 0) {
+		return Number.EPSILON;
+	}
+
+	const logN = Math.floor(Math.log10(n)) + 1;
+	const relEpsilon = 2 * Number.EPSILON * 10 ** logN;
 	return relEpsilon;
 }
 
@@ -174,31 +179,10 @@ export function getRelativeEspilon(n: number): number {
  * @param b Second number to be compared
  * @returns True if numbers are equal within 15 digits of precision.
  */
-export function areEqual3(a: number, b: number): boolean {
-	// Number.Epsilon is for 15-prec numbers in: 0.1 <= n < 1
-	// So this is for numbers with a 10-based power of -1
-	// Therefore ceil is used to shift the -1 power to 0 to
-	// preserve the default epsilon
-	// And this will also shift all other powers-of-ten and yeild
-	// the proper relative epsilon
-
-	// avoid log(0)! Compare against default epsilon in this case
-
-	const logA = Math.ceil(Math.log10(a));
-	const logB = Math.ceil(Math.log10(b));
-	// if (logA !== logB) {
-	// 	return false;
-	// }
-	const relativeEpsilon = 2 * Number.EPSILON * 10 ** logA;
-	return relativeEpsilon > 0
-		? Math.abs(a - b) < relativeEpsilon
-		: true;
-}
-
 export function areEqual(a: number, b: number): boolean {
 	// Number.Epsilon is for 15-prec numbers in: 0.1 <= n < 1
 	// So this is for numbers with a 10-based power of -1
-	// Therefore ceil is used to shift the -1 power to 0 to
+	// Therefore floor + 1 is used to shift the -1 power to 0 to
 	// preserve the default epsilon
 	// And this will also shift all other powers-of-ten and yeild
 	// the proper relative epsilon
@@ -206,34 +190,22 @@ export function areEqual(a: number, b: number): boolean {
 	// avoid log(0)! Compare against default epsilon in this case
 
 	switch (true) {
-		// simple equality check: checks for 0
+		// simple equality check: also checks for 0
 		case a === b:
 			return true;
 		// XOR: if one is zero the other is non-zero
 		case a === 0 || b === 0:
 			return false;
-		// both a and b are non-zero: log(n) is safe
+		// case: both a and b are non-zero: log(n) is safe
 		default:
-			const logA = Math.ceil(Math.log10(a));
-			const logB = Math.ceil(Math.log10(b));
-			// log(`===> a: ${a}, logA: ${logA}`);
-			// log(`===> b: ${b}, logA: ${logB}`);
-			if (Math.abs(logA - logB) > 1) {
+			const logA = Math.floor(Math.log10(a)) + 1;
+			const logB = Math.floor(Math.log10(b)) + 1;
+			if (logA !== logB) {
 				return false;
 			}
-			// if (logA !== logB) {
-			// 	return false;
-			// }
-			const logX = Math.max(logA, logB);
-			// log(`===> logX: ${logX}`);
-			const relativeEpsilon = 2 * Number.EPSILON * 10 ** logX;
-			// log(`===> relEps: ${relativeEpsilon}`);
-			// log(`===> D(a,b): ${Math.abs(a - b)}`);
-			// log(
-			// 	`===> D(a,b)/relEps ${Math.round(
-			// 		(Math.abs(a - b) / relativeEpsilon) * 100
-			// 	)}%`
-			// );
+			const relativeEpsilon = 2 * Number.EPSILON * 10 ** logA;
+			// note: tiny numbers < 1e-308 can have a relEps of 0
+			// therefore we consider them indistinct and equal
 			return relativeEpsilon > 0
 				? Math.abs(a - b) < relativeEpsilon
 				: true;
