@@ -1,3 +1,5 @@
+import { ReadonlyTuple } from "type-fest";
+
 const getPrototype = (item: any) => {
 	return Object.prototype.toString.call(item).slice(8, -1);
 };
@@ -173,23 +175,33 @@ export type ArrayLengthMutationKeys =
  * @param T The array element type
  * @param L The length of the fixed array: a literal number type
  */
-export type FixedLengthArray<
-	T,
-	L extends number,
-	TObj = L extends 2
-		? [T, T, ...ReadonlyArray<T>]
-		: L extends 3
-		? [T, T, T, ...ReadonlyArray<T>]
-		: L extends 4
-		? [T, T, T, T, ...ReadonlyArray<T>]
-		: L extends 5
-		? [T, T, T, T, T, ...ReadonlyArray<T>]
-		: [T, ...ReadonlyArray<T>]
-> = Pick<TObj, Exclude<keyof TObj, ArrayLengthMutationKeys>> & {
-	readonly length: L;
-	readonly [I: number]: T;
-	[Symbol.iterator]: () => IterableIterator<T>;
-};
+// export type FixedLengthArray<
+// 	T,
+// 	L extends number,
+// 	TObj = L extends 2
+// 		? [T, T, ...ReadonlyArray<T>]
+// 		: L extends 3
+// 		? [T, T, T, ...ReadonlyArray<T>]
+// 		: L extends 4
+// 		? [T, T, T, T, ...ReadonlyArray<T>]
+// 		: L extends 5
+// 		? [T, T, T, T, T, ...ReadonlyArray<T>]
+// 		: L extends 6
+// 		? [T, T, T, T, T, T, ...ReadonlyArray<T>]
+// 		: L extends 7
+// 		? [T, T, T, T, T, T, T, ...ReadonlyArray<T>]
+// 		: L extends 8
+// 		? [T, T, T, T, T, T, T, T, ...ReadonlyArray<T>]
+// 		: L extends 9
+// 		? [T, T, T, T, T, T, T, T, T, ...ReadonlyArray<T>]
+// 		: L extends 10
+// 		? [T, T, T, T, T, T, T, T, T, T, ...ReadonlyArray<T>]
+// 		: [T, ...ReadonlyArray<T>]
+// > = Pick<TObj, Exclude<keyof TObj, ArrayLengthMutationKeys>> & {
+// 	readonly length: L;
+// 	readonly [I: number]: T;
+// 	[Symbol.iterator]: () => IterableIterator<T>;
+// };
 
 /**
  * Casts a dynamic array to a fixed array based on its length.
@@ -202,10 +214,26 @@ export type FixedLengthArray<
  * @param length The length to cast the array to
  * @returns The array cast to FixedLengthArray type
  */
-export const toFixedArray = <
+// export const toFixedArray = <
+// 	L extends number,
+// 	TArray extends readonly any[],
+// 	T extends TArray[number]
+// >(
+// 	arr: TArray,
+// 	length: L
+// ) => {
+// 	if (length > arr.length) {
+// 		throw RangeError(
+// 			"FixedLengthArray L greater than 'arr.length'"
+// 		);
+// 	}
+
+// 	return arr as unknown as FixedLengthArray<T, L>;
+// };
+
+export const toReadonlyTuple = <
 	L extends number,
-	TArray extends readonly any[],
-	T extends TArray[number]
+	TArray extends readonly any[]
 >(
 	arr: TArray,
 	length: L
@@ -216,5 +244,5 @@ export const toFixedArray = <
 		);
 	}
 
-	return arr as unknown as FixedLengthArray<T, L>;
+	return arr as unknown as ReadonlyTuple<TArray, L>;
 };

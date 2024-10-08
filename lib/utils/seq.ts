@@ -1,5 +1,4 @@
-import { FixedLengthArray } from "@/utils/types";
-import { log } from "console";
+import { log } from "@/utils/log";
 
 /**
  * Seq base class. Holds functional methods: 'map', 'filter', etc.
@@ -182,22 +181,11 @@ export abstract class Seq<T> {
 		return v;
 	}
 
-	public accumulate<TValue>(
+	public accum<TValue>(
 		accStart: TValue,
-		fn: (acc: TValue) => TValue
+		fn: (acc: TValue, value: T) => TValue
 	) {
-		let v = accStart;
-		for (const x of this) {
-			v = fn(v);
-		}
-		return v;
-	}
-
-	public accSeq<TValue>(
-		accStart: TValue,
-		fn: (acc: TValue) => TValue
-	) {
-		return new AccumulateSeq(this, accStart, fn);
+		return new AccumSeq(this, accStart, fn);
 	}
 }
 
@@ -586,7 +574,7 @@ export class ZipSeq<TOut> extends Seq<TOut> {
 	}
 }
 
-export class AccumulateSeq<TIn, TValue> extends Seq<TValue> {
+export class AccumSeq<TIn, TValue> extends Seq<TValue> {
 	/**
 	 * MapSeq constructor.
 	 *
@@ -596,16 +584,16 @@ export class AccumulateSeq<TIn, TValue> extends Seq<TValue> {
 	constructor(
 		public readonly seq: Seq<TIn>,
 		public readonly start: TValue,
-		public readonly fn: (acc: TValue) => TValue
+		public readonly fn: (acc: TValue, value: TIn) => TValue
 	) {
 		super();
 	}
 
 	public override *gen() {
-		let current = this.start;
-		for (const _ of this.seq) {
-			yield current;
-			current = this.fn(current);
+		let acc = this.start;
+		for (const value of this.seq) {
+			acc = this.fn(acc, value);
+			yield acc;
 		}
 	}
 }

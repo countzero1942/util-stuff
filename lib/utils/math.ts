@@ -211,3 +211,19 @@ export function areEqual(a: number, b: number): boolean {
 				: true;
 	}
 }
+
+/**
+ * Tests for even numbers.
+ *
+ * @param n The number to test for even.
+ * @returns True if the number 'n' is even
+ */
+export const isEven = (n: number) => n % 2 === 0;
+
+/**
+ * Tests for odd numbers.
+ *
+ * @param n The number to test for odd.
+ * @returns True if the number 'n' is odd
+ */
+export const isOdd = (n: number) => n % 2 === 1;

@@ -7,7 +7,7 @@ import {
 	SeqType,
 	ZipSeq,
 } from "@/utils/seq";
-import { toFixedArray } from "@/utils/types";
+import { ReadonlyTuple } from "type-fest";
 
 const div = () => {
 	logln(40);
@@ -87,8 +87,9 @@ function zipmany<TOut>(
 	return valuesArray;
 }
 
-const logZipSeqsWithFunction = (seqs: readonly Seq<any>[]) => {
-	const [seq1, seq2, seq3, seq4, seq5] = toFixedArray(seqs, 5);
+const logZipSeqsWithFunction = (seqs: Seq<any>[]) => {
+	const [seq1, seq2, seq3, seq4, seq5] =
+		seqs as unknown as ReadonlyTuple<Seq<any>, 5>;
 
 	for (const seq of seqs) {
 		seq.log();
@@ -157,7 +158,7 @@ export const testZipManyProtoToArray = () => {
 
 	logh("Test Zip Many ProtoToArray");
 
-	const seqs = [seq1, seq2, seq3, seq4, seq5, seq6];
+	const seqs = [seq1, seq2, seq3, seq4, seq5];
 
 	logZipSeqsWithFunction(seqs);
 };

@@ -206,11 +206,9 @@ export const testPrec15Or16NeighborNumbersAreEqualOfAnyPowerOfTen = (
 	let passedCount = 0;
 
 	for (let i = 1; i < 100; i++) {
-		const a = nums[i - 1];
-		const b = nums[i];
+		const a = nums[i - 1] as number;
+		const b = nums[i] as number;
 		const testNumber = i + 1;
-
-		if (a === undefined || b === undefined) throw "Never";
 
 		const updateAccumulators = (ratio: number, areEq: boolean) => {
 			if (!Number.isNaN(ratio)) {

@@ -27,8 +27,16 @@ import {
 	testZipManyProtoToArray,
 	testZipManyProtoUnevenAndEmptySeqsToArray,
 	testZipManyProtoUnevenSeqsToArray,
-} from "@/app/seq-zip";
-import { logZipThreeSeq, logZipTwoSeq } from "@/app/seq-zip-test";
+} from "@/app/seq-zip-old-proto";
+import {
+	logZip2Seq,
+	logZip3Seq,
+	logZip7bSeq,
+	logZip7Seq,
+	logZip8bSeq,
+	logZip8Seq,
+	logZip9Seq,
+} from "@/app/seq-zip-test";
 import { loopThruPowersOf10PlusFPErr } from "@/tests/math/FP-error-tests";
 import { TestNeighborNumbersAreEqual } from "@/tests/math/neighbor-numbers";
 import { getError } from "@/utils/error";
@@ -43,7 +51,6 @@ import {
 } from "@/utils/math";
 import { MathProdSeq, NumSeq, Seq } from "@/utils/seq";
 import { formatNum } from "@/utils/string";
-import { toFixedArray } from "@/utils/types";
 import { getRandomValues } from "crypto";
 import { merge } from "moderndash";
 import test from "node:test";
@@ -79,4 +86,16 @@ import { DeepPartial } from "utility-types";
 // logReduceFib(12);
 // logFibSeq(12);
 // logFibTriFac(12);
-logFibTriSquare(36);
+//logFibTriSquare(36);
+
+// logZip2Seq(20);
+// logZip3Seq(20);
+// logZip7Seq(20);
+// div();
+// log();
+// div();
+// logZip7Seq(30);
+// logZip7bSeq(20);
+// logZip8Seq(20);
+// logZip8Seq(20);
+logZip9Seq(12);

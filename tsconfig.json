@@ -16,7 +16,7 @@
 		"noImplicitAny": true,
 		"esModuleInterop": true,
 		"resolveJsonModule": true,
-		"skipLibCheck": false /* Skip type checking all .d.ts files. */,
+		"skipLibCheck": true,
 		"moduleResolution": "Node",
 		"baseUrl": ".",
 		"paths": {

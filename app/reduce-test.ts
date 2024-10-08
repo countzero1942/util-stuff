@@ -1,7 +1,7 @@
 import { NumSeq } from "@/utils/seq";
 import { log } from "console";
 
-export const reduceTriangular = (n: number) => {
+const reduceTriangular = (n: number) => {
 	const triangular = NumSeq.count(n).reduce(
 		0,
 		(acc, current) => acc + current
@@ -40,7 +40,7 @@ export const logReduceFib = (n: number) => {
 
 export const logFibSeq = (n: number) => {
 	const seq1 = NumSeq.from(0, n);
-	const seqFib = seq1.accSeq(
+	const seqFib = seq1.accumSeq(
 		{ count: 0, prev: 1, current: 0 },
 		({ count, prev, current }) => {
 			return {
@@ -54,7 +54,7 @@ export const logFibSeq = (n: number) => {
 };
 
 export const logFibTriFac = (n: number) => {
-	const seq = NumSeq.count(n).accSeq(
+	const seq = NumSeq.count(n).accumSeq(
 		{
 			count: 1,
 			prevFib: 0,
@@ -77,7 +77,7 @@ export const logFibTriFac = (n: number) => {
 };
 
 export const logFibTriSquare = (n: number) => {
-	const seq = NumSeq.count(n).accSeq(
+	const seq = NumSeq.count(n).accumSeq(
 		{ count: 1, prevFib: 0, fibonacci: 1, triangle: 1, square: 1 },
 		({ count, prevFib, fibonacci, triangle }) => {
 			const next = count + 1;
