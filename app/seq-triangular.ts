@@ -3,7 +3,7 @@ import { fixedRound } from "@/utils/math";
 import { MathSumSeq, NumSeq, Seq } from "@/utils/seq";
 import { formatNum } from "@/utils/string";
 
-const sumOfDigits = (x: number) => {
+export const sumOfDigits = (x: number): number => {
 	const s = x.toString();
 	let sum = 0;
 	for (const sd of s) {
@@ -16,12 +16,12 @@ const sumOfDigits = (x: number) => {
 	return sumOfDigits(sum);
 };
 
-const isPerfectSquare = (x: number) => {
+export const isPerfectSquare = (x: number) => {
 	const r = fixedRound(Math.sqrt(x), 12);
 	return r === Math.floor(r);
 };
 
-const isPerfectCube = (x: number) => {
+export const isPerfectCube = (x: number) => {
 	const r = fixedRound(Math.cbrt(x), 12);
 	return r === Math.floor(r);
 };

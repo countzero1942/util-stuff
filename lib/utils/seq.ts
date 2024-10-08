@@ -79,12 +79,28 @@ export abstract class Seq<T> {
 		return new TakeSeq(this, takeCount);
 	}
 
-	// TSeqA extends Seq<any>
-	public zip<TSeqB extends Seq<any>, TOut>(
-		seqB: TSeqB,
-		fn: (a: T, b: SeqType<TSeqB>) => TOut
-	) {
-		return new ZipSeq(this, seqB, fn);
+	public zip<T2, T3, T4, T5, TOut>(
+		seqs: [Seq<T2>, Seq<T3>, Seq<T4>, Seq<T5>],
+		fn: (a: T, b: T2, c: T3, d: T4, e: T5) => TOut
+	): ZipSeq<TOut>;
+	public zip<T2, T3, T4, TOut>(
+		seqs: [Seq<T2>, Seq<T3>, Seq<T4>],
+		fn: (a: T, b: T2, c: T3, d: T4) => TOut
+	): ZipSeq<TOut>;
+	public zip<T2, T3, TOut>(
+		seqs: [Seq<T2>, Seq<T3>],
+		fn: (a: T, b: T2, c: T3) => TOut
+	): ZipSeq<TOut>;
+	public zip<T2, TOut>(
+		seqs: [Seq<T2>],
+		fn: (a: T, b: T2) => TOut
+	): ZipSeq<TOut>;
+	public zip<TOut>(
+		seqs: Seq<any>[],
+		fn: (...args: any) => TOut
+	): ZipSeq<TOut> {
+		const allSeqs: Seq<any>[] = [this, ...seqs];
+		return new ZipSeq(allSeqs, fn);
 	}
 
 	public first() {
@@ -127,14 +143,6 @@ export abstract class Seq<T> {
 		throw Error("Empty Seq: lastOrThrow");
 	}
 
-	public reduce(fn: (acc: T, current: T) => T, accStart: T) {
-		let v = accStart;
-		for (const x of this) {
-			v = fn(v, x);
-		}
-		return v;
-	}
-
 	public foreach(fn: (x: T) => void) {
 		for (const x of this) {
 			fn(x);
@@ -164,6 +172,32 @@ export abstract class Seq<T> {
 			return true;
 		}
 		return false;
+	}
+
+	public reduce(accStart: T, fn: (acc: T, current: T) => T) {
+		let v = accStart;
+		for (const x of this) {
+			v = fn(v, x);
+		}
+		return v;
+	}
+
+	public accumulate<TValue>(
+		accStart: TValue,
+		fn: (acc: TValue) => TValue
+	) {
+		let v = accStart;
+		for (const x of this) {
+			v = fn(v);
+		}
+		return v;
+	}
+
+	public accSeq<TValue>(
+		accStart: TValue,
+		fn: (acc: TValue) => TValue
+	) {
+		return new AccumulateSeq(this, accStart, fn);
 	}
 }
 
@@ -507,95 +541,71 @@ export type SeqType<T> = T extends Seq<infer U> ? U : never;
  * @param TSeqB The type of the second Seq
  * @param TOut The final element type of the Seq
  */
-export class ZipSeq<
-	TSeqA extends Seq<any>,
-	TSeqB extends Seq<any>,
-	TOut
-> extends Seq<TOut> {
+export class ZipSeq<TOut> extends Seq<TOut> {
 	/**
-	 * ZipSeq constructor
+	 * ZipManySeq constructor
 	 *
-	 * @param SeqA First Seq to zip
-	 * @param SeqB Second Seq to zip
-	 * @param fn Zip mapping function
+	 * @param Seqs The array of Seqs to zip
+	 * @param fn The zip mapping function
 	 */
 	constructor(
-		public readonly SeqA: TSeqA,
-		public readonly SeqB: TSeqB,
-		public readonly fn: (
-			a: SeqType<TSeqA>,
-			b: SeqType<TSeqB>
-		) => TOut
+		public readonly Seqs: Seq<any>[],
+		public readonly fn: (...args: any[]) => TOut
 	) {
 		super();
 	}
 
 	public override *gen() {
-		const itA = this.SeqA.gen();
-		const itB = this.SeqB.gen();
+		{
+			const iters = this.Seqs.map(seq => seq.gen());
+			const length = iters.length;
+			const argArray = new Array(length);
 
-		while (true) {
-			const aRes = itA.next();
-			const bRes = itB.next();
+			let cont = true;
+			while (true) {
+				let argArrayIndex = 0;
+				for (const iter of iters) {
+					const res = iter.next();
+					if (res.done) {
+						cont = false;
+						break;
+					}
 
-			if (aRes.done === true) {
-				break;
+					argArray[argArrayIndex] = res.value;
+
+					argArrayIndex++;
+				}
+
+				if (cont) {
+					yield this.fn(...argArray);
+				} else {
+					break;
+				}
 			}
-			if (bRes.done === true) {
-				break;
-			}
-
-			yield this.fn(aRes.value, bRes.value);
 		}
 	}
 }
 
-/**
- * Class used to Zip two Seqs together
- *
- * @param TSeqA The type of the first Seq
- * @param TSeqB The type of the second Seq
- * @param TOut The final element type of the Seq
- */
-export class ZipManySeq<
-	TSeqA extends Seq<any>,
-	TSeqB extends Seq<any>,
-	TOut
-> extends Seq<TOut> {
+export class AccumulateSeq<TIn, TValue> extends Seq<TValue> {
 	/**
-	 * ZipSeq constructor
+	 * MapSeq constructor.
 	 *
-	 * @param SeqA First Seq to zip
-	 * @param SeqB Second Seq to zip
-	 * @param fn Zip mapping function
+	 * @param seq The input Seq
+	 * @param fn The mapping lambda
 	 */
 	constructor(
-		public readonly SeqA: TSeqA,
-		public readonly SeqB: TSeqB,
-		public readonly fn: (
-			a: SeqType<TSeqA>,
-			b: SeqType<TSeqB>
-		) => TOut
+		public readonly seq: Seq<TIn>,
+		public readonly start: TValue,
+		public readonly fn: (acc: TValue) => TValue
 	) {
 		super();
 	}
 
 	public override *gen() {
-		const itA = this.SeqA.gen();
-		const itB = this.SeqB.gen();
-
-		while (true) {
-			const aRes = itA.next();
-			const bRes = itB.next();
-
-			if (aRes.done === true) {
-				break;
-			}
-			if (bRes.done === true) {
-				break;
-			}
-
-			yield this.fn(aRes.value, bRes.value);
+		let current = this.start;
+		for (const _ of this.seq) {
+			yield current;
+			current = this.fn(current);
 		}
 	}
 }

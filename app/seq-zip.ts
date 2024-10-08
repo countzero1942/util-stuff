@@ -320,7 +320,7 @@ export const testNewZipSeq = () => {
 	{
 		const sqA = NumSeq.count(10);
 		const sqB = sqA.map(x => x.toString());
-		const sqC = new ZipSeq(sqA, sqB, (a, b) => {
+		const sqC = new ZipSeq([sqA, sqB], (a, b) => {
 			return { a, b };
 		});
 
@@ -340,7 +340,7 @@ export const testSeqZipFunctionToZipSeq = () => {
 	{
 		const sqA = NumSeq.count(10);
 		const sqB = sqA.map(x => x.toString());
-		const sqC = sqA.zip(sqB, (a, b) => {
+		const sqC = sqA.zip([sqB], (a, b) => {
 			return { a, b };
 		});
 
@@ -365,15 +365,18 @@ export const testSeqZipChained = () => {
 	const factorialSeq = MathProdSeq.from(x => x).take(count);
 	const squareSeq = countSeq.map(x => x ** 2);
 	const allSeq = countSeq
-		.zip(triangularSeq, (count, triangular) => {
+		.zip([triangularSeq], (count, triangular) => {
 			return { count, triangular };
 		})
-		.zip(factorialSeq, ({ count, triangular }, factorial) => {
+		.zip([factorialSeq], ({ count, triangular }, factorial) => {
 			return { count, triangular, factorial };
 		})
-		.zip(squareSeq, ({ count, triangular, factorial }, square) => {
-			return { count, triangular, factorial, square };
-		});
+		.zip(
+			[squareSeq],
+			({ count, triangular, factorial }, square) => {
+				return { count, triangular, factorial, square };
+			}
+		);
 	logh("Test: Seq<T>.zip chained");
 	allSeq.foreach(x => log(x));
 };

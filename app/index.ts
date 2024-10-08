@@ -1,4 +1,11 @@
 import {
+	logFibSeq,
+	logFibTriFac,
+	logFibTriSquare,
+	logReduceFib,
+	logReduceTriangular,
+} from "@/app/reduce-test";
+import {
 	testBasicSeq,
 	testLongNumberDirect,
 	testLongNumberSeq,
@@ -21,6 +28,7 @@ import {
 	testZipManyProtoUnevenAndEmptySeqsToArray,
 	testZipManyProtoUnevenSeqsToArray,
 } from "@/app/seq-zip";
+import { logZipThreeSeq, logZipTwoSeq } from "@/app/seq-zip-test";
 import { loopThruPowersOf10PlusFPErr } from "@/tests/math/FP-error-tests";
 import { TestNeighborNumbersAreEqual } from "@/tests/math/neighbor-numbers";
 import { getError } from "@/utils/error";
@@ -65,63 +73,10 @@ import { DeepPartial } from "utility-types";
 // testZipManyProtoUnevenSeqsToArray();
 // testZipManyProtoUnevenAndEmptySeqsToArray();
 
-// loopThruPowersOf10PlusFPErr(20);
-// logPrecisionRoundRange(n, 100, 5);
-
-// TestNeighborNumbersAreEqual({
-// 	precisionLevel: "15",
-// 	power: { kind: "single", single: -305 },
-// });
-
-TestNeighborNumbersAreEqual({
-	power: { kind: "single", single: -1 },
-});
-
-// TestNeighborNumbersAreEqual({
-// 	power: { kind: "single", single: 307 },
-// 	logLevel: "none",
-// 	precisionKind: "15",
-// 	numOfTests: 100_000,
-// });
-
-// TestNeighborNumbersAreEqual({
-// 	power: {
-// 		kind: "random-range",
-// 		range: { min: -300, max: 300 },
-// 	},
-// 	logLevel: "verbose",
-// 	precisionKind: "random",
-// 	numOfTests: 1,
-// });
-
-// TestNeighborNumbersAreEqual({
-// 	power: {
-// 		kind: "random-range",
-// 		range: { min: -307, max: 307 },
-// 	},
-// 	logLevel: "minimal",
-// 	precisionKind: "random",
-// 	numOfTests: 10,
-// });
-
-// TestNeighborNumbersAreEqual({
-// 	power: {
-// 		kind: "random-range",
-// 		range: { min: -500, max: 500 },
-// 	},
-// 	logLevel: "none",
-// 	precisionKind: "random",
-// 	numOfTests: 100_000,
-// });
-
-// TestNeighborNumbersAreEqual({
-// 	power: {
-// 		kind: "random-range",
-// 		range: { min: -308, max: 307 },
-// 	},
-// 	logLevel: "none",
-// 	precisionKind: "random",
-// 	numOfTests: 100_000,
-// });
-
-// loopThruPowersOf10PlusFPErr(base => base + 0.1 + 0.7);
+// logZipTwoSeq();
+// logZipThreeSeq();
+// logReduceTriangular(36);
+// logReduceFib(12);
+// logFibSeq(12);
+// logFibTriFac(12);
+logFibTriSquare(36);
