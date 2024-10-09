@@ -632,7 +632,7 @@ export class ObjValueSeq<T> extends Seq<T> {
 					log(value);
 
 					log(
-						`===><ObjValueSeq.gen>: has class: '${this.fullType.className}'`
+						`===><ObjValueSeq.gen>: has className: '${this.fullType.className}'`
 					);
 					if (!hasClassName(value, this.fullType.className)) {
 						div();
@@ -695,14 +695,14 @@ export class ObjKeyValueSeq<T> extends Seq<{
 					}
 					break;
 				case "has-class":
-					log(`===> 'has-class' Value:`);
-					log(value);
+					// log(`===> 'has-class' Value:`);
+					// log(value);
 
-					log(
-						`===>hasClassName: '${
-							this.fullType.className
-						}' ${hasClassName(value, this.fullType.className)}`
-					);
+					// log(
+					// 	`===>hasClassName: '${
+					// 		this.fullType.className
+					// 	}' ${hasClassName(value, this.fullType.className)}`
+					// );
 					if (!hasClassName(value, this.fullType.className)) {
 						continue;
 					}

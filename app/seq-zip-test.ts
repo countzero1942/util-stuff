@@ -1,9 +1,13 @@
-import { div } from "@/utils/log";
+import { div, logh } from "@/utils/log";
 import { isEven, isOdd } from "@/utils/math";
-import { NumSeq, ObjValueSeq, Seq } from "@/utils/seq";
+import {
+	NumSeq,
+	ObjKeyValueSeq,
+	ObjValueSeq,
+	Seq,
+} from "@/utils/seq";
 import { getFullType, hasClassName } from "@/utils/types";
 import { count, log } from "console";
-import { ReadonlyTuple } from "type-fest";
 
 const logZipSeqs = (...seqs: Seq<any>[]) => {
 	const length = seqs.length;
@@ -14,8 +18,7 @@ const logZipSeqs = (...seqs: Seq<any>[]) => {
 	const labels: string[] = [];
 
 	for (let i = 0; i < length; i++) {
-		const seq = seqs[i];
-		if (seq === undefined) throw "Never";
+		const seq = seqs[i] as Seq<any>;
 		const n = i + 1;
 		switch (true) {
 			case i < last:
@@ -30,6 +33,40 @@ const logZipSeqs = (...seqs: Seq<any>[]) => {
 				div();
 				log(title);
 				log(seq.toArray());
+				break;
+		}
+	}
+};
+
+/**
+ *
+ * @param seqs All seqs used + zipSeq last
+ */
+const logKeyValueZipSeqs = (seqs: Object) => {
+	const ss = ObjKeyValueSeq.fromHasClass<Seq<any>>(seqs, "Seq");
+	const arr = ss.toArray();
+	if (arr.length < 3) {
+		throw Error(
+			"Three Seqs expected: 2 Seqs and 1 ZipSeq at the end."
+		);
+	}
+
+	const labels: string[] = [];
+
+	const last = arr.length - 1;
+	for (let i = 0; i < arr.length; i++) {
+		const { key, value } = arr[i] as ArrayElement<typeof arr>;
+
+		switch (true) {
+			case i === last:
+				logh(`${key} of ${labels.join(", ")}:`);
+				log(value.toArray());
+				break;
+
+			default:
+				labels.push(key);
+				logh(`${key}:`);
+				log(value.toArray());
 				break;
 		}
 	}
@@ -57,14 +94,14 @@ const reduceFib = (n: number) => {
 };
 
 const getSeqs = (count: number) => {
-	const seq1 = NumSeq.count(count);
-	const seq2 = seq1.map(x => x.toString());
-	const seq3 = seq1.map(x => 7 * x);
-	const seq4 = seq1.map(x => 11 * x);
-	const seq5 = seq1.map(x => x ** 2);
-	const seq6 = seq1.map(x => x ** 3);
-	const seq7 = seq1.accum(0, (acc, n) => acc + n);
-	const seq8 = seq1.accum(
+	const countSeq = NumSeq.count(count);
+	const toStrSeq = countSeq.map(x => x.toString());
+	const sevensSeq = countSeq.map(x => 7 * x);
+	const elevensSeq = countSeq.map(x => 11 * x);
+	const squaresSeq = countSeq.map(x => x ** 2);
+	const cubesSeq = countSeq.map(x => x ** 3);
+	const trianglesSeq = countSeq.accum(0, (acc, n) => acc + n);
+	const fibonacciSeq = countSeq.accum(
 		{ prevFib: 1, fibonacci: 0 },
 		({ prevFib, fibonacci }) => {
 			return {
@@ -73,52 +110,101 @@ const getSeqs = (count: number) => {
 			};
 		}
 	);
-	const seq9 = seq1.accum(1, (acc, n) => acc * n);
+	const factorialSeq = countSeq.accum(1, (acc, n) => acc * n);
 
-	return { seq1, seq2, seq3, seq4, seq5, seq6, seq7, seq8, seq9 };
+	return {
+		countSeq,
+		toStrSeq,
+		sevensSeq,
+		elevensSeq,
+		squaresSeq,
+		cubesSeq,
+		trianglesSeq,
+		fibonacciSeq,
+		factorialSeq,
+	};
+};
+
+const getPartialSeqs = (
+	length: number,
+	count: number
+): ReturnType<typeof getSeqs> => {
+	const seqs = getSeqs(count);
+
+	const ss = ObjKeyValueSeq.fromHasClass<Seq<any>>(seqs, "Seq");
+
+	const obj = Object.create(null);
+
+	ss.take(length).foreach(kv => {
+		// @ts-ignore
+		obj[kv.key] = kv.value;
+		return;
+	});
+
+	// Object.assign(obj, ss.take(3));
+
+	log(obj);
+	div();
+	div();
+
+	return obj as ReturnType<typeof getSeqs>;
 };
 
 // count, toStr, sevens, elevens, square, cube, triangle, fib
 
 export const logZip2Seq = (count: number) => {
-	const { seq1, seq2 } = getSeqs(count);
+	const seqs = getSeqs(count);
+	const { countSeq, toStrSeq } = seqs;
 
-	const seqZip = seq1
-		.zip([seq2], (count, toStr) => {
+	const zipSeq = countSeq
+		.zip([toStrSeq], (count, toStr) => {
 			return { count, toStr };
 		})
 		.filter(x => x.count % 2 === 0);
 
-	logZipSeqs(seq1, seq2, seqZip);
+	logKeyValueZipSeqs({ countSeq, toStrSeq, zipSeq });
 };
 
 // count, toStr, sevens, elevens, square, cube, triangle, fib
 
 export const logZip3Seq = (count: number) => {
-	const { seq1, seq2, seq3 } = getSeqs(count);
-	const seqZip = seq1
-		.zip([seq2, seq3], (count, toStr, sevens) => {
+	const seqs = getPartialSeqs(3, count);
+	const { countSeq, toStrSeq, sevensSeq } = seqs;
+	log(seqs);
+	log(countSeq);
+	log(toStrSeq);
+	log(sevensSeq);
+	const zipSeq = countSeq
+		.zip([toStrSeq, sevensSeq], (count, toStr, sevens) => {
 			return { count, toStr, sevens };
 		})
 		.filter(x => x.count % 2 === 0);
 
-	logZipSeqs(seq1, seq2, seq3, seqZip);
+	logKeyValueZipSeqs({ ...seqs, zipSeq });
 };
 
 // count, toStr, sevens, elevens, square, cube, triangle, fib
 
 export const logZip7Seq = (count: number) => {
-	const { seq1, seq2, seq3, seq4, seq5, seq6, seq7 } =
-		getSeqs(count);
-	const seqZip = seq1
+	const seqs = getSeqs(count);
+	const {
+		countSeq,
+		toStrSeq,
+		sevensSeq,
+		elevensSeq,
+		squaresSeq,
+		cubesSeq,
+		trianglesSeq,
+	} = seqs;
+	const zipSeq = countSeq
 		.zip(
-			[seq2, seq3, seq4, seq5],
+			[toStrSeq, sevensSeq, elevensSeq, squaresSeq],
 			(count, toStr, sevens, elevens, square) => {
 				return { count, toStr, sevens, elevens, square };
 			}
 		)
 		.zip(
-			[seq6, seq7],
+			[cubesSeq, trianglesSeq],
 			(
 				{ count, toStr, sevens, elevens, square },
 				cube,
@@ -137,22 +223,39 @@ export const logZip7Seq = (count: number) => {
 		)
 		.filter(x => x.count % 2 === 0);
 
-	logZipSeqs(seq1, seq2, seq3, seq4, seq5, seq6, seq7, seqZip);
+	logKeyValueZipSeqs({
+		countSeq,
+		toStrSeq,
+		sevensSeq,
+		elevensSeq,
+		squaresSeq,
+		cubesSeq,
+		trianglesSeq,
+		zipSeq,
+	});
 };
 
 // count, toStr, sevens, elevens, square, cube, triangle, fib
 
 export const logZip7bSeq = (count: number) => {
-	const { seq1, seq2, seq3, seq4, seq5, seq6, seq7 } =
-		getSeqs(count);
-	const seqZip = seq1
+	const seqs = getSeqs(count);
+	const {
+		countSeq,
+		toStrSeq,
+		sevensSeq,
+		elevensSeq,
+		squaresSeq,
+		cubesSeq,
+		trianglesSeq,
+	} = seqs;
+	const zipSeq = countSeq
 		.zip(
-			[seq2, seq3, seq4, seq5],
+			[toStrSeq, sevensSeq, elevensSeq, squaresSeq],
 			(count, toStr, sevens, elevens, square) => {
 				return { count, toStr, sevens, elevens, square };
 			}
 		)
-		.zip([seq6, seq7], (a, cube, triangle) => {
+		.zip([cubesSeq, trianglesSeq], (a, cube, triangle) => {
 			return {
 				...a,
 				cube,
@@ -161,47 +264,100 @@ export const logZip7bSeq = (count: number) => {
 		})
 		.filter(x => x.count % 2 === 0);
 
-	logZipSeqs(seq1, seq2, seq3, seq4, seq5, seq6, seq7, seqZip);
+	logKeyValueZipSeqs({
+		countSeq,
+		toStrSeq,
+		sevensSeq,
+		elevensSeq,
+		squaresSeq,
+		cubesSeq,
+		trianglesSeq,
+		zipSeq,
+	});
 };
 
 // count, toStr, sevens, elevens, square, cube, triangle, fib
 
 export const logZip8Seq = (count: number) => {
-	const { seq1, seq2, seq3, seq4, seq5, seq6, seq7, seq8 } =
-		getSeqs(count);
+	const seqs = getSeqs(count);
+	const {
+		countSeq,
+		toStrSeq,
+		sevensSeq,
+		elevensSeq,
+		squaresSeq,
+		cubesSeq,
+		trianglesSeq,
+		fibonacciSeq,
+	} = seqs;
 	getSeqs(count);
-	const seqZip = seq1
+	const zipSeq = countSeq
 		.zip(
-			[seq2, seq3, seq4, seq5],
+			[toStrSeq, sevensSeq, elevensSeq, squaresSeq],
 			(count, toStr, sevens, elevens, square) => {
 				return { count, toStr, sevens, elevens, square };
 			}
 		)
-		.zip([seq6, seq7, seq8], (a, cube, triangle, fib) => {
-			return { ...a, cube, triangle, ...fib };
-		})
+		.zip(
+			[cubesSeq, trianglesSeq, fibonacciSeq],
+			(a, cube, triangle, fib) => {
+				return { ...a, cube, triangle, ...fib };
+			}
+		)
 		.filter(x => isEven(x.count));
 
-	logZipSeqs(seq1, seq2, seq3, seq4, seq5, seq6, seq7, seq8, seqZip);
+	logKeyValueZipSeqs({
+		countSeq,
+		toStrSeq,
+		sevensSeq,
+		elevensSeq,
+		squaresSeq,
+		cubesSeq,
+		trianglesSeq,
+		fibonacciSeq,
+		zipSeq,
+	});
 };
 
 export const logZip8bSeq = (count: number) => {
-	const { seq1, seq2, seq3, seq4, seq5, seq6, seq7, seq8 } =
-		getSeqs(count);
-	const seqZip = seq1
+	const seqs = getSeqs(count);
+	const {
+		countSeq,
+		toStrSeq,
+		sevensSeq,
+		elevensSeq,
+		squaresSeq,
+		cubesSeq,
+		trianglesSeq,
+		fibonacciSeq,
+	} = seqs;
+	const zipSeq = countSeq
 		.zip(
-			[seq2, seq3, seq4, seq5],
+			[toStrSeq, sevensSeq, elevensSeq, squaresSeq],
 			(count, toStr, sevens, elevens, square) => {
 				return { count, toStr, sevens, elevens, square };
 			}
 		)
-		.zip([seq6, seq7, seq8], (a, cube, triangle, fib) => {
-			const { fibonacci } = fib;
-			return { ...a, cube, triangle, fibonacci };
-		})
+		.zip(
+			[cubesSeq, trianglesSeq, fibonacciSeq],
+			(a, cube, triangle, fib) => {
+				const { fibonacci } = fib;
+				return { ...a, cube, triangle, fibonacci };
+			}
+		)
 		.filter(x => isOdd(x.count));
 
-	logZipSeqs(seq1, seq2, seq3, seq4, seq5, seq6, seq7, seq8, seqZip);
+	logKeyValueZipSeqs({
+		countSeq,
+		toStrSeq,
+		sevensSeq,
+		elevensSeq,
+		squaresSeq,
+		cubesSeq,
+		trianglesSeq,
+		fibonacciSeq,
+		zipSeq,
+	});
 };
 
 export const logObject = (obj: Object) => {
@@ -220,106 +376,90 @@ export const logObject = (obj: Object) => {
 
 export const logZip9Seq = (count: number) => {
 	const seqs = getSeqs(count);
-	const { seq1, seq2, seq3, seq4, seq5, seq6, seq7, seq8, seq9 } =
-		seqs;
-	const seqZip = seq1
+	const {
+		countSeq,
+		toStrSeq,
+		sevensSeq,
+		elevensSeq,
+		squaresSeq,
+		cubesSeq,
+		trianglesSeq,
+		fibonacciSeq,
+		factorialSeq,
+	} = seqs;
+	const zipSeq = countSeq
 		.zip(
-			[seq2, seq3, seq4, seq5],
+			[toStrSeq, sevensSeq, elevensSeq, squaresSeq],
 			(count, toStr, sevens, elevens, square) => {
 				return { count, toStr, sevens, elevens, square };
 			}
 		)
 		.zip(
-			[seq6, seq7, seq8, seq9],
+			[cubesSeq, trianglesSeq, fibonacciSeq, factorialSeq],
 			(a, cube, triangle, fib, factorial) => {
 				return { ...a, cube, triangle, ...fib, factorial };
 			}
 		);
 
-	logZipSeqs(
-		seq1,
-		seq2,
-		seq3,
-		seq4,
-		seq5,
-		seq6,
-		seq7,
-		seq8,
-		seq9,
-		seqZip
-	);
-
-	// logZipSeqs(...Array.from(seqs) as unknown as Seq<any>, seqZip);
+	logKeyValueZipSeqs({ ...seqs, zipSeq });
 };
 
 export const logZip9bSeq = (count: number) => {
 	const seqs = getSeqs(count);
-	const { seq1, seq2, seq3, seq4, seq5, seq6, seq7, seq8, seq9 } =
-		seqs;
-	const seqZip = seq1
+	const {
+		countSeq,
+		toStrSeq,
+		sevensSeq,
+		elevensSeq,
+		squaresSeq,
+		cubesSeq,
+		trianglesSeq,
+		fibonacciSeq,
+		factorialSeq,
+	} = seqs;
+	const zipSeq = countSeq
 		.zip(
-			[seq2, seq3, seq4, seq5],
+			[toStrSeq, sevensSeq, elevensSeq, squaresSeq],
 			(count, toStr, sevens, elevens, square) => {
 				return { count, toStr, sevens, elevens, square };
 			}
 		)
 		.zip(
-			[seq6, seq7, seq8, seq9],
+			[cubesSeq, trianglesSeq, fibonacciSeq, factorialSeq],
 			(a, cube, triangle, fib, factorial) => {
 				return { ...a, cube, triangle, ...fib, factorial };
 			}
 		);
 
-	//	const seqseq = ObjSeq.fromHasClass<Seq<any>>(seqs, "Seq");
-	const ss1 = new ObjValueSeq<Seq<any>>(
-		seqs,
-		{ type: "Class", className: "Seq" },
-		"has-class"
-	);
-	const arr1 = ss1.toArray();
+	const ss = ObjValueSeq.fromHasClass<Seq<any>>(seqs, "Seq");
 
-	const ss2 = ObjValueSeq.fromHasClass<Seq<any>>(seqs, "Seq");
+	const arr = ss.toArray();
 
-	const arr2 = ss2.toArray();
-
-	logZipSeqs(...arr1);
-
-	// logZipSeqs(
-	// 	seq1,
-	// 	seq2,
-	// 	seq3,
-	// 	seq4,
-	// 	seq5,
-	// 	seq6,
-	// 	seq7,
-	// 	seq8,
-	// 	seq9,
-	// 	seqZip
-	// );
-
-	// logZipSeqs(...Array.from(seqs) as unknown as Seq<any>, seqZip);
+	logZipSeqs(...arr);
 };
 
 export const logObjValueSeqZip3Seq = (count: number) => {
-	const { seq1, seq2, seq3 } = getSeqs(count);
-	const seqZip = seq1
-		.zip([seq2, seq3], (count, toStr, sevens) => {
+	const seqs = getSeqs(count);
+	const { countSeq, toStrSeq, sevensSeq } = seqs;
+	const zipSeq = countSeq.zip(
+		[toStrSeq, sevensSeq],
+		(count, toStr, sevens) => {
 			return { count, toStr, sevens };
-		})
-		.filter(x => x.count % 2 === 0);
+		}
+	);
 
 	const myobj = {
 		a: 43,
-		seq1,
+		countSeq,
 		b: "a string",
 		c: {
 			x: false,
 			y: 6.28,
 		},
-		seq2,
-		d: false,
-		seq3,
-		seqZip,
+		toStrSeq,
+		d: RangeError("Huha"),
+		sevensSeq,
+		zipSeq,
 	};
 
 	const arr = ObjValueSeq.fromHasClass<Seq<any>>(
@@ -328,4 +468,41 @@ export const logObjValueSeqZip3Seq = (count: number) => {
 	).toArray();
 
 	logZipSeqs(...arr);
+};
+
+export const logObjKeyValueSeqZip3Seq = (count: number) => {
+	const seqs = getSeqs(count);
+	const {
+		countSeq,
+		toStrSeq,
+		sevensSeq,
+		elevensSeq,
+		squaresSeq,
+		cubesSeq,
+		trianglesSeq,
+		fibonacciSeq,
+		factorialSeq,
+	} = seqs;
+	const seqZip = countSeq.zip(
+		[toStrSeq, sevensSeq],
+		(count, toStr, sevens) => {
+			return { count, toStr, sevens };
+		}
+	);
+
+	const myobj = {
+		a: 43,
+		countSeq,
+		b: "a string",
+		c: {
+			x: false,
+			y: 6.28,
+		},
+		toStrSeq,
+		d: RangeError("Huha"),
+		sevensSeq,
+		seqZip,
+	};
+
+	logKeyValueZipSeqs(myobj);
 };

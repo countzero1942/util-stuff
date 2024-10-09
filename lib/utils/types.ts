@@ -1,93 +1,6 @@
 import { log } from "console";
 import { ReadonlyTuple } from "type-fest";
 
-const getPrototype = (item: any) => {
-	return Object.prototype.toString.call(item).slice(8, -1);
-};
-
-/**
- * Gets the Name of a Class object.
- * @param item The Class object to retrieve Class name from
- * @returns The Class Name
- */
-export const getClassName = (item: Object) => item.constructor.name;
-
-export const hasClassName = (item: Object, className: string) => {
-	const type = getType(item);
-	log(`===><hasClassName> type: ${type}`);
-
-	if (type !== "Class") {
-		log(`===><hasClassName> type !== "Class" -> return FALSE`);
-		return false;
-	}
-
-	let next = Object.getPrototypeOf(item);
-
-	while (next !== null) {
-		const name = next?.constructor?.name;
-
-		if (name === null || name === "Object") {
-			return false;
-		}
-		log(`===><hasClassName> ctor name: ${name}`);
-
-		if (next.constructor.name === className) {
-			log(
-				`===><hasClassName> ancestor class matches -> return TRUE`
-			);
-
-			return true;
-		}
-		next = Object.getPrototypeOf(next);
-	}
-	log(
-		`===><hasClassName> next = Object.getPrototypeOf(next) -> return FALSE`
-	);
-	return false;
-};
-
-/**
- * Gets the Type name of an object. The return type covers
- * most Type name cases. But can cast as string to compare
- * those not listed in the Union.
- * @param item The object to get the Type of
- * @returns The object Type name
- */
-export const getType = (
-	item: any
-):
-	| "Number"
-	| "String"
-	| "Boolean"
-	| "Undefined"
-	| "Null"
-	| "RegEx"
-	| "Date"
-	| "Array"
-	| "Function"
-	| "Object"
-	| "Class"
-	| "Error"
-	| "Map"
-	| "Set" => {
-	if (item === null) {
-		return "Null";
-	}
-	if (typeof item === "undefined") {
-		return "Undefined";
-	}
-	const prototype: ReturnType<typeof getType> = getPrototype(
-		item
-	) as ReturnType<typeof getType>;
-	if (
-		prototype === "Object" &&
-		getClassName(item as Object) != "Object"
-	) {
-		return "Class";
-	}
-	return prototype;
-};
-
 export type FullType = {
 	type:
 		| "Number"
@@ -105,6 +18,77 @@ export type FullType = {
 		| "Map"
 		| "Set";
 	className: string;
+};
+
+const getPrototype = (item: any) => {
+	return Object.prototype.toString.call(item).slice(8, -1);
+};
+
+/**
+ * Gets the Name of a Class object.
+ * @param item The Class object to retrieve Class name from
+ * @returns The Class Name
+ */
+export const getClassName = (item: Object) => item.constructor.name;
+
+export const hasClassName = (item: Object, className: string) => {
+	const type = getType(item);
+	// log(`===><hasClassName> type: ${type}`);
+
+	if (type !== "Class") {
+		// log(`===><hasClassName> type !== "Class" -> return FALSE`);
+		return false;
+	}
+
+	let next = Object.getPrototypeOf(item);
+
+	while (next !== null) {
+		const name = next?.constructor?.name;
+
+		if (name === null || name === "Object") {
+			return false;
+		}
+		// log(`===><hasClassName> ctor name: ${name}`);
+
+		if (next.constructor.name === className) {
+			// log(
+			// 	`===><hasClassName> ancestor class matches -> return TRUE`
+			// );
+
+			return true;
+		}
+		next = Object.getPrototypeOf(next);
+	}
+	// log(
+	// 	`===><hasClassName> next = Object.getPrototypeOf(next) -> return FALSE`
+	// );
+	return false;
+};
+
+/**
+ * Gets the Type name of an object. The return type covers
+ * most Type name cases. But can cast as string to compare
+ * those not listed in the Union.
+ * @param item The object to get the Type of
+ * @returns The object Type name
+ */
+export const getType = (item: any): FullType["type"] => {
+	if (item === null) {
+		return "Null";
+	}
+	if (typeof item === "undefined") {
+		return "Undefined";
+	}
+	const prototype: ReturnType<typeof getType> = getPrototype(
+		item
+	) as ReturnType<typeof getType>;
+	if (
+		prototype === "Object" &&
+		getClassName(item as Object) != "Object"
+	) {
+		return "Class";
+	}
+	return prototype;
 };
 
 export const getFullType = (item: any): FullType => {

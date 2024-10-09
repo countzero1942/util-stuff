@@ -29,6 +29,7 @@ import {
 	testZipManyProtoUnevenSeqsToArray,
 } from "@/app/seq-zip-old-proto";
 import {
+	logObjKeyValueSeqZip3Seq,
 	logObjValueSeqZip3Seq,
 	logZip2Seq,
 	logZip3Seq,
@@ -92,7 +93,7 @@ import { DeepPartial } from "utility-types";
 //logFibTriSquare(36);
 
 // logZip2Seq(20);
-// logZip3Seq(20);
+logZip3Seq(20);
 // logZip7Seq(20);
 // div();
 // log();
@@ -101,4 +102,5 @@ import { DeepPartial } from "utility-types";
 // logZip7bSeq(20);
 // logZip8Seq(20);
 // logZip8Seq(20);
-logObjValueSeqZip3Seq(12);
+// logObjValueSeqZip3Seq(12);
+// logObjKeyValueSeqZip3Seq(12);
