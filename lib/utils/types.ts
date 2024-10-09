@@ -1,3 +1,4 @@
+import { log } from "console";
 import { ReadonlyTuple } from "type-fest";
 
 const getPrototype = (item: any) => {
@@ -10,6 +11,40 @@ const getPrototype = (item: any) => {
  * @returns The Class Name
  */
 export const getClassName = (item: Object) => item.constructor.name;
+
+export const hasClassName = (item: Object, className: string) => {
+	const type = getType(item);
+	log(`===><hasClassName> type: ${type}`);
+
+	if (type !== "Class") {
+		log(`===><hasClassName> type !== "Class" -> return FALSE`);
+		return false;
+	}
+
+	let next = Object.getPrototypeOf(item);
+
+	while (next !== null) {
+		const name = next?.constructor?.name;
+
+		if (name === null || name === "Object") {
+			return false;
+		}
+		log(`===><hasClassName> ctor name: ${name}`);
+
+		if (next.constructor.name === className) {
+			log(
+				`===><hasClassName> ancestor class matches -> return TRUE`
+			);
+
+			return true;
+		}
+		next = Object.getPrototypeOf(next);
+	}
+	log(
+		`===><hasClassName> next = Object.getPrototypeOf(next) -> return FALSE`
+	);
+	return false;
+};
 
 /**
  * Gets the Type name of an object. The return type covers
@@ -51,6 +86,39 @@ export const getType = (
 		return "Class";
 	}
 	return prototype;
+};
+
+export type FullType = {
+	type:
+		| "Number"
+		| "String"
+		| "Boolean"
+		| "Undefined"
+		| "Null"
+		| "RegEx"
+		| "Date"
+		| "Array"
+		| "Function"
+		| "Object"
+		| "Class"
+		| "Error"
+		| "Map"
+		| "Set";
+	className: string;
+};
+
+export const getFullType = (item: any): FullType => {
+	const type = getType(item);
+	const name = type === "Class" ? getClassName(item) : "";
+	return { type, className: name };
+};
+
+export const isFullType = (item: any, fullType: FullType) => {
+	const fullTypeItem = getFullType(item);
+	return (
+		fullTypeItem.type === fullType.type &&
+		fullTypeItem.className === fullType.className
+	);
 };
 
 /**
@@ -168,68 +236,6 @@ export type ArrayLengthMutationKeys =
 	| "pop"
 	| "shift"
 	| "unshift";
-
-/**
- * Casts a dynamic array as a fixed-length const readonly array
- *
- * @param T The array element type
- * @param L The length of the fixed array: a literal number type
- */
-// export type FixedLengthArray<
-// 	T,
-// 	L extends number,
-// 	TObj = L extends 2
-// 		? [T, T, ...ReadonlyArray<T>]
-// 		: L extends 3
-// 		? [T, T, T, ...ReadonlyArray<T>]
-// 		: L extends 4
-// 		? [T, T, T, T, ...ReadonlyArray<T>]
-// 		: L extends 5
-// 		? [T, T, T, T, T, ...ReadonlyArray<T>]
-// 		: L extends 6
-// 		? [T, T, T, T, T, T, ...ReadonlyArray<T>]
-// 		: L extends 7
-// 		? [T, T, T, T, T, T, T, ...ReadonlyArray<T>]
-// 		: L extends 8
-// 		? [T, T, T, T, T, T, T, T, ...ReadonlyArray<T>]
-// 		: L extends 9
-// 		? [T, T, T, T, T, T, T, T, T, ...ReadonlyArray<T>]
-// 		: L extends 10
-// 		? [T, T, T, T, T, T, T, T, T, T, ...ReadonlyArray<T>]
-// 		: [T, ...ReadonlyArray<T>]
-// > = Pick<TObj, Exclude<keyof TObj, ArrayLengthMutationKeys>> & {
-// 	readonly length: L;
-// 	readonly [I: number]: T;
-// 	[Symbol.iterator]: () => IterableIterator<T>;
-// };
-
-/**
- * Casts a dynamic array to a fixed array based on its length.
- * This is to narrows the type in the destructured tuple,
- * eliminating the '| undefined' part.
- *
- * Will throw Error if L > arr.length
- *
- * @param arr The array to cast
- * @param length The length to cast the array to
- * @returns The array cast to FixedLengthArray type
- */
-// export const toFixedArray = <
-// 	L extends number,
-// 	TArray extends readonly any[],
-// 	T extends TArray[number]
-// >(
-// 	arr: TArray,
-// 	length: L
-// ) => {
-// 	if (length > arr.length) {
-// 		throw RangeError(
-// 			"FixedLengthArray L greater than 'arr.length'"
-// 		);
-// 	}
-
-// 	return arr as unknown as FixedLengthArray<T, L>;
-// };
 
 export const toReadonlyTuple = <
 	L extends number,

@@ -29,12 +29,14 @@ import {
 	testZipManyProtoUnevenSeqsToArray,
 } from "@/app/seq-zip-old-proto";
 import {
+	logObjValueSeqZip3Seq,
 	logZip2Seq,
 	logZip3Seq,
 	logZip7bSeq,
 	logZip7Seq,
 	logZip8bSeq,
 	logZip8Seq,
+	logZip9bSeq,
 	logZip9Seq,
 } from "@/app/seq-zip-test";
 import { loopThruPowersOf10PlusFPErr } from "@/tests/math/FP-error-tests";
@@ -51,6 +53,7 @@ import {
 } from "@/utils/math";
 import { MathProdSeq, NumSeq, Seq } from "@/utils/seq";
 import { formatNum } from "@/utils/string";
+import { getFullType } from "@/utils/types";
 import { getRandomValues } from "crypto";
 import { merge } from "moderndash";
 import test from "node:test";
@@ -98,4 +101,4 @@ import { DeepPartial } from "utility-types";
 // logZip7bSeq(20);
 // logZip8Seq(20);
 // logZip8Seq(20);
-logZip9Seq(12);
+logObjValueSeqZip3Seq(12);

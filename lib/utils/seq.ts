@@ -1,4 +1,11 @@
-import { log } from "@/utils/log";
+import { div, log } from "@/utils/log";
+import {
+	FullType,
+	getFullType,
+	hasClassName,
+	isFullType,
+} from "@/utils/types";
+import { stringify } from "node:querystring";
 
 /**
  * Seq base class. Holds functional methods: 'map', 'filter', etc.
@@ -595,5 +602,135 @@ export class AccumSeq<TIn, TValue> extends Seq<TValue> {
 			acc = this.fn(acc, value);
 			yield acc;
 		}
+	}
+}
+
+export class ObjValueSeq<T> extends Seq<T> {
+	constructor(
+		public readonly object: Object,
+		public readonly fullType: FullType,
+		public readonly constraintKind:
+			| "none"
+			| "full-type"
+			| "has-class"
+	) {
+		super();
+	}
+
+	public override *gen() {
+		for (const [key, value] of Object.entries(this.object)) {
+			switch (this.constraintKind) {
+				case "none":
+					break;
+				case "full-type":
+					if (!isFullType(value, this.fullType)) {
+						continue;
+					}
+					break;
+				case "has-class":
+					log(`===><ObjValueSeq.gen> 'has-class' Value:`);
+					log(value);
+
+					log(
+						`===><ObjValueSeq.gen>: has class: '${this.fullType.className}'`
+					);
+					if (!hasClassName(value, this.fullType.className)) {
+						div();
+						continue;
+					}
+					div();
+					break;
+			}
+			yield value as T;
+		}
+	}
+
+	public static fromType<T>(obj: Object, type: FullType["type"]) {
+		return new ObjValueSeq<T>(
+			obj,
+			{ type, className: "" },
+			"full-type"
+		);
+	}
+	public static fromClass<T>(obj: Object, className: string) {
+		return new ObjValueSeq<T>(
+			obj,
+			{ type: "Class", className },
+			"full-type"
+		);
+	}
+
+	public static fromHasClass<T>(obj: Object, className: string) {
+		return new ObjValueSeq<T>(
+			obj,
+			{ type: "Class", className },
+			"has-class"
+		);
+	}
+}
+
+export class ObjKeyValueSeq<T> extends Seq<{
+	key: string;
+	value: T;
+}> {
+	constructor(
+		public readonly object: Object,
+		public readonly fullType: FullType,
+		public readonly constraintKind:
+			| "none"
+			| "full-type"
+			| "has-class"
+	) {
+		super();
+	}
+
+	public override *gen() {
+		for (const [key, value] of Object.entries(this.object)) {
+			switch (this.constraintKind) {
+				case "none":
+					break;
+				case "full-type":
+					if (!isFullType(value, this.fullType)) {
+						continue;
+					}
+					break;
+				case "has-class":
+					log(`===> 'has-class' Value:`);
+					log(value);
+
+					log(
+						`===>hasClassName: '${
+							this.fullType.className
+						}' ${hasClassName(value, this.fullType.className)}`
+					);
+					if (!hasClassName(value, this.fullType.className)) {
+						continue;
+					}
+			}
+			yield { key, value: value as T };
+		}
+	}
+
+	public static fromType<T>(obj: Object, type: FullType["type"]) {
+		return new ObjKeyValueSeq<T>(
+			obj,
+			{ type, className: "" },
+			"full-type"
+		);
+	}
+	public static fromClass<T>(obj: Object, className: string) {
+		return new ObjKeyValueSeq<T>(
+			obj,
+			{ type: "Class", className },
+			"full-type"
+		);
+	}
+
+	public static fromHasClass<T>(obj: Object, className: string) {
+		return new ObjKeyValueSeq<T>(
+			obj,
+			{ type: "Class", className },
+			"has-class"
+		);
 	}
 }
