@@ -32,7 +32,7 @@ const logKeyValueZipSeqs = (seqs: Record<string, AnySeq>) => {
 		switch (true) {
 			case i === lastSeqIndex:
 				{
-					logln(30);
+					logln(20);
 					log(`${key} of`);
 					const lastLabelIndex = labels.length - 1;
 					for (let j = 0; j < labels.length; j++) {
@@ -46,7 +46,7 @@ const logKeyValueZipSeqs = (seqs: Record<string, AnySeq>) => {
 								break;
 						}
 					}
-					logln(30);
+					logln(20);
 					log(value.toArray());
 				}
 				break;

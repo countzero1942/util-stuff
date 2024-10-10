@@ -93,7 +93,7 @@ import { DeepPartial } from "utility-types";
 
 // logZip2Seq(20);
 // logZip3Seq(20);
-logZip7Seq(20);
+// logZip7Seq(20);
 // div();
 // log();
 // div();
@@ -102,4 +102,4 @@ logZip7Seq(20);
 // logZip8Seq(20);
 // logZip8Seq(20);
 // logObjValueSeqZip3Seq(12);
-// logObjKeyValueSeqZip3Seq(12);
+logObjKeyValueSeqZip3Seq(12);

@@ -9,6 +9,8 @@ import { stringify } from "node:querystring";
 
 export type AnySeq = Seq<any>;
 
+export type SeqType<T> = T extends Seq<infer U> ? U : never;
+
 /**
  * Seq base class. Holds functional methods: 'map', 'filter', etc.
  * These chain together Seq instances: MapSeq, FilterSeq, etc.
@@ -86,7 +88,58 @@ export abstract class Seq<T> {
 	public take(takeCount: number) {
 		return new TakeSeq(this, takeCount);
 	}
-
+	public zip<T2, T3, T4, T5, T6, T7, T8, T9, TOut>(
+		seqs: [
+			Seq<T2>,
+			Seq<T3>,
+			Seq<T4>,
+			Seq<T5>,
+			Seq<T6>,
+			Seq<T7>,
+			Seq<T8>,
+			Seq<T9>
+		],
+		fn: (
+			a: T,
+			b: T2,
+			c: T3,
+			d: T4,
+			e: T5,
+			f: T6,
+			g: T7,
+			h: T8,
+			i: T9
+		) => TOut
+	): ZipSeq<TOut>;
+	public zip<T2, T3, T4, T5, T6, T7, T8, TOut>(
+		seqs: [
+			Seq<T2>,
+			Seq<T3>,
+			Seq<T4>,
+			Seq<T5>,
+			Seq<T6>,
+			Seq<T7>,
+			Seq<T8>
+		],
+		fn: (
+			a: T,
+			b: T2,
+			c: T3,
+			d: T4,
+			e: T5,
+			f: T6,
+			g: T7,
+			h: T8
+		) => TOut
+	): ZipSeq<TOut>;
+	public zip<T2, T3, T4, T5, T6, T7, TOut>(
+		seqs: [Seq<T2>, Seq<T3>, Seq<T4>, Seq<T5>, Seq<T6>, Seq<T7>],
+		fn: (a: T, b: T2, c: T3, d: T4, e: T5, f: T6, g: T7) => TOut
+	): ZipSeq<TOut>;
+	public zip<T2, T3, T4, T5, T6, TOut>(
+		seqs: [Seq<T2>, Seq<T3>, Seq<T4>, Seq<T5>, Seq<T6>],
+		fn: (a: T, b: T2, c: T3, d: T4, e: T5, f: T6) => TOut
+	): ZipSeq<TOut>;
 	public zip<T2, T3, T4, T5, TOut>(
 		seqs: [Seq<T2>, Seq<T3>, Seq<T4>, Seq<T5>],
 		fn: (a: T, b: T2, c: T3, d: T4, e: T5) => TOut
@@ -163,6 +216,8 @@ export abstract class Seq<T> {
 		for (const x of this) {
 			if (c <= max) {
 				log(x);
+			} else {
+				break;
 			}
 		}
 	}
@@ -529,8 +584,6 @@ export class MathProdSeq extends Seq<number> {
 	}
 }
 
-export type SeqType<T> = T extends Seq<infer U> ? U : never;
-
 /**
  * Class used to Zip two Seqs together
  *
@@ -633,17 +686,17 @@ export class ObjValueSeq<
 					}
 					break;
 				case "has-class":
-					log(`===><ObjValueSeq.gen> 'has-class' Value:`);
-					log(value);
+					// log(`===><ObjValueSeq.gen> 'has-class' Value:`);
+					// log(value);
 
-					log(
-						`===><ObjValueSeq.gen>: has className: '${this.fullType.className}'`
-					);
+					// log(
+					// 	`===><ObjValueSeq.gen>: has className: '${this.fullType.className}'`
+					// );
 					if (!hasClassName(value, this.fullType.className)) {
-						div();
+						// div();
 						continue;
 					}
-					div();
+					// div();
 					break;
 			}
 			yield value as TValue;
@@ -714,15 +767,16 @@ export class ObjKeyValueSeq<
 				case "has-class":
 					// log(`===> 'has-class' Value:`);
 					// log(value);
+					// log("===========");
 
-					// log(
-					// 	`===>hasClassName: '${
-					// 		this.fullType.className
-					// 	}' ${hasClassName(value, this.fullType.className)}`
-					// );
 					if (!hasClassName(value, this.fullType.className)) {
+						// log("===> className fail: don't yield");
+						// div();
 						continue;
 					}
+					// log("===> className match: yield");
+					// div();
+					break;
 			}
 			yield { key: key as TKey, value: value as TValue };
 		}

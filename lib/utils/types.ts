@@ -44,37 +44,67 @@ export const getClassName = (item: Object) => item.constructor.name;
  */
 export const hasClassName = (item: any, className: string) => {
 	const type = getType(item);
-	// log(`===><hasClassName> type: ${type}`);
 
 	if (type !== "Class") {
-		// log(`===><hasClassName> type !== "Class" -> return FALSE`);
 		return false;
 	}
 
-	let next = Object.getPrototypeOf(item);
-
-	while (next !== null) {
+	let next = item;
+	while (true) {
+		next = Object.getPrototypeOf(next);
 		const name = next?.constructor?.name;
 
-		if (name === null || name === "Object") {
-			return false;
+		switch (true) {
+			case next == null:
+				return false;
+			case name == null:
+				return false;
+			case name === "Object":
+				return false;
+			case name === className:
+				return true;
+			default:
+				break;
 		}
-		// log(`===><hasClassName> ctor name: ${name}`);
-
-		if (next.constructor.name === className) {
-			// log(
-			// 	`===><hasClassName> ancestor class matches -> return TRUE`
-			// );
-
-			return true;
-		}
-		next = Object.getPrototypeOf(next);
 	}
-	// log(
-	// 	`===><hasClassName> next = Object.getPrototypeOf(next) -> return FALSE`
-	// );
-	return false;
 };
+
+// export const hasClassNameLog = (item: any, className: string) => {
+// 	log(`===><hasClassName> has className: "${className}"`);
+// 	const type = getType(item);
+// 	log(`===><hasClassName> item type: ${type}`);
+
+// 	if (type !== "Class") {
+// 		log(`===><hasClassName> type !== "Class" -> return FALSE`);
+// 		return false;
+// 	}
+
+// 	let next = item;
+// 	while (true) {
+// 		next = Object.getPrototypeOf(next);
+// 		const name = next?.constructor?.name;
+
+// 		switch (true) {
+// 			case next == null:
+// 				log(`===><hasClassName> next is null -> ret FALSE`);
+// 				return false;
+// 			case name == null:
+// 				log(`===><hasClassName> name is null -> ret FALSE`);
+// 				return false;
+// 			case name === "Object":
+// 				log(`===><hasClassName> name is "Object" -> ret FALSE`);
+// 				return false;
+// 			case name === className:
+// 				log(`===><hasClassName> name: "${name}"`);
+// 				log(`===><hasClassName> classsName: "${className}"`);
+// 				log(`===><hasClassName> name is className -> ret TRUE`);
+// 				return true;
+// 			default:
+// 				log(`===><hasClassName> name is "${name}" -> cont`);
+// 				break;
+// 		}
+// 	}
+// };
 
 /**
  * Gets the Type name of an object. The return type covers
