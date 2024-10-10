@@ -30,7 +30,6 @@ import {
 } from "@/app/seq-zip-old-proto";
 import {
 	logObjKeyValueSeqZip3Seq,
-	logObjValueSeqZip3Seq,
 	logZip2Seq,
 	logZip3Seq,
 	logZip7bSeq,
@@ -93,8 +92,8 @@ import { DeepPartial } from "utility-types";
 //logFibTriSquare(36);
 
 // logZip2Seq(20);
-logZip3Seq(20);
-// logZip7Seq(20);
+// logZip3Seq(20);
+logZip7Seq(20);
 // div();
 // log();
 // div();

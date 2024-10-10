@@ -7,6 +7,8 @@ import {
 } from "@/utils/types";
 import { stringify } from "node:querystring";
 
+export type AnySeq = Seq<any>;
+
 /**
  * Seq base class. Holds functional methods: 'map', 'filter', etc.
  * These chain together Seq instances: MapSeq, FilterSeq, etc.
@@ -605,9 +607,12 @@ export class AccumSeq<TIn, TValue> extends Seq<TValue> {
 	}
 }
 
-export class ObjValueSeq<T> extends Seq<T> {
+export class ObjValueSeq<
+	TValue,
+	TKey extends KeyType = KeyType
+> extends Seq<TValue> {
 	constructor(
-		public readonly object: Object,
+		public readonly object: Record<TKey, TValue>,
 		public readonly fullType: FullType,
 		public readonly constraintKind:
 			| "none"
@@ -641,27 +646,36 @@ export class ObjValueSeq<T> extends Seq<T> {
 					div();
 					break;
 			}
-			yield value as T;
+			yield value as TValue;
 		}
 	}
 
-	public static fromType<T>(obj: Object, type: FullType["type"]) {
-		return new ObjValueSeq<T>(
+	public static fromType<TValue, TKey extends KeyType = string>(
+		obj: Record<TKey, TValue>,
+		type: FullType["type"]
+	) {
+		return new ObjValueSeq<TValue, TKey>(
 			obj,
 			{ type, className: "" },
 			"full-type"
 		);
 	}
-	public static fromClass<T>(obj: Object, className: string) {
-		return new ObjValueSeq<T>(
+	public static fromClass<TValue, TKey extends KeyType = string>(
+		obj: Record<TKey, TValue>,
+		className: string
+	) {
+		return new ObjValueSeq<TValue, TKey>(
 			obj,
 			{ type: "Class", className },
 			"full-type"
 		);
 	}
 
-	public static fromHasClass<T>(obj: Object, className: string) {
-		return new ObjValueSeq<T>(
+	public static fromHasClass<TValue, TKey extends KeyType = string>(
+		obj: Record<TKey, TValue>,
+		className: string
+	) {
+		return new ObjValueSeq<TValue, TKey>(
 			obj,
 			{ type: "Class", className },
 			"has-class"
@@ -669,12 +683,15 @@ export class ObjValueSeq<T> extends Seq<T> {
 	}
 }
 
-export class ObjKeyValueSeq<T> extends Seq<{
-	key: string;
-	value: T;
+export class ObjKeyValueSeq<
+	TValue,
+	TKey extends KeyType = KeyType
+> extends Seq<{
+	key: TKey;
+	value: TValue;
 }> {
 	constructor(
-		public readonly object: Object,
+		public readonly object: Record<TKey, TValue>,
 		public readonly fullType: FullType,
 		public readonly constraintKind:
 			| "none"
@@ -707,27 +724,36 @@ export class ObjKeyValueSeq<T> extends Seq<{
 						continue;
 					}
 			}
-			yield { key, value: value as T };
+			yield { key: key as TKey, value: value as TValue };
 		}
 	}
 
-	public static fromType<T>(obj: Object, type: FullType["type"]) {
-		return new ObjKeyValueSeq<T>(
+	public static fromType<TValue, TKey extends KeyType = string>(
+		obj: Record<TKey, TValue>,
+		type: FullType["type"]
+	) {
+		return new ObjKeyValueSeq<TValue, TKey>(
 			obj,
 			{ type, className: "" },
 			"full-type"
 		);
 	}
-	public static fromClass<T>(obj: Object, className: string) {
-		return new ObjKeyValueSeq<T>(
+	public static fromClass<TValue, TKey extends KeyType = string>(
+		obj: Record<TKey, TValue>,
+		className: string
+	) {
+		return new ObjKeyValueSeq<TValue, TKey>(
 			obj,
 			{ type: "Class", className },
 			"full-type"
 		);
 	}
 
-	public static fromHasClass<T>(obj: Object, className: string) {
-		return new ObjKeyValueSeq<T>(
+	public static fromHasClass<TValue, TKey extends KeyType = string>(
+		obj: Record<TKey, TValue>,
+		className: string
+	) {
+		return new ObjKeyValueSeq<TValue, TKey>(
 			obj,
 			{ type: "Class", className },
 			"has-class"

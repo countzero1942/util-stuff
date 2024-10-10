@@ -7,3 +7,5 @@ type OnlyValueTypesOf<T> = {
 };
 
 type ArrayElement<A> = A extends readonly (infer T)[] ? T : never;
+
+type KeyType = string | number | symbol;

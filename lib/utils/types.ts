@@ -31,7 +31,18 @@ const getPrototype = (item: any) => {
  */
 export const getClassName = (item: Object) => item.constructor.name;
 
-export const hasClassName = (item: Object, className: string) => {
+/**
+ * Checks any kind of object for type of "Class" and that is has
+ * self or ancestor "className". Returns true, if so. Otherwise false.
+ *
+ * @param item Any kind of item/object to test for. E.g., number,
+ * string, Object or class
+ * @param className Self or ancestor class name to test for
+ * (if 'item' is a class object.)
+ * @returns True if item is type "Class" and has self or ancestor
+ * "className". Otherwise, false.
+ */
+export const hasClassName = (item: any, className: string) => {
 	const type = getType(item);
 	// log(`===><hasClassName> type: ${type}`);
 
