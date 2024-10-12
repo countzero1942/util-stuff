@@ -430,34 +430,23 @@ export const logZip9SeqDirect = (count: number) => {
 
 type FunctionType = (count: number) => void;
 
-export const selectAndRun = () => {
-	const logFunctions: FunctionType[] = Object.entries(module.exports)
-		.filter(([key]) => key.startsWith("log"))
-		.map(([, value]) => value as FunctionType);
+export const getLogFunctions = (): FunctionType[] => {
+	return [
+		logZip2Seq,
+		logZip3Seq,
+		logZip7Seq,
+		logZip7bSeq,
+		logZip8Seq,
+		logZip8bSeq,
+		logZip9Seq,
+		logZip9bSeq,
+		logZip9SeqDirect,
+		logObjKeyValueSeqZip3Seq,
+	];
+};
 
-	// const f1 = ArraySeq.from(logFunctions)
-	// 	.imap((i, fn) => {
-	// 		return { key: i + 1, value: fn };
-	// 	})
-	// 	.toArray();
-
-	// type a = ArrayElement<typeof f1>["value"];
-
-	// const f2 = ArraySeq.from(logFunctions)
-	// 	.imap((i, fn) => {
-	// 		return [i + 1, fn];
-	// 	})
-	// 	.toArray();
-
-	const functions: Record<string, FunctionType> = {
-		1: logZip7Seq,
-		2: logZip7bSeq,
-		3: logZip8Seq,
-		4: logZip8bSeq,
-		5: logZip9Seq,
-		6: logZip9bSeq,
-		7: logZip9SeqDirect,
-	};
+export const selectAndRun = (count: number) => {
+	const functions = getLogFunctions();
 
 	const max = Object.keys(functions).reduce(
 		(max, key) => Math.max(max, parseInt(key)),
@@ -481,27 +470,12 @@ export const selectAndRun = () => {
 			const num = parseInt(answer);
 			if (num >= 1 && num <= max) {
 				const f = functions[num] as FunctionType;
-				f(20);
+				f(count);
 			} else {
 				log("Invalid input.");
 			}
 		}
 	);
-};
-
-export const getLogFunctions = (): FunctionType[] => {
-	return [
-		logZip2Seq,
-		logZip3Seq,
-		logZip7Seq,
-		logZip7bSeq,
-		logZip8Seq,
-		logZip8bSeq,
-		logZip9Seq,
-		logZip9bSeq,
-		logZip9SeqDirect,
-		logObjKeyValueSeqZip3Seq,
-	];
 };
 
 export const getRecord = () => {

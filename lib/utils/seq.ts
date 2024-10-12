@@ -367,18 +367,14 @@ export abstract class Seq<T> {
 		return v;
 	}
 
-	/*************  ✨ Codeium Command ⭐  *************/
 	/**
-	 * Accumulates elements of the Seq into a single value using a function.
-	 * The function takes two arguments: the accumulator and the next value.
-	 * The initial value of the accumulator is provided as an argument.
-	 * The resulting value is the final value of the accumulator.
+	 * Accumulates the elements of the Seq, using a function to combine the next value
+	 * with the accumulator.
 	 *
 	 * @param accStart The initial value for the accumulator
 	 * @param fn A function of two arguments: the accumulator and the next value
-	 * @returns The accumulated value
+	 * @returns An AccumSeq, which is a type of Seq
 	 */
-	/******  272b9b8f-b40b-4c2e-b531-0c5bf6827273  *******/
 	public accum<TValue>(
 		accStart: TValue,
 		fn: (acc: TValue, value: T) => TValue
@@ -387,18 +383,13 @@ export abstract class Seq<T> {
 	}
 }
 
-/**
- * Class used for mapping one Seq type to another
- *
- * @param TIn The input element type
- * @param TOut The output element type
- */
 export class MapSeq<TIn, TOut> extends Seq<TOut> {
 	/**
-	 * MapSeq constructor.
+	 * Maps 'this' Seq to another Seq.
+	 * One element type to another.
 	 *
-	 * @param seq The input Seq
-	 * @param fn The mapping lambda
+	 * @param seq The Seq to map
+	 * @param fn The mapping function
 	 */
 	constructor(
 		public readonly seq: Seq<TIn>,
@@ -533,7 +524,8 @@ export class ArraySeq<T> extends Seq<T> {
 	/**
 	 * ArraySeq constructor
 	 *
-	 * @param array The array to Seq
+	 * @param array The array to hold, whose elements will
+	 * be turned into a Seq
 	 */
 	constructor(public readonly array: readonly T[]) {
 		super();
@@ -733,6 +725,15 @@ export class ZipSeq<TOut> extends Seq<TOut> {
 		super();
 	}
 
+	/**
+	 * The generator for the ZipSeq.
+	 *
+	 * It will yield as long as all Seqs have not ended.
+	 * The yielded value is the result of the zipping function,
+	 * which is called with one element from each Seq.
+	 *
+	 * When any Seq ends, the generator will end.
+	 */
 	public override *gen() {
 		{
 			const iters = this.Seqs.map(seq => seq.gen());
@@ -861,8 +862,6 @@ export class RecordValueSeq<
 	 * Creates a RecordValueSeq with generic constraint
 	 * alone. No dynamic type checking.
 	 *
-	 * No dynamic constraint is applied.
-	 *
 	 * @param obj The input object
 	 * @returns RecordValueSeq
 	 */
@@ -879,9 +878,9 @@ export class RecordValueSeq<
 	/**
 	 * Creates a RecordValueSeq with a simple dynamic type constraint.
 	 *
-	 * The given type is used for dynamic type checking.
-	 *
 	 * Static type checking is always applied.
+	 *
+	 * Dynamic type-checking fails are skipped.
 	 *
 	 * @param obj The input object
 	 * @param type The full type to check the values against
@@ -898,13 +897,13 @@ export class RecordValueSeq<
 		);
 	}
 	/**
-	 * Creates a RecordValueSeq with a class name dynamic type constraint.
-	 *
-	 * The given class name is used for dynamic type checking.
+	 * Creates a RecordValueSeq with a class-name dynamic type constraint.
 	 *
 	 * The value must be an instance of the given class name.
 	 *
 	 * Static type checking is always applied.
+	 *
+	 * Dynamic type-checking fails are skipped.
 	 *
 	 * @param obj The input object
 	 * @param className The class name to check the values against
@@ -924,11 +923,11 @@ export class RecordValueSeq<
 	/**
 	 * Creates a RecordValueSeq with a class name dynamic type constraint.
 	 *
-	 * The given class name is used for dynamic type checking.
-	 *
 	 * The value must be an instance of the given class name, or a subclass.
 	 *
 	 * Static type checking is always applied.
+	 *
+	 * Dynamic type-checking fails are skipped.
 	 *
 	 * @param obj The input object
 	 * @param className The class name to check the values against
@@ -1012,16 +1011,12 @@ export class RecordSeq<
 			yield { key: key as TKey, value: value as TValue };
 		}
 	}
-	/*************  ✨ Codeium Command ⭐  *************/
 	/**
-	 * Creates a RecordSeq with generic constraint alone.
-	 *
-	 * No dynamic constraint is applied.
+	 * Creates a RecordSeq with no dynamic type constraint.
 	 *
 	 * @param obj The input object
 	 * @returns RecordSeq
 	 */
-	/******  b0e1b9e7-c05d-4b86-b5e5-cbe370147da1  *******/
 	public static fromGeneric<TValue, TKey extends KeyType = string>(
 		obj: Record<TKey, TValue>
 	) {
@@ -1035,9 +1030,9 @@ export class RecordSeq<
 	/**
 	 * Creates a RecordSeq with a simple dynamic type constraint.
 	 *
-	 * The given type is used for dynamic type checking.
-	 *
 	 * Static type checking is always applied.
+	 *
+	 * Dynamic type-checking fails are skipped.
 	 *
 	 * @param obj The input object
 	 * @param type The basic type to check the values against
@@ -1053,14 +1048,15 @@ export class RecordSeq<
 			"full-type"
 		);
 	}
+
 	/**
 	 * Creates a RecordSeq with a class name dynamic type constraint.
-	 *
-	 * The given class name is used for dynamic type checking.
 	 *
 	 * The value must be an instance of the given class name.
 	 *
 	 * Static type checking is always applied.
+	 *
+	 * Dynamic type-checking fails are skipped.
 	 *
 	 * @param obj The input object
 	 * @param className The class name to check the values against
@@ -1080,11 +1076,11 @@ export class RecordSeq<
 	/**
 	 * Creates a RecordSeq with a class name dynamic type constraint.
 	 *
-	 * The given class name is used for dynamic type checking.
-	 *
 	 * The value must be an instance of the given class name or an ancestor.
 	 *
 	 * Static type checking is always applied.
+	 *
+	 * Dynamic type-checking fails are skipped.
 	 *
 	 * @param obj The input object
 	 * @param className The class name to check the values against
