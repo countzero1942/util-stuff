@@ -1,7 +1,9 @@
+import { getSeqs, logKeyValueZipSeqs } from "@/app/seq-zip-helper";
 import { div, logh, logln } from "@/utils/log";
 import { isEven, isOdd } from "@/utils/math";
 import {
 	AnySeq,
+	ArraySeq,
 	NumSeq,
 	ObjKeyValueSeq,
 	ObjValueSeq,
@@ -9,114 +11,14 @@ import {
 } from "@/utils/seq";
 import { getFullType, hasClassName } from "@/utils/types";
 import { count, log } from "console";
-
-/**
- *
- * @param seqs All seqs used + zipSeq last
- */
-const logKeyValueZipSeqs = (seqs: Record<string, AnySeq>) => {
-	const ss = ObjKeyValueSeq.fromHasClass<AnySeq>(seqs, "Seq");
-	const arr = ss.toArray();
-	if (arr.length < 3) {
-		throw Error(
-			"Three Seqs expected: 2 Seqs and 1 ZipSeq at the end."
-		);
-	}
-
-	const labels: string[] = [];
-
-	const lastSeqIndex = arr.length - 1;
-	for (let i = 0; i < arr.length; i++) {
-		const { key, value } = arr[i] as ArrayElement<typeof arr>;
-
-		switch (true) {
-			case i === lastSeqIndex:
-				{
-					logln(20);
-					log(`${key} of`);
-					const lastLabelIndex = labels.length - 1;
-					for (let j = 0; j < labels.length; j++) {
-						const label = labels[j];
-						switch (true) {
-							case j === lastLabelIndex:
-								log(`   ${label}:`);
-								break;
-							default:
-								log(`   ${label}`);
-								break;
-						}
-					}
-					logln(20);
-					log(value.toArray());
-				}
-				break;
-
-			default:
-				{
-					labels.push(key);
-					logh(`${key}:`);
-					log(value.toArray());
-				}
-				break;
-		}
-	}
-};
-
-const reduceTriangular = (n: number) => {
-	const triangular = NumSeq.count(n).reduce(
-		0,
-		(acc, current) => acc + current
-	);
-	return triangular;
-};
-
-const reduceFib = (n: number) => {
-	const fib = NumSeq.count(n).accum(
-		{ prevFib: 1, fibonacci: 0 },
-		({ prevFib, fibonacci }) => {
-			return {
-				prevFib: fibonacci,
-				fibonacci: prevFib + fibonacci,
-			};
-		}
-	);
-	return fib;
-};
-
-const getSeqs = (count: number) => {
-	const countSeq = NumSeq.count(count);
-	const toStrSeq = countSeq.map(x => x.toString());
-	const sevensSeq = countSeq.map(x => 7 * x);
-	const elevensSeq = countSeq.map(x => 11 * x);
-	const squaresSeq = countSeq.map(x => x ** 2);
-	const cubesSeq = countSeq.map(x => x ** 3);
-	const trianglesSeq = countSeq.accum(0, (acc, n) => acc + n);
-	const fibonacciSeq = countSeq.accum(
-		{ prevFib: 1, fibonacci: 0 },
-		({ prevFib, fibonacci }) => {
-			return {
-				prevFib: fibonacci,
-				fibonacci: prevFib + fibonacci,
-			};
-		}
-	);
-	const factorialSeq = countSeq.accum(1, (acc, n) => acc * n);
-
-	return {
-		countSeq,
-		toStrSeq,
-		sevensSeq,
-		elevensSeq,
-		squaresSeq,
-		cubesSeq,
-		trianglesSeq,
-		fibonacciSeq,
-		factorialSeq,
-	};
-};
+import * as readline from "readline";
 
 // count, toStr, sevens, elevens, square, cube, triangle, fib
 
+/**
+ * Logs ZipSeq of {count, toStr} where count is an even number from 1 to count.
+ * @param count - upper limit of the count sequence
+ */
 export const logZip2Seq = (count: number) => {
 	const { countSeq, toStrSeq } = getSeqs(count);
 
@@ -132,20 +34,20 @@ export const logZip2Seq = (count: number) => {
 // count, toStr, sevens, elevens, square, cube, triangle, fib
 
 export const logZip3Seq = (count: number) => {
-	const { countSeq, toStrSeq, sevensSeq } = getSeqs(count);
+	const { countSeq, squaresSeq, cubesSeq } = getSeqs(count);
 	log(countSeq);
-	log(toStrSeq);
-	log(sevensSeq);
+	log(squaresSeq);
+	log(cubesSeq);
 	const zipSeq = countSeq
-		.zip([toStrSeq, sevensSeq], (count, toStr, sevens) => {
+		.zip([squaresSeq, cubesSeq], (count, toStr, sevens) => {
 			return { count, toStr, sevens };
 		})
 		.filter(x => x.count % 2 === 0);
 
 	const seqs: Record<string, AnySeq> = {
 		countSeq,
-		toStrSeq,
-		sevensSeq,
+		squaresSeq,
+		cubesSeq,
 		zipSeq,
 	};
 
@@ -329,7 +231,7 @@ export const logZip8bSeq = (count: number) => {
 
 export const logObject = (obj: Object) => {
 	for (const [key, value] of Object.entries(obj)) {
-		const { type, className: name } = getFullType(value);
+		const { type, name: name } = getFullType(value);
 		const hasClass = hasClassName(value, "Seq");
 		div();
 
@@ -457,4 +359,156 @@ export const logObjKeyValueSeqZip3Seq = (count: number) => {
 	};
 
 	logKeyValueZipSeqs(myobj as unknown as Record<string, AnySeq>);
+};
+
+export const logZip9SeqDirect = (count: number) => {
+	const {
+		countSeq,
+		toStrSeq,
+		sevensSeq,
+		elevensSeq,
+		squaresSeq,
+		cubesSeq,
+		trianglesSeq,
+		fibonacciSeq,
+		factorialSeq,
+	} = getSeqs(count);
+
+	const zipSeq = countSeq.zip(
+		[
+			toStrSeq,
+			sevensSeq,
+			elevensSeq,
+			squaresSeq,
+			cubesSeq,
+			trianglesSeq,
+			fibonacciSeq,
+			factorialSeq,
+		],
+		(
+			count,
+			toStr,
+			sevens,
+			elevens,
+			square,
+			cube,
+			triangle,
+			fibonacci,
+			factorial
+		) => {
+			return {
+				count,
+				toStr,
+				sevens,
+				elevens,
+				square,
+				cube,
+				triangle,
+				...fibonacci,
+				factorial,
+			};
+		}
+	);
+
+	logKeyValueZipSeqs({
+		countSeq,
+		toStrSeq,
+		sevensSeq,
+		elevensSeq,
+		squaresSeq,
+		cubesSeq,
+		trianglesSeq,
+		fibonacciSeq,
+		factorialSeq,
+		zipSeq,
+	});
+};
+
+type FunctionType = (count: number) => void;
+
+export const selectAndRun = () => {
+	const logFunctions: FunctionType[] = Object.entries(module.exports)
+		.filter(([key]) => key.startsWith("log"))
+		.map(([, value]) => value as FunctionType);
+
+	// const f1 = ArraySeq.from(logFunctions)
+	// 	.imap((i, fn) => {
+	// 		return { key: i + 1, value: fn };
+	// 	})
+	// 	.toArray();
+
+	// type a = ArrayElement<typeof f1>["value"];
+
+	// const f2 = ArraySeq.from(logFunctions)
+	// 	.imap((i, fn) => {
+	// 		return [i + 1, fn];
+	// 	})
+	// 	.toArray();
+
+	const functions: Record<string, FunctionType> = {
+		1: logZip7Seq,
+		2: logZip7bSeq,
+		3: logZip8Seq,
+		4: logZip8bSeq,
+		5: logZip9Seq,
+		6: logZip9bSeq,
+		7: logZip9SeqDirect,
+	};
+
+	const max = Object.keys(functions).reduce(
+		(max, key) => Math.max(max, parseInt(key)),
+		0
+	);
+
+	logh("Select a function:");
+	Object.entries(functions).forEach(([key, value]) => {
+		log(`  ${key}: ${value.name}`);
+	});
+
+	const rl = readline.createInterface({
+		input: process.stdin,
+		output: process.stdout,
+	});
+
+	rl.question(
+		`Enter a number between 1 and ${max}: `,
+		(answer: string) => {
+			rl.close();
+			const num = parseInt(answer);
+			if (num >= 1 && num <= max) {
+				const f = functions[num] as FunctionType;
+				f(20);
+			} else {
+				log("Invalid input.");
+			}
+		}
+	);
+};
+
+export const getLogFunctions = (): FunctionType[] => {
+	return [
+		logZip2Seq,
+		logZip3Seq,
+		logZip7Seq,
+		logZip7bSeq,
+		logZip8Seq,
+		logZip8bSeq,
+		logZip9Seq,
+		logZip9bSeq,
+		logZip9SeqDirect,
+		logObjKeyValueSeqZip3Seq,
+	];
+};
+
+export const getRecord = () => {
+	const logFunctions = getLogFunctions();
+
+	const record = ArraySeq.from(logFunctions)
+		.imap((i, fn) => {
+			const type = getFullType(fn);
+			return { key: i + 1, value: { name: type.name, fn } };
+		})
+		.toObject();
+
+	return record;
 };

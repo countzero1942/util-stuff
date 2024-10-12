@@ -29,6 +29,8 @@ import {
 	testZipManyProtoUnevenSeqsToArray,
 } from "@/app/seq-zip-old-proto";
 import {
+	getLogFunctions,
+	getRecord,
 	logObjKeyValueSeqZip3Seq,
 	logZip2Seq,
 	logZip3Seq,
@@ -38,6 +40,8 @@ import {
 	logZip8Seq,
 	logZip9bSeq,
 	logZip9Seq,
+	logZip9SeqDirect,
+	selectAndRun,
 } from "@/app/seq-zip-test";
 import { loopThruPowersOf10PlusFPErr } from "@/tests/math/FP-error-tests";
 import { TestNeighborNumbersAreEqual } from "@/tests/math/neighbor-numbers";
@@ -102,4 +106,25 @@ import { DeepPartial } from "utility-types";
 // logZip8Seq(20);
 // logZip8Seq(20);
 // logObjValueSeqZip3Seq(12);
-logObjKeyValueSeqZip3Seq(12);
+// logObjKeyValueSeqZip3Seq(12);
+// logZip9SeqDirect(12);
+// selectAndRun();
+const r = getRecord();
+log(r);
+
+div();
+
+r[3]?.fn(20);
+
+// class Thing {}
+
+// const t: Thing = new Thing();
+// log(getFullType(t));
+
+// const err = RangeError("stuff");
+// log(getFullType(err));
+
+// const sym = Symbol(2);
+
+// const obj = { sym: "a string", 2: "a number" };
+// log(obj);

@@ -17,7 +17,7 @@ export type FullType = {
 		| "Error"
 		| "Map"
 		| "Set";
-	className: string;
+	name: string;
 };
 
 const getPrototype = (item: any) => {
@@ -134,15 +134,27 @@ export const getType = (item: any): FullType["type"] => {
 
 export const getFullType = (item: any): FullType => {
 	const type = getType(item);
-	const name = type === "Class" ? getClassName(item) : "";
-	return { type, className: name };
+	const getName = () => {
+		switch (true) {
+			case type === "Class":
+			case type === "Error":
+				return getClassName(item);
+			case type === "Function":
+				return item.name;
+			default:
+				return "";
+		}
+	};
+
+	const name = getName();
+	return { type, name };
 };
 
 export const isFullType = (item: any, fullType: FullType) => {
 	const fullTypeItem = getFullType(item);
 	return (
 		fullTypeItem.type === fullType.type &&
-		fullTypeItem.className === fullType.className
+		fullTypeItem.name === fullType.name
 	);
 };
 
@@ -276,4 +288,11 @@ export const toReadonlyTuple = <
 	}
 
 	return arr as unknown as ReadonlyTuple<TArray, L>;
+};
+
+export const isObject = (obj: any): obj is Record<KeyType, any> => {
+	if (getType(obj) === "Object") {
+		return true;
+	}
+	return false;
 };

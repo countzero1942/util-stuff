@@ -2,10 +2,15 @@ import { div, log } from "@/utils/log";
 import {
 	FullType,
 	getFullType,
+	getType,
 	hasClassName,
 	isFullType,
+	isObject,
 } from "@/utils/types";
 import { stringify } from "node:querystring";
+import { Key } from "node:readline";
+import { ValueOf } from "type-fest";
+import { ValuesType } from "utility-types";
 
 export type AnySeq = Seq<any>;
 
@@ -27,6 +32,39 @@ export abstract class Seq<T> {
 	 */
 	public toArray(): readonly T[] {
 		return Array.from(this);
+	}
+
+	public toObject2<V>(): Record<KeyType, V> {
+		const obj: Record<string, V> = {};
+
+		for (const x of this) {
+			if (!isObject(x)) continue;
+			const key = x["key"];
+			if (!key) continue;
+			const value = x["value"];
+			if (!value) continue;
+
+			obj[key] = value;
+		}
+		return obj;
+	}
+
+	public toObject<V extends ExtractValueType<T>>(): Record<
+		KeyType,
+		V
+	> {
+		const obj: Record<KeyType, V> = {};
+
+		for (const x of this) {
+			if (!isObject(x)) continue;
+			const key = x["key"];
+			if (!key) continue;
+			const value = x["value"];
+			if (!value) continue;
+
+			obj[key] = value;
+		}
+		return obj;
 	}
 
 	[Symbol.iterator]() {
@@ -88,6 +126,7 @@ export abstract class Seq<T> {
 	public take(takeCount: number) {
 		return new TakeSeq(this, takeCount);
 	}
+
 	public zip<T2, T3, T4, T5, T6, T7, T8, T9, TOut>(
 		seqs: [
 			Seq<T2>,
@@ -111,6 +150,15 @@ export abstract class Seq<T> {
 			i: T9
 		) => TOut
 	): ZipSeq<TOut>;
+	/**
+	 * Zips 'this' Seq with up to 8 other Seqs using a function.
+	 * The function takes one element from each Seq and returns a new element.
+	 * The resulting Seq is a ZipSeq.
+	 *
+	 * @param seqs The Seqs to zip
+	 * @param fn The zipping function
+	 * @returns ZipSeq
+	 */
 	public zip<T2, T3, T4, T5, T6, T7, T8, TOut>(
 		seqs: [
 			Seq<T2>,
@@ -132,30 +180,93 @@ export abstract class Seq<T> {
 			h: T8
 		) => TOut
 	): ZipSeq<TOut>;
+	/**
+	 * Zips 'this' Seq with up to 7 other Seqs using a function.
+	 * The function takes one element from each Seq and returns a new element.
+	 * The resulting Seq is a ZipSeq.
+	 *
+	 * @param seqs The Seqs to zip
+	 * @param fn The zipping function
+	 * @returns ZipSeq
+	 */
 	public zip<T2, T3, T4, T5, T6, T7, TOut>(
 		seqs: [Seq<T2>, Seq<T3>, Seq<T4>, Seq<T5>, Seq<T6>, Seq<T7>],
 		fn: (a: T, b: T2, c: T3, d: T4, e: T5, f: T6, g: T7) => TOut
 	): ZipSeq<TOut>;
+	/**
+	 * Zips 'this' Seq with up to 6 other Seqs using a function.
+	 * The function takes one element from each Seq and returns a new element.
+	 * The resulting Seq is a ZipSeq.
+	 *
+	 * @param seqs The Seqs to zip
+	 * @param fn The zipping function
+	 * @returns ZipSeq
+	 */
 	public zip<T2, T3, T4, T5, T6, TOut>(
 		seqs: [Seq<T2>, Seq<T3>, Seq<T4>, Seq<T5>, Seq<T6>],
 		fn: (a: T, b: T2, c: T3, d: T4, e: T5, f: T6) => TOut
 	): ZipSeq<TOut>;
+	/**
+	 * Zips 'this' Seq with up to 5 other Seqs using a function.
+	 * The function takes one element from each Seq and returns a new element.
+	 * The resulting Seq is a ZipSeq.
+	 *
+	 * @param seqs The Seqs to zip
+	 * @param fn The zipping function
+	 * @returns ZipSeq
+	 */
 	public zip<T2, T3, T4, T5, TOut>(
 		seqs: [Seq<T2>, Seq<T3>, Seq<T4>, Seq<T5>],
 		fn: (a: T, b: T2, c: T3, d: T4, e: T5) => TOut
 	): ZipSeq<TOut>;
+	/**
+	 * Zips 'this' Seq with up to 4 other Seqs using a function.
+	 * The function takes one element from each Seq and returns a new element.
+	 * The resulting Seq is a ZipSeq.
+	 *
+	 * @param seqs The Seqs to zip
+	 * @param fn The zipping function
+	 * @returns ZipSeq
+	 */
 	public zip<T2, T3, T4, TOut>(
 		seqs: [Seq<T2>, Seq<T3>, Seq<T4>],
 		fn: (a: T, b: T2, c: T3, d: T4) => TOut
 	): ZipSeq<TOut>;
+	/**
+	 * Zips 'this' Seq with up to 3 other Seqs using a function.
+	 * The function takes one element from each Seq and returns a new element.
+	 * The resulting Seq is a ZipSeq.
+	 *
+	 * @param seqs The Seqs to zip
+	 * @param fn The zipping function
+	 * @returns ZipSeq
+	 */
 	public zip<T2, T3, TOut>(
 		seqs: [Seq<T2>, Seq<T3>],
 		fn: (a: T, b: T2, c: T3) => TOut
 	): ZipSeq<TOut>;
+	/**
+	 * Zips 'this' Seq with one other Seq using a function.
+	 * The function takes one element from each Seq and returns a new element.
+	 * The resulting Seq is a ZipSeq.
+	 *
+	 * @param seqs The Seqs to zip
+	 * @param fn The zipping function
+	 * @returns ZipSeq
+	 */
 	public zip<T2, TOut>(
 		seqs: [Seq<T2>],
 		fn: (a: T, b: T2) => TOut
 	): ZipSeq<TOut>;
+	/**
+	 * Zips 'this' Seq with an array of Seqs using a function.
+	 * The function takes one element from each Seq and returns a new element.
+	 * The resulting Seq is a ZipSeq.
+	 *
+	 * @param seqs The Seqs to zip
+	 * @param fn The zipping function
+	 * @returns ZipSeq
+	 */
 	public zip<TOut>(
 		seqs: Seq<any>[],
 		fn: (...args: any) => TOut
@@ -164,6 +275,9 @@ export abstract class Seq<T> {
 		return new ZipSeq(allSeqs, fn);
 	}
 
+	/**
+	 * Returns the first element of the Seq, or undefined if the Seq is empty.
+	 */
 	public first() {
 		for (const x of this) {
 			return x;
@@ -172,6 +286,10 @@ export abstract class Seq<T> {
 		return undefined;
 	}
 
+	/**
+	 * Returns the first element of the Seq, or throws an Error if the Seq is empty.
+	 * @throws Error if the Seq is empty
+	 */
 	public firstOrThrow() {
 		for (const x of this) {
 			return x;
@@ -180,6 +298,9 @@ export abstract class Seq<T> {
 		throw Error("Empty Seq: fistOrThrow");
 	}
 
+	/**
+	 * Returns the last element of the Seq, or undefined if the Seq is empty.
+	 */
 	public last() {
 		let v: T | undefined = undefined;
 
@@ -190,6 +311,10 @@ export abstract class Seq<T> {
 		return v;
 	}
 
+	/**
+	 * Returns the last element of the Seq, or throws an Error if the Seq is empty.
+	 * @throws Error if the Seq is empty
+	 */
 	public lastOrThrow(): T {
 		let v: T | undefined = undefined;
 
@@ -204,12 +329,20 @@ export abstract class Seq<T> {
 		throw Error("Empty Seq: lastOrThrow");
 	}
 
+	/**
+	 * Applies a side effect to each element of the Seq.
+	 * @param fn A pure function with side effects
+	 */
 	public foreach(fn: (x: T) => void) {
 		for (const x of this) {
 			fn(x);
 		}
 	}
 
+	/**
+	 * Logs each element of the Seq to the console.
+	 * @param max The maximum number of elements to log. Defaults to Number.MAX_SAFE_INTEGER.
+	 */
 	public log(max?: number) {
 		let c = 1;
 		max = max ?? Number.MAX_SAFE_INTEGER;
@@ -222,6 +355,12 @@ export abstract class Seq<T> {
 		}
 	}
 
+	/**
+	 * Returns the number of elements in the Seq.
+	 * Note: This method uses iteration under the hood,
+	 * so it may not be suitable for very large Seqs.
+	 * @returns The number of elements in the Seq
+	 */
 	public count() {
 		let c = 0;
 		for (const x of this) {
@@ -230,6 +369,10 @@ export abstract class Seq<T> {
 		return c;
 	}
 
+	/**
+	 * Checks if the Seq has any elements.
+	 * @returns true if the Seq is not empty, false otherwise
+	 */
 	public hasElements() {
 		for (const x of this) {
 			return true;
@@ -237,6 +380,13 @@ export abstract class Seq<T> {
 		return false;
 	}
 
+	/**
+	 * Applies a function to each element of the Seq, in order,
+	 * and returns the result to reduce the Seq to a single value.
+	 * @param accStart The initial value for the accumulator
+	 * @param fn A function of two arguments: the accumulator and the next value
+	 * @returns The reduced value
+	 */
 	public reduce(accStart: T, fn: (acc: T, current: T) => T) {
 		let v = accStart;
 		for (const x of this) {
@@ -664,6 +814,16 @@ export class ObjValueSeq<
 	TValue,
 	TKey extends KeyType = KeyType
 > extends Seq<TValue> {
+	/**
+	 * ObjValueSeq constructor.
+	 *
+	 * @param object The input object
+	 * @param fullType The full type to check against
+	 * @param constraintKind The type of dynamic constraint to apply
+	 * "none" - no constraint
+	 * "full-type" - check that the value matches fullType
+	 * "has-class" - check that the value has the given class name
+	 */
 	constructor(
 		public readonly object: Record<TKey, TValue>,
 		public readonly fullType: FullType,
@@ -675,6 +835,13 @@ export class ObjValueSeq<
 		super();
 	}
 
+	/**
+	 * Iterate over the values in the object.
+	 * If the Seq was created with a constraint, apply the constraint.
+	 * If the constraint fails, skip the value.
+	 *
+	 * @returns An iterator over the constrained values.
+	 */
 	public override *gen() {
 		for (const [key, value] of Object.entries(this.object)) {
 			switch (this.constraintKind) {
@@ -692,7 +859,7 @@ export class ObjValueSeq<
 					// log(
 					// 	`===><ObjValueSeq.gen>: has className: '${this.fullType.className}'`
 					// );
-					if (!hasClassName(value, this.fullType.className)) {
+					if (!hasClassName(value, this.fullType.name)) {
 						// div();
 						continue;
 					}
@@ -703,34 +870,72 @@ export class ObjValueSeq<
 		}
 	}
 
+	/**
+	 * From Generic constraint alone. No dynamic type checking.
+	 *
+	 * @param obj
+	 * @returns
+	 */
+	public static fromGeneric<TValue, TKey extends KeyType = string>(
+		obj: Record<TKey, TValue>
+	) {
+		return new ObjValueSeq<TValue, TKey>(
+			obj,
+			{ type: "Null", name: "" },
+			"none"
+		);
+	}
+
+	/**
+	 * From generic constraint and dynamic type checking. Non-class type.
+	 *
+	 * @param obj
+	 * @param type
+	 * @returns
+	 */
 	public static fromType<TValue, TKey extends KeyType = string>(
 		obj: Record<TKey, TValue>,
 		type: FullType["type"]
 	) {
 		return new ObjValueSeq<TValue, TKey>(
 			obj,
-			{ type, className: "" },
+			{ type, name: "" },
 			"full-type"
 		);
 	}
+	/**
+	 * From generic constraint and dynamic class filter.
+	 *
+	 * @param obj
+	 * @param className
+	 * @returns
+	 */
 	public static fromClass<TValue, TKey extends KeyType = string>(
 		obj: Record<TKey, TValue>,
 		className: string
 	) {
 		return new ObjValueSeq<TValue, TKey>(
 			obj,
-			{ type: "Class", className },
+			{ type: "Class", name: className },
 			"full-type"
 		);
 	}
 
+	/**
+	 * From generic constraint and has-class (self or ancestor base class)
+	 * dynamic type checking.
+	 *
+	 * @param obj
+	 * @param className
+	 * @returns
+	 */
 	public static fromHasClass<TValue, TKey extends KeyType = string>(
 		obj: Record<TKey, TValue>,
 		className: string
 	) {
 		return new ObjValueSeq<TValue, TKey>(
 			obj,
-			{ type: "Class", className },
+			{ type: "Class", name: className },
 			"has-class"
 		);
 	}
@@ -743,6 +948,16 @@ export class ObjKeyValueSeq<
 	key: TKey;
 	value: TValue;
 }> {
+	/**
+	 * ObjKeyValueSeq constructor.
+	 *
+	 * @param object The input object
+	 * @param fullType The full type to check against
+	 * @param constraintKind The type of constraint to apply
+	 * "none" - no constraint
+	 * "full-type" - check that the value is a full match to fullType
+	 * "has-class" - check that the value has the given class name
+	 */
 	constructor(
 		public readonly object: Record<TKey, TValue>,
 		public readonly fullType: FullType,
@@ -754,6 +969,13 @@ export class ObjKeyValueSeq<
 		super();
 	}
 
+	/**
+	 * Iterate over the key-value pairs in the object.
+	 * If the Seq was created with a constraint, apply the constraint.
+	 * If the constraint fails, skip the pair.
+	 *
+	 * @returns An iterator over the constrained key-value pairs.
+	 */
 	public override *gen() {
 		for (const [key, value] of Object.entries(this.object)) {
 			switch (this.constraintKind) {
@@ -769,7 +991,7 @@ export class ObjKeyValueSeq<
 					// log(value);
 					// log("===========");
 
-					if (!hasClassName(value, this.fullType.className)) {
+					if (!hasClassName(value, this.fullType.name)) {
 						// log("===> className fail: don't yield");
 						// div();
 						continue;
@@ -781,6 +1003,15 @@ export class ObjKeyValueSeq<
 			yield { key: key as TKey, value: value as TValue };
 		}
 	}
+	public static fromGeneric<TValue, TKey extends KeyType = string>(
+		obj: Record<TKey, TValue>
+	) {
+		return new ObjKeyValueSeq<TValue, TKey>(
+			obj,
+			{ type: "Null", name: "" },
+			"none"
+		);
+	}
 
 	public static fromType<TValue, TKey extends KeyType = string>(
 		obj: Record<TKey, TValue>,
@@ -788,7 +1019,7 @@ export class ObjKeyValueSeq<
 	) {
 		return new ObjKeyValueSeq<TValue, TKey>(
 			obj,
-			{ type, className: "" },
+			{ type, name: "" },
 			"full-type"
 		);
 	}
@@ -798,7 +1029,7 @@ export class ObjKeyValueSeq<
 	) {
 		return new ObjKeyValueSeq<TValue, TKey>(
 			obj,
-			{ type: "Class", className },
+			{ type: "Class", name: className },
 			"full-type"
 		);
 	}
@@ -809,7 +1040,7 @@ export class ObjKeyValueSeq<
 	) {
 		return new ObjKeyValueSeq<TValue, TKey>(
 			obj,
-			{ type: "Class", className },
+			{ type: "Class", name: className },
 			"has-class"
 		);
 	}
