@@ -5,8 +5,8 @@ import {
 	AnySeq,
 	ArraySeq,
 	NumSeq,
-	ObjKeyValueSeq,
-	ObjValueSeq,
+	RecordSeq,
+	RecordValueSeq,
 	Seq,
 } from "@/utils/seq";
 import { getFullType, hasClassName } from "@/utils/types";
@@ -43,6 +43,10 @@ export const logZip3Seq = (count: number) => {
 			return { count, toStr, sevens };
 		})
 		.filter(x => x.count % 2 === 0);
+
+	log("Logging this:");
+	log(this);
+	div();
 
 	const seqs: Record<string, AnySeq> = {
 		countSeq,

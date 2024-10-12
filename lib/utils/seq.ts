@@ -34,26 +34,19 @@ export abstract class Seq<T> {
 		return Array.from(this);
 	}
 
-	public toObject2<V>(): Record<KeyType, V> {
-		const obj: Record<string, V> = {};
-
-		for (const x of this) {
-			if (!isObject(x)) continue;
-			const key = x["key"];
-			if (!key) continue;
-			const value = x["value"];
-			if (!value) continue;
-
-			obj[key] = value;
-		}
-		return obj;
-	}
-
+	/**
+	 * Converts Seq to Record
+	 *
+	 * The Seq elements are expected to contain 'key' and 'value' properties.
+	 * These are used to construct the Record.
+	 *
+	 * @returns readonly Record of Seq elements
+	 */
 	public toObject<V extends ExtractValueType<T>>(): Record<
 		KeyType,
 		V
 	> {
-		const obj: Record<KeyType, V> = {};
+		const obj: Record<KeyType, V> = Object.create(null);
 
 		for (const x of this) {
 			if (!isObject(x)) continue;
@@ -127,6 +120,15 @@ export abstract class Seq<T> {
 		return new TakeSeq(this, takeCount);
 	}
 
+	/**
+	 * Zips 'this' Seq with up to 8 other Seqs using a function.
+	 * The function takes one element from each Seq and returns a new element.
+	 * The resulting Seq is a ZipSeq.
+	 *
+	 * @param seqs The Seqs to zip
+	 * @param fn The zipping function
+	 * @returns ZipSeq
+	 */
 	public zip<T2, T3, T4, T5, T6, T7, T8, T9, TOut>(
 		seqs: [
 			Seq<T2>,
@@ -151,7 +153,7 @@ export abstract class Seq<T> {
 		) => TOut
 	): ZipSeq<TOut>;
 	/**
-	 * Zips 'this' Seq with up to 8 other Seqs using a function.
+	 * Zips 'this' Seq with up to 7 other Seqs using a function.
 	 * The function takes one element from each Seq and returns a new element.
 	 * The resulting Seq is a ZipSeq.
 	 *
@@ -181,7 +183,7 @@ export abstract class Seq<T> {
 		) => TOut
 	): ZipSeq<TOut>;
 	/**
-	 * Zips 'this' Seq with up to 7 other Seqs using a function.
+	 * Zips 'this' Seq with up to 6 other Seqs using a function.
 	 * The function takes one element from each Seq and returns a new element.
 	 * The resulting Seq is a ZipSeq.
 	 *
@@ -194,7 +196,7 @@ export abstract class Seq<T> {
 		fn: (a: T, b: T2, c: T3, d: T4, e: T5, f: T6, g: T7) => TOut
 	): ZipSeq<TOut>;
 	/**
-	 * Zips 'this' Seq with up to 6 other Seqs using a function.
+	 * Zips 'this' Seq with up to 5 other Seqs using a function.
 	 * The function takes one element from each Seq and returns a new element.
 	 * The resulting Seq is a ZipSeq.
 	 *
@@ -207,7 +209,7 @@ export abstract class Seq<T> {
 		fn: (a: T, b: T2, c: T3, d: T4, e: T5, f: T6) => TOut
 	): ZipSeq<TOut>;
 	/**
-	 * Zips 'this' Seq with up to 5 other Seqs using a function.
+	 * Zips 'this' Seq with up to 4 other Seqs using a function.
 	 * The function takes one element from each Seq and returns a new element.
 	 * The resulting Seq is a ZipSeq.
 	 *
@@ -220,7 +222,7 @@ export abstract class Seq<T> {
 		fn: (a: T, b: T2, c: T3, d: T4, e: T5) => TOut
 	): ZipSeq<TOut>;
 	/**
-	 * Zips 'this' Seq with up to 4 other Seqs using a function.
+	 * Zips 'this' Seq with up to 3 other Seqs using a function.
 	 * The function takes one element from each Seq and returns a new element.
 	 * The resulting Seq is a ZipSeq.
 	 *
@@ -233,7 +235,7 @@ export abstract class Seq<T> {
 		fn: (a: T, b: T2, c: T3, d: T4) => TOut
 	): ZipSeq<TOut>;
 	/**
-	 * Zips 'this' Seq with up to 3 other Seqs using a function.
+	 * Zips 'this' Seq with up to 2 other Seqs using a function.
 	 * The function takes one element from each Seq and returns a new element.
 	 * The resulting Seq is a ZipSeq.
 	 *
@@ -287,18 +289,6 @@ export abstract class Seq<T> {
 	}
 
 	/**
-	 * Returns the first element of the Seq, or throws an Error if the Seq is empty.
-	 * @throws Error if the Seq is empty
-	 */
-	public firstOrThrow() {
-		for (const x of this) {
-			return x;
-		}
-
-		throw Error("Empty Seq: fistOrThrow");
-	}
-
-	/**
 	 * Returns the last element of the Seq, or undefined if the Seq is empty.
 	 */
 	public last() {
@@ -309,24 +299,6 @@ export abstract class Seq<T> {
 		}
 
 		return v;
-	}
-
-	/**
-	 * Returns the last element of the Seq, or throws an Error if the Seq is empty.
-	 * @throws Error if the Seq is empty
-	 */
-	public lastOrThrow(): T {
-		let v: T | undefined = undefined;
-
-		for (const x of this) {
-			v = x;
-		}
-
-		if (v !== undefined) {
-			return v;
-		}
-
-		throw Error("Empty Seq: lastOrThrow");
 	}
 
 	/**
@@ -395,6 +367,18 @@ export abstract class Seq<T> {
 		return v;
 	}
 
+	/*************  ✨ Codeium Command ⭐  *************/
+	/**
+	 * Accumulates elements of the Seq into a single value using a function.
+	 * The function takes two arguments: the accumulator and the next value.
+	 * The initial value of the accumulator is provided as an argument.
+	 * The resulting value is the final value of the accumulator.
+	 *
+	 * @param accStart The initial value for the accumulator
+	 * @param fn A function of two arguments: the accumulator and the next value
+	 * @returns The accumulated value
+	 */
+	/******  272b9b8f-b40b-4c2e-b531-0c5bf6827273  *******/
 	public accum<TValue>(
 		accStart: TValue,
 		fn: (acc: TValue, value: T) => TValue
@@ -734,19 +718,13 @@ export class MathProdSeq extends Seq<number> {
 	}
 }
 
-/**
- * Class used to Zip two Seqs together
- *
- * @param TSeqA The type of the first Seq
- * @param TSeqB The type of the second Seq
- * @param TOut The final element type of the Seq
- */
 export class ZipSeq<TOut> extends Seq<TOut> {
 	/**
-	 * ZipManySeq constructor
+	 * Create a new ZipSeq.
 	 *
-	 * @param Seqs The array of Seqs to zip
-	 * @param fn The zip mapping function
+	 * @param Seqs The Seqs to zip together
+	 * @param fn The zipping function, which takes one element from each Seq
+	 * and returns a new element.
 	 */
 	constructor(
 		public readonly Seqs: Seq<any>[],
@@ -787,12 +765,17 @@ export class ZipSeq<TOut> extends Seq<TOut> {
 }
 
 export class AccumSeq<TIn, TValue> extends Seq<TValue> {
+	/*************  ✨ Codeium Command ⭐  *************/
 	/**
-	 * MapSeq constructor.
+	 * AccumSeq constructor.
 	 *
-	 * @param seq The input Seq
-	 * @param fn The mapping lambda
+	 * @param seq The Seq to accumulate
+	 * @param start The initial value for the accumulator
+	 * @param fn The accumulation function, which takes two arguments: the
+	 * accumulator and the next value. The value returned by this function
+	 * becomes the new accumulator value.
 	 */
+	/******  e27671fb-5a20-42f9-9b5d-1a621b1c6706  *******/
 	constructor(
 		public readonly seq: Seq<TIn>,
 		public readonly start: TValue,
@@ -810,18 +793,20 @@ export class AccumSeq<TIn, TValue> extends Seq<TValue> {
 	}
 }
 
-export class ObjValueSeq<
+export class RecordValueSeq<
 	TValue,
 	TKey extends KeyType = KeyType
 > extends Seq<TValue> {
 	/**
-	 * ObjValueSeq constructor.
+	 * RecordValueSeq constructor.
+	 *
+	 * Allows for both dynamic and static type checking.
 	 *
 	 * @param object The input object
 	 * @param fullType The full type to check against
 	 * @param constraintKind The type of dynamic constraint to apply
 	 * "none" - no constraint
-	 * "full-type" - check that the value matches fullType
+	 * "full-type" - check that the value is a full match to fullType
 	 * "has-class" - check that the value has the given class name
 	 */
 	constructor(
@@ -837,7 +822,9 @@ export class ObjValueSeq<
 
 	/**
 	 * Iterate over the values in the object.
-	 * If the Seq was created with a constraint, apply the constraint.
+	 * If the Seq was created with a dynamic constraint,
+	 * apply the constraint.
+	 *
 	 * If the constraint fails, skip the value.
 	 *
 	 * @returns An iterator over the constrained values.
@@ -871,15 +858,18 @@ export class ObjValueSeq<
 	}
 
 	/**
-	 * From Generic constraint alone. No dynamic type checking.
+	 * Creates a RecordValueSeq with generic constraint
+	 * alone. No dynamic type checking.
 	 *
-	 * @param obj
-	 * @returns
+	 * No dynamic constraint is applied.
+	 *
+	 * @param obj The input object
+	 * @returns RecordValueSeq
 	 */
 	public static fromGeneric<TValue, TKey extends KeyType = string>(
 		obj: Record<TKey, TValue>
 	) {
-		return new ObjValueSeq<TValue, TKey>(
+		return new RecordValueSeq<TValue, TKey>(
 			obj,
 			{ type: "Null", name: "" },
 			"none"
@@ -887,34 +877,44 @@ export class ObjValueSeq<
 	}
 
 	/**
-	 * From generic constraint and dynamic type checking. Non-class type.
+	 * Creates a RecordValueSeq with a simple dynamic type constraint.
 	 *
-	 * @param obj
-	 * @param type
-	 * @returns
+	 * The given type is used for dynamic type checking.
+	 *
+	 * Static type checking is always applied.
+	 *
+	 * @param obj The input object
+	 * @param type The full type to check the values against
+	 * @returns RecordValueSeq
 	 */
 	public static fromType<TValue, TKey extends KeyType = string>(
 		obj: Record<TKey, TValue>,
 		type: FullType["type"]
 	) {
-		return new ObjValueSeq<TValue, TKey>(
+		return new RecordValueSeq<TValue, TKey>(
 			obj,
 			{ type, name: "" },
 			"full-type"
 		);
 	}
 	/**
-	 * From generic constraint and dynamic class filter.
+	 * Creates a RecordValueSeq with a class name dynamic type constraint.
 	 *
-	 * @param obj
-	 * @param className
-	 * @returns
+	 * The given class name is used for dynamic type checking.
+	 *
+	 * The value must be an instance of the given class name.
+	 *
+	 * Static type checking is always applied.
+	 *
+	 * @param obj The input object
+	 * @param className The class name to check the values against
+	 * @returns RecordValueSeq
 	 */
 	public static fromClass<TValue, TKey extends KeyType = string>(
 		obj: Record<TKey, TValue>,
 		className: string
 	) {
-		return new ObjValueSeq<TValue, TKey>(
+		return new RecordValueSeq<TValue, TKey>(
 			obj,
 			{ type: "Class", name: className },
 			"full-type"
@@ -922,18 +922,23 @@ export class ObjValueSeq<
 	}
 
 	/**
-	 * From generic constraint and has-class (self or ancestor base class)
-	 * dynamic type checking.
+	 * Creates a RecordValueSeq with a class name dynamic type constraint.
 	 *
-	 * @param obj
-	 * @param className
-	 * @returns
+	 * The given class name is used for dynamic type checking.
+	 *
+	 * The value must be an instance of the given class name, or a subclass.
+	 *
+	 * Static type checking is always applied.
+	 *
+	 * @param obj The input object
+	 * @param className The class name to check the values against
+	 * @returns RecordValueSeq
 	 */
 	public static fromHasClass<TValue, TKey extends KeyType = string>(
 		obj: Record<TKey, TValue>,
 		className: string
 	) {
-		return new ObjValueSeq<TValue, TKey>(
+		return new RecordValueSeq<TValue, TKey>(
 			obj,
 			{ type: "Class", name: className },
 			"has-class"
@@ -941,23 +946,26 @@ export class ObjValueSeq<
 	}
 }
 
-export class ObjKeyValueSeq<
+export class RecordSeq<
 	TValue,
 	TKey extends KeyType = KeyType
 > extends Seq<{
 	key: TKey;
 	value: TValue;
 }> {
+	/*************  ✨ Codeium Command ⭐  *************/
 	/**
-	 * ObjKeyValueSeq constructor.
+	 * RecordSeq constructor.
 	 *
 	 * @param object The input object
 	 * @param fullType The full type to check against
-	 * @param constraintKind The type of constraint to apply
+	 * @param constraintKind The type of dynamic constraint to apply
 	 * "none" - no constraint
 	 * "full-type" - check that the value is a full match to fullType
 	 * "has-class" - check that the value has the given class name
+	 * or ancestor class name
 	 */
+	/******  8b89cd39-2f24-484a-be9f-4d7aa1e16454  *******/
 	constructor(
 		public readonly object: Record<TKey, TValue>,
 		public readonly fullType: FullType,
@@ -971,7 +979,8 @@ export class ObjKeyValueSeq<
 
 	/**
 	 * Iterate over the key-value pairs in the object.
-	 * If the Seq was created with a constraint, apply the constraint.
+	 * If the Seq was created with a dynamic constraint,
+	 * apply the constraint.
 	 * If the constraint fails, skip the pair.
 	 *
 	 * @returns An iterator over the constrained key-value pairs.
@@ -1003,42 +1012,89 @@ export class ObjKeyValueSeq<
 			yield { key: key as TKey, value: value as TValue };
 		}
 	}
+	/*************  ✨ Codeium Command ⭐  *************/
+	/**
+	 * Creates a RecordSeq with generic constraint alone.
+	 *
+	 * No dynamic constraint is applied.
+	 *
+	 * @param obj The input object
+	 * @returns RecordSeq
+	 */
+	/******  b0e1b9e7-c05d-4b86-b5e5-cbe370147da1  *******/
 	public static fromGeneric<TValue, TKey extends KeyType = string>(
 		obj: Record<TKey, TValue>
 	) {
-		return new ObjKeyValueSeq<TValue, TKey>(
+		return new RecordSeq<TValue, TKey>(
 			obj,
 			{ type: "Null", name: "" },
 			"none"
 		);
 	}
 
+	/**
+	 * Creates a RecordSeq with a simple dynamic type constraint.
+	 *
+	 * The given type is used for dynamic type checking.
+	 *
+	 * Static type checking is always applied.
+	 *
+	 * @param obj The input object
+	 * @param type The basic type to check the values against
+	 * @returns RecordValueSeq
+	 */
 	public static fromType<TValue, TKey extends KeyType = string>(
 		obj: Record<TKey, TValue>,
 		type: FullType["type"]
 	) {
-		return new ObjKeyValueSeq<TValue, TKey>(
+		return new RecordSeq<TValue, TKey>(
 			obj,
 			{ type, name: "" },
 			"full-type"
 		);
 	}
+	/**
+	 * Creates a RecordSeq with a class name dynamic type constraint.
+	 *
+	 * The given class name is used for dynamic type checking.
+	 *
+	 * The value must be an instance of the given class name.
+	 *
+	 * Static type checking is always applied.
+	 *
+	 * @param obj The input object
+	 * @param className The class name to check the values against
+	 * @returns RecordSeq
+	 */
 	public static fromClass<TValue, TKey extends KeyType = string>(
 		obj: Record<TKey, TValue>,
 		className: string
 	) {
-		return new ObjKeyValueSeq<TValue, TKey>(
+		return new RecordSeq<TValue, TKey>(
 			obj,
 			{ type: "Class", name: className },
 			"full-type"
 		);
 	}
 
+	/**
+	 * Creates a RecordSeq with a class name dynamic type constraint.
+	 *
+	 * The given class name is used for dynamic type checking.
+	 *
+	 * The value must be an instance of the given class name or an ancestor.
+	 *
+	 * Static type checking is always applied.
+	 *
+	 * @param obj The input object
+	 * @param className The class name to check the values against
+	 * @returns RecordSeq
+	 */
 	public static fromHasClass<TValue, TKey extends KeyType = string>(
 		obj: Record<TKey, TValue>,
 		className: string
 	) {
-		return new ObjKeyValueSeq<TValue, TKey>(
+		return new RecordSeq<TValue, TKey>(
 			obj,
 			{ type: "Class", name: className },
 			"has-class"

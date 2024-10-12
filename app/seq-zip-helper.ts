@@ -1,12 +1,12 @@
 import { log, logh, logln } from "@/utils/log";
-import { AnySeq, NumSeq, ObjKeyValueSeq } from "@/utils/seq";
+import { AnySeq, NumSeq, RecordSeq } from "@/utils/seq";
 
 /**
  *
  * @param seqs All seqs used + zipSeq last
  */
 export const logKeyValueZipSeqs = (seqs: Record<string, AnySeq>) => {
-	const ss = ObjKeyValueSeq.fromHasClass<AnySeq>(seqs, "Seq");
+	const ss = RecordSeq.fromHasClass<AnySeq>(seqs, "Seq");
 	const arr = ss.toArray();
 	if (arr.length < 3) {
 		throw Error(

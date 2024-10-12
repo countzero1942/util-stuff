@@ -114,7 +114,7 @@ log(r);
 
 div();
 
-r[3]?.fn(20);
+r[2]?.fn(20);
 
 // class Thing {}
 
