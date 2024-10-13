@@ -38,7 +38,6 @@ import {
 	logZip7Seq,
 	logZip8bSeq,
 	logZip8Seq,
-	logZip9bSeq,
 	logZip9Seq,
 	logZip9SeqDirect,
 	selectAndRun,
@@ -109,22 +108,10 @@ import { DeepPartial } from "utility-types";
 // logObjKeyValueSeqZip3Seq(12);
 // logZip9SeqDirect(12);
 // selectAndRun();
-const r = getRecord();
-log(r);
+// const r = getRecord();
+// log(r);
 
-div();
+// div();
 
-r[2]?.fn(20);
-
-// class Thing {}
-
-// const t: Thing = new Thing();
-// log(getFullType(t));
-
-// const err = RangeError("stuff");
-// log(getFullType(err));
-
-// const sym = Symbol(2);
-
-// const obj = { sym: "a string", 2: "a number" };
-// log(obj);
+// r[2]?.fn(20);
+selectAndRun(20);

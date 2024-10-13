@@ -108,3 +108,113 @@ export const splitStringOnce = (
 export const formatNum = (n: number) => {
 	return Intl.NumberFormat().format(n);
 };
+
+/**
+ * Given an array of strings, takes each string and word wraps it to a
+ * maximum number of characters. The wrapped lines are inserted in place
+ * of the original lines.
+ *
+ * @param lines The array of strings to word wrap
+ * @returns The array of strings with word wrapping inserted
+ */
+export const wordWrapLinesToMaxChars = (
+	lines: string[],
+	maxChars: number
+) => {
+	const wrapLine = (line: string, wrappedLines: string[]) => {
+		const words = line.split(" ");
+		let currentLine = "";
+		for (const word of words) {
+			if (currentLine.length + word.length > maxChars) {
+				wrappedLines.push(currentLine);
+				currentLine = word;
+			} else {
+				if (currentLine.length !== 0) {
+					currentLine += " ";
+				}
+				currentLine += word;
+			}
+		}
+		wrappedLines.push(currentLine);
+	};
+
+	const wrappedLines: string[] = [];
+	let i = 0;
+	while (i < lines.length) {
+		const line = lines[i] as string;
+		if (line.length <= maxChars) {
+			wrappedLines.push(line);
+		} else {
+			wrapLine(line, wrappedLines);
+		}
+		i++;
+	}
+	return wrappedLines;
+};
+
+/**
+ * Given an array of strings, removes empty lines from
+ * the start and end of the array and returns the
+ * resulting array.
+ *
+ * This function expects lines to be already trimmed of whitespace.
+ *
+ * @param lines The array of strings
+ * @returns The array of strings with empty lines removed
+ * from the start and end
+ */
+export const removeEmptyLinesFromStartAndEnd = (lines: string[]) => {
+	let start = 0;
+	while (start < lines.length && lines[start] === "") {
+		start++;
+	}
+	let end = lines.length - 1;
+	while (end > start && lines[end] === "") {
+		end--;
+	}
+
+	return lines.slice(start, end + 1);
+};
+
+/**
+ * Cleans JSDoc description string.
+ *
+ * Removes JSDoc comment tags and '@param' tags if
+ * 'eliminateParams' is true.
+ *
+ * Also trims lines and removes all empty lines from
+ * the start and end of the string.
+ *
+ * @param description The JSDoc description string
+ * @param eliminateParams Remove '@param' tags if true (default: true)
+ * @returns The cleaned JSDoc description string
+ */
+export const cleanJSDocDescription = (
+	description: string,
+	eliminateParams: boolean = true,
+	maxLineLength: number = 80
+) => {
+	const cleanLine = (line: string) => {
+		switch (true) {
+			case eliminateParams && line.startsWith("* @param"):
+				return "";
+			case line.startsWith("/**"):
+				return line.slice(3).trim();
+			case line.startsWith("*/"):
+				return line.slice(2).trim();
+			case line.startsWith("*"):
+				return line.slice(1).trim();
+			default:
+				return line.trim();
+		}
+	};
+
+	let lines = description.split("\n").map(line => {
+		return cleanLine(line.trim());
+	});
+
+	lines = removeEmptyLinesFromStartAndEnd(lines);
+
+	lines = wordWrapLinesToMaxChars(lines, maxLineLength);
+	return lines.join("\n");
+};
