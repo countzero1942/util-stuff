@@ -1,6 +1,7 @@
 import { log, logh } from "@/utils/log";
 import { clamp } from "@/utils/math";
 import memoizee from "memoizee";
+import { get } from "node:http";
 
 /**
  * Gets string with a number of tabs repeating.
@@ -110,6 +111,62 @@ export const formatNum = (n: number) => {
 };
 
 /**
+ * Given an array of strings, joins lines together that are not separated
+ * by an empty line, except if they begin with a "-". The function will
+ * return the cleaned array of lines
+ *
+ * @param lines The array of strings to clean
+ * @returns The array of strings with joined lines
+ */
+export const joinConnectedLinesWithoutDash = (lines: string[]) => {
+	const newLines: string[] = [];
+
+	let currentLine: string[] = [];
+
+	const resetCurrentLine = () => {
+		currentLine = [];
+	};
+	const isCurrentLineEmpty = () => {
+		return currentLine.length === 0;
+	};
+
+	const addToCurrentLine = (line: string) => {
+		currentLine.push(line);
+	};
+
+	const joinCurrentLine = () => {
+		return currentLine.join(" ");
+	};
+
+	for (const line of lines) {
+		switch (true) {
+			case line === "":
+				if (!isCurrentLineEmpty()) {
+					newLines.push(joinCurrentLine());
+					newLines.push("");
+				}
+				resetCurrentLine();
+				break;
+			case line.startsWith("-"):
+				if (!isCurrentLineEmpty()) {
+					newLines.push(joinCurrentLine());
+					resetCurrentLine();
+				}
+				addToCurrentLine(line);
+				break;
+			default:
+				addToCurrentLine(line);
+				break;
+		}
+	}
+
+	if (!isCurrentLineEmpty()) {
+		newLines.push(joinCurrentLine());
+	}
+
+	return newLines;
+};
+/**
  * Given an array of strings, takes each string and word wraps it to a
  * maximum number of characters. The wrapped lines are inserted in place
  * of the original lines.
@@ -121,21 +178,53 @@ export const wordWrapLinesToMaxChars = (
 	lines: string[],
 	maxChars: number
 ) => {
+	/**
+	 * Internal function to wrap a single line of text to a maximum number of
+	 * characters by inserting line breaks. The wrapped lines are inserted in
+	 * place of the original lines in the array.
+	 * @param line The line of text to wrap
+	 * @param wrappedLines The array of wrapped lines
+	 */
 	const wrapLine = (line: string, wrappedLines: string[]) => {
 		const words = line.split(" ");
-		let currentLine = "";
-		for (const word of words) {
-			if (currentLine.length + word.length > maxChars) {
-				wrappedLines.push(currentLine);
-				currentLine = word;
-			} else {
-				if (currentLine.length !== 0) {
-					currentLine += " ";
-				}
-				currentLine += word;
+		let currentLine: {
+			words: string[];
+			charLength: number;
+		} = {
+			words: [],
+			charLength: 0,
+		};
+
+		const resetCurrentLine = () => {
+			currentLine = {
+				words: [],
+				charLength: 0,
+			};
+		};
+
+		const addToCurrentLine = (word: string) => {
+			// add 1 for space, but not at start of line
+			if (currentLine.words.length > 0) {
+				currentLine.charLength += 1;
 			}
+			currentLine.words.push(word);
+			currentLine.charLength += word.length;
+		};
+
+		const getCurrentLineString = () => {
+			return currentLine.words.join(" ");
+		};
+
+		resetCurrentLine();
+
+		for (const word of words) {
+			if (currentLine.charLength + word.length > maxChars) {
+				wrappedLines.push(getCurrentLineString());
+				resetCurrentLine();
+			}
+			addToCurrentLine(word);
 		}
-		wrappedLines.push(currentLine);
+		wrappedLines.push(getCurrentLineString());
 	};
 
 	const wrappedLines: string[] = [];
@@ -214,6 +303,8 @@ export const cleanJSDocDescription = (
 	});
 
 	lines = removeEmptyLinesFromStartAndEnd(lines);
+
+	lines = joinConnectedLinesWithoutDash(lines);
 
 	lines = wordWrapLinesToMaxChars(lines, maxLineLength);
 	return lines.join("\n");

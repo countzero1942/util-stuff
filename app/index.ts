@@ -33,8 +33,6 @@ import {
 	testZipManyProtoUnevenSeqsToArray,
 } from "@/app/seq-zip-old-proto";
 import {
-	getLogFunctions,
-	getRecord,
 	logObjKeyValueSeqZip3Seq,
 	logZip2Seq,
 	logZip3Seq,
