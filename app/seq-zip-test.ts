@@ -2,6 +2,11 @@ import { getSeqs, logKeyValueZipSeqs } from "@/app/seq-zip-helper";
 import { div, logh, logln } from "@/utils/log";
 import { isEven, isOdd } from "@/utils/math";
 import {
+	chooseDefaultNumberPrompt,
+	chooseNumberPrompt,
+	pressEnterToContinue,
+} from "@/utils/prompts";
+import {
 	AnySeq,
 	ArraySeq,
 	NumSeq,
@@ -75,7 +80,8 @@ export const logZip3Seq = (count: number) => {
  * First, countSeq is zipped with: toStrSeq, sevensSeq, elevensSeq and squaresSeq.
  * Then, this object is zipped with: cubesSeq and trianglesSeq.
  *
- * The second zip is not destructured. All parameters are passed into the second zip.
+ * The second zip is not destructured. All parameters are passed directly
+ * from the first zip into the second zip.
  *
  * @param {number} count
  */
@@ -128,18 +134,18 @@ export const logZip7Seq = (count: number) => {
 	});
 };
 
-// count, toStr, sevens, elevens, square, cube, triangle, fib
-
 /**
  * Logs ZipSeq of countSeq, squaresSeq, cubesSeq and trianglesSeq.
  *
  * The logged ZipSeq is filtered to only include even numbers.
  *
- * The zipping process is broken up into two stages.
+ * The zipping process is broken up into two stages:
+ *
  * First, countSeq is zipped with: toStrSeq, sevensSeq, elevensSeq and squaresSeq.
+ *
  * Then, this object is zipped with: cubesSeq and trianglesSeq.
  *
- * The second zip is destructured as 'a' -> '...a'
+ * The first zip is destructured into the second zip as 'a' -> '...a'
  *
  * @param {number} count
  */
@@ -182,18 +188,18 @@ export const logZip7bSeq = (count: number) => {
 	});
 };
 
-// count, toStr, sevens, elevens, square, cube, triangle, fib
-
 /**
  * Logs ZipSeq of countSeq, squaresSeq, cubesSeq, trianglesSeq and fibonacciSeq.
  *
- * The logged ZipSeq is filtered to only include even numbers.
+ * The logged ZipSeq is filtered to only include odd numbers.
  *
- * The zipping process is broken up into two stages.
+ * The zipping process is broken up into two stages:
+ *
  * First, countSeq is zipped with: toStrSeq, sevensSeq, elevensSeq and squaresSeq.
+ *
  * Then, this object is zipped with: cubesSeq, trianglesSeq and fibonacciSeq.
  *
- * The second zip is destructured as 'a' -> '...a'
+ * The first zip is destructured into the second zip as 'a' -> '...a'
  *
  * @param {number} count
  */
@@ -222,7 +228,7 @@ export const logZip8Seq = (count: number) => {
 				return { ...a, cube, triangle, ...fib };
 			}
 		)
-		.filter(x => isEven(x.count));
+		.filter(x => isOdd(x.count));
 
 	logKeyValueZipSeqs({
 		countSeq,
@@ -240,15 +246,19 @@ export const logZip8Seq = (count: number) => {
 /**
  * Logs ZipSeq of: countSeq, squaresSeq, cubesSeq, trianglesSeq and fibonacciSeq.
  *
- * The logged ZipSeq is filtered to only include odd numbers.
+ * The logged ZipSeq is filtered to only include even numbers.
  *
- * The zipping process is broken up into two stages.
+ * The zipping process is broken up into two stages:
+ *
  * First, countSeq is zipped with: toStrSeq, sevensSeq, elevensSeq and squaresSeq.
+ *
  * Then, this object is zipped with: cubesSeq, trianglesSeq and fibonacciSeq.
  *
- * The second zip is destructured as 'a' -> '...a'
+ * The first zip is destructured into the second zip as 'a' -> '...a'
  *
- * The fibonacci value is destructured to eliminate 'prevFib' in final result.
+ * The fibonacci value is destructured to eliminate 'prevFib' in final result:
+ *
+ * 'const { fibonacci } = fib'
  *
  * @param {number} count
  */
@@ -278,7 +288,7 @@ export const logZip8bSeq = (count: number) => {
 				return { ...a, cube, triangle, fibonacci };
 			}
 		)
-		.filter(x => isOdd(x.count));
+		.filter(x => isEven(x.count));
 
 	logKeyValueZipSeqs({
 		countSeq,
@@ -298,8 +308,10 @@ export const logZip8bSeq = (count: number) => {
  *
  * The logged ZipSeq is filtered to only include odd numbers.
  *
- * The zipping process is broken up into two stages.
+ * The zipping process is broken up into two stages:
+ *
  * First, countSeq is zipped with: toStrSeq, sevensSeq, elevensSeq and squaresSeq.
+ *
  * Then, this object is zipped with: cubesSeq, trianglesSeq, fibonacciSeq and factorialSeq.
  *
  * @param {number} count
@@ -348,7 +360,7 @@ export const logZip9Seq = (count: number) => {
 /**
  * Logs ZipSeq of countSeq, squaresSeq, cubesSeq, trianglesSeq, fibonacciSeq and factorialSeq.
  *
- * The logged ZipSeq is filtered to only include odd numbers.
+ * The logged ZipSeq is filtered to only include even numbers.
  *
  * The zipping process is done in a single step.
  *
@@ -367,29 +379,19 @@ export const logZip9SeqDirect = (count: number) => {
 		factorialSeq,
 	} = getSeqs(count);
 
-	const zipSeq = countSeq.zip(
-		[
-			toStrSeq,
-			sevensSeq,
-			elevensSeq,
-			squaresSeq,
-			cubesSeq,
-			trianglesSeq,
-			fibonacciSeq,
-			factorialSeq,
-		],
-		(
-			count,
-			toStr,
-			sevens,
-			elevens,
-			square,
-			cube,
-			triangle,
-			fibonacci,
-			factorial
-		) => {
-			return {
+	const zipSeq = countSeq
+		.zip(
+			[
+				toStrSeq,
+				sevensSeq,
+				elevensSeq,
+				squaresSeq,
+				cubesSeq,
+				trianglesSeq,
+				fibonacciSeq,
+				factorialSeq,
+			],
+			(
 				count,
 				toStr,
 				sevens,
@@ -397,11 +399,23 @@ export const logZip9SeqDirect = (count: number) => {
 				square,
 				cube,
 				triangle,
-				...fibonacci,
-				factorial,
-			};
-		}
-	);
+				fibonacci,
+				factorial
+			) => {
+				return {
+					count,
+					toStr,
+					sevens,
+					elevens,
+					square,
+					cube,
+					triangle,
+					...fibonacci,
+					factorial,
+				};
+			}
+		)
+		.filter(x => isEven(x.count));
 
 	logKeyValueZipSeqs({
 		countSeq,
@@ -459,6 +473,9 @@ export const logObjKeyValueSeqZip3Seq = (count: number) => {
 		seqZip,
 	};
 
+	logh("Object with various properties, including Seqs:");
+	log(myobj);
+
 	logKeyValueZipSeqs(myobj as unknown as Record<string, AnySeq>);
 };
 
@@ -478,6 +495,11 @@ export const getLogFunctions = (): FunctionType[] => {
 	];
 };
 
+/**
+ * An Record containing: a function reference, its name
+ * and a description of the function that includes its
+ * JSDoc. Generated by Codeium.
+ */
 export const logFunctions: Record<
 	string,
 	{ fn: FunctionType; name: string; description: string }
@@ -490,7 +512,6 @@ export const logFunctions: Record<
 			 * Logs ZipSeq of countSeq and toStrSeq.
 			 *
 			 * The logged ZipSeq contains objects with properties: count and toStr.
-			 * 
 			 * The logged ZipSeq is filtered to only include even numbers.
 			 *
 			 * @param {number} count
@@ -502,10 +523,9 @@ export const logFunctions: Record<
 		name: "logZip3Seq",
 		description: `
 			/**
-			 * Logs ZipSeq of: countSeq, squaresSeq and cubesSeq.
+			 * Logs ZipSeq of countSeq, squaresSeq and cubesSeq.
 			 *
 			 * The logged ZipSeq contains objects with properties: count, square and cube.
-			 * 
 			 * The logged ZipSeq is filtered to only include even numbers.
 			 *
 			 * @param {number} count
@@ -517,10 +537,9 @@ export const logFunctions: Record<
 		name: "logZip7Seq",
 		description: `
 			/**
-			 * Logs ZipSeq of countSeq, toStrSeq, sevensSeq, elevensSeq, squaresSeq, cubesSeq and trianglesSeq.
+			 * Logs ZipSeq of: countSeq, toStrSeq, sevensSeq, elevensSeq, squaresSeq, cubesSeq and trianglesSeq.
 			 *
 			 * The logged ZipSeq contains objects with properties: count, toStr, sevens, elevens, square, cube and triangle.
-			 * 
 			 * The logged ZipSeq is filtered to only include even numbers.
 			 *
 			 * @param {number} count
@@ -532,11 +551,22 @@ export const logFunctions: Record<
 		name: "logZip7bSeq",
 		description: `
 			/**
-			 * Logs ZipSeq of countSeq, toStrSeq, sevensSeq, elevensSeq, squaresSeq, cubesSeq and trianglesSeq.
+			 * Logs ZipSeq of: countSeq, toStrSeq, sevensSeq, elevensSeq, squaresSeq, cubesSeq and trianglesSeq.
 			 *
 			 * The logged ZipSeq contains objects with properties: count, toStr, sevens, elevens, square, cube and triangle.
-			 * 
-			 * The logged ZipSeq is filtered to only include odd numbers.
+			 * The logged ZipSeq is filtered to only include even numbers.
+			 *
+			 * The zipping process is broken up into two stages:
+			 *
+			 * First, countSeq is zipped with: toStrSeq, sevensSeq, elevensSeq, squaresSeq, cubesSeq and trianglesSeq.
+			 *
+			 * Then, the object is zipped with: fibonacciSeq.
+			 *
+			 * The first zip is destructured into the second zip as 'a' -> '...a'
+			 *
+			 * The fibonacci value is destructured to eliminate 'prevFib' in final result:
+			 *
+			 * 'const { fibonacci } = fib'
 			 *
 			 * @param {number} count
 			 */
@@ -547,11 +577,22 @@ export const logFunctions: Record<
 		name: "logZip8Seq",
 		description: `
 			/**
-			 * Logs ZipSeq of countSeq, squaresSeq, cubesSeq, trianglesSeq and fibonacciSeq.
+			 * Logs ZipSeq of: countSeq, squaresSeq, cubesSeq, trianglesSeq and fibonacciSeq.
 			 *
 			 * The logged ZipSeq contains objects with properties: count, square, cube, triangle and fibonacci.
-			 * 
 			 * The logged ZipSeq is filtered to only include even numbers.
+			 *
+			 * The zipping process is broken up into two stages:
+			 *
+			 * First, countSeq is zipped with: squaresSeq, cubesSeq, trianglesSeq and fibonacciSeq.
+			 *
+			 * Then, the object is zipped with: toStrSeq.
+			 *
+			 * The first zip is destructured into the second zip as 'a' -> '...a'
+			 *
+			 * The fibonacci value is destructured to eliminate 'prevFib' in final result:
+			 *
+			 * 'const { fibonacci } = fib'
 			 *
 			 * @param {number} count
 			 */
@@ -564,17 +605,20 @@ export const logFunctions: Record<
 			/**
 			 * Logs ZipSeq of: countSeq, squaresSeq, cubesSeq, trianglesSeq and fibonacciSeq.
 			 *
-			 * The logged ZipSeq is filtered to only include odd numbers.
+			 * The logged ZipSeq contains objects with properties: count, square, cube, triangle and fibonacci.
+			 * The logged ZipSeq is filtered to only include even numbers.
 			 *
 			 * The zipping process is broken up into two stages:
-			 * 
-			 * First, countSeq is zipped with: toStrSeq, sevensSeq, elevensSeq and squaresSeq.
-			 * 
-			 * Then, this object is zipped with: cubesSeq, trianglesSeq and fibonacciSeq.
 			 *
-			 * The second zip is destructured as 'a' -> '...a'
+			 * First, countSeq is zipped with: toStrSeq, sevensSeq, elevensSeq, squaresSeq, cubesSeq and trianglesSeq.
 			 *
-			 * The fibonacci value is destructured to eliminate 'prevFib' in final result.
+			 * Then, the object is zipped with: fibonacciSeq.
+			 *
+			 * The first zip is destructured into the second zip as 'a' -> '...a'
+			 *
+			 * The fibonacci value is destructured to eliminate 'prevFib' in final result:
+			 *
+			 * 'const { fibonacci } = fib'
 			 *
 			 * @param {number} count
 			 */
@@ -585,10 +629,9 @@ export const logFunctions: Record<
 		name: "logZip9Seq",
 		description: `
 			/**
-			 * Logs ZipSeq of countSeq, toStrSeq, sevensSeq, elevensSeq, squaresSeq, cubesSeq, trianglesSeq and fibonacciSeq.
+			 * Logs ZipSeq of: countSeq, squaresSeq, cubesSeq, trianglesSeq and fibonacciSeq directly.
 			 *
-			 * The logged ZipSeq contains objects with properties: count, toStr, sevens, elevens, square, cube, triangle and fibonacci.
-			 * 
+			 * The logged ZipSeq contains objects with properties: count, square, cube, triangle and fibonacci.
 			 * The logged ZipSeq is filtered to only include even numbers.
 			 *
 			 * @param {number} count
@@ -600,10 +643,9 @@ export const logFunctions: Record<
 		name: "logZip9SeqDirect",
 		description: `
 			/**
-			 * Logs ZipSeq of countSeq, toStrSeq, sevensSeq, elevensSeq, squaresSeq, cubesSeq, trianglesSeq and fibonacciSeq.
+			 * Logs ZipSeq of: countSeq, squaresSeq, cubesSeq, trianglesSeq and fibonacciSeq directly.
 			 *
-			 * The logged ZipSeq contains objects with properties: count, toStr, sevens, elevens, square, cube, triangle and fibonacci.
-			 * 
+			 * The logged ZipSeq contains objects with properties: count, square, cube, triangle and fibonacci.
 			 * The logged ZipSeq is filtered to only include even numbers.
 			 *
 			 * @param {number} count
@@ -615,11 +657,20 @@ export const logFunctions: Record<
 		name: "logObjKeyValueSeqZip3Seq",
 		description: `
 			/**
-			 * Logs ZipSeq of countSeq, sevensSeq and elevensSeq.
+			 * Logs an object with various properties, including sequences.
 			 *
-			 * The logged ZipSeq contains objects with properties: count, sevens and elevens.
-			 * 
-			 * The logged ZipSeq is filtered to only include even numbers.
+			 * The purpose is to verify that the logKeyValueSeqs function works correctly
+			 * by ignorning non-Seq parameters in the object passed to it.
+			 *
+			 * The logged object has the following properties:
+			 * - a: a number
+			 * - countSeq: a Seq of numbers from 1 to count
+			 * - b: a string
+			 * - c: an object with two properties: x (a boolean) and y (a number)
+			 * - sevensSeq: a Seq of multiples of 7
+			 * - d: a RangeError object
+			 * - elevensSeq: a Seq of multiples of 11
+			 * - seqZip: a zipped sequence of countSeq, sevensSeq and elevensSeq
 			 *
 			 * @param {number} count
 			 */
@@ -627,103 +678,24 @@ export const logFunctions: Record<
 	},
 };
 
-// export const inputInt2 = (
-// 	min: number,
-// 	max: number,
-// 	defaultNumber?: number
-// ): number | "Invalid" | "Out of Range" | "Exit" => {
-// 	const getMsg = () => {
-// 		switch (true) {
-// 			case defaultNumber === undefined:
-// 				return `   (Leave blank to exit): `;
-
-// 			default:
-// 				return `   (default: ${defaultNumber}): `;
-// 		}
-// 	};
-
-// 	const rl = readline.createInterface({
-// 		input: process.stdin,
-// 		output: process.stdout,
-// 	});
-// 	log(`Enter an integer number between ${min} and ${max}`);
-
-// 	let returnValue: number | "Invalid" | "Out of Range" | "Exit" =
-// 		"Invalid";
-// 	rl.question("enter number: ", (answer: string) => {
-// 		rl.close();
-// 		const num = parseInt(answer);
-// 		switch (true) {
-// 			case answer === "":
-// 				returnValue = defaultNumber ?? "Exit";
-// 				break;
-// 			case isNaN(num):
-// 				returnValue = "Invalid";
-// 				break;
-// 			case num < min || num > max:
-// 				returnValue = "Out of Range";
-// 				break;
-// 			default:
-// 				returnValue = num;
-// 				break;
-// 		}
-// 	});
-// 	return returnValue;
-// };
-
-// const inputPressAnyKey = (fn: (answer: string) => void) => {
-// 	const rl = readline.createInterface({
-// 		input: process.stdin,
-// 		output: process.stdout,
-// 	});
-
-// 	rl.question(`   (Press enter to exit): `, answer => {
-// 		fn(answer);
-
-// 		rl.close();
-// 	});
-// };
-
-export const inputInt = (
-	min: number,
-	max: number,
-	fn: (result: number | "Invalid" | "Out of Range" | "Exit") => void
-) => {
-	log(`Enter an integer number between ${min} and ${max}`);
-
-	let result: number | "Invalid" | "Out of Range" | "Exit" = "Exit";
-
-	const rl = readline.createInterface({
-		input: process.stdin,
-		output: process.stdout,
-	});
-
-	rl.question(`   (Press enter to exit): `, answer => {
-		const num = parseInt(answer);
-		switch (true) {
-			case answer === "":
-				result = "Exit";
-				break;
-			case isNaN(num):
-				result = "Invalid";
-				break;
-			case num < min || num > max:
-				result = "Out of Range";
-				break;
-			default:
-				result = num;
-				break;
-		}
-
-		fn(result);
-
-		rl.close();
-	});
-
-	return result;
-};
-
-export const selectAndRun = (count: number) => {
+/**
+ * Runs all examples in sequence.
+ *
+ * Allows user to select which example to run, and how many elements to
+ * generate in the sequence.
+ *
+ * The user is presented with a list of functions with descriptions,
+ * and is asked to select a function by number.
+ *
+ * After selecting a function, the user is asked to select the number of
+ * elements to generate in the sequence.
+ *
+ * After the selected function has run, the user is given the option to exit
+ * or select another function.
+ *
+ * @returns A Promise that resolves when the user chooses to exit
+ */
+export const runSeqExamples = async (): Promise<void> => {
 	const functions = RecordValueSeq.fromType(
 		logFunctions,
 		"Object"
@@ -738,7 +710,7 @@ export const selectAndRun = (count: number) => {
 		.reduce(0, (max, n) => Math.max(max, n));
 
 	const logChoices = () => {
-		logh(`Select a function: 1 - ${max}`);
+		logh(`Function Choices: 1 - ${max}`);
 		functions.foreach(({ n, name, description }) => {
 			logh(`${n}: ${name}`);
 			log(description);
@@ -746,40 +718,38 @@ export const selectAndRun = (count: number) => {
 		});
 	};
 
-	logChoices();
-	logh(`Select a function: 1 - ${max}`);
+	while (true) {
+		logh("Select Seq Count");
+		const count = await chooseDefaultNumberPrompt(
+			0,
+			100,
+			20,
+			"Choose Seq count"
+		);
 
-	inputInt(1, max, res => {
-		switch (res) {
-			case "Invalid":
-				log("Invalid input.");
-				break;
-			case "Out of Range":
-				log("Out of range.");
-				break;
-			case "Exit":
-				log("Exiting.");
-				return;
-			default:
-				const num = res;
-				const selection = functions
-					.filter(x => x.n === num)
-					.first();
-				if (!selection) throw "Never";
-				const { fn, name } = selection;
-				log(`Running function '${name}'...`);
-				log();
-				div();
-				fn(count);
+		logChoices();
+		div();
+		const fnNumber = await chooseNumberPrompt(
+			1,
+			max,
+			"Choose a function"
+		);
+
+		log();
+
+		const fn = functions
+			.filter(x => x.n === fnNumber)
+			.firstOrThrow().fn;
+
+		fn(count);
+
+		const response = await pressEnterToContinue();
+		if (response === "Exit") {
+			break;
 		}
-	});
 
-	log();
-	// inputPressAnyKey(() => {
-	// 	log();
-	// 	log("Exiting.");
-	// 	log();
-	// });
+		console.clear();
+	}
 };
 
 export const getRecord = () => {

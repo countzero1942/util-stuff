@@ -1,4 +1,8 @@
 import {
+	getAgeForNightclub,
+	chooseANumberMinMax,
+} from "@/app/prompts-stuff";
+import {
 	logFibSeq,
 	logFibTriFac,
 	logFibTriSquare,
@@ -40,7 +44,7 @@ import {
 	logZip8Seq,
 	logZip9Seq,
 	logZip9SeqDirect,
-	selectAndRun,
+	runSeqExamples,
 } from "@/app/seq-zip-test";
 import { loopThruPowersOf10PlusFPErr } from "@/tests/math/FP-error-tests";
 import { TestNeighborNumbersAreEqual } from "@/tests/math/neighbor-numbers";
@@ -54,6 +58,10 @@ import {
 	randomInteger,
 	fixedRound,
 } from "@/utils/math";
+import {
+	chooseDefaultNumberPrompt,
+	chooseNumberPrompt,
+} from "@/utils/prompts";
 import { MathProdSeq, NumSeq, Seq } from "@/utils/seq";
 import { formatNum } from "@/utils/string";
 import { getFullType } from "@/utils/types";
@@ -113,5 +121,4 @@ import { DeepPartial } from "utility-types";
 
 // div();
 
-// r[2]?.fn(20);
-selectAndRun(20);
+await runSeqExamples();

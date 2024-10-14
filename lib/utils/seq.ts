@@ -289,6 +289,16 @@ export abstract class Seq<T> {
 	}
 
 	/**
+	 * Returns the first element of the Seq, or throws an Error if the Seq is empty.
+	 */
+	public firstOrThrow() {
+		for (const x of this) {
+			return x;
+		}
+		throw Error("Seq is empty");
+	}
+
+	/**
 	 * Returns the last element of the Seq, or undefined if the Seq is empty.
 	 */
 	public last() {
@@ -299,6 +309,20 @@ export abstract class Seq<T> {
 		}
 
 		return v;
+	}
+
+	/**
+	 * Returns the last element of the Seq, or throws an Error if the Seq is empty.
+	 */
+	public lastOrThrow() {
+		let v: T | undefined = undefined;
+
+		for (const x of this) {
+			v = x;
+		}
+		if (v === undefined) throw Error("Seq is empty");
+
+		return v as T;
 	}
 
 	/**
