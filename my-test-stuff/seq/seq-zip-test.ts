@@ -1,4 +1,7 @@
-import { getSeqs, logKeyValueZipSeqs } from "@/app/seq-zip-helper";
+import {
+	getSeqs,
+	logKeyValueZipSeqs,
+} from "@/my-tests/seq/seq-zip-helper";
 import { div, logh, logln } from "@/utils/log";
 import { isEven, isOdd } from "@/utils/math";
 import {
@@ -500,9 +503,9 @@ const logFunctions: Record<
 		name: "logZip2Seq",
 		description: `
 			/**
-			 * Logs ZipSeq of countSeq and toStrSeq.
+			 * Logs ZipSeq of  countSeq    and toStrSeq.
 			 *
-			 * The logged ZipSeq contains objects with properties: count and toStr.
+			 * The logged   ZipSeq contains objects with     properties: count and toStr.
 			 *
 			 * The logged ZipSeq is filtered to only include even numbers.
 			 *

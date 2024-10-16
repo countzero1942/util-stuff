@@ -10,10 +10,13 @@ const reduceTriangular = (n: number) => {
 };
 
 const reduceFib = (n: number) => {
-	const fib = NumSeq.count(n).accumulate(
-		{ back1: 1, fibonacci: 0 },
-		({ back1: back2, fibonacci: back1 }) => {
-			return { back1: back1, fibonacci: back2 + back1 };
+	const fib = NumSeq.count(n).accum(
+		{ prevFib: 1, fibonacci: 0 },
+		({ prevFib, fibonacci }) => {
+			return {
+				prevFib: fibonacci,
+				fibonacci: prevFib + fibonacci,
+			};
 		}
 	);
 	return fib;
@@ -33,14 +36,14 @@ export const logReduceFib = (n: number) => {
 	const seqFib = seq1.map(reduceFib);
 
 	const seqFinal = seq1.zip([seqFib], (count, fibonacci) => {
-		return { count, ...fibonacci };
+		return { ...fibonacci };
 	});
 	log(seqFinal.toArray());
 };
 
 export const logFibSeq = (n: number) => {
 	const seq1 = NumSeq.from(0, n);
-	const seqFib = seq1.accumSeq(
+	const seqFib = seq1.accum(
 		{ count: 0, prev: 1, current: 0 },
 		({ count, prev, current }) => {
 			return {
@@ -54,7 +57,7 @@ export const logFibSeq = (n: number) => {
 };
 
 export const logFibTriFac = (n: number) => {
-	const seq = NumSeq.count(n).accumSeq(
+	const seq = NumSeq.count(n).accum(
 		{
 			count: 1,
 			prevFib: 0,
@@ -77,7 +80,7 @@ export const logFibTriFac = (n: number) => {
 };
 
 export const logFibTriSquare = (n: number) => {
-	const seq = NumSeq.count(n).accumSeq(
+	const seq = NumSeq.count(n).accum(
 		{ count: 1, prevFib: 0, fibonacci: 1, triangle: 1, square: 1 },
 		({ count, prevFib, fibonacci, triangle }) => {
 			const next = count + 1;

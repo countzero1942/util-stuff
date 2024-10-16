@@ -5,16 +5,21 @@
 	"type": "module",
 	"scripts": {
 		"build": "tsc",
-		"dev": "tsx ./app/index.ts"
+		"dev": "tsx ./app/index.ts",
+		"test": "jest"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
 	"description": "",
 	"devDependencies": {
+		"@jest/globals": "^29.7.0",
+		"@types/jest": "^29.5.13",
 		"@types/memoizee": "^0.4.11",
 		"@types/node": "^22.7.4",
 		"@types/prompts": "^2.4.9",
+		"jest": "^29.7.0",
+		"ts-jest": "^29.2.5",
 		"tsx": "^4.19.1",
 		"typescript": "^5.6.2"
 	},

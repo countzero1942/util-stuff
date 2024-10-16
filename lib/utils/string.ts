@@ -115,6 +115,9 @@ export const formatNum = (n: number) => {
  * by an empty line, except if they begin with a "-". The function will
  * return the cleaned array of lines
  *
+ * This is for comments that have paragraph text broken up for
+ * readability that needs to be joined back together for word wrapping.
+ *
  * @param lines The array of strings to clean
  * @returns The array of strings with joined lines
  */
@@ -166,6 +169,30 @@ export const joinConnectedLinesWithoutDash = (lines: string[]) => {
 
 	return newLines;
 };
+
+/**
+ * If a string contains multiple spaces in between words,
+ * returns a cleaned string with all multiple spaces removed.
+ *
+ * Otherwise, returns the original string.
+ *
+ * @param line The string to clean
+ * @returns The cleaned string
+ */
+export const cleanLineOfMultipleSpaces = (line: string) => {
+	const doMultipleSpacesExistInLine = (text: string): boolean => {
+		return /\s{2,}/g.test(text);
+	};
+
+	line = line.trim();
+
+	if (doMultipleSpacesExistInLine(line)) {
+		const words = line.split(/\s+/);
+		return words.join(" ");
+	}
+	return line;
+};
+
 /**
  * Given an array of strings, takes each string and word wraps it to a
  * maximum number of characters. The wrapped lines are inserted in place
@@ -178,13 +205,6 @@ export const wordWrapLinesToMaxChars = (
 	lines: string[],
 	maxChars: number
 ) => {
-	/**
-	 * Internal function to wrap a single line of text to a maximum number of
-	 * characters by inserting line breaks. The wrapped lines are inserted in
-	 * place of the original lines in the array.
-	 * @param line The line of text to wrap
-	 * @param wrappedLines The array of wrapped lines
-	 */
 	const wrapLine = (line: string, wrappedLines: string[]) => {
 		const words = line.split(" ");
 		let currentLine: {
@@ -211,7 +231,7 @@ export const wordWrapLinesToMaxChars = (
 			currentLine.charLength += word.length;
 		};
 
-		const getCurrentLineString = () => {
+		const joinCurrentLine = () => {
 			return currentLine.words.join(" ");
 		};
 
@@ -219,18 +239,18 @@ export const wordWrapLinesToMaxChars = (
 
 		for (const word of words) {
 			if (currentLine.charLength + word.length > maxChars) {
-				wrappedLines.push(getCurrentLineString());
+				wrappedLines.push(joinCurrentLine());
 				resetCurrentLine();
 			}
 			addToCurrentLine(word);
 		}
-		wrappedLines.push(getCurrentLineString());
+		wrappedLines.push(joinCurrentLine());
 	};
 
 	const wrappedLines: string[] = [];
 	let i = 0;
 	while (i < lines.length) {
-		const line = lines[i] as string;
+		const line = cleanLineOfMultipleSpaces(lines[i] as string);
 		if (line.length <= maxChars) {
 			wrappedLines.push(line);
 		} else {
@@ -283,7 +303,7 @@ export const cleanJSDocDescription = (
 	eliminateParams: boolean = true,
 	maxLineLength: number = 80
 ) => {
-	const cleanLine = (line: string) => {
+	const cleanLineOfCommentTags = (line: string) => {
 		switch (true) {
 			case eliminateParams && line.startsWith("* @param"):
 				return "";
@@ -299,7 +319,7 @@ export const cleanJSDocDescription = (
 	};
 
 	let lines = description.split("\n").map(line => {
-		return cleanLine(line.trim());
+		return cleanLineOfCommentTags(line.trim());
 	});
 
 	lines = removeEmptyLinesFromStartAndEnd(lines);
@@ -307,5 +327,6 @@ export const cleanJSDocDescription = (
 	lines = joinConnectedLinesWithoutDash(lines);
 
 	lines = wordWrapLinesToMaxChars(lines, maxLineLength);
+
 	return lines.join("\n");
 };
