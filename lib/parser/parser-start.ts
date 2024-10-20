@@ -4,7 +4,10 @@ import * as fs from "node:fs";
 
 import { LineInfo, ParseErr } from "@/parser/types/general";
 import { getPreLineInfo } from "@/parser/utils/pre-line-info";
-import { HeadType, splitHead } from "@/parser/utils/split-head";
+import {
+	parseLinesToHeads,
+	splitHead,
+} from "@/parser/utils/lines-to-heads";
 import { ErrorType, getError } from "@/utils/error";
 import { ArraySeq, NumSeq } from "@/utils/seq";
 
@@ -60,42 +63,8 @@ export const fileToLines = async (
 	}
 };
 
-export const parseLinesToHeads = async (
-	lines: readonly string[]
-): Promise<readonly HeadType[]> =>
-	new Promise(resolve => {
-		const heads: HeadType[] = new Array<HeadType>();
-
-		let lineNumber = 0;
-		for (const line of lines) {
-			lineNumber++; // in N
-
-			const res1 = getPreLineInfo(line, lineNumber);
-
-			if (res1.type === "ParseErr") {
-				heads.push(res1);
-				continue;
-			}
-
-			const preLineInfo = res1;
-
-			const lineInfo: LineInfo = {
-				lineInfo: {
-					content: preLineInfo.content,
-					row: preLineInfo.row,
-					indent: preLineInfo.indent,
-				},
-			};
-
-			const head = splitHead(lineInfo);
-			heads.push(head);
-		}
-
-		resolve(heads);
-	});
-
 export const logSplitHeads = async () => {
-	logh("Log Parse Begin 01");
+	logh("Log Parse: Split Heads");
 	log();
 	log("Legend:");
 	log("   Head: type and values yet to be parsed.");
@@ -107,17 +76,6 @@ export const logSplitHeads = async () => {
 	);
 	div();
 
-	const errors: ParseErr[] = [];
-	const dict = new Map<string, any>();
-
-	const logLineInfo = (li: LineInfo) => {
-		const { content, row, indent } = li.lineInfo;
-		log(
-			`   LineInfo: row: #${row}, indent: ${indent}, ` +
-				`content: "${formatLine(content)}"`
-		);
-	};
-
 	const res1 = await fileToLines("00-with-errs.txt");
 	if (res1.type === "ErrorType") {
 		log("ERROR:");
@@ -127,11 +85,7 @@ export const logSplitHeads = async () => {
 
 	const lines = res1.lines;
 
-	//	log(res1);
-
 	const allHeads = await parseLinesToHeads(lines);
-
-	//	log(heads);
 
 	const allHeadsSeq = ArraySeq.from(allHeads);
 
@@ -145,17 +99,6 @@ export const logSplitHeads = async () => {
 
 	logh(`Errors: ${errorHeads.length}`);
 	log(errorHeads);
-
-	// const [heads, errorHeads] = allHeadsSeq.part(
-	// 	h => h.type !== "ParseErr"
-	// );
-
-	// logh(`Heads: ${heads.count()}`);
-	// log(heads.toArray());
-	// log();
-
-	// logh(`Errors: ${errorHeads.count()}`);
-	// log(errorHeads.toArray());
 
 	return;
 };

@@ -4,22 +4,26 @@ import {
 	ParseErr,
 } from "@/parser/types/general";
 import {
+	HeadType,
 	KeyBodyHead,
 	KeyHead,
 	KeyValueHead,
 } from "@/parser/types/head";
+import { getPreLineInfo } from "@/parser/utils/pre-line-info";
 import { log } from "@/utils/log";
 import { countOccurencesOf, splitStringOnce } from "@/utils/string";
 import { toReadonlyTuple } from "@/utils/types";
 
-export type HeadType =
-	| KeyValueHead
-	| KeyHead
-	| KeyBodyHead
-	| EmptyLine
-	| ParseErr;
-
 export const splitHead = (lineInfo: LineInfo): HeadType => {
+	// create ParseErr error Object
+	const createParseErr = (message: string): ParseErr => {
+		return { type: "ParseErr", message, ...lineInfo };
+	};
+
+	// Error messages
+	const confusingColon =
+		"Cannot discern key assignment colon. Must be ': '.";
+
 	const { content: line } = lineInfo.lineInfo;
 
 	// case: empty line
@@ -34,15 +38,6 @@ export const splitHead = (lineInfo: LineInfo): HeadType => {
 	const parts: readonly string[] = splitStringOnce(line, ": ").map(
 		s => s.trim()
 	);
-
-	// create ParseErr error Object
-	const createParseErr = (message: string): ParseErr => {
-		return { type: "ParseErr", message, ...lineInfo };
-	};
-
-	// Error messages
-	const confusingColon =
-		"Cannot discern key assignment colon. Must be ': '.";
 
 	// switch on keyHead and valueHead parts
 	switch (parts.length) {
@@ -70,7 +65,7 @@ export const splitHead = (lineInfo: LineInfo): HeadType => {
 					};
 
 				default:
-					// case: "key:" "key: stuff:8:" => Key Body Decl
+					// case: "key:" "key stuff:8:" => Key Body Decl
 					if (line.endsWith(":")) {
 						return {
 							type: "KeyBodyHead",
@@ -86,3 +81,37 @@ export const splitHead = (lineInfo: LineInfo): HeadType => {
 			throw Error("Never");
 	}
 };
+
+export const parseLinesToHeads = async (
+	lines: readonly string[]
+): Promise<readonly HeadType[]> =>
+	new Promise(resolve => {
+		const heads: HeadType[] = new Array<HeadType>();
+
+		let lineNumber = 0;
+		for (const line of lines) {
+			lineNumber++; // in N
+
+			const res1 = getPreLineInfo(line, lineNumber);
+
+			if (res1.type === "ParseErr") {
+				heads.push(res1);
+				continue;
+			}
+
+			const preLineInfo = res1;
+
+			const lineInfo: LineInfo = {
+				lineInfo: {
+					content: preLineInfo.content,
+					row: preLineInfo.row,
+					indent: preLineInfo.indent,
+				},
+			};
+
+			const head = splitHead(lineInfo);
+			heads.push(head);
+		}
+
+		resolve(heads);
+	});
