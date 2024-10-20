@@ -1,0 +1,37 @@
+a: some text 
+a2: 	
+a2 stuff:8: 
+a2 stuff:8:2: 
+a2 in .trait: 
+a2 add .trait: 
+ a3a: some text
+  a3b: some text
+   a3c: some text
+a4 
+a4 in .Z
+
+b: 42
+b: 42 
+	b: 42  
+:
+	:
+		:
+
+
+		
+c: -43,555,348
+	c2: -43,555,348
+		c2: -43,555,348
+	 c3a: -43,555,348
+	  c3b: -43,555,348
+	   c3c: -43,555,348
+	 	c4a: -43,555,348
+	  	c4b: -43,555,348
+		 	c4c: -43,555,348
+			c5c: -43,555,348
+
+n: 0b0100:1001
+n2: 0b0100: 1001
+
+key:value:value
+key:value

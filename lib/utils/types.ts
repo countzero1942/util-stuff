@@ -287,7 +287,7 @@ export const toReadonlyTuple = <
 		);
 	}
 
-	return arr as unknown as ReadonlyTuple<TArray, L>;
+	return arr as unknown as ReadonlyTuple<ArrayElement<TArray>, L>;
 };
 
 export const isObject = (obj: any): obj is Record<KeyType, any> => {

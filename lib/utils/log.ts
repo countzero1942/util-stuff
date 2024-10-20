@@ -32,5 +32,12 @@ export const logh = (header: string) => {
  * Quick line
  */
 export const div = () => {
+	logln(60);
+};
+
+export const divlong = () => {
+	logln(80);
+};
+export const divshort = () => {
 	logln(40);
 };

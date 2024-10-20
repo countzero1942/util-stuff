@@ -7,6 +7,7 @@ import {
 	isFullType,
 	isObject,
 } from "@/utils/types";
+import { setUncaughtExceptionCaptureCallback } from "node:process";
 import { stringify } from "node:querystring";
 import { Key } from "node:readline";
 import { ValueOf } from "type-fest";
@@ -96,6 +97,43 @@ export abstract class Seq<T> {
 	 */
 	public filter(fn: (x: T) => boolean) {
 		return new FilterSeq(this, fn);
+	}
+
+	/**
+	 * Partitions 'this' Seq into two Seqs.
+	 *
+	 * The first Seq contains the elements for which the predicate is true,
+	 * the second Seq contains the elements for which the predicate is false.
+	 *
+	 * @param fn The predicate function
+	 * @returns [FilterSeq<T>, NegFilterSeq<T>]
+	 */
+	public part(
+		fn: (x: T) => boolean
+	): [FilterSeq<T>, NegFilterSeq<T>] {
+		return [new FilterSeq(this, fn), new NegFilterSeq(this, fn)];
+	}
+
+	/**
+	 * Partitions 'this' Seq into two arrays.
+	 *
+	 * The first array contains the elements for which the predicate is true,
+	 * the second array contains the elements for which the predicate is false.
+	 *
+	 * @param fn The predicate function
+	 * @returns [T[], T[]]
+	 */
+	public partArrays(
+		fn: (x: T) => boolean
+	): [readonly T[], readonly T[]] {
+		const a: T[] = [];
+		const b: T[] = [];
+		for (const x of this) {
+			if (fn(x)) a.push(x);
+			else b.push(x);
+		}
+
+		return [a, b];
 	}
 
 	/**
@@ -311,6 +349,21 @@ export abstract class Seq<T> {
 		return v;
 	}
 
+	public lastTwoOrThrow() {
+		let prevV: T | undefined = undefined;
+		let v: T | undefined = undefined;
+
+		for (const x of this) {
+			prevV = v;
+			v = x;
+		}
+
+		if (prevV === undefined || v === undefined)
+			throw Error("Seq doesn't have two elements");
+
+		return [v, prevV] as readonly [T, T];
+	}
+
 	/**
 	 * Returns the last element of the Seq, or throws an Error if the Seq is empty.
 	 */
@@ -457,6 +510,7 @@ export class IndexMapSeq<TIn, TOut> extends Seq<TOut> {
  *
  * @param T The Seq element type
  */
+
 export class FilterSeq<T> extends Seq<T> {
 	/**
 	 * FilterSeq constructor
@@ -474,6 +528,35 @@ export class FilterSeq<T> extends Seq<T> {
 	public override *gen() {
 		for (const x of this.seq) {
 			if (this.fn(x)) yield x;
+		}
+	}
+}
+
+/**
+ * Class used to filter one Seq down to another Seq.
+ * The opposite of FilterSeq
+ * Used in 'part' function
+ *
+ * @param T The Seq element type
+ */
+
+export class NegFilterSeq<T> extends Seq<T> {
+	/**
+	 * FilterSeq constructor
+	 *
+	 * @param seq The input Seq
+	 * @param fn The filter function
+	 */
+	constructor(
+		public readonly seq: Seq<T>,
+		public readonly fn: (x: T) => boolean
+	) {
+		super();
+	}
+
+	public override *gen() {
+		for (const x of this.seq) {
+			if (!this.fn(x)) yield x;
 		}
 	}
 }
@@ -695,42 +778,94 @@ export class NumberFilterSeq extends Seq<number> {
 }
 
 export class MathSumSeq extends Seq<number> {
-	constructor(public fn: (n: number) => number) {
+	constructor(
+		public readonly kStart: number = 1,
+		public readonly kEnd: number = Number.MAX_SAFE_INTEGER,
+		public fn: (k: number) => number
+	) {
 		super();
 	}
 
 	public override *gen() {
-		let i = 1;
 		let sum = 0;
-		while (true) {
-			sum += this.fn(i);
+		const max = this.kEnd;
+		for (let k = this.kStart; k <= max; k++) {
+			sum += this.fn(k);
 			yield sum;
-			i++;
 		}
 	}
 
-	public static from(fn: (n: number) => number) {
-		return new MathSumSeq(fn);
+	public getSum(kEndIncl?: number) {
+		let sum = 0;
+		const max = kEndIncl ?? this.kEnd;
+		for (let k = this.kStart; k <= max; k++) {
+			sum += this.fn(k);
+		}
+		return sum;
+	}
+
+	public getLastTwoSums(kEndIncl?: number) {
+		let prevSum = 0;
+		let sum = 0;
+		const max = kEndIncl ?? this.kEnd;
+		for (let k = this.kStart; k <= max; k++) {
+			prevSum = sum;
+			sum += this.fn(k);
+		}
+		return [sum, prevSum] as readonly [number, number];
+	}
+
+	public static from(
+		kStart: number,
+		kEnd: number,
+		fn: (k: number) => number
+	) {
+		return new MathSumSeq(kStart, kEnd, fn);
+	}
+
+	public static count(kEndInc: number, fn: (k: number) => number) {
+		return new MathSumSeq(1, kEndInc, fn);
 	}
 }
 
 export class MathProdSeq extends Seq<number> {
-	constructor(public fn: (n: number) => number) {
+	constructor(
+		public readonly kStart: number = 1,
+		public readonly kEnd: number = Number.MAX_SAFE_INTEGER,
+		public fn: (k: number) => number
+	) {
 		super();
 	}
 
 	public override *gen() {
 		let i = 1;
 		let prod = 1;
-		while (true) {
+		const max = this.kEnd;
+		for (let k = this.kStart; k <= max; k++) {
 			prod *= this.fn(i);
 			yield prod;
-			i++;
 		}
 	}
 
-	public static from(fn: (n: number) => number) {
-		return new MathProdSeq(fn);
+	public getProd(kEndIncl?: number) {
+		let prod = 1;
+		const max = kEndIncl ?? this.kEnd;
+		for (let k = this.kStart; k <= max; k++) {
+			prod *= this.fn(k);
+		}
+		return prod;
+	}
+
+	public static from(
+		kStart: number,
+		kEnd: number,
+		fn: (n: number) => number
+	) {
+		return new MathProdSeq(kStart, kEnd, fn);
+	}
+
+	public static count(kEndIncl: number, fn: (n: number) => number) {
+		return new MathProdSeq(1, kEndIncl, fn);
 	}
 }
 

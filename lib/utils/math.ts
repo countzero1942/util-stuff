@@ -1,3 +1,4 @@
+import { logh } from "@/utils/log";
 import { log } from "node:console";
 
 /**
@@ -227,3 +228,60 @@ export const isEven = (n: number) => n % 2 === 0;
  * @returns True if the number 'n' is odd
  */
 export const isOdd = (n: number) => n % 2 === 1;
+
+/**
+ * Compares two numbers and returns the number of digits
+ * that are equal. Numbers are shifted and compared
+ * digit by digit from left to right. The comparison
+ * stops on the first unequal digit.
+ *
+ * Uses math to compare digits. No use of strings.
+ *
+ * @param a The first number to compare
+ * @param b The second number to compare
+ * @param sigDigits The number of significant digits to compare.
+ * Defaults to 15 if not given.
+ * @returns The number of equal digits
+ */
+export const getDigitAccuracy = (
+	a: number,
+	b: number,
+	sigDigits = 15
+): number => {
+	const logA = Math.floor(Math.log10(a)) + 1;
+	const logB = Math.floor(Math.log10(b)) + 1;
+	if (logA !== logB) {
+		return 0;
+	}
+	const clamSigDigits = clamp(sigDigits, 1, 15);
+	const numDigits = Math.ceil(Math.log10(a));
+	const roundPlaces = clamSigDigits - numDigits;
+
+	const shiftA = Math.floor(Math.pow(10, roundPlaces) * a);
+	const shiftB = Math.floor(Math.pow(10, roundPlaces) * b);
+
+	let matches = 0;
+	for (let i = sigDigits - 1; i >= 0; i--) {
+		const digA = Math.floor(shiftA / Math.pow(10, i)) % 10;
+		const digB = Math.floor(shiftB / Math.pow(10, i)) % 10;
+		if (digA === digB) {
+			matches++;
+		} else {
+			break;
+		}
+	}
+	return matches;
+};
+
+/**
+ * Checks if a number is a power of ten.
+ *
+ * Powers of ten are 1, 10, 100, 1000, etc.
+ *
+ * @param a The number to check.
+ * @returns True if the number is a power of ten.
+ */
+export const isPowerOfTen = (a: number) => {
+	const logNum = Math.log10(a);
+	return logNum % 1 === 0;
+};
