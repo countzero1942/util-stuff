@@ -1,161 +1,133 @@
-import { logSplitHeads } from "@/parser/parser-start";
-import { div, divshort, log } from "@/utils/log";
-
-export abstract class TypeBase {
-	constructor(
-		public readonly type: string,
-		public readonly subtype: string
-	) {}
-
-	public abstract toKey(): string;
-}
-
-export abstract class RBase extends TypeBase {
-	constructor(subtype: string) {
-		super(".R", subtype);
-	}
-}
-
-export class RPrec extends RBase {
-	constructor(public readonly precision: number = 15) {
-		super(":Prec");
-	}
-
-	public toKey(): string {
-		return `|${this.type}|${this.subtype}|${this.precision}|`;
-	}
-}
-
-export class RFixed extends RBase {
-	constructor(public readonly fixed: number = 2) {
-		super(":Fixed");
-	}
-
-	public toKey(): string {
-		return `|${this.type}|${this.subtype}|${this.fixed}|`;
-	}
-}
-
-class ZNum extends TypeBase {
-	constructor(
-		type: string = ".Z",
-		subtype: string = "",
-		public readonly min: number = Number.MIN_SAFE_INTEGER,
-		public readonly max: number = Number.MAX_SAFE_INTEGER
-	) {
-		super(type, subtype);
-	}
-
-	public toKey(): string {
-		const minStr =
-			this.min === Number.MIN_SAFE_INTEGER
-				? "-MAX"
-				: this.min.toString();
-		const maxStr =
-			this.max === Number.MAX_SAFE_INTEGER
-				? "+MAX"
-				: this.max.toString();
-		return `|${this.type}|${this.subtype}|${minStr}|${maxStr}|`;
-	}
-}
-
-class WNum extends ZNum {
-	constructor() {
-		super(".W", "", 0);
-	}
-}
-
-class NNum extends ZNum {
-	constructor() {
-		super(".N", "", 1);
-	}
-}
-
-type Value<TValue, TType> = {
-	type: TType;
-	value: TValue;
-};
-
-const getTypeDefaults = () => {};
-
-class TypeMap {
-	private readonly typeMap: Map<string, any> = new Map();
-	constructor() {}
-
-	public has<T extends TypeBase>(type: T): boolean {
-		return this.typeMap.has(type.toKey());
-	}
-
-	public addOrGet<T extends TypeBase>(type: T): T {
-		const key = type.toKey();
-		const t = this.typeMap.get(key) as T | undefined;
-
-		if (!t) {
-			this.typeMap.set(key, type);
-			log("==>addOrGet new:");
-			log(key);
-			log(type);
-			divshort();
-			return type;
-		} else {
-			log("==>addOrGet existing:");
-			log(key);
-			log(t);
-			divshort();
-			return t;
-		}
-	}
-}
+import {
+	log,
+	logh,
+	div,
+	loggn,
+	ddivl,
+	logn,
+	divl,
+	ddivln,
+	loghn,
+} from "@/utils/log";
+import {
+	NNum,
+	RFixed,
+	RPrec,
+	TypeBase,
+	WNum,
+	ZNum,
+} from "@/parser/types/type-types";
+import { TypeMap } from "@/parser/types/type-map";
+import { getFullType } from "@/utils/types";
 
 const testRPrec = () => {
+	const logRT = (name: string, rt: TypeBase) => {
+		log(`${name}:`);
+		log(rt);
+		log();
+	};
+	loghn("test RPrec");
+
 	const typeMap = new TypeMap();
 
 	const rt = new RPrec();
 	const rt1 = typeMap.addOrGet(rt);
 	const rt2 = typeMap.addOrGet(new RPrec());
 	const rt3 = typeMap.addOrGet(new RPrec(6));
-	const b = typeMap.has(rt);
-	const b1 = typeMap.has(rt1);
-	const b2 = typeMap.has(rt2);
-	const b3 = typeMap.has(rt3);
+	div();
+
+	loggn("rt", rt);
+	loggn("rt1", rt1);
+	loggn("rt2", rt2);
+	loggn("rt3", rt3);
+	div();
 
 	log(typeMap);
-	log(`has rt: ${b}`);
-	log(`has rt1: ${b1}`);
-	log(`has rt2: ${b2}`);
-	log(`has rt3: ${b3}`);
+	div();
+	log(`has rt: ${typeMap.has(rt)}`);
+	log(`has rt1: ${typeMap.has(rt1)}`);
+	log(`has rt2: ${typeMap.has(rt2)}`);
+	log(`has rt3: ${typeMap.has(rt3)}`);
 	log(`rt === rt1: ${rt === rt1}`);
 	log(`rt === rt2: ${rt === rt2}`);
-	log(`rt === rt3: ${rt === rt3}`);
-	log(`rt === new RPrec(): ${rt === new RPrec()}`);
-	log(rt);
+	log(`rt !== rt3: ${rt !== rt3}`);
+	log(`rt !== new RPrec(): ${rt !== new RPrec()}`);
 };
 
 const testRFixed = () => {
+	loghn("test RFixed");
+
 	const typeMap = new TypeMap();
 
 	const rt = new RFixed();
 	const rt1 = typeMap.addOrGet(rt);
 	const rt2 = typeMap.addOrGet(new RFixed());
 	const rt3 = typeMap.addOrGet(new RFixed(4));
-	const b = typeMap.has(rt);
-	const b1 = typeMap.has(rt1);
-	const b2 = typeMap.has(rt2);
-	const b3 = typeMap.has(rt3);
+	div();
+
+	loggn("rt", rt);
+	loggn("rt1", rt1);
+	loggn("rt2", rt2);
+	loggn("rt3", rt3);
+	div();
 
 	log(typeMap);
-	log(`has rt: ${b}`);
-	log(`has rt1: ${b1}`);
-	log(`has rt2: ${b2}`);
-	log(`has rt3: ${b3}`);
+	div();
+	log(`has rt: ${typeMap.has(rt)}`);
+	log(`has rt1: ${typeMap.has(rt1)}`);
+	log(`has rt2: ${typeMap.has(rt2)}`);
+	log(`has rt3: ${typeMap.has(rt3)}`);
 	log(`rt === rt1: ${rt === rt1}`);
 	log(`rt === rt2: ${rt === rt2}`);
-	log(`rt === rt3: ${rt === rt3}`);
-	log(`rt === new RPrec(): ${rt === new RFixed()}`);
-	log(rt);
+	log(`rt !== rt3: ${rt !== rt3}`);
+	log(`rt !== new RFixed(): ${rt !== new RFixed()}`);
+};
+
+const testZTypes = () => {
+	const logZT = (name: string, zt: TypeBase) => {
+		const fullType = getFullType(zt);
+		loggn(`${name}: <${fullType.name}>`, zt);
+	};
+
+	loghn("test ZTypes");
+
+	const typeMap = new TypeMap();
+
+	const zt = new ZNum();
+	const zt1 = typeMap.addOrGet(zt);
+	const zt2 = typeMap.addOrGet(new ZNum());
+	const nt1 = typeMap.addOrGet(new NNum());
+	const wt1 = typeMap.addOrGet(new WNum());
+
+	div();
+
+	logZT("zt", zt);
+	logZT("zt1", zt1);
+	logZT("zt2", zt2);
+	logZT("nt1", nt1);
+	logZT("wt1", wt1);
+	div();
+
+	log(typeMap);
+	div();
+	log(`has zt: ${typeMap.has(zt)}`);
+	log(`has zt1: ${typeMap.has(zt1)}`);
+	log(`has zt2: ${typeMap.has(zt2)}`);
+	log(`has nt1: ${typeMap.has(nt1)}`);
+	log(`has wt1: ${typeMap.has(wt1)}`);
+	log(`zt === zt1: ${zt === zt1}`);
+	log(`zt === zt2: ${zt === zt2}`);
+	log(`zt !== nt1: ${zt !== nt1}`);
+	log(`zt !== wt1: ${zt !== wt1}`);
+	log(`zt !== new ZNum(): ${zt !== new ZNum()}`);
 };
 
 // await logSplitHeads();
 testRPrec();
-div();
+ddivln();
 testRFixed();
+ddivln();
+testZTypes();
+ddivln();
+
+// testLog();
