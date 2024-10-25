@@ -18,10 +18,14 @@ export abstract class RBase extends TypeBase {
 
 export class RPrec extends RBase {
 	private readonly key: string;
-	constructor(public readonly precision: number = 15) {
+	constructor(
+		public readonly precision: number = 15,
+		public readonly UseEngineeringNotation: boolean = false,
+		public readonly SciNotPower: number = 9
+	) {
 		super(":Prec");
 
-		this.key = `|${this.type}|${this.subtype}|${this.precision}|`;
+		this.key = `|${this.type}|${this.subtype}|${this.precision}|${this.UseEngineeringNotation}|${this.SciNotPower}|`;
 	}
 
 	public toKey(): string {
