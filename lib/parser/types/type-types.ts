@@ -49,12 +49,11 @@ export class RFixed extends RBase {
 export class ZNum extends TypeBase {
 	private readonly key: string;
 	constructor(
-		type: string = ".Z",
 		subtype: string = "",
 		public readonly min: number = Number.MIN_SAFE_INTEGER,
 		public readonly max: number = Number.MAX_SAFE_INTEGER
 	) {
-		super(type, subtype);
+		super(".Z", subtype);
 
 		this.key = this.getKey();
 	}
@@ -78,13 +77,13 @@ export class ZNum extends TypeBase {
 
 export class WNum extends ZNum {
 	constructor() {
-		super(".Z", ".W", 0);
+		super(".W", 0);
 	}
 }
 
 export class NNum extends ZNum {
 	constructor() {
-		super(".Z", ".N", 1);
+		super(".N", 1);
 	}
 }
 

@@ -1,28 +1,19 @@
-import { RPrec, TypeBase } from "@/parser/types/type-types";
+import {
+	AnalyzeNumberString,
+	NumberError,
+	NumberErrorKind,
+	TypeValuePair,
+} from "@/parser/types/parse-types";
+import {
+	regexDecExponentWithSeparators,
+	regexDecIntExponentNoSeparators,
+	RegexExponentNumberGroups,
+	regexIntExponentWithSeparators,
+	regexRPrecExponentValidChars,
+	regexZNumExponentValidChars,
+} from "@/parser/types/regex";
+import { RPrec, TypeBase, ZNum } from "@/parser/types/type-types";
 import { logagn } from "@/utils/log";
-
-type NumberErrorKind =
-	| "Invalid sign"
-	| "Invalid decimal"
-	| "Invalid grouping"
-	| "Invalid chars"
-	| "Value > max"
-	| "Value < min"
-	| "Power > max"
-	| "Power < min"
-	| "RegEx Fail"
-	| "Has breaking chars"
-	| "NaN"
-	| "TODO";
-
-type AnalyzeNumberString = {
-	hasSeparator: boolean;
-	hasDecimal: boolean;
-	hasSign: boolean;
-	hasENotation: boolean;
-	hasGNotation: boolean;
-	hasBreakingChars: boolean;
-};
 
 const analyzeNumberString = (
 	value: string,
@@ -68,45 +59,6 @@ const analyzeNumberString = (
 	return res;
 };
 
-export type ParseError = {
-	type: "ParseError";
-	message: string;
-};
-
-export type NumberError = {
-	type: "NumberError";
-	kind: NumberErrorKind;
-};
-
-export type TypeValuePair<T> = {
-	type: "TypeValuePair";
-	valueType: TypeBase;
-	value: T;
-};
-
-const regexExponentNoSeparators =
-	/^(?<num>[+-]?(?:[1-9]\d*|[1-9]\d*\.\d*|[0]?\.\d+))(?<sym>[eg])(?<pow>[+-]?\d+)$/;
-
-const regexExponentWithSeparators =
-	/^(?<num>[+-]?(?:[1-9]\d{0,2}(?:_\d{3})*|0)?\.(?:(?:\d{3}_)*\d{1,3})?)(?<sym>[eg])(?<pow>[+-]?\d+)$/;
-
-const MAX_POWER = 307;
-const MIN_POWER = -308;
-
-type ExponentGroups = {
-	num: string;
-	sym: string;
-	pow: string;
-};
-
-const getExponentRegex = (res: AnalyzeNumberString) => {
-	if (res.hasSeparator) {
-		return regexExponentWithSeparators;
-	} else {
-		return regexExponentNoSeparators;
-	}
-};
-
 export const getPrecisionCount = (numStr: string) => {
 	// numStr has no separators
 
@@ -143,6 +95,25 @@ export const getPrecisionCount = (numStr: string) => {
 	return precCount;
 };
 
+const MAX_POWER = 307;
+const MIN_POWER = -308;
+
+const getDecimalExponentRegex = (res: AnalyzeNumberString) => {
+	if (res.hasSeparator) {
+		return regexDecExponentWithSeparators;
+	} else {
+		return regexDecIntExponentNoSeparators;
+	}
+};
+
+const getIntExponentRegex = (res: AnalyzeNumberString) => {
+	if (res.hasSeparator) {
+		return regexIntExponentWithSeparators;
+	} else {
+		return regexDecIntExponentNoSeparators;
+	}
+};
+
 const getNumberError = (errorKind: NumberErrorKind): NumberError => {
 	return {
 		type: "NumberError",
@@ -150,22 +121,26 @@ const getNumberError = (errorKind: NumberErrorKind): NumberError => {
 	};
 };
 
-export const parseRPrecSciNot = (
+export const parseRPrecExponent = (
 	value: string,
 	res: AnalyzeNumberString
 ): TypeValuePair<number> | NumberError => {
-	const regex = getExponentRegex(res);
+	const regex = getDecimalExponentRegex(res);
 
 	const match = regex.exec(value);
 
 	if (!match) {
-		return {
-			type: "NumberError",
-			kind: "RegEx Fail",
-		};
+		switch (true) {
+			case !regexRPrecExponentValidChars.test(value):
+				return getNumberError("Invalid chars");
+			case res.hasSeparator:
+				return getNumberError("Invalid grouping");
+			default:
+				return getNumberError("RegEx Fail");
+		}
 	}
 
-	const groups = match.groups as ExponentGroups;
+	const groups = match.groups as RegexExponentNumberGroups;
 	const numStr = res.hasSeparator
 		? groups.num.replaceAll("_", "")
 		: groups.num;
@@ -194,6 +169,56 @@ export const parseRPrecSciNot = (
 	};
 };
 
+export const parseZNumExponent = (
+	value: string,
+	res: AnalyzeNumberString
+): TypeValuePair<number> | NumberError => {
+	const regex = getIntExponentRegex(res);
+
+	const match = regex.exec(value);
+
+	if (!match) {
+		switch (true) {
+			case !regexZNumExponentValidChars.test(value):
+				return getNumberError("Invalid chars");
+			case res.hasSeparator:
+				return getNumberError("Invalid grouping");
+			default:
+				return getNumberError("RegEx Fail");
+		}
+	}
+
+	const groups = match.groups as RegexExponentNumberGroups;
+	const numStr = res.hasSeparator
+		? groups.num.replaceAll("_", "")
+		: groups.num;
+
+	const pow = parseInt(groups.pow);
+	if (pow > MAX_POWER) {
+		return getNumberError("Power > max");
+	} else if (pow < 0) {
+		return getNumberError("Power must produce integer");
+	}
+
+	const finalNumStr = `${numStr}e${groups.pow}`;
+	logagn("finalNumStr", finalNumStr);
+	const num = Number(finalNumStr);
+
+	if (Number.isNaN(num)) {
+		return getNumberError("NaN");
+	}
+
+	if (!Number.isSafeInteger(num)) {
+		return getNumberError("Not safe integer");
+	}
+
+	return {
+		type: "TypeValuePair",
+		valueType: new ZNum(),
+		value: num,
+	};
+};
+
 export const parseZNumSciNot = (
 	value: string,
 	res: AnalyzeNumberString
@@ -211,9 +236,13 @@ export const parseNumber = (
 		};
 	}
 
+	const hasExponent = res.hasENotation || res.hasGNotation;
+
 	switch (true) {
-		case (res.hasENotation || res.hasGNotation) && res.hasDecimal:
-			return parseRPrecSciNot(value, res);
+		case hasExponent && res.hasDecimal:
+			return parseRPrecExponent(value, res);
+		case hasExponent && !res.hasDecimal:
+			return parseZNumExponent(value, res);
 		default:
 			break;
 	}

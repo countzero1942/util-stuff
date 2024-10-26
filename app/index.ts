@@ -10,6 +10,7 @@ import {
 	loghn,
 	logagn,
 	logag,
+	logobj,
 } from "@/utils/log";
 import {
 	NNum,
@@ -24,9 +25,9 @@ import { getFullType } from "@/utils/types";
 import { get } from "node:http";
 import {
 	getPrecisionCount,
-	NumberError,
 	parseNumber,
 } from "@/parser/utils/parse-num";
+import { NumberError } from "@/parser/types/parse-types";
 
 // await logSplitHeads();
 // testRPrec();
@@ -87,7 +88,7 @@ export const testPrecisionCount = () => {
 	console.log(`SUCCESS: ${successCount} / ${nums.length}`);
 };
 
-const testParseRPrecExp = (nums: string[]) => {
+const testParseRPrecExponent = (nums: string[]) => {
 	const failures: {
 		num: string;
 		err: NumberError;
@@ -128,7 +129,7 @@ const testAParseRPrecExp = () => {
 		"0.12345e100",
 		"0.12345e-100",
 	];
-	testParseRPrecExp(nums);
+	testParseRPrecExponent(nums);
 };
 
 const testBParseRPrecExp = () => {
@@ -144,7 +145,7 @@ const testBParseRPrecExp = () => {
 		"0.12345g100",
 		"0.12345g-100",
 	];
-	testParseRPrecExp(nums);
+	testParseRPrecExponent(nums);
 };
 
 const testCParseRPrecExp = () => {
@@ -164,7 +165,7 @@ const testCParseRPrecExp = () => {
 		"+0.123_456_7e-100",
 		"-0.123_456_7e-100",
 	];
-	testParseRPrecExp(nums);
+	testParseRPrecExponent(nums);
 };
 
 const testDParseRPrecExp = () => {
@@ -184,7 +185,48 @@ const testDParseRPrecExp = () => {
 		"+0.123_456_7g-100",
 		"-0.123_456_7g-100",
 	];
-	testParseRPrecExp(nums);
+	testParseRPrecExponent(nums);
 };
 
-testDParseRPrecExp();
+const testParseZNumExponent = (nums: string[]) => {
+	const failures: {
+		num: string;
+		err: NumberError;
+	}[] = [];
+
+	for (const num of nums) {
+		logh(`Parsing: ${num}`);
+		const res = parseNumber(num);
+
+		if (res.type === "NumberError") {
+			failures.push({ num, err: res });
+			log(res);
+			continue;
+		}
+		logobj(res);
+	}
+
+	ddivln();
+
+	loghn("Failures");
+	for (const { num, err } of failures) {
+		log(`Parsing: ${num}`);
+		log(err);
+		div();
+	}
+};
+
+const testAParseZnumExp = () => {
+	const nums = [
+		"1234e2",
+		"+1234e2",
+		"-1234e2",
+		"1234e10",
+		"1234e11",
+		"1234e12",
+		"1234e13",
+	];
+	testParseZNumExponent(nums);
+};
+
+testAParseZnumExp();
