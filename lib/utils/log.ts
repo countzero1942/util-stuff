@@ -23,29 +23,27 @@ export const logdln = (length: number = 50) =>
  * @param {...any} data The data to log.
  */
 export const log = (...data: any) => {
-	const arr = [...data];
-	if (arr.length === 1) {
-		const [obj] = toReadonlyTuple(arr, 1);
-		const type = getType(obj);
-
-		switch (type) {
-			case "Object":
-			case "Class":
-			case "Array":
-				console.dir(obj, {
-					depth: 10,
-					colors: true,
-					maxArrayLength: Infinity,
-					showHidden: true,
-					numericSeparator: true,
-				});
-				return;
-
-			default:
-				break;
-		}
-	}
 	console.log(...data);
+};
+
+export const logobj = (obj: any) => {
+	const type = getType(obj);
+
+	switch (type) {
+		case "Object":
+		case "Class":
+		case "Array":
+			console.dir(obj, {
+				depth: 10,
+				colors: true,
+				maxArrayLength: 1000,
+				numericSeparator: true,
+			});
+			return;
+
+		default:
+			break;
+	}
 };
 
 /**
