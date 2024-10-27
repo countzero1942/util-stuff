@@ -229,4 +229,21 @@ const testAParseZnumExp = () => {
 	testParseZNumExponent(nums);
 };
 
-testAParseZnumExp();
+const testErrAParseRPrecExp = () => {
+	const nums = [
+		"+1_2e4_567.8e+100",
+		"-1_2f4_567.8e-100",
+		"1_23_567.8g-100",
+		"-1_23_567.8g-100",
+		"0_123_567.8g-100",
+		"01_123_567.8g-100",
+		"+1_234_567.8eg100",
+		"1..234_567_8g-100",
+		"1 234_567.8g-100",
+		"1_234_567.8e+308",
+		"1_234_567.8g-309",
+	];
+	testParseRPrecExponent(nums);
+};
+
+testErrAParseRPrecExp();

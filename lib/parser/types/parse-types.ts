@@ -13,7 +13,9 @@ export type NumberErrorKind =
 	| "Power must produce integer"
 	| "Not safe integer"
 	| "RegEx Fail"
+	| "Invalid number"
 	| "Has breaking chars"
+	| "Invalid number input"
 	| "NaN"
 	| "TODO";
 
@@ -33,6 +35,7 @@ export type ParseError = {
 
 export type NumberError = {
 	type: "NumberError";
+	numType: TypeBase;
 	kind: NumberErrorKind;
 };
 

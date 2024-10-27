@@ -30,7 +30,7 @@ export const regexIntExponentWithSeparators =
 /**
  * RegExp for valid chars in an RPrec exponent number
  */
-export const regexRPrecExponentValidChars = /^[1-9.+-e]+$/;
+export const regexRPrecExponentValidChars = /^[1-9.+-eg]+$/;
 
 /**
  * RegExp for valid chars in an RPrec number
@@ -40,7 +40,7 @@ export const regexRPrecValidChars = /^[1-9.+-]+$/;
 /**
  * RegExp for valid chars in an ZNum exponent number
  */
-export const regexZNumExponentValidChars = /^[1-9+-e]+$/;
+export const regexZNumExponentValidChars = /^[1-9+-eg]+$/;
 
 /**
  * RegExp for valid chars in an ZNum number
@@ -50,7 +50,7 @@ export const regexZNumValidChars = /^[1-9+-]+$/;
 /**
  * RegExp for numbers that have an invalid leading zero
  */
-export const regexHasInvalidLeadingZero = /^[+-]?0\d/;
+export const regexHasInvalidLeadingZero = /^[+-]?(?:0\d|0_)/;
 
 /**
  * RegExp for decimal numbers that have valid grouping.

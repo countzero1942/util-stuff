@@ -10,6 +10,17 @@ export abstract class TypeBase {
 	public abstract toKey(): string;
 }
 
+export class NoNum extends TypeBase {
+	private readonly key: string;
+	constructor() {
+		super(".NoNum", "");
+		this.key = `|${this.type}|${this.subtype}|`;
+	}
+	public toKey(): string {
+		return this.key;
+	}
+}
+
 export abstract class RBase extends TypeBase {
 	constructor(subtype: string) {
 		super(".R", subtype);

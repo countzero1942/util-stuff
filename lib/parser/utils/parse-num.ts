@@ -15,7 +15,12 @@ import {
 	regexRPrecExponentValidChars,
 	regexZNumExponentValidChars,
 } from "@/parser/types/regex";
-import { RPrec, TypeBase, ZNum } from "@/parser/types/type-types";
+import {
+	NoNum,
+	RPrec,
+	TypeBase,
+	ZNum,
+} from "@/parser/types/type-types";
 import { logagn } from "@/utils/log";
 
 const analyzeNumberString = (
@@ -117,9 +122,13 @@ const getIntExponentRegex = (res: AnalyzeNumberString) => {
 	}
 };
 
-const getNumberError = (errorKind: NumberErrorKind): NumberError => {
+const getNumberError = (
+	errorKind: NumberErrorKind,
+	numType: TypeBase
+): NumberError => {
 	return {
 		type: "NumberError",
+		numType,
 		kind: errorKind,
 	};
 };
@@ -127,23 +136,24 @@ const getNumberError = (errorKind: NumberErrorKind): NumberError => {
 const getDetailedNumberError = (
 	value: string,
 	report: AnalyzeNumberString,
+	numType: TypeBase,
 	regexValidChars: RegExp
 ): NumberError => {
 	switch (true) {
 		case !regexValidChars.test(value):
-			return getNumberError("Invalid chars");
+			return getNumberError("Invalid chars", numType);
 		case regexHasInvalidLeadingZero.test(value):
-			return getNumberError("Invalid leading zero");
+			return getNumberError("Invalid leading zero", numType);
 		case report.hasSeparator &&
 			report.hasDecimal &&
 			!regexHasValidDecimalGrouping.test(value):
-			return getNumberError("Invalid grouping");
+			return getNumberError("Invalid grouping", numType);
 		case report.hasSeparator &&
 			!report.hasDecimal &&
 			!regexHasValidIntegerGrouping.test(value):
-			return getNumberError("Invalid grouping");
+			return getNumberError("Invalid grouping", numType);
 		default:
-			return getNumberError("RegEx Fail");
+			return getNumberError("Invalid number", numType);
 	}
 };
 
@@ -159,6 +169,7 @@ export const parseRPrecExponent = (
 		return getDetailedNumberError(
 			value,
 			report,
+			new RPrec(),
 			regexRPrecExponentValidChars
 		);
 	}
@@ -168,26 +179,27 @@ export const parseRPrecExponent = (
 		? groups.num.replaceAll("_", "")
 		: groups.num;
 	const precision = Math.min(getPrecisionCount(numStr), 15);
+	const useEngineeringNotation = report.hasGNotation;
+	const numType = new RPrec(precision, useEngineeringNotation);
 
 	const pow = parseInt(groups.pow);
 	if (pow > MAX_POWER) {
-		return getNumberError("Power > max");
+		return getNumberError("Power > max", numType);
 	} else if (pow < MIN_POWER) {
-		return getNumberError("Power < min");
+		return getNumberError("Power < min", numType);
 	}
-	const useEngineeringNotation = report.hasGNotation;
 
 	const finalNumStr = `${numStr}e${groups.pow}`;
 	logagn("finalNumStr", finalNumStr);
 	const num = Number(finalNumStr);
 
 	if (Number.isNaN(num)) {
-		return getNumberError("NaN");
+		return getNumberError("NaN", numType);
 	}
 
 	return {
 		type: "TypeValuePair",
-		valueType: new RPrec(precision, useEngineeringNotation),
+		valueType: numType,
 		value: num,
 	};
 };
@@ -204,6 +216,7 @@ export const parseZNumExponent = (
 		return getDetailedNumberError(
 			value,
 			res,
+			new ZNum(),
 			regexZNumExponentValidChars
 		);
 	}
@@ -212,12 +225,13 @@ export const parseZNumExponent = (
 	const numStr = res.hasSeparator
 		? groups.num.replaceAll("_", "")
 		: groups.num;
+	const numType = new ZNum();
 
 	const pow = parseInt(groups.pow);
 	if (pow > MAX_POWER) {
-		return getNumberError("Power > max");
+		return getNumberError("Power > max", numType);
 	} else if (pow < 0) {
-		return getNumberError("Power must produce integer");
+		return getNumberError("Power must produce integer", numType);
 	}
 
 	const finalNumStr = `${numStr}e${groups.pow}`;
@@ -225,11 +239,11 @@ export const parseZNumExponent = (
 	const num = Number(finalNumStr);
 
 	if (Number.isNaN(num)) {
-		return getNumberError("NaN");
+		return getNumberError("NaN", numType);
 	}
 
 	if (!Number.isSafeInteger(num)) {
-		return getNumberError("Not safe integer");
+		return getNumberError("Not safe integer", numType);
 	}
 
 	return {
@@ -250,10 +264,7 @@ export const parseNumber = (
 	const res = analyzeNumberString(value);
 	logagn("analyzeNumberString", res);
 	if (res.hasBreakingChars) {
-		return {
-			type: "NumberError",
-			kind: "Has breaking chars",
-		};
+		return getNumberError("Invalid number input", new NoNum());
 	}
 
 	const hasExponent = res.hasENotation || res.hasGNotation;
@@ -267,5 +278,5 @@ export const parseNumber = (
 			break;
 	}
 
-	return getNumberError("TODO");
+	return getNumberError("TODO", new NoNum());
 };
