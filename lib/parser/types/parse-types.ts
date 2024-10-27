@@ -5,6 +5,7 @@ export type NumberErrorKind =
 	| "Invalid decimal"
 	| "Invalid grouping"
 	| "Invalid chars"
+	| "Invalid leading zero"
 	| "Value > max"
 	| "Value < min"
 	| "Power > max"

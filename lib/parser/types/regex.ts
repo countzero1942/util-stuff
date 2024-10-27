@@ -46,3 +46,30 @@ export const regexZNumExponentValidChars = /^[1-9+-e]+$/;
  * RegExp for valid chars in an ZNum number
  */
 export const regexZNumValidChars = /^[1-9+-]+$/;
+
+/**
+ * RegExp for numbers that have an invalid leading zero
+ */
+export const regexHasInvalidLeadingZero = /^[+-]?0\d/;
+
+/**
+ * RegExp for decimal numbers that have valid grouping.
+ *
+ * This only checks beginning of string: before potential e/g
+ * exponent part.
+ *
+ * Valid for both decimal and decimal exponent numbers
+ */
+export const regexHasValidDecimalGrouping =
+	/^([+-]?(?:\d{1,3}(?:_\d{3})*|0)?\.+(?:(?:\d{3}_)*\d{1,3})?)/;
+
+/**
+ * RegExp for integer numbers that have valid grouping.
+ *
+ * This only checks beginning of string: before potential e/g
+ * exponent part.
+ *
+ * Valid for both integer and integer exponent numbers
+ */
+export const regexHasValidIntegerGrouping =
+	/^[+-]?\d{1,3}(?:_\d{3})+/gm;

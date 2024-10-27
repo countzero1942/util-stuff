@@ -8,6 +8,9 @@ import {
 	regexDecExponentWithSeparators,
 	regexDecIntExponentNoSeparators,
 	RegexExponentNumberGroups,
+	regexHasInvalidLeadingZero,
+	regexHasValidDecimalGrouping,
+	regexHasValidIntegerGrouping,
 	regexIntExponentWithSeparators,
 	regexRPrecExponentValidChars,
 	regexZNumExponentValidChars,
@@ -121,27 +124,47 @@ const getNumberError = (errorKind: NumberErrorKind): NumberError => {
 	};
 };
 
+const getDetailedNumberError = (
+	value: string,
+	report: AnalyzeNumberString,
+	regexValidChars: RegExp
+): NumberError => {
+	switch (true) {
+		case !regexValidChars.test(value):
+			return getNumberError("Invalid chars");
+		case regexHasInvalidLeadingZero.test(value):
+			return getNumberError("Invalid leading zero");
+		case report.hasSeparator &&
+			report.hasDecimal &&
+			!regexHasValidDecimalGrouping.test(value):
+			return getNumberError("Invalid grouping");
+		case report.hasSeparator &&
+			!report.hasDecimal &&
+			!regexHasValidIntegerGrouping.test(value):
+			return getNumberError("Invalid grouping");
+		default:
+			return getNumberError("RegEx Fail");
+	}
+};
+
 export const parseRPrecExponent = (
 	value: string,
-	res: AnalyzeNumberString
+	report: AnalyzeNumberString
 ): TypeValuePair<number> | NumberError => {
-	const regex = getDecimalExponentRegex(res);
+	const regex = getDecimalExponentRegex(report);
 
 	const match = regex.exec(value);
 
 	if (!match) {
-		switch (true) {
-			case !regexRPrecExponentValidChars.test(value):
-				return getNumberError("Invalid chars");
-			case res.hasSeparator:
-				return getNumberError("Invalid grouping");
-			default:
-				return getNumberError("RegEx Fail");
-		}
+		return getDetailedNumberError(
+			value,
+			report,
+			regexRPrecExponentValidChars
+		);
 	}
 
 	const groups = match.groups as RegexExponentNumberGroups;
-	const numStr = res.hasSeparator
+	const numStr = report.hasSeparator
 		? groups.num.replaceAll("_", "")
 		: groups.num;
 	const precision = Math.min(getPrecisionCount(numStr), 15);
@@ -152,7 +175,7 @@ export const parseRPrecExponent = (
 	} else if (pow < MIN_POWER) {
 		return getNumberError("Power < min");
 	}
-	const useEngineeringNotation = res.hasGNotation;
+	const useEngineeringNotation = report.hasGNotation;
 
 	const finalNumStr = `${numStr}e${groups.pow}`;
 	logagn("finalNumStr", finalNumStr);
@@ -178,14 +201,11 @@ export const parseZNumExponent = (
 	const match = regex.exec(value);
 
 	if (!match) {
-		switch (true) {
-			case !regexZNumExponentValidChars.test(value):
-				return getNumberError("Invalid chars");
-			case res.hasSeparator:
-				return getNumberError("Invalid grouping");
-			default:
-				return getNumberError("RegEx Fail");
-		}
+		return getDetailedNumberError(
+			value,
+			res,
+			regexZNumExponentValidChars
+		);
 	}
 
 	const groups = match.groups as RegexExponentNumberGroups;
