@@ -1,11 +1,11 @@
 import { TypeBase } from "@/parser/types/type-types";
 
 export type NumberErrorKind =
-	| "Invalid sign"
-	| "Invalid decimal"
-	| "Invalid grouping"
+	| "Invalid exponent"
+	| "Invalid form"
 	| "Invalid chars"
 	| "Invalid leading zero"
+	| "Invalid grouping"
 	| "Value > max"
 	| "Value < min"
 	| "Power > max"
@@ -17,6 +17,8 @@ export type NumberErrorKind =
 	| "Has breaking chars"
 	| "Invalid number input"
 	| "NaN"
+	| "Invalid sign"
+	| "Invalid decimal"
 	| "TODO";
 
 export type AnalyzeNumberString = {

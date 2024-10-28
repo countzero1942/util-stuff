@@ -11,9 +11,11 @@ import {
 	regexHasInvalidLeadingZero,
 	regexHasValidDecimalGrouping,
 	regexHasValidIntegerGrouping,
+	regexHasValidRPrecExponentChars,
+	regexHasValidRPrecExponentForm,
+	regexHasValidZNumExponentChars,
+	regexHasValidZNumExponentForm,
 	regexIntExponentWithSeparators,
-	regexRPrecExponentValidChars,
-	regexZNumExponentValidChars,
 } from "@/parser/types/regex";
 import {
 	NoNum,
@@ -22,6 +24,7 @@ import {
 	ZNum,
 } from "@/parser/types/type-types";
 import { logagn } from "@/utils/log";
+import { count } from "node:console";
 
 const analyzeNumberString = (
 	value: string,
@@ -133,25 +136,60 @@ const getNumberError = (
 	};
 };
 
+const hasValidExponentChar = (value: string) => {
+	let count = 0;
+	for (let char of value) {
+		switch (char) {
+			case "e":
+			case "g":
+				count++;
+				break;
+			default:
+				break;
+		}
+	}
+
+	return count === 1;
+};
+
 const getDetailedNumberError = (
 	value: string,
 	report: AnalyzeNumberString,
-	numType: TypeBase,
-	regexValidChars: RegExp
+	numType: TypeBase
 ): NumberError => {
 	switch (true) {
-		case !regexValidChars.test(value):
+		case !hasValidExponentChar(value):
+			return getNumberError("Invalid exponent", numType);
+		// decimal exponent invalid form
+		case report.hasDecimal &&
+			!regexHasValidRPrecExponentForm.test(value):
+			return getNumberError("Invalid form", numType);
+		// integer exponent invalid form
+		case !report.hasDecimal &&
+			!regexHasValidZNumExponentForm.test(value):
+			return getNumberError("Invalid form", numType);
+		// decimal exponent invalid chars
+		case report.hasDecimal &&
+			!regexHasValidRPrecExponentChars.test(value):
 			return getNumberError("Invalid chars", numType);
+		// integer exponent invalid chars
+		case !report.hasDecimal &&
+			!regexHasValidZNumExponentChars.test(value):
+			return getNumberError("Invalid chars", numType);
+		// ivalid leading zero
 		case regexHasInvalidLeadingZero.test(value):
 			return getNumberError("Invalid leading zero", numType);
+		// invalid decimal grouping
 		case report.hasSeparator &&
 			report.hasDecimal &&
 			!regexHasValidDecimalGrouping.test(value):
 			return getNumberError("Invalid grouping", numType);
+		// invalid integer grouping
 		case report.hasSeparator &&
 			!report.hasDecimal &&
 			!regexHasValidIntegerGrouping.test(value):
 			return getNumberError("Invalid grouping", numType);
+		// invalid number
 		default:
 			return getNumberError("Invalid number", numType);
 	}
@@ -166,12 +204,7 @@ export const parseRPrecExponent = (
 	const match = regex.exec(value);
 
 	if (!match) {
-		return getDetailedNumberError(
-			value,
-			report,
-			new RPrec(),
-			regexRPrecExponentValidChars
-		);
+		return getDetailedNumberError(value, report, new RPrec());
 	}
 
 	const groups = match.groups as RegexExponentNumberGroups;
@@ -213,12 +246,7 @@ export const parseZNumExponent = (
 	const match = regex.exec(value);
 
 	if (!match) {
-		return getDetailedNumberError(
-			value,
-			res,
-			new ZNum(),
-			regexZNumExponentValidChars
-		);
+		return getDetailedNumberError(value, res, new ZNum());
 	}
 
 	const groups = match.groups as RegexExponentNumberGroups;

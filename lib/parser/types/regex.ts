@@ -30,17 +30,31 @@ export const regexIntExponentWithSeparators =
 /**
  * RegExp for valid chars in an RPrec exponent number
  */
-export const regexRPrecExponentValidChars = /^[1-9.+-eg]+$/;
+export const regexHasValidRPrecExponentForm =
+	/^[+-]?[_\w]*\.[_\w]*[eg][+-]?\w+$/;
+
+/**
+ * RegExp for valid chars in an ZNum exponent number
+ */
+export const regexHasValidZNumExponentForm =
+	/^[+-]?[_\w]+[eg][+-]?\w+$/;
+
+/**
+ * RegExp for valid chars in an RPrec exponent number
+ */
+export const regexHasValidRPrecExponentChars =
+	/^[+-]?[_.\d]+[eg][+-]?\d+$/;
+
+/**
+ * RegExp for valid chars in an ZNum exponent number
+ */
+export const regexHasValidZNumExponentChars =
+	/^[+-]?[_\d]+[eg][+-]?\d+$/;
 
 /**
  * RegExp for valid chars in an RPrec number
  */
 export const regexRPrecValidChars = /^[1-9.+-]+$/;
-
-/**
- * RegExp for valid chars in an ZNum exponent number
- */
-export const regexZNumExponentValidChars = /^[1-9+-eg]+$/;
 
 /**
  * RegExp for valid chars in an ZNum number
@@ -61,7 +75,7 @@ export const regexHasInvalidLeadingZero = /^[+-]?(?:0\d|0_)/;
  * Valid for both decimal and decimal exponent numbers
  */
 export const regexHasValidDecimalGrouping =
-	/^([+-]?(?:\d{1,3}(?:_\d{3})*|0)?\.+(?:(?:\d{3}_)*\d{1,3})?)/;
+	/^([+-]?(?:\d{1,3}(?:_\d{3})*|0)?\.(?:(?:\d{3}_)*\d{0,3})?)[eg][+-]?\d+$/;
 
 /**
  * RegExp for integer numbers that have valid grouping.

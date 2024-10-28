@@ -88,7 +88,7 @@ export const testPrecisionCount = () => {
 	console.log(`SUCCESS: ${successCount} / ${nums.length}`);
 };
 
-const testParseRPrecExponent = (nums: string[]) => {
+const testParseExponentNotation = (nums: string[]) => {
 	const failures: {
 		num: string;
 		err: NumberError;
@@ -129,7 +129,7 @@ const testAParseRPrecExp = () => {
 		"0.12345e100",
 		"0.12345e-100",
 	];
-	testParseRPrecExponent(nums);
+	testParseExponentNotation(nums);
 };
 
 const testBParseRPrecExp = () => {
@@ -145,7 +145,7 @@ const testBParseRPrecExp = () => {
 		"0.12345g100",
 		"0.12345g-100",
 	];
-	testParseRPrecExponent(nums);
+	testParseExponentNotation(nums);
 };
 
 const testCParseRPrecExp = () => {
@@ -165,7 +165,7 @@ const testCParseRPrecExp = () => {
 		"+0.123_456_7e-100",
 		"-0.123_456_7e-100",
 	];
-	testParseRPrecExponent(nums);
+	testParseExponentNotation(nums);
 };
 
 const testDParseRPrecExp = () => {
@@ -185,35 +185,32 @@ const testDParseRPrecExp = () => {
 		"+0.123_456_7g-100",
 		"-0.123_456_7g-100",
 	];
-	testParseRPrecExponent(nums);
+	testParseExponentNotation(nums);
 };
 
-const testParseZNumExponent = (nums: string[]) => {
-	const failures: {
-		num: string;
-		err: NumberError;
-	}[] = [];
-
-	for (const num of nums) {
-		logh(`Parsing: ${num}`);
-		const res = parseNumber(num);
-
-		if (res.type === "NumberError") {
-			failures.push({ num, err: res });
-			log(res);
-			continue;
-		}
-		logobj(res);
-	}
-
-	ddivln();
-
-	loghn("Failures");
-	for (const { num, err } of failures) {
-		log(`Parsing: ${num}`);
-		log(err);
-		div();
-	}
+const testErrParseRPrecExp = () => {
+	const nums = [
+		"+1 234_567.8e+100",
+		"+1;234_567.8e+100",
+		"+1,234_567.8e+100",
+		"+1_234_5g7.8e+100",
+		"+1_234_567.8eg+100",
+		"-+1_234_567.8e-100",
+		"-1_234_567.8e+-100",
+		"-1_234_567..8e-100",
+		"+1_2f4_567.8e+100",
+		"+1_234_567.8g+1z0",
+		"+0_234_567.8g+100",
+		"+01_234_567.8g-100",
+		"+00.123_45g-100",
+		"1_23_567.8g-100",
+		"-1_234_56.8g-100",
+		"+_234_56.8g-100",
+		"+1_234.56_7g+100",
+		"1_234_567.8e+308",
+		"1_234_567.8g-309",
+	];
+	testParseExponentNotation(nums);
 };
 
 const testAParseZnumExp = () => {
@@ -226,24 +223,43 @@ const testAParseZnumExp = () => {
 		"1234e12",
 		"1234e13",
 	];
-	testParseZNumExponent(nums);
+	testParseExponentNotation(nums);
 };
 
-const testErrAParseRPrecExp = () => {
+const testBParseZnumExp = () => {
 	const nums = [
-		"+1_2e4_567.8e+100",
-		"-1_2f4_567.8e-100",
-		"1_23_567.8g-100",
-		"-1_23_567.8g-100",
-		"0_123_567.8g-100",
-		"01_123_567.8g-100",
-		"+1_234_567.8eg100",
-		"1..234_567_8g-100",
-		"1 234_567.8g-100",
-		"1_234_567.8e+308",
-		"1_234_567.8g-309",
+		"1_234e2",
+		"+123_456e2",
+		"+123_456g2",
+		"-123_456e2",
+		"123_456e7",
+		"123_456e8",
+		"123_456e9",
+		"123_456e10",
+		"123_456e11",
 	];
-	testParseRPrecExponent(nums);
+	testParseExponentNotation(nums);
 };
 
-testErrAParseRPrecExp();
+const testErrParseZnumExp = () => {
+	const nums = [
+		"+12e_456e2",
+		"+12a_456e2",
+		"+123_4z6e2",
+		"+023_456e2",
+		"-0_456e2",
+		"123_46e7",
+		"123_45_678e8",
+		"123_456ee9",
+		"123_456eg9",
+	];
+	testParseExponentNotation(nums);
+};
+
+// testAParseRPrecExp();
+// testBParseRPrecExp();
+// testCParseRPrecExp();
+testDParseRPrecExp();
+// testErrParseRPrecExp();
+
+// testErrParseZnumExp();
