@@ -33,7 +33,6 @@ import {
 	ZNum,
 } from "@/parser/types/type-types";
 import { logagn } from "@/utils/log";
-import { count } from "node:console";
 
 /**
  * Analyze a string representing a number to determine if it has a separator, decimal

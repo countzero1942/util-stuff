@@ -108,32 +108,31 @@ export const regexHasValidGroupingZNumExponent =
 ////////////////////////////////////////////////////////////////
 
 /**
- * RegExp for valid chars in an RPrec number
+ * RegExp for valid form in an RPrec number
  */
 export const regexHasValidFormRPrec =
 	/^[+-]?(?:[_\w]+\.[_\w]*|[_\w]*\.[_\w]+)$/;
 
 /**
- * RegExp for valid chars in an ZNum number
+ * RegExp for valid form in an ZNum number
  */
 export const regexHasValidFormZNum = /^[+-]?[_\w]+$/;
 
 /**
  * RegExp for has valid chars in an RPrec number
  */
-export const regexHasValidCharsRPrec = /^[1-9.+-]+$/;
+export const regexHasValidCharsRPrec = /^[_.+-\d]+$/;
 
 /**
  * RegExp for has valid chars in an ZNum number
  */
-export const regexHasValidCharsZNum =
-	/^[+-]?(?:[_\d]+\.[_\d]*|[_\d]*\.[_\d]+)$/;
+export const regexHasValidCharsZNum = /^[_+-\d]+$/;
 
 /**
  * RegExp for has decimal numbers that have valid digit grouping
  */
 export const regexHasValidGroupingRPrec =
-	/^[+-]?(?:\d{1,3}(?:_\d{3})*|0)?\.(?:(?:\d{3}_)*\d{0,3})?$/;
+	/^[+-]?(?:\d{1,3}(?:_\d{3})*|0)?\.(?:(?:\d{3}_)*\d{1,3})?$/;
 
 /**
  * RegExp for integer numbers that have valid grouping.

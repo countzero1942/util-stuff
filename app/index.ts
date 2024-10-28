@@ -104,7 +104,7 @@ export const testPrecisionCount = () => {
  * @param nums An array of strings, each representing a number in exponential notation.
  * @returns void
  */
-const testParseExponentNotation = (nums: string[]) => {
+const testParseNumber = (nums: string[]) => {
 	const failures: {
 		num: string;
 		err: NumberError;
@@ -153,7 +153,7 @@ const testAParseRPrecExp = () => {
 		"0.12345e100",
 		"0.12345e-100",
 	];
-	testParseExponentNotation(nums);
+	testParseNumber(nums);
 };
 
 /**
@@ -177,7 +177,7 @@ const testBParseRPrecExp = () => {
 		"0.12345g100",
 		"0.12345g-100",
 	];
-	testParseExponentNotation(nums);
+	testParseNumber(nums);
 };
 
 /**
@@ -205,7 +205,7 @@ const testCParseRPrecExp = () => {
 		"+0.123_456_7e-100",
 		"-0.123_456_7e-100",
 	];
-	testParseExponentNotation(nums);
+	testParseNumber(nums);
 };
 
 /**
@@ -233,7 +233,7 @@ const testDParseRPrecExp = () => {
 		"+0.123_456_7g-100",
 		"-0.123_456_7g-100",
 	];
-	testParseExponentNotation(nums);
+	testParseNumber(nums);
 };
 
 /**
@@ -267,7 +267,7 @@ const testErrParseRPrecExp = () => {
 		"1_234_567.8e+308",
 		"1_234_567.8g-309",
 	];
-	testParseExponentNotation(nums);
+	testParseNumber(nums);
 };
 
 /**
@@ -288,7 +288,7 @@ const testAParseZnumExp = () => {
 		"1234e12",
 		"1234e13",
 	];
-	testParseExponentNotation(nums);
+	testParseNumber(nums);
 };
 
 /**
@@ -311,7 +311,7 @@ const testBParseZnumExp = () => {
 		"123_456e10",
 		"123_456e11",
 	];
-	testParseExponentNotation(nums);
+	testParseNumber(nums);
 };
 
 /**
@@ -324,23 +324,126 @@ const testBParseZnumExp = () => {
  */
 const testErrParseZnumExp = () => {
 	const nums = [
-		"+12e_456e2",
-		"+12a_456e2",
-		"+123_4z6e2",
-		"+023_456e2",
-		"-0_456e2",
-		"123_46e7",
-		"123_45_678e8",
-		"123_456ee9",
-		"123_456eg9",
+		"+1 23_456e3",
+		"+1;23_456e3",
+		"-12e_456e2",
+		"+123_456eg2",
+		"+-123_456e3",
+		"+123_456e-+3",
+		"-123_z56e3",
+		"+123_456e1z",
+		"-0123_456e3",
+		"+0_456e3",
+		"0e3",
+		"+00e3",
+		"-123_45e3",
+		"+_123_456e3",
+		"-123_456e3",
+		"+123_456_e3",
+		"+123_456e308",
+		"+123_456e-3",
+		"-1e16",
+		"+1e16",
 	];
-	testParseExponentNotation(nums);
+	testParseNumber(nums);
+};
+
+const testAParseRPrec = () => {
+	const nums = [
+		"1234.5",
+		"+1234.56789",
+		"-1234.",
+		"-1234.0",
+		"+.12345",
+		"+0.12345",
+		".12345678901234567",
+		"12345678901234567.",
+	];
+	testParseNumber(nums);
+};
+
+const testBParseRPrec = () => {
+	const nums = [
+		"1_234.5",
+		"+1_234.567_89",
+		"-1_234.",
+		"-1_234_567.0",
+		"+.123_45",
+		"+0.123_45",
+		".123_456_789_012_345_67",
+		"123_456_789_012_345_678.",
+	];
+	testParseNumber(nums);
+};
+
+const testErrParseRPrec = () => {
+	const nums = [
+		"+-1_234.5",
+		"1_234..5",
+		"+-1234.567",
+		"-1234.567.",
+		"+1_2a4.567_89",
+		"-1_234.567_z9",
+		"+1234.56z89",
+		"-01_234.567_89",
+		"+0_234.567_89",
+		"-01234.56789",
+		"+0234.56789",
+		"+1_234.56789",
+		"+1_23_4.567_89",
+		"+1234.567_89",
+		"+1_234.5678_9",
+		"-_234.567_89",
+		"+1_234.567_890_",
+		"+0.123_45_6789",
+		"-.123_45_6789",
+	];
+	testParseNumber(nums);
+};
+
+const testAParseZNum = () => {
+	const nums = [
+		"-0",
+		"+1",
+		"+1234",
+		"-1234567",
+		"+123_456",
+		"+1_234_457",
+		"+12_345_678",
+		"+123_456_789",
+		"-123_456_789_012_345",
+	];
+	testParseNumber(nums);
+};
+
+const testErrParseZNum = () => {
+	const nums = [
+		"-+0",
+		"++1",
+		"+1234",
+		"+12f4",
+		"-1z34567",
+		"00",
+		"02",
+		"+023_456",
+		"+0_123_456_",
+		"+1_23_457",
+		"+_1_234_457",
+		"+_234_457",
+		"-12345678901234567",
+		"+9234567890123456",
+	];
+	testParseNumber(nums);
 };
 
 // testAParseRPrecExp();
 // testBParseRPrecExp();
 // testCParseRPrecExp();
-testDParseRPrecExp();
-// testErrParseRPrecExp();
+// testDParseRPrecExp();
+// testErrParseZnumExp();
 
 // testErrParseZnumExp();
+// testBParseRPrec();
+// testErrParseRPrec();
+
+testErrParseZNum();
