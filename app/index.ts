@@ -53,6 +53,13 @@ import { NumberError } from "@/parser/types/parse-types";
 // 	parseNumber(value: string): ParseResult<number | ParseError>;
 // }
 
+/**
+ * Tests the getPrecisionCount function with a variety of decimal numbers.
+ *
+ * This will log success or failure for each number in the array.
+ *
+ * @returns void
+ */
 export const testPrecisionCount = () => {
 	const nums = [
 		"+0.12030",
@@ -88,6 +95,15 @@ export const testPrecisionCount = () => {
 	console.log(`SUCCESS: ${successCount} / ${nums.length}`);
 };
 
+/**
+ * Tests the parseNumber function with an array of strings representing
+ * numbers in exponential notation.
+ *
+ * This will log success or failure for each number in the array.
+ *
+ * @param nums An array of strings, each representing a number in exponential notation.
+ * @returns void
+ */
 const testParseExponentNotation = (nums: string[]) => {
 	const failures: {
 		num: string;
@@ -116,6 +132,14 @@ const testParseExponentNotation = (nums: string[]) => {
 	}
 };
 
+/**
+ * Tests the parseNumber function with an array of strings representing
+ * numbers in 'e' decimal exponential notation, with no separators.
+ *
+ * This will log success or failure for each number in the array.
+ *
+ * @returns void
+ */
 const testAParseRPrecExp = () => {
 	const nums = [
 		"1234.5e100",
@@ -132,6 +156,14 @@ const testAParseRPrecExp = () => {
 	testParseExponentNotation(nums);
 };
 
+/**
+ * Tests the parseNumber function with an array of strings representing
+ * numbers in 'g' decimal engineering notation, with no separators.
+ *
+ * This will log success or failure for each number in the array.
+ *
+ * @returns void
+ */
 const testBParseRPrecExp = () => {
 	const nums = [
 		"1234.5g100",
@@ -148,6 +180,14 @@ const testBParseRPrecExp = () => {
 	testParseExponentNotation(nums);
 };
 
+/**
+ * Tests the parseNumber function with an array of strings representing
+ * numbers in 'e' decimal exponential notation, with separators.
+ *
+ * This will log success or failure for each number in the array.
+ *
+ * @returns void
+ */
 const testCParseRPrecExp = () => {
 	const nums = [
 		"1_234_567.8e-100",
@@ -168,6 +208,14 @@ const testCParseRPrecExp = () => {
 	testParseExponentNotation(nums);
 };
 
+/**
+ * Tests the parseNumber function with an array of strings representing
+ * numbers in 'g' decimal engineering notation, with separators.
+ *
+ * This will log success or failure for each number in the array.
+ *
+ * @returns void
+ */
 const testDParseRPrecExp = () => {
 	const nums = [
 		"1_234_567.8g-100",
@@ -188,6 +236,15 @@ const testDParseRPrecExp = () => {
 	testParseExponentNotation(nums);
 };
 
+/**
+ * Tests the parseNumber function with an array of strings representing
+ * numbers in 'e' decimal scientific notation, with separators, which should
+ * fail to parse.
+ *
+ * This will log success or failure for each number in the array.
+ *
+ * @returns void
+ */
 const testErrParseRPrecExp = () => {
 	const nums = [
 		"+1 234_567.8e+100",
@@ -213,6 +270,14 @@ const testErrParseRPrecExp = () => {
 	testParseExponentNotation(nums);
 };
 
+/**
+ * Tests the parseNumber function with an array of strings representing
+ * integer numbers in 'e' scientific notation, without separators.
+ *
+ * This will log success or failure for each number in the array.
+ *
+ * @returns void
+ */
 const testAParseZnumExp = () => {
 	const nums = [
 		"1234e2",
@@ -226,6 +291,14 @@ const testAParseZnumExp = () => {
 	testParseExponentNotation(nums);
 };
 
+/**
+ * Tests the parseNumber function with an array of strings representing
+ * integer numbers in 'e' scientific notation, with separators.
+ *
+ * This will log success or failure for each number in the array.
+ *
+ * @returns void
+ */
 const testBParseZnumExp = () => {
 	const nums = [
 		"1_234e2",
@@ -241,6 +314,14 @@ const testBParseZnumExp = () => {
 	testParseExponentNotation(nums);
 };
 
+/**
+ * Tests the parseNumber function with an array of strings representing
+ * invalid integer numbers in 'e' scientific notation, with separators.
+ *
+ * This will log success or failure for each number in the array.
+ *
+ * @returns void
+ */
 const testErrParseZnumExp = () => {
 	const nums = [
 		"+12e_456e2",

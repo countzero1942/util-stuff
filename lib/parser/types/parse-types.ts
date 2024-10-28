@@ -19,6 +19,7 @@ export type NumberErrorKind =
 	| "NaN"
 	| "Invalid sign"
 	| "Invalid decimal"
+	| "NEVER"
 	| "TODO";
 
 export type AnalyzeNumberString = {
