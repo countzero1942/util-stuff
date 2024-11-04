@@ -1,8 +1,7 @@
-import { div, log, logh } from "@/utils/log";
+import { div, log, loggn, logh } from "@/utils/log";
 import { open } from "node:fs/promises";
 import * as fs from "node:fs";
 
-import { LineInfo, ParseErr } from "@/parser/types/general";
 import { getPreLineInfo } from "@/parser/utils/pre-line-info";
 import {
 	parseLinesToHeads,
@@ -10,6 +9,9 @@ import {
 } from "@/parser/utils/lines-to-heads";
 import { ErrorType, getError } from "@/utils/error";
 import { ArraySeq, NumSeq } from "@/utils/seq";
+import { parseDefValue } from "@/parser/utils/parse-value";
+import { LineInfo } from "@/parser/types/head";
+import { ParseErr } from "@/parser/types/err-types";
 
 const getTextFilePath = (name: string) => `./text/parser/${name}`;
 
@@ -93,12 +95,57 @@ export const logSplitHeads = async () => {
 		h => h.type !== "ParseErr"
 	);
 
-	logh(`Heads: ${heads.length}`);
-	log(heads);
-	log();
+	// logh(`Heads: ${heads.length}`);
+	// log(heads);
+	// log();
 
 	logh(`Errors: ${errorHeads.length}`);
-	log(errorHeads);
+	for (const err of errorHeads) {
+		if (err.type === "ParseErr") {
+			log(err.err.head);
+			log(err.err.toMessage());
+			log(err.err.toReport());
+			div();
+		}
+	}
+
+	log();
+
+	return;
+};
+
+export const logParseDefaultValues = async () => {
+	logh("Log Parse: Parse Default Values");
+	log();
+
+	const res1 = await fileToLines("01-def-values.txt");
+	if (res1.type === "ErrorType") {
+		log("ERROR:");
+		log(res1);
+		return;
+	}
+
+	const lines = res1.lines;
+
+	const allHeads = await parseLinesToHeads(lines);
+
+	for (const head of allHeads) {
+		switch (head.type) {
+			case "KeyValDefHead":
+				const { keyHead, valueHead } = head;
+				const res = parseDefValue(valueHead);
+				if (res.type === "NumberErr") {
+					const { kind } = res;
+					log(`==> ERROR: ${keyHead}: ${kind}`);
+					continue;
+				}
+				const { valueType, value } = res;
+				loggn(`${keyHead}: ${value}`, valueType);
+				break;
+			default:
+				break;
+		}
+	}
 
 	return;
 };

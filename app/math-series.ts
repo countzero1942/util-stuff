@@ -29,6 +29,18 @@ export const getPiSumSeq = (count: number) => {
 	});
 };
 
+export const getInversePiSumSeq = (count: number) => {
+	return MathSumSeq.from(1, count, k => {
+		return 4 * ((-1) ** (k + 1) / (2 * k));
+	});
+};
+
+export const getPiThingSumSeq = (count: number) => {
+	return MathSumSeq.from(1, count, k => {
+		return 4 * ((-1) ** (k + 1) / k);
+	});
+};
+
 export const getPiOverTwoProdSeq = (count: number) => {
 	return MathProdSeq.from(1, count, k => {
 		const fourNSquared = 4 * k * k;

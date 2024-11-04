@@ -110,6 +110,10 @@ export const formatNum = (n: number) => {
 	return Intl.NumberFormat().format(n);
 };
 
+export const formatTabsToSymbols = (value: string) => {
+	return value.replaceAll("\t", "\\t");
+};
+
 /**
  * Given an array of strings, joins lines together that are not separated
  * by an empty line, except if they begin with a "-". The function will

@@ -1,7 +1,6 @@
+import { NumberErr, NumberErrKind } from "@/parser/types/err-types";
 import {
 	AnalyzeNumberString,
-	NumberError,
-	NumberErrorKind,
 	TypeValuePair,
 } from "@/parser/types/parse-types";
 import {
@@ -29,10 +28,10 @@ import {
 import {
 	NoNum,
 	RPrec,
+	Str,
 	TypeBase,
 	ZNum,
 } from "@/parser/types/type-types";
-import { logagn } from "@/utils/log";
 
 /**
  * Analyze a string representing a number to determine if it has a separator, decimal
@@ -212,16 +211,16 @@ const getIntRegex = (report: AnalyzeNumberString) => {
 /**
  * Creates a NumberError object from the given error kind and number type.
  *
- * @param {NumberErrorKind} errorKind - The type of error.
+ * @param {NumberErrKind} errorKind - The type of error.
  * @param {TypeBase} numType - The type of the number that caused the error.
- * @return {NumberError} The NumberError object.
+ * @return {NumberErr} The NumberError object.
  */
 const getNumberError = (
-	errorKind: NumberErrorKind,
+	errorKind: NumberErrKind,
 	numType: TypeBase
-): NumberError => {
+): NumberErr => {
 	return {
-		type: "NumberError",
+		type: "NumberErr",
 		numType,
 		kind: errorKind,
 	};
@@ -269,13 +268,13 @@ const hasValidExponentChar = (value: string) => {
  * @param {AnalyzeNumberString} report - The result of the analyzeNumberString
  * function.
  * @param {TypeBase} numType - The type of the number that caused the error.
- * @return {NumberError} The NumberError object.
+ * @return {NumberErr} The NumberError object.
  */
 const getDetailedExponentNumberError = (
 	value: string,
 	report: AnalyzeNumberString,
 	numType: TypeBase
-): NumberError => {
+): NumberErr => {
 	switch (true) {
 		case !hasValidExponentChar(value):
 			return getNumberError("Invalid exponent", numType);
@@ -331,13 +330,13 @@ const getDetailedExponentNumberError = (
  * @param {AnalyzeNumberString} report - The result of the analyzeNumberString
  * function.
  * @param {TypeBase} numType - The type of the number that caused the error.
- * @return {NumberError} The NumberError object.
+ * @return {NumberErr} The NumberError object.
  */
 const getDetailedNumberError = (
 	value: string,
 	report: AnalyzeNumberString,
 	numType: TypeBase
-): NumberError => {
+): NumberErr => {
 	switch (true) {
 		// decimal exponent invalid form
 		case report.hasDecimal && !regexHasValidFormRPrec.test(value):
@@ -378,13 +377,13 @@ const getDetailedNumberError = (
  * @param {string} value - The string to parse.
  * @param {AnalyzeNumberString} report - The result of the analyzeNumberString
  * function.
- * @return {TypeValuePair<number>|NumberError} The parsed number, or a NumberError
+ * @return {TypeValuePair<number>|NumberErr} The parsed number, or a NumberError
  * if the string is invalid.
  */
 export const parseRPrecExponent = (
 	value: string,
 	report: AnalyzeNumberString
-): TypeValuePair<number> | NumberError => {
+): TypeValuePair<number> | NumberErr => {
 	const regex = getDecimalExponentRegex(report);
 
 	const match = regex.exec(value);
@@ -413,7 +412,6 @@ export const parseRPrecExponent = (
 	}
 
 	const finalNumStr = `${numStr}e${groups.pow}`;
-	logagn("finalNumStr", finalNumStr);
 	const num = Number(finalNumStr);
 
 	if (Number.isNaN(num)) {
@@ -435,13 +433,13 @@ export const parseRPrecExponent = (
  * @param {string} value - The string to parse.
  * @param {AnalyzeNumberString} report - The result of the analyzeNumberString
  * function.
- * @return {TypeValuePair<number>|NumberError} The parsed number, or a NumberError
+ * @return {TypeValuePair<number>|NumberErr} The parsed number, or a NumberError
  * if the string is invalid.
  */
 export const parseZNumExponent = (
 	value: string,
 	res: AnalyzeNumberString
-): TypeValuePair<number> | NumberError => {
+): TypeValuePair<number> | NumberErr => {
 	const regex = getIntExponentRegex(res);
 
 	const match = regex.exec(value);
@@ -464,7 +462,6 @@ export const parseZNumExponent = (
 	}
 
 	const finalNumStr = `${numStr}e${groups.pow}`;
-	logagn("finalNumStr", finalNumStr);
 	const num = Number(finalNumStr);
 
 	if (Number.isNaN(num)) {
@@ -490,13 +487,13 @@ export const parseZNumExponent = (
  * @param {string} value - The string to parse.
  * @param {AnalyzeNumberString} report - The result of the analyzeNumberString
  * function.
- * @return {TypeValuePair<number>|NumberError} The parsed number, or a NumberError
+ * @return {TypeValuePair<number>|NumberErr} The parsed number, or a NumberError
  * if the string is invalid.
  */
 export const parseRPrec = (
 	value: string,
 	report: AnalyzeNumberString
-): TypeValuePair<number> | NumberError => {
+): TypeValuePair<number> | NumberErr => {
 	const regex = getDecimalRegex(report);
 
 	const match = regex.exec(value);
@@ -512,7 +509,6 @@ export const parseRPrec = (
 	const useEngineeringNotation = report.hasGNotation;
 	const numType = new RPrec(precision, useEngineeringNotation);
 
-	logagn("numStr", numStr);
 	const num = Number(numStr);
 
 	if (Number.isNaN(num)) {
@@ -534,13 +530,13 @@ export const parseRPrec = (
  * @param {string} value - The string to parse.
  * @param {AnalyzeNumberString} res - The result of the analyzeNumberString
  * function.
- * @return {TypeValuePair<number>|NumberError} The parsed number, or a NumberError
+ * @return {TypeValuePair<number>|NumberErr} The parsed number, or a NumberError
  * if the string is invalid.
  */
 export const parseZNum = (
 	value: string,
 	res: AnalyzeNumberString
-): TypeValuePair<number> | NumberError => {
+): TypeValuePair<number> | NumberErr => {
 	const regex = getIntRegex(res);
 
 	const match = regex.exec(value);
@@ -554,7 +550,6 @@ export const parseZNum = (
 		: match[0];
 	const numType = new ZNum();
 
-	logagn("numStr", numStr);
 	const num = Number(numStr);
 
 	if (Number.isNaN(num)) {
@@ -596,14 +591,13 @@ export const parseZNum = (
  * expressions to determine the error kind.
  *
  * @param {string} value - The string to parse.
- * @return {TypeValuePair<number>|NumberError} The parsed number, or a NumberError
+ * @return {TypeValuePair<number>|NumberErr} The parsed number, or a NumberError
  * if the string is invalid.
  */
-export const parseNumber = (
+export const parseDefNumber = (
 	value: string
-): TypeValuePair<number> | NumberError => {
+): TypeValuePair<number> | NumberErr => {
 	const report = analyzeNumberString(value);
-	logagn("analyzeNumberString", report);
 	if (report.hasBreakingChars) {
 		return getNumberError("Invalid number input", new NoNum());
 	}

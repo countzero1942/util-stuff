@@ -1,5 +1,11 @@
-import { ParseErr } from "@/parser/types/general";
-import { log } from "console";
+import {
+	ParseErr,
+	ParserStructureErr,
+} from "@/parser/types/err-types";
+import { Slice } from "@/parser/types/general";
+import { HeadType, LineInfo } from "@/parser/types/head";
+import { logag } from "@/utils/log";
+import { formatTabsToSymbols } from "@/utils/string";
 
 export type PreLineInfo = {
 	readonly type: "PreLineInfo";
@@ -40,14 +46,48 @@ export const getPreLineInfo = (
 	lineNumber: number
 ): PreLineInfo | ParseErr => {
 	const getSpaceError = (): ParseErr => {
-		return {
-			type: "ParseErr",
-			message: "Spaces cannot be used to indent lines, only tabs.",
+		const keyHead = formatTabsToSymbols(line);
+
+		const getSlice = () => {
+			const match = keyHead.match(/([ ]+)/);
+			const index = match?.index;
+			const length = match?.[1]?.length;
+			if (
+				match === null ||
+				index === undefined ||
+				length === undefined
+			) {
+				return Slice.none();
+			}
+			return Slice.fromLength(index, length);
+		};
+
+		const lineErrorSlice = getSlice();
+
+		const lineInfo: LineInfo = {
 			lineInfo: {
 				indent: 0,
 				content: line,
 				row: lineNumber,
 			},
+		};
+
+		const head: HeadType = {
+			type: "KeyInvalidHead",
+			keyHead,
+			...lineInfo,
+		};
+
+		const err = new ParserStructureErr(
+			head,
+			lineErrorSlice,
+			"Invalid space tabs"
+		);
+
+		return {
+			type: "ParseErr",
+			err,
+			...lineInfo,
 		};
 	};
 

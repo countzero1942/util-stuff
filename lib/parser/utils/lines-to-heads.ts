@@ -1,13 +1,16 @@
 import {
-	EmptyLine,
-	LineInfo,
 	ParseErr,
-} from "@/parser/types/general";
+	ParserStructureErr,
+	StructureErrKind,
+} from "@/parser/types/err-types";
+import { Slice } from "@/parser/types/general";
 import {
 	HeadType,
-	KeyBodyHead,
-	KeyHead,
-	KeyValueHead,
+	KeyBodyReqHead,
+	KeyValReqHead,
+	KeyValDefHead,
+	LineInfo,
+	KeyInvalidHead,
 } from "@/parser/types/head";
 import { getPreLineInfo } from "@/parser/utils/pre-line-info";
 import { log } from "@/utils/log";
@@ -16,13 +19,14 @@ import { toReadonlyTuple } from "@/utils/types";
 
 export const splitHead = (lineInfo: LineInfo): HeadType => {
 	// create ParseErr error Object
-	const createParseErr = (message: string): ParseErr => {
-		return { type: "ParseErr", message, ...lineInfo };
+	const createParserStructureErr = (
+		head: KeyInvalidHead,
+		kind: StructureErrKind,
+		lineErrorSlice: Slice
+	): ParseErr => {
+		const err = new ParserStructureErr(head, lineErrorSlice, kind);
+		return { type: "ParseErr", err, ...lineInfo };
 	};
-
-	// Error messages
-	const confusingColon =
-		"Cannot discern key assignment colon. Must be ': '.";
 
 	const { content: line } = lineInfo.lineInfo;
 
@@ -30,6 +34,7 @@ export const splitHead = (lineInfo: LineInfo): HeadType => {
 	if (line === "" || line === ":") {
 		return {
 			type: "EmptyLine",
+			isColon: line === ":",
 			...lineInfo,
 		};
 	}
@@ -45,7 +50,7 @@ export const splitHead = (lineInfo: LineInfo): HeadType => {
 		case 2: {
 			const [keyHead, valueHead] = toReadonlyTuple(parts, 2);
 			return {
-				type: "KeyValueHead",
+				type: "KeyValDefHead",
 				keyHead,
 				valueHead,
 				...lineInfo,
@@ -59,7 +64,7 @@ export const splitHead = (lineInfo: LineInfo): HeadType => {
 				case 0:
 					// case: "key" => Key Declaration
 					return {
-						type: "KeyHead",
+						type: "KeyValReqHead",
 						keyHead,
 						...lineInfo,
 					};
@@ -68,13 +73,21 @@ export const splitHead = (lineInfo: LineInfo): HeadType => {
 					// case: "key:" "key stuff:8:" => Key Body Decl
 					if (line.endsWith(":")) {
 						return {
-							type: "KeyBodyHead",
+							type: "KeyBodyReqHead",
 							keyHead: keyHead.slice(0, -1),
 							...lineInfo,
 						};
 					}
 					// case: "key:key:value", ... => ERR
-					return createParseErr(confusingColon);
+					return createParserStructureErr(
+						{
+							type: "KeyInvalidHead",
+							keyHead,
+							...lineInfo,
+						},
+						"Invalid key colon",
+						Slice.fromIndexOfDefaultAll(keyHead.indexOf(":"))
+					);
 			}
 		}
 		default:
