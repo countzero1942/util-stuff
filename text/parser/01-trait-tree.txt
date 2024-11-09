@@ -1,0 +1,27 @@
+a: 42
+b: a string
+c: 6.28
+d:
+	x: 33
+	y: 
+		m: 1e6
+		n: -1.e6
+		o: 
+			ke-bab-1: 22
+			ke-bab-2: 44
+			ke-bab-3:
+				snake_a: sss
+				snake_b: hiss
+				snake_c:
+					deepA: 1
+					deepB: 2
+					deepC: 
+						deeper a: 99
+						deeper b: 88
+						deeper c: 77
+					deep: 44
+				snake_d: hiss boom bah
+			ke-bab-4: 88
+		p: 1.234567e200
+	z: 99
+e: the end

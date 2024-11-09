@@ -10,8 +10,18 @@ import {
 import { ErrorType, getError } from "@/utils/error";
 import { ArraySeq, NumSeq } from "@/utils/seq";
 import { parseDefValue } from "@/parser/utils/parse-value";
-import { LineInfo } from "@/parser/types/head";
-import { ParseErr } from "@/parser/types/err-types";
+import {
+	HeadType,
+	KeyBodyReqHead,
+	KeyTrait,
+	LineInfo,
+} from "@/parser/types/head";
+import {
+	IndentErrKind,
+	ParserErr,
+	ParserIndentErr,
+} from "@/parser/types/err-types";
+import { Slice } from "@/parser/types/general";
 
 const getTextFilePath = (name: string) => `./text/parser/${name}`;
 
@@ -65,6 +75,14 @@ export const fileToLines = async (
 	}
 };
 
+export const logParserLines = async () => {
+	const file = await open(getTextFilePath("00-start.txt"));
+
+	for await (const line of file.readLines()) {
+		console.log(line);
+	}
+};
+
 export const logSplitHeads = async () => {
 	logh("Log Parse: Split Heads");
 	log();
@@ -89,24 +107,20 @@ export const logSplitHeads = async () => {
 
 	const allHeads = await parseLinesToHeads(lines);
 
-	const allHeadsSeq = ArraySeq.from(allHeads);
-
-	const [heads, errorHeads] = allHeadsSeq.partArrays(
-		h => h.type !== "ParseErr"
+	const [heads, errorHeads] = ArraySeq.from(allHeads).partArrays(
+		h => h.type !== "ParserErr"
 	);
 
-	// logh(`Heads: ${heads.length}`);
-	// log(heads);
-	// log();
+	logh(`Heads: ${heads.length}`);
+	log(heads);
+	log();
 
 	logh(`Errors: ${errorHeads.length}`);
-	for (const err of errorHeads) {
-		if (err.type === "ParseErr") {
-			log(err.err.head);
-			log(err.err.toMessage());
-			log(err.err.toReport());
-			div();
-		}
+	for (const err of errorHeads as ParserErr[]) {
+		log(err.err.head);
+		log(err.err.toMessage());
+		log(err.err.toReport());
+		div();
 	}
 
 	log();
@@ -150,111 +164,155 @@ export const logParseDefaultValues = async () => {
 	return;
 };
 
-// export const logSplitHeads2 = async () => {
-// 	logh("Log Parse Begin 01");
-// 	logln(40);
-// 	log("Legend:");
-// 	log("   Head: type and values yet to be parsed.");
-// 	log("   <KeyValueHead>: " + "Key and value declared.");
-// 	log("   <KeyHead>: " + "Key declared and value required on init.");
-// 	log(
-// 		"   <KeyBodyHead>: " +
-// 			"Key declared and indented body to follow."
-// 	);
-// 	logln(40);
+export type ParseTraitResult = {
+	trait: KeyTrait | ParserErr;
+	nextIndex: number;
+};
 
-// 	const file = await open(getTextFile("00-with-errs.txt"));
+export const parseTrait = (
+	traitHead: KeyBodyReqHead,
+	heads: readonly HeadType[],
+	headIndex: number
+): ParseTraitResult => {
+	const getTrait = (
+		nextIndex: number,
+		children: HeadType[]
+	): ParseTraitResult => {
+		return {
+			trait: {
+				type: "KeyTrait",
+				key: traitHead.keyHead,
+				children,
+			},
+			nextIndex,
+		} as ParseTraitResult;
+	};
 
-// 	const errors: ParseErr[] = [];
-// 	const dict = new Map<string, any>();
+	const getError = (
+		head: HeadType,
+		kind: IndentErrKind,
+		invalidChildren: HeadType[],
+		nextIndex: number
+	): ParseTraitResult => {
+		const err = new ParserIndentErr(
+			head,
+			Slice.from(0, 0),
+			kind,
+			invalidChildren
+		);
 
-// 	const logLineInfo = (li: LineInfo) => {
-// 		const { content, row, indent } = li.lineInfo;
-// 		log(
-// 			`   LineInfo: row: #${row}, indent: ${indent}, ` +
-// 				`content: "${formatLine(content)}"`
-// 		);
-// 	};
+		return {
+			trait: {
+				type: "ParserErr",
+				err,
+				lineInfo: head.lineInfo,
+			},
+			nextIndex,
+		};
+	};
 
-// 	const logError = (err: ParseErr) => {};
+	const collectInvalidIndentChildren = (
+		i: number,
+		bodyIndent: number
+	) => {
+		const invalidChildren: HeadType[] = [];
 
-// 	let lineNumber = 0;
-// 	for await (const line of file.readLines()) {
-// 		lineNumber++; // in N
+		while (i < heads.length) {
+			const head = heads[i] as HeadType;
 
-// 		log(`ORG LINE #${lineNumber}: ` + `"${formatLine(line)}"`);
+			if (head.lineInfo.indent <= bodyIndent) {
+				break;
+			}
 
-// 		const res1 = getPreLineInfo(line, lineNumber);
+			invalidChildren.push(head);
+			i++;
+		}
 
-// 		if (res1.type === "ParseErr") {
-// 			const err = res1;
-// 			const { message } = err;
-// 			logLineInfo(err);
-// 			log(`PARSE-ERR: (${errors.length}): "${message}"`);
-// 			errors.push(res1);
-// 			logln(40);
-// 			continue;
-// 		}
+		return invalidChildren;
+	};
 
-// 		const lineInfo: LineInfo = {
-// 			lineInfo: {
-// 				content: res1.content,
-// 				row: res1.row,
-// 				indent: res1.indent,
-// 			},
-// 		};
+	const children: HeadType[] = [];
 
-// 		logLineInfo(lineInfo);
+	let bodyIndent = traitHead.lineInfo.indent + 1;
+	let i = headIndex;
 
-// 		const res2 = splitHead(lineInfo);
-// 		switch (res2.type) {
-// 			case "KeyValueHead":
-// 				{
-// 					const { keyHead, valueHead } = res2;
-// 					log(
-// 						`<KeyValueHead>: ` +
-// 							`keyHead: "${keyHead}", ` +
-// 							`valueHead: "${valueHead}"`
-// 					);
-// 				}
-// 				break;
-// 			case "KeyHead":
-// 				{
-// 					const { keyHead } = res2;
-// 					log(`<KeyHead>: keyHead: "${keyHead}"`);
-// 				}
-// 				break;
-// 			case "KeyBodyHead":
-// 				{
-// 					const { keyHead } = res2;
-// 					log(`<KeyBodyHead>: keyHead: "${keyHead}"`);
-// 				}
-// 				break;
-// 			case "EmptyLine":
-// 				{
-// 					log("<EmptyLine>");
-// 				}
-// 				break;
-// 			case "ParseErr":
-// 				{
-// 					const err = res2;
-// 					const { message } = err;
-// 					log(`PARSE-ERR: (${errors.length}): "${message}"`);
-// 					errors.push(err);
-// 				}
-// 				break;
-// 			default:
-// 				exhaustiveGuard(res2);
-// 		}
+	while (true) {
+		if (i >= heads.length) {
+			return getTrait(i, children);
+		}
 
-// 		logln(40);
-// 	}
-// };
+		const head = heads[i] as HeadType;
 
-export const logParserLines = async () => {
-	const file = await open(getTextFilePath("00-start.txt"));
+		const indent = head.lineInfo.indent;
 
-	for await (const line of file.readLines()) {
-		console.log(line);
+		switch (true) {
+			// case: end of children
+			case indent < bodyIndent:
+				return getTrait(i, children);
+			// case: invalid children or over-indent
+			case indent > bodyIndent: {
+				const invalidChildren = collectInvalidIndentChildren(
+					i,
+					bodyIndent
+				);
+				const nextIndex = i + invalidChildren.length;
+				// case: invalid children
+				if (children.length > 0) {
+					const invalidHead = children.pop() as HeadType;
+					const err = getError(
+						invalidHead,
+						"Invalid children",
+						invalidChildren,
+						nextIndex
+					);
+					children.push(err.trait);
+					i = err.nextIndex;
+					continue;
+				}
+				// case: invalid over-indent at start
+				else {
+					return getError(
+						head,
+						"Invalid over-indent",
+						invalidChildren,
+						nextIndex
+					);
+				}
+			}
+			default:
+				break;
+		}
+
+		switch (head.type) {
+			case "KeyValDefHead":
+				children.push(head);
+				i++;
+				break;
+			case "KeyBodyReqHead":
+				const { trait, nextIndex } = parseTrait(
+					head,
+					heads,
+					i + 1
+				);
+				children.push(trait);
+				i = nextIndex;
+				break;
+		}
 	}
+};
+
+export const logParseTraits = async () => {
+	logh("Log Parse: Parse Default Values");
+	log();
+
+	const res1 = await fileToLines("01-trait-tree.txt");
+	if (res1.type === "ErrorType") {
+		log("ERROR:");
+		log(res1);
+		return;
+	}
+
+	const lines = res1.lines;
+
+	const allHeads = await parseLinesToHeads(lines);
 };

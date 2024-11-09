@@ -1,4 +1,4 @@
-import { ParseErr } from "@/parser/types/err-types";
+import { ParserErr } from "@/parser/types/err-types";
 
 export type LineInfo = {
 	readonly lineInfo: {
@@ -33,11 +33,19 @@ export type KeyValReqHead = {
 /**
  * Key Body-Required Head.
  *
+ * Body can be: trait, set, array
+ *
  * E.g.: "key:"
  */
 export type KeyBodyReqHead = {
 	readonly type: "KeyBodyReqHead";
 	readonly keyHead: string;
+} & LineInfo;
+
+export type KeyTrait = {
+	readonly type: "KeyTrait";
+	readonly key: string;
+	readonly children: HeadType[];
 } & LineInfo;
 
 export type KeyInvalidHead = {
@@ -56,7 +64,8 @@ export type HeadType =
 	| KeyBodyReqHead
 	| KeyInvalidHead
 	| EmptyLine
-	| ParseErr;
+	| ParserErr
+	| KeyTrait;
 
 // export type KeyValueHead = Simplify<
 // 	{

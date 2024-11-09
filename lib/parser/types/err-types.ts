@@ -91,12 +91,34 @@ export class ParserStructureErr extends ParserErrBase {
 	}
 }
 
-export type ParseErr = {
-	readonly type: "ParseErr";
+export type IndentErrKind =
+	| "Missing children"
+	| "Invalid children"
+	| "Invalid over-indent";
+
+export class ParserIndentErr extends ParserErrBase {
+	constructor(
+		head: HeadType,
+		lineErrorSlice: Slice,
+		public readonly kind: IndentErrKind,
+		public readonly children: HeadType[]
+	) {
+		super(head, lineErrorSlice);
+	}
+
+	public toMessage(): string {
+		const { kind } = this;
+		return `Indent Error: ${kind}`;
+	}
+
+	public toReport(): string {
+		const { content } = this.head.lineInfo;
+		return `${content}\n${this.lineErrorSlice.getErrorString(
+			content
+		)}`;
+	}
+}
+export type ParserErr = {
+	readonly type: "ParserErr";
 	readonly err: ParserErrBase;
 } & LineInfo;
-
-// export type ParseError = {
-// 	type: "ParseError";
-// 	message: string;
-// };

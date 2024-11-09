@@ -1,5 +1,5 @@
 import {
-	ParseErr,
+	ParserErr,
 	ParserStructureErr,
 } from "@/parser/types/err-types";
 import { Slice } from "@/parser/types/general";
@@ -44,8 +44,8 @@ const getTabsAndContent = (line: string): TabsAndContent => {
 export const getPreLineInfo = (
 	line: string,
 	lineNumber: number
-): PreLineInfo | ParseErr => {
-	const getSpaceError = (): ParseErr => {
+): PreLineInfo | ParserErr => {
+	const getSpaceError = (): ParserErr => {
 		const keyHead = formatTabsToSymbols(line);
 
 		const getSlice = () => {
@@ -85,7 +85,7 @@ export const getPreLineInfo = (
 		);
 
 		return {
-			type: "ParseErr",
+			type: "ParserErr",
 			err,
 			...lineInfo,
 		};

@@ -1,5 +1,5 @@
 import {
-	ParseErr,
+	ParserErr,
 	ParserStructureErr,
 	StructureErrKind,
 } from "@/parser/types/err-types";
@@ -23,9 +23,9 @@ export const splitHead = (lineInfo: LineInfo): HeadType => {
 		head: KeyInvalidHead,
 		kind: StructureErrKind,
 		lineErrorSlice: Slice
-	): ParseErr => {
+	): ParserErr => {
 		const err = new ParserStructureErr(head, lineErrorSlice, kind);
-		return { type: "ParseErr", err, ...lineInfo };
+		return { type: "ParserErr", err, ...lineInfo };
 	};
 
 	const { content: line } = lineInfo.lineInfo;
@@ -107,7 +107,7 @@ export const parseLinesToHeads = async (
 
 			const res1 = getPreLineInfo(line, lineNumber);
 
-			if (res1.type === "ParseErr") {
+			if (res1.type === "ParserErr") {
 				heads.push(res1);
 				continue;
 			}
