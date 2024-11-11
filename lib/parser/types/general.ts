@@ -1,15 +1,10 @@
-// export type EmptyLine = Simplify<
-// 	{
-// 		readonly type: "EmptyLine";
-// 	} & LineInfo
-// >;
-
-// export type ParseErr = Simplify<
-// 	{
-// 		readonly type: "ParseErr";
-// 		readonly message: string;
-// 	} & LineInfo
-// >;
+export class StrSlice {
+	constructor(
+		public readonly value: string,
+		public readonly start: number,
+		public readonly end: number
+	) {}
+}
 
 export class Slice {
 	constructor(
@@ -32,6 +27,21 @@ export class Slice {
 			return this.end === undefined
 				? arrOrStr.slice(this.start)
 				: arrOrStr.slice(this.start, this.end);
+		}
+	}
+
+	public normalize<T>(arrOrStr: readonly T[] | string): {
+		startIncl: number;
+		endExcl: number;
+	} {
+		if (Array.isArray(arrOrStr)) {
+			return this.end === undefined
+				? { startIncl: this.start, endExcl: arrOrStr.length }
+				: { startIncl: this.start, endExcl: this.end };
+		} else {
+			return this.end === undefined
+				? { startIncl: this.start, endExcl: arrOrStr.length }
+				: { startIncl: this.start, endExcl: this.end };
 		}
 	}
 

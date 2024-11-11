@@ -99,7 +99,7 @@ export const parseLinesToHeads = async (
 	lines: readonly string[]
 ): Promise<readonly HeadType[]> =>
 	new Promise(resolve => {
-		const heads: HeadType[] = new Array<HeadType>();
+		const heads: HeadType[] = [];
 
 		let lineNumber = 0;
 		for (const line of lines) {

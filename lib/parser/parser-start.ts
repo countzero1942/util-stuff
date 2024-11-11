@@ -117,7 +117,6 @@ export const logSplitHeads = async () => {
 
 	logh(`Errors: ${errorHeads.length}`);
 	for (const err of errorHeads as ParserErr[]) {
-		log(err.err.head);
 		log(err.err.toMessage());
 		log(err.err.toReport());
 		div();
@@ -174,7 +173,7 @@ export const parseTrait = (
 	heads: readonly HeadType[],
 	headIndex: number
 ): ParseTraitResult => {
-	const getTrait = (
+	const getSelfTrait = (
 		nextIndex: number,
 		children: HeadType[]
 	): ParseTraitResult => {
@@ -188,24 +187,25 @@ export const parseTrait = (
 		} as ParseTraitResult;
 	};
 
-	const getError = (
-		head: HeadType,
-		kind: IndentErrKind,
+	const getIndentError = (
 		invalidChildren: HeadType[],
-		nextIndex: number
+		blockErrorSlice: Slice,
+		kind: IndentErrKind,
+		lineInfo: LineInfo
 	): ParseTraitResult => {
 		const err = new ParserIndentErr(
-			head,
-			Slice.from(0, 0),
-			kind,
-			invalidChildren
+			invalidChildren,
+			blockErrorSlice,
+			kind
 		);
 
+		const slice = blockErrorSlice.normalize(heads);
+		const nextIndex = slice.startIncl + slice.endExcl;
 		return {
 			trait: {
 				type: "ParserErr",
 				err,
-				lineInfo: head.lineInfo,
+				...lineInfo,
 			},
 			nextIndex,
 		};
@@ -238,7 +238,7 @@ export const parseTrait = (
 
 	while (true) {
 		if (i >= heads.length) {
-			return getTrait(i, children);
+			return getSelfTrait(i, children);
 		}
 
 		const head = heads[i] as HeadType;
@@ -248,7 +248,7 @@ export const parseTrait = (
 		switch (true) {
 			// case: end of children
 			case indent < bodyIndent:
-				return getTrait(i, children);
+				return getSelfTrait(i, children);
 			// case: invalid children or over-indent
 			case indent > bodyIndent: {
 				const invalidChildren = collectInvalidIndentChildren(
@@ -256,14 +256,15 @@ export const parseTrait = (
 					bodyIndent
 				);
 				const nextIndex = i + invalidChildren.length;
+				const slice = Slice.from(i, nextIndex);
+				const { lineInfo } = head;
 				// case: invalid children
 				if (children.length > 0) {
-					const invalidHead = children.pop() as HeadType;
-					const err = getError(
-						invalidHead,
-						"Invalid children",
+					const err = getIndentError(
 						invalidChildren,
-						nextIndex
+						slice,
+						"Invalid children",
+						{ lineInfo }
 					);
 					children.push(err.trait);
 					i = err.nextIndex;
@@ -271,11 +272,11 @@ export const parseTrait = (
 				}
 				// case: invalid over-indent at start
 				else {
-					return getError(
-						head,
-						"Invalid over-indent",
+					return getIndentError(
 						invalidChildren,
-						nextIndex
+						slice,
+						"Invalid over-indent",
+						{ lineInfo }
 					);
 				}
 			}

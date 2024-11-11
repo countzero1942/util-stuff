@@ -1,4 +1,5 @@
-import { div, log } from "@/utils/log";
+import { Str } from "@/parser/types/type-types";
+import { div, log, logag } from "@/utils/log";
 import {
 	FullType,
 	getFullType,
@@ -672,24 +673,6 @@ export class NumSeq extends Seq<number> {
 		super();
 	}
 
-	private setCoercedMinMaxInc = (): void => {
-		const getSafeInce = (inc: number) => {
-			// Test
-		};
-
-		const inc = Math.abs(this.inc);
-
-		switch (true) {
-			case this.min < this.max:
-
-			case this.min > this.max:
-				const inc = this.inc < 0;
-
-			default:
-				break;
-		}
-	};
-
 	public override *gen() {
 		for (let n = this.min; n <= this.max; n += this.inc) {
 			yield n;
@@ -1254,5 +1237,107 @@ export class RecordSeq<
 			{ type: "Class", name: className },
 			"has-class"
 		);
+	}
+}
+
+export abstract class StrSeqBase extends Seq<string> {
+	constructor(public readonly str: string) {
+		super();
+	}
+
+	public slice(startIncl: number, endExcl?: number) {
+		let count = -1;
+
+		const getCount = () => {
+			if (count === -1) {
+				count = this.count();
+			}
+			return count;
+		};
+
+		const getStart = () => {
+			const start =
+				startIncl < 0 ? getCount() + startIncl : startIncl;
+			return Math.max(0, start);
+		};
+
+		const getEnd = () => {
+			let end = endExcl === undefined ? this.str.length : endExcl;
+			end = end < 0 ? getCount() + end : end;
+			return Math.max(0, end);
+		};
+
+		let char = {
+			i: 0,
+			start: -1,
+			end: -1,
+		};
+
+		let codePoint = {
+			i: 0,
+			start: getStart(),
+			end: getEnd(),
+		};
+
+		// a*b*c*
+		// 012345678
+		// 0 1 2
+
+		for (const codePointStr of this.gen()) {
+			if (codePoint.i === codePoint.start) {
+				char.start = char.i;
+			}
+			if (codePoint.i === codePoint.end) {
+				char.end = char.i;
+				break;
+			}
+
+			char.i += codePointStr.length;
+			logag(`codepoint length: ${codePointStr.length}`);
+			codePoint.i++;
+		}
+
+		if (char.end === -1) {
+			char.end = char.i;
+		}
+
+		return char.start === -1
+			? ""
+			: this.str.slice(char.start, char.end);
+	}
+}
+
+export class StrSeq extends StrSeqBase {
+	constructor(str: string) {
+		super(str);
+	}
+
+	public override *gen() {
+		for (const codePoint of this.str) {
+			yield codePoint;
+		}
+	}
+	public static from(str: string) {
+		return new StrSeq(str);
+	}
+}
+
+export class StrGraphemeSeq extends StrSeqBase {
+	constructor(str: string) {
+		super(str);
+	}
+
+	public override *gen() {
+		const itr = new Intl.Segmenter(undefined, {
+			granularity: "grapheme",
+		}).segment(this.str);
+
+		for (const grapheme of itr) {
+			yield grapheme.segment;
+		}
+	}
+
+	public static from(str: string) {
+		return new StrGraphemeSeq(str);
 	}
 }

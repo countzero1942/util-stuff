@@ -35,16 +35,37 @@ export type NumberErr = {
 };
 
 export abstract class ParserErrBase {
+	constructor() {}
+
+	public abstract toMessage(): string;
+	public abstract toReport(): string[];
+}
+
+export abstract class ParserLineErrBase extends ParserErrBase {
 	constructor(
 		public readonly head: HeadType,
 		public readonly lineErrorSlice: Slice
-	) {}
+	) {
+		super();
+	}
 
 	public abstract toMessage(): string;
-	public abstract toReport(): string;
+	public abstract toReport(): string[];
 }
 
-export class ParserNumberErr extends ParserErrBase {
+export abstract class ParserBlockErrBase extends ParserErrBase {
+	constructor(
+		public readonly children: HeadType[],
+		public readonly blockErrorSlice: Slice
+	) {
+		super();
+	}
+
+	public abstract toMessage(): string;
+	public abstract toReport(): string[];
+}
+
+export class ParserNumberErr extends ParserLineErrBase {
 	constructor(
 		head: HeadType,
 		lineErrorSlice: Slice,
@@ -58,18 +79,19 @@ export class ParserNumberErr extends ParserErrBase {
 		return `Number Error: ${numberErr.kind}`;
 	}
 
-	public toReport(): string {
+	public toReport(): string[] {
 		const { content } = this.head.lineInfo;
-		return `${content}\n${this.lineErrorSlice.getErrorString(
-			content
-		)}`;
+		return [
+			`${content}`,
+			`\n${this.lineErrorSlice.getErrorString(content)}`,
+		];
 	}
 }
 export type StructureErrKind =
 	| "Invalid space tabs"
 	| "Invalid key colon";
 
-export class ParserStructureErr extends ParserErrBase {
+export class ParserStructureErr extends ParserLineErrBase {
 	constructor(
 		head: KeyInvalidHead,
 		lineErrorSlice: Slice,
@@ -83,11 +105,12 @@ export class ParserStructureErr extends ParserErrBase {
 		return `Structure Error: ${kind}`;
 	}
 
-	public toReport(): string {
+	public toReport(): string[] {
 		const { keyHead } = this.head as KeyInvalidHead;
-		return `${keyHead}\n${this.lineErrorSlice.getErrorString(
-			keyHead
-		)}`;
+		return [
+			`${keyHead}`,
+			`\n${this.lineErrorSlice.getErrorString(keyHead)}`,
+		];
 	}
 }
 
@@ -96,26 +119,27 @@ export type IndentErrKind =
 	| "Invalid children"
 	| "Invalid over-indent";
 
-export class ParserIndentErr extends ParserErrBase {
+export class ParserIndentErr extends ParserBlockErrBase {
 	constructor(
-		head: HeadType,
-		lineErrorSlice: Slice,
-		public readonly kind: IndentErrKind,
-		public readonly children: HeadType[]
+		children: HeadType[],
+		blockErrorSlice: Slice,
+		public readonly kind: IndentErrKind
 	) {
-		super(head, lineErrorSlice);
+		super(children, blockErrorSlice);
 	}
 
 	public toMessage(): string {
 		const { kind } = this;
-		return `Indent Error: ${kind}`;
+		const { startIncl, endExcl } = this.blockErrorSlice.normalize(
+			this.children
+		);
+		return `Indent Error: '${kind}'; lines: ${startIncl} - ${
+			endExcl - 1
+		}`;
 	}
 
-	public toReport(): string {
-		const { content } = this.head.lineInfo;
-		return `${content}\n${this.lineErrorSlice.getErrorString(
-			content
-		)}`;
+	public toReport(): string[] {
+		return this.children.map(child => `${child.lineInfo.content}`);
 	}
 }
 export type ParserErr = {

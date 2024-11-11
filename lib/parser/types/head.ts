@@ -58,14 +58,19 @@ export type EmptyLine = {
 	readonly isColon: boolean;
 } & LineInfo;
 
+/**
+ * All possible head types including ParserErr
+ *
+ * @see {@link HeadType}
+ */
 export type HeadType =
 	| KeyValDefHead
 	| KeyValReqHead
 	| KeyBodyReqHead
 	| KeyInvalidHead
 	| EmptyLine
-	| ParserErr
-	| KeyTrait;
+	| KeyTrait
+	| ParserErr;
 
 // export type KeyValueHead = Simplify<
 // 	{

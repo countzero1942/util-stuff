@@ -37,10 +37,10 @@ import {
 	getPiSumSeq,
 	getPiThingSumSeq,
 } from "@/app/math-series";
-import { NumSeq } from "@/utils/seq";
+import { NumSeq, StrGraphemeSeq } from "@/utils/seq";
 import { Slice } from "@/parser/types/general";
 
-await logSplitHeads();
+// await logSplitHeads();
 
 // await logParseDefaultValues();
 
@@ -88,3 +88,35 @@ await logSplitHeads();
 // ];
 
 // logTestErrors(strs);
+
+let str = "abcдрй😀😺👨‍👦👩‍👩‍👦‍👦";
+// str = "Здрй👨‍👦😀😺";
+//           01234  5 6
+log(str);
+
+const seq = StrGraphemeSeq.from(str);
+
+const testNegStart = () => {
+	let count = seq.count();
+	log(`str: '${str}'`);
+	log(`count: ${count}`);
+	log(`len: ${str.length}`);
+	for (let i = -count; i <= 0; i++) {
+		log(`i: ${i}: '${seq.slice(i)}'`);
+		div();
+	}
+};
+
+const testStartPlusLen = () => {
+	let count = seq.count();
+	log(`str: '${str}'`);
+	log(`count: ${count}`);
+	log(`len: ${str.length}`);
+	for (let i = 0; i <= count; i++) {
+		log(`i: ${i}: '${seq.slice(i, i + 3)}'`);
+		div();
+	}
+};
+
+// testNegStart();
+testStartPlusLen();
