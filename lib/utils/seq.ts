@@ -674,8 +674,15 @@ export class NumSeq extends Seq<number> {
 	}
 
 	public override *gen() {
-		for (let n = this.min; n <= this.max; n += this.inc) {
-			yield n;
+		const inc = Math.abs(this.inc);
+		if (this.min > this.max) {
+			for (let n = this.min; n >= this.max; n -= inc) {
+				yield n;
+			}
+		} else {
+			for (let n = this.min; n <= this.max; n += inc) {
+				yield n;
+			}
 		}
 	}
 
@@ -704,7 +711,11 @@ export class NumSeq extends Seq<number> {
 		exclEnd: number,
 		inc: number = 1
 	) {
-		return new NumSeq(inclStart, exclEnd - 1, inc);
+		if (inclStart < exclEnd) {
+			return new NumSeq(inclStart, exclEnd - 1, inc);
+		} else {
+			return new NumSeq(inclStart - 1, exclEnd, inc);
+		}
 	}
 
 	/**
@@ -716,7 +727,11 @@ export class NumSeq extends Seq<number> {
 	 * @returns NumberSeq
 	 */
 	public static count(inclEnd: number) {
-		return new NumSeq(1, inclEnd);
+		if (inclEnd > 0) {
+			return new NumSeq(1, inclEnd);
+		} else {
+			return new NumSeq(-inclEnd, 1);
+		}
 	}
 
 	/**
@@ -728,7 +743,11 @@ export class NumSeq extends Seq<number> {
 	 * @returns
 	 */
 	public static loop(exclEnd: number) {
-		return new NumSeq(0, exclEnd - 1);
+		if (exclEnd < 0) {
+			return new NumSeq(-exclEnd - 1, 0);
+		} else {
+			return new NumSeq(0, exclEnd - 1);
+		}
 	}
 }
 
@@ -1240,11 +1259,29 @@ export class RecordSeq<
 	}
 }
 
+/**
+ * Base class for String sequences.
+ */
 export abstract class StrSeqBase extends Seq<string> {
 	constructor(public readonly str: string) {
 		super();
 	}
 
+	/**
+	 * Slice the string from the start (inclusive) and end (exclusive).
+	 *
+	 * Negative numbers are allowed and will be interpreted as being relative to the end of the string.
+	 *
+	 * If the end is undefined, the slice will go until the end of the string.
+	 *
+	 * For StrSeq the elements are either UTF-16 chars or surrogate pairs.
+	 *
+	 * For StrGraphemeSeq the elements are UTF-16 chars, surrogate pairs or grapheme clusters.
+	 *
+	 * @param startIncl The starting index (inclusive)
+	 * @param endExcl The ending index (exclusive)
+	 * @returns The sliced string
+	 */
 	public slice(startIncl: number, endExcl?: number) {
 		let count = -1;
 
@@ -1273,7 +1310,7 @@ export abstract class StrSeqBase extends Seq<string> {
 			end: -1,
 		};
 
-		let codePoint = {
+		let element = {
 			i: 0,
 			start: getStart(),
 			end: getEnd(),
@@ -1283,18 +1320,17 @@ export abstract class StrSeqBase extends Seq<string> {
 		// 012345678
 		// 0 1 2
 
-		for (const codePointStr of this.gen()) {
-			if (codePoint.i === codePoint.start) {
+		for (const elementStr of this.gen()) {
+			if (element.i === element.start) {
 				char.start = char.i;
 			}
-			if (codePoint.i === codePoint.end) {
+			if (element.i === element.end) {
 				char.end = char.i;
 				break;
 			}
 
-			char.i += codePointStr.length;
-			logag(`codepoint length: ${codePointStr.length}`);
-			codePoint.i++;
+			char.i += elementStr.length;
+			element.i++;
 		}
 
 		if (char.end === -1) {
@@ -1307,26 +1343,72 @@ export abstract class StrSeqBase extends Seq<string> {
 	}
 }
 
+/**
+ * A string Seq.
+ *
+ * The elements are either UTF-16 chars or surrogate pairs
+ */
 export class StrSeq extends StrSeqBase {
+	/**
+	 * Constructor for StrSeq.
+	 *
+	 * Seq elements are either UTF-16 chars or surrogate pairs
+	 *
+	 * @param str The input string, from which the Seq will generate its elements.
+	 */
 	constructor(str: string) {
 		super(str);
 	}
 
+	/**
+	 * Generator for StrSeq.
+	 *
+	 * Yields elements of UTF-16 chars or surrogate pairs.
+	 *
+	 * @yields A string of length 1 or 2, representing a single grapheme
+	 * from the input string.
+	 */
 	public override *gen() {
 		for (const codePoint of this.str) {
 			yield codePoint;
 		}
 	}
+
+	/**
+	 * Factory method for creating a StrSeq from a string.
+	 *
+	 * Creates a new StrSeq, which generates its elements as UTF-16 chars or surrogate pairs
+	 * from the input string.
+	 *
+	 * @param str The input string, from which the Seq will generate its elements.
+	 * @returns A new StrSeq
+	 */
 	public static from(str: string) {
 		return new StrSeq(str);
 	}
 }
 
+/**
+ * A grapheme cluster Seq.
+ *
+ * The elements are either UTF-16 chars, surrogate pairs or grapheme clusters
+ */
 export class StrGraphemeSeq extends StrSeqBase {
+	/**
+	 * Constructor for StrGraphemeSeq.
+	 *
+	 * Seq elements are either UTF-16 chars, surrogate pairs or grapheme clusters
+	 *
+	 * @param str The input string, from which the Seq will generate its elements.
+	 */
 	constructor(str: string) {
 		super(str);
 	}
 
+	/**
+	 * @yields A string of length 1 or more, representing a UTF-16 char, surrogate pair
+	 * or single grapheme cluster from the input string.
+	 */
 	public override *gen() {
 		const itr = new Intl.Segmenter(undefined, {
 			granularity: "grapheme",
@@ -1337,6 +1419,15 @@ export class StrGraphemeSeq extends StrSeqBase {
 		}
 	}
 
+	/**
+	 * Factory method for StrGraphemeSeq.
+	 *
+	 * Creates a new StrGraphemeSeq, which generates its elements as UTF-16 chars,
+	 * surrogate pairs or grapheme clusters
+	 *
+	 * @param str The input string, from which the Seq will generate its elements.
+	 * @returns A new StrGraphemeSeq
+	 */
 	public static from(str: string) {
 		return new StrGraphemeSeq(str);
 	}

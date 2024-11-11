@@ -37,7 +37,7 @@ import {
 	getPiSumSeq,
 	getPiThingSumSeq,
 } from "@/app/math-series";
-import { NumSeq, StrGraphemeSeq } from "@/utils/seq";
+import { NumSeq, StrGraphemeSeq, StrSeq } from "@/utils/seq";
 import { Slice } from "@/parser/types/general";
 
 // await logSplitHeads();
@@ -90,6 +90,7 @@ import { Slice } from "@/parser/types/general";
 // logTestErrors(strs);
 
 let str = "abcдрй😀😺👨‍👦👩‍👩‍👦‍👦";
+// let str = "abcдрй😀😺👨‍👦";
 // str = "Здрй👨‍👦😀😺";
 //           01234  5 6
 log(str);
@@ -107,16 +108,23 @@ const testNegStart = () => {
 	}
 };
 
-const testStartPlusLen = () => {
+const testStartPlusLen = (len: number) => {
 	let count = seq.count();
 	log(`str: '${str}'`);
 	log(`count: ${count}`);
 	log(`len: ${str.length}`);
 	for (let i = 0; i <= count; i++) {
-		log(`i: ${i}: '${seq.slice(i, i + 3)}'`);
+		const s = seq.slice(i, i + len);
+		log(`i: ${i}, char-len: ${s.length}: '${s}'`);
 		div();
 	}
 };
 
-// testNegStart();
-testStartPlusLen();
+logh("Test negative start loop");
+testNegStart();
+div();
+logh("Test positive loop with length = 1");
+testStartPlusLen(1);
+div();
+logh("Test positive loop with length = 3");
+testStartPlusLen(3);
