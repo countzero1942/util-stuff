@@ -1260,47 +1260,68 @@ export class RecordSeq<
 }
 
 /**
+ * Represents a range of indices in a string.
+ *
+ * Unlike a slice range, the start and end indices are well-defined (positive values:
+ * not optional or negative).
+ */
+export type Range = {
+	startIncl: number;
+	endExcl: number;
+};
+
+/**
  * Base class for String sequences.
  */
 export abstract class StrSeqBase extends Seq<string> {
+	/**
+	 * Constructs a StrSeqBase.
+	 *
+	 * @param str The input string
+	 */
 	constructor(public readonly str: string) {
 		super();
 	}
 
+	private countCache: number = -1;
+
 	/**
-	 * Slice the string from the start (inclusive) and end (exclusive).
+	 * Get the number of elements in the string.
 	 *
-	 * Negative numbers are allowed and will be interpreted as being relative to the end of the string.
+	 * This method is faster than calling `count()` directly,
+	 * as it caches the result of the first call.
 	 *
-	 * If the end is undefined, the slice will go until the end of the string.
+	 * This is a computed property.
 	 *
-	 * For StrSeq the elements are either UTF-16 chars or surrogate pairs.
-	 *
-	 * For StrGraphemeSeq the elements are UTF-16 chars, surrogate pairs or grapheme clusters.
-	 *
-	 * @param startIncl The starting index (inclusive)
-	 * @param endExcl The ending index (exclusive)
-	 * @returns The sliced string
+	 * @returns The number of elements in the string
 	 */
-	public slice(startIncl: number, endExcl?: number) {
-		let count = -1;
+	public get elementCount() {
+		if (this.countCache === -1) {
+			this.countCache = this.count();
+		}
+		return this.countCache;
+	}
 
-		const getCount = () => {
-			if (count === -1) {
-				count = this.count();
-			}
-			return count;
-		};
-
+	/**
+	 * Get a Range denoting a slice of elements from the string.
+	 *
+	 * A Range has well-defined values. Where as a slice's parameters
+	 * can have implicit values.
+	 *
+	 * @param startIncl The inclusive start index
+	 * @param endExcl The exclusive end index
+	 * @returns A string iterator
+	 */
+	public getRange(startIncl?: number, endExcl?: number): Range {
 		const getStart = () => {
-			const start =
-				startIncl < 0 ? getCount() + startIncl : startIncl;
+			let start = startIncl ?? 0;
+			start = start < 0 ? this.elementCount + start : start;
 			return Math.max(0, start);
 		};
 
 		const getEnd = () => {
 			let end = endExcl === undefined ? this.str.length : endExcl;
-			end = end < 0 ? getCount() + end : end;
+			end = end < 0 ? this.elementCount + end : end;
 			return Math.max(0, end);
 		};
 
@@ -1338,8 +1359,29 @@ export abstract class StrSeqBase extends Seq<string> {
 		}
 
 		return char.start === -1
-			? ""
-			: this.str.slice(char.start, char.end);
+			? { startIncl: 0, endExcl: 0 }
+			: { startIncl: char.start, endExcl: char.end };
+	}
+
+	/**
+	 * Slice the string from the start (inclusive) and end (exclusive).
+	 *
+	 * Negative numbers are allowed and will be interpreted as being relative to the end of the string.
+	 *
+	 * If the end is undefined, the slice will go until the end of the string.
+	 *
+	 * For StrSeq the elements are either UTF-16 chars or surrogate pairs.
+	 *
+	 * For StrGraphemeSeq the elements are UTF-16 chars, surrogate pairs or grapheme clusters.
+	 *
+	 * @param startIncl The starting index (inclusive)
+	 * @param endExcl The ending index (exclusive)
+	 * @returns The sliced string
+	 */
+	public slice(startIncl?: number, endExcl?: number) {
+		const range = this.getRange(startIncl, endExcl);
+
+		return this.str.slice(range.startIncl, range.endExcl);
 	}
 }
 

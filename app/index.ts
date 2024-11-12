@@ -38,7 +38,6 @@ import {
 	getPiThingSumSeq,
 } from "@/app/math-series";
 import { NumSeq, StrGraphemeSeq, StrSeq } from "@/utils/seq";
-import { Slice } from "@/parser/types/general";
 
 // await logSplitHeads();
 
@@ -90,15 +89,15 @@ import { Slice } from "@/parser/types/general";
 // logTestErrors(strs);
 
 let str = "abcдрй😀😺👨‍👦👩‍👩‍👦‍👦";
+//         0123456  7 8 9
 // let str = "abcдрй😀😺👨‍👦";
 // str = "Здрй👨‍👦😀😺";
-//           01234  5 6
 log(str);
 
 const seq = StrGraphemeSeq.from(str);
 
 const testNegStart = () => {
-	let count = seq.count();
+	let count = seq.elementCount;
 	log(`str: '${str}'`);
 	log(`count: ${count}`);
 	log(`len: ${str.length}`);
@@ -109,7 +108,7 @@ const testNegStart = () => {
 };
 
 const testStartPlusLen = (len: number) => {
-	let count = seq.count();
+	let count = seq.elementCount;
 	log(`str: '${str}'`);
 	log(`count: ${count}`);
 	log(`len: ${str.length}`);
