@@ -3,7 +3,7 @@ import {
 	ParserStructureErr,
 	StructureErrKind,
 } from "@/parser/types/err-types";
-import { Slice } from "@/parser/types/general";
+import { StrCharSlice } from "@/parser/types/general";
 import {
 	HeadType,
 	KeyBodyReqHead,
@@ -22,7 +22,7 @@ export const splitHead = (lineInfo: LineInfo): HeadType => {
 	const createParserStructureErr = (
 		head: KeyInvalidHead,
 		kind: StructureErrKind,
-		lineErrorSlice: Slice
+		lineErrorSlice: StrCharSlice
 	): ParserErr => {
 		const err = new ParserStructureErr(head, lineErrorSlice, kind);
 		return { type: "ParserErr", err, ...lineInfo };
@@ -86,7 +86,10 @@ export const splitHead = (lineInfo: LineInfo): HeadType => {
 							...lineInfo,
 						},
 						"Invalid key colon",
-						Slice.fromIndexOfDefaultAll(keyHead.indexOf(":"))
+						StrCharSlice.fromIndexOfDefaultAll(
+							keyHead,
+							keyHead.indexOf(":")
+						)
 					);
 			}
 		}

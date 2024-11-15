@@ -8,7 +8,7 @@ import {
 	splitHead,
 } from "@/parser/utils/lines-to-heads";
 import { ErrorType, getError } from "@/utils/error";
-import { ArraySeq, NumSeq } from "@/utils/seq";
+import { ArraySeq, NumSeq, Range } from "@/utils/seq";
 import { parseDefValue } from "@/parser/utils/parse-value";
 import {
 	HeadType,
@@ -21,7 +21,7 @@ import {
 	ParserErr,
 	ParserIndentErr,
 } from "@/parser/types/err-types";
-import { Slice } from "@/parser/types/general";
+import { ArraySlice, StrCharSlice } from "@/parser/types/general";
 
 const getTextFilePath = (name: string) => `./text/parser/${name}`;
 
@@ -188,39 +188,37 @@ export const parseTrait = (
 	};
 
 	const getIndentError = (
-		invalidChildren: HeadType[],
-		blockErrorSlice: Slice,
+		invalidChildren: readonly HeadType[],
+		rowErrorRange: Range,
 		kind: IndentErrKind,
 		lineInfo: LineInfo
 	): ParseTraitResult => {
 		const err = new ParserIndentErr(
 			invalidChildren,
-			blockErrorSlice,
+			rowErrorRange,
 			kind
 		);
 
-		const slice = blockErrorSlice.normalize(heads);
-		const nextIndex = slice.startIncl + slice.endExcl;
 		return {
 			trait: {
 				type: "ParserErr",
 				err,
 				...lineInfo,
 			},
-			nextIndex,
+			nextIndex: rowErrorRange.endExcl,
 		};
 	};
 
 	const collectInvalidIndentChildren = (
 		i: number,
-		bodyIndent: number
-	) => {
+		traitBodyIndent: number
+	): readonly HeadType[] => {
 		const invalidChildren: HeadType[] = [];
 
 		while (i < heads.length) {
 			const head = heads[i] as HeadType;
 
-			if (head.lineInfo.indent <= bodyIndent) {
+			if (head.lineInfo.indent <= traitBodyIndent) {
 				break;
 			}
 
@@ -233,7 +231,7 @@ export const parseTrait = (
 
 	const children: HeadType[] = [];
 
-	let bodyIndent = traitHead.lineInfo.indent + 1;
+	let traitBodyIndent = traitHead.lineInfo.indent + 1;
 	let i = headIndex;
 
 	while (true) {
@@ -247,22 +245,24 @@ export const parseTrait = (
 
 		switch (true) {
 			// case: end of children
-			case indent < bodyIndent:
+			case indent < traitBodyIndent:
 				return getSelfTrait(i, children);
 			// case: invalid children or over-indent
-			case indent > bodyIndent: {
+			case indent > traitBodyIndent: {
 				const invalidChildren = collectInvalidIndentChildren(
 					i,
-					bodyIndent
+					traitBodyIndent
 				);
-				const nextIndex = i + invalidChildren.length;
-				const slice = Slice.from(i, nextIndex);
+				const rowErrorRange = Range.fromLength(
+					i,
+					invalidChildren.length
+				);
 				const { lineInfo } = head;
-				// case: invalid children
+				// case: invalid children to non-KeyBodyReqHead
 				if (children.length > 0) {
 					const err = getIndentError(
 						invalidChildren,
-						slice,
+						rowErrorRange,
 						"Invalid children",
 						{ lineInfo }
 					);
@@ -270,22 +270,26 @@ export const parseTrait = (
 					i = err.nextIndex;
 					continue;
 				}
-				// case: invalid over-indent at start
+				// case: invalid over-indent at start of KeyBodyReqHead children
 				else {
 					return getIndentError(
 						invalidChildren,
-						slice,
+						rowErrorRange,
 						"Invalid over-indent",
 						{ lineInfo }
 					);
 				}
 			}
+			// case: head is valid
 			default:
 				break;
 		}
 
 		switch (head.type) {
 			case "KeyValDefHead":
+			case "KeyValReqHead":
+			case "EmptyLine":
+			case "ParserErr":
 				children.push(head);
 				i++;
 				break;
@@ -298,6 +302,12 @@ export const parseTrait = (
 				children.push(trait);
 				i = nextIndex;
 				break;
+			case "KeyInvalidHead":
+				// invalid heads are only inside ParserErr
+				throw "Never";
+			default:
+				// all heads should be processed
+				throw "Never";
 		}
 	}
 };

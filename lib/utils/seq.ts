@@ -1260,15 +1260,29 @@ export class RecordSeq<
 }
 
 /**
- * Represents a range of indices in a string.
+ * Represents a range of indices in a string or array.
  *
  * Unlike a slice range, the start and end indices are well-defined (positive values:
  * not optional or negative).
  */
-export type Range = {
-	startIncl: number;
-	endExcl: number;
-};
+export class Range {
+	constructor(
+		public readonly startIncl: number,
+		public readonly endExcl: number
+	) {}
+
+	public length(): number {
+		return this.endExcl - this.startIncl;
+	}
+
+	public static from(startIncl: number, endExcl: number) {
+		return new Range(startIncl, endExcl);
+	}
+
+	public static fromLength(startIncl: number, length: number) {
+		return new Range(startIncl, startIncl + length);
+	}
+}
 
 /**
  * Base class for String sequences.
@@ -1359,8 +1373,8 @@ export abstract class StrSeqBase extends Seq<string> {
 		}
 
 		return char.start === -1
-			? { startIncl: 0, endExcl: 0 }
-			: { startIncl: char.start, endExcl: char.end };
+			? Range.from(0, 0)
+			: Range.from(char.start, char.end);
 	}
 
 	/**

@@ -1,4 +1,74 @@
-import { StrGraphemeSeq, StrSeq } from "@/utils/seq";
+import { StrGraphemeSeq, StrSeq, Range, Seq } from "@/utils/seq";
+
+export const normalizeStartEnd = (
+	length: number,
+	startIncl?: number,
+	endExcl?: number
+): Range => {
+	const getStart = () => {
+		let s = startIncl ?? 0;
+		s = s < 0 ? length + s : s;
+		return Math.max(0, s);
+	};
+
+	const getEnd = () => {
+		let e = endExcl ?? length;
+		e = e < 0 ? length + e : e;
+		return Math.max(0, e);
+	};
+
+	let s = getStart();
+	let e = getEnd();
+
+	if (s > e) {
+		[s, e] = [e, s];
+	}
+
+	return Range.from(s, e);
+};
+
+export class ArraySlice<T> extends Seq<T> {
+	public readonly startIncl: number;
+	public readonly endExcl: number;
+
+	public get length(): number {
+		return this.endExcl - this.startIncl;
+	}
+
+	constructor(
+		public readonly array: readonly T[],
+		startIncl?: number,
+		endExcl?: number
+	) {
+		super();
+
+		const range = normalizeStartEnd(
+			array.length,
+			startIncl,
+			endExcl
+		);
+		this.startIncl = range.startIncl;
+		this.endExcl = range.endExcl;
+	}
+
+	public override *gen(): Generator<T, any, any> {
+		for (let i = this.startIncl; i < this.endExcl; i++) {
+			yield this.array[i] as T;
+		}
+	}
+
+	public toArray() {
+		return this.array.slice(this.startIncl, this.endExcl);
+	}
+
+	public static from<T>(
+		array: readonly T[],
+		startIncl?: number,
+		endExcl?: number
+	): ArraySlice<T> {
+		return new ArraySlice(array, startIncl, endExcl);
+	}
+}
 
 export class StrCharSlice {
 	/**
@@ -29,26 +99,13 @@ export class StrCharSlice {
 		startIncl?: number,
 		endExcl?: number
 	) {
-		const getStart = () => {
-			let s = startIncl ?? 0;
-			s = s < 0 ? this.value.length + s : s;
-			return Math.max(0, s);
-		};
-
-		const getEnd = () => {
-			let e = endExcl ?? this.value.length;
-			e = e < 0 ? this.value.length + e : e;
-			return Math.max(0, e);
-		};
-
-		let s = getStart();
-		let e = getEnd();
-
-		if (s > e) {
-			[s, e] = [e, s];
-		}
-		this.startIncl = s;
-		this.endExcl = e;
+		const range = normalizeStartEnd(
+			this.value.length,
+			startIncl,
+			endExcl
+		);
+		this.startIncl = range.startIncl;
+		this.endExcl = range.endExcl;
 	}
 
 	/**

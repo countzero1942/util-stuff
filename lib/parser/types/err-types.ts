@@ -1,10 +1,11 @@
-import { Slice } from "@/parser/types/general";
+import { ArraySlice, StrCharSlice } from "@/parser/types/general";
 import {
 	HeadType,
 	KeyInvalidHead,
 	LineInfo,
 } from "@/parser/types/head";
 import { TypeBase } from "@/parser/types/type-types";
+import { Range } from "@/utils/seq";
 
 export type NumberErrKind =
 	| "Invalid exponent"
@@ -44,7 +45,7 @@ export abstract class ParserErrBase {
 export abstract class ParserLineErrBase extends ParserErrBase {
 	constructor(
 		public readonly head: HeadType,
-		public readonly lineErrorSlice: Slice
+		public readonly lineErrorSlice: StrCharSlice
 	) {
 		super();
 	}
@@ -55,8 +56,8 @@ export abstract class ParserLineErrBase extends ParserErrBase {
 
 export abstract class ParserBlockErrBase extends ParserErrBase {
 	constructor(
-		public readonly children: HeadType[],
-		public readonly blockErrorSlice: Slice
+		public readonly children: readonly HeadType[],
+		public readonly rowErrorRange: Range
 	) {
 		super();
 	}
@@ -68,7 +69,7 @@ export abstract class ParserBlockErrBase extends ParserErrBase {
 export class ParserNumberErr extends ParserLineErrBase {
 	constructor(
 		head: HeadType,
-		lineErrorSlice: Slice,
+		lineErrorSlice: StrCharSlice,
 		public readonly numberErr: NumberErr
 	) {
 		super(head, lineErrorSlice);
@@ -83,7 +84,7 @@ export class ParserNumberErr extends ParserLineErrBase {
 		const { content } = this.head.lineInfo;
 		return [
 			`${content}`,
-			`\n${this.lineErrorSlice.getErrorString(content)}`,
+			`\n${this.lineErrorSlice.getErrorString()}`,
 		];
 	}
 }
@@ -94,7 +95,7 @@ export type StructureErrKind =
 export class ParserStructureErr extends ParserLineErrBase {
 	constructor(
 		head: KeyInvalidHead,
-		lineErrorSlice: Slice,
+		lineErrorSlice: StrCharSlice,
 		public readonly kind: StructureErrKind
 	) {
 		super(head, lineErrorSlice);
@@ -109,7 +110,7 @@ export class ParserStructureErr extends ParserLineErrBase {
 		const { keyHead } = this.head as KeyInvalidHead;
 		return [
 			`${keyHead}`,
-			`\n${this.lineErrorSlice.getErrorString(keyHead)}`,
+			`\n${this.lineErrorSlice.getErrorString()}`,
 		];
 	}
 }
@@ -121,18 +122,16 @@ export type IndentErrKind =
 
 export class ParserIndentErr extends ParserBlockErrBase {
 	constructor(
-		children: HeadType[],
-		blockErrorSlice: Slice,
+		children: readonly HeadType[],
+		rowErrorRange: Range,
 		public readonly kind: IndentErrKind
 	) {
-		super(children, blockErrorSlice);
+		super(children, rowErrorRange);
 	}
 
 	public toMessage(): string {
 		const { kind } = this;
-		const { startIncl, endExcl } = this.blockErrorSlice.normalize(
-			this.children
-		);
+		const { startIncl, endExcl } = this.rowErrorRange;
 		return `Indent Error: '${kind}'; lines: ${startIncl} - ${
 			endExcl - 1
 		}`;
