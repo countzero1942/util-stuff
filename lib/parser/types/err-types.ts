@@ -35,11 +35,19 @@ export type NumberErr = {
 	kind: NumberErrKind;
 };
 
+export class ReportLine {
+	constructor(
+		public readonly content: string,
+		public readonly indent: number,
+		public readonly row?: number
+	) {}
+}
+
 export abstract class ParserErrBase {
 	constructor() {}
 
 	public abstract toMessage(): string;
-	public abstract toReport(): string[];
+	public abstract toReport(): ReportLine[];
 }
 
 export abstract class ParserLineErrBase extends ParserErrBase {
@@ -51,7 +59,7 @@ export abstract class ParserLineErrBase extends ParserErrBase {
 	}
 
 	public abstract toMessage(): string;
-	public abstract toReport(): string[];
+	public abstract toReport(): ReportLine[];
 }
 
 export abstract class ParserBlockErrBase extends ParserErrBase {
@@ -63,7 +71,7 @@ export abstract class ParserBlockErrBase extends ParserErrBase {
 	}
 
 	public abstract toMessage(): string;
-	public abstract toReport(): string[];
+	public abstract toReport(): ReportLine[];
 }
 
 export class ParserNumberErr extends ParserLineErrBase {
@@ -80,11 +88,15 @@ export class ParserNumberErr extends ParserLineErrBase {
 		return `Number Error: ${numberErr.kind}`;
 	}
 
-	public toReport(): string[] {
-		const { content } = this.head.lineInfo;
+	public toReport(): ReportLine[] {
+		const { content, indent, row } = this.head.lineInfo;
 		return [
-			`${content}`,
-			`\n${this.lineErrorSlice.getErrorString()}`,
+			{ content, indent, row },
+			{
+				content: this.lineErrorSlice.getErrorString(),
+				indent,
+				row,
+			},
 		];
 	}
 }
@@ -106,11 +118,16 @@ export class ParserStructureErr extends ParserLineErrBase {
 		return `Structure Error: ${kind}`;
 	}
 
-	public toReport(): string[] {
+	public toReport(): ReportLine[] {
 		const { keyHead } = this.head as KeyInvalidHead;
+		const { content, indent, row } = this.head.lineInfo;
 		return [
-			`${keyHead}`,
-			`\n${this.lineErrorSlice.getErrorString()}`,
+			{ content: keyHead, indent, row },
+			{
+				content: this.lineErrorSlice.getErrorString(),
+				indent,
+				row,
+			},
 		];
 	}
 }
@@ -124,6 +141,7 @@ export class ParserIndentErr extends ParserBlockErrBase {
 	constructor(
 		children: readonly HeadType[],
 		rowErrorRange: Range,
+		public readonly indent: number,
 		public readonly kind: IndentErrKind
 	) {
 		super(children, rowErrorRange);
@@ -137,8 +155,17 @@ export class ParserIndentErr extends ParserBlockErrBase {
 		}`;
 	}
 
-	public toReport(): string[] {
-		return this.children.map(child => `${child.lineInfo.content}`);
+	public toReport(): ReportLine[] {
+		const childLines = this.children.map(child => ({
+			content: child.lineInfo.content,
+			indent: child.lineInfo.indent,
+			row: child.lineInfo.row,
+		}));
+
+		return [
+			new ReportLine(this.toMessage(), this.indent),
+			...childLines,
+		];
 	}
 }
 export type ParserErr = {

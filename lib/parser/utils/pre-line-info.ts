@@ -2,7 +2,7 @@ import {
 	ParserErr,
 	ParserStructureErr,
 } from "@/parser/types/err-types";
-import { Slice } from "@/parser/types/general";
+import { StrCharSlice } from "@/parser/types/general";
 import { HeadType, LineInfo } from "@/parser/types/head";
 import { logag } from "@/utils/log";
 import { formatTabsToSymbols } from "@/utils/string";
@@ -57,9 +57,9 @@ export const getPreLineInfo = (
 				index === undefined ||
 				length === undefined
 			) {
-				return Slice.none();
+				return StrCharSlice.none(keyHead);
 			}
-			return Slice.fromLength(index, length);
+			return StrCharSlice.fromLength(keyHead, index, length);
 		};
 
 		const lineErrorSlice = getSlice();

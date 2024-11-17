@@ -30,7 +30,9 @@ import {
 import { testErrParseZNum } from "@/my-tests/parser/test-parseNumber";
 import {
 	logParseDefaultValues,
+	logParseTraits,
 	logSplitHeads,
+	logTraitReport,
 } from "@/parser/parser-start";
 import {
 	getInversePiSumSeq,
@@ -88,42 +90,6 @@ import { NumSeq, StrGraphemeSeq, StrSeq } from "@/utils/seq";
 
 // logTestErrors(strs);
 
-let str = "abcдрй😀😺👨‍👦👩‍👩‍👦‍👦";
-//         0123456  7 8 9
-// let str = "abcдрй😀😺👨‍👦";
-// str = "Здрй👨‍👦😀😺";
-log(str);
+// await logParseTraits();
 
-const seq = StrGraphemeSeq.from(str);
-
-const testNegStart = () => {
-	let count = seq.elementCount;
-	log(`str: '${str}'`);
-	log(`count: ${count}`);
-	log(`len: ${str.length}`);
-	for (let i = -count; i <= 0; i++) {
-		log(`i: ${i}: '${seq.slice(i)}'`);
-		div();
-	}
-};
-
-const testStartPlusLen = (len: number) => {
-	let count = seq.elementCount;
-	log(`str: '${str}'`);
-	log(`count: ${count}`);
-	log(`len: ${str.length}`);
-	for (let i = 0; i <= count; i++) {
-		const s = seq.slice(i, i + len);
-		log(`i: ${i}, char-len: ${s.length}: '${s}'`);
-		div();
-	}
-};
-
-logh("Test negative start loop");
-testNegStart();
-div();
-logh("Test positive loop with length = 1");
-testStartPlusLen(1);
-div();
-logh("Test positive loop with length = 3");
-testStartPlusLen(3);
+await logTraitReport();

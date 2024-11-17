@@ -34,7 +34,7 @@ export const logobj = (obj: any) => {
 		case "Class":
 		case "Array":
 			console.dir(obj, {
-				depth: 10,
+				depth: 20,
 				colors: true,
 				maxArrayLength: 1000,
 				numericSeparator: true,

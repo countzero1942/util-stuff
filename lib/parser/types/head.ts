@@ -5,7 +5,6 @@ export type LineInfo = {
 		readonly content: string;
 		readonly indent: number;
 		readonly row: number;
-		readonly column?: number;
 	};
 };
 
