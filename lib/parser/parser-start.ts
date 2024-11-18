@@ -179,11 +179,15 @@ export const logParseTraits = async () => {
 	logobj(trait);
 };
 
-export const logTraitReport = async () => {
+export const logTraitReport = async (
+	fileName = "01-trait-tree.txt"
+) => {
 	logh("Log Trait Report");
 	log();
+	log(`File: '${fileName}'`);
+	log();
 
-	const res1 = await fileToLines("01-trait-tree.txt");
+	const res1 = await fileToLines(fileName);
 	if (res1.type === "ErrorType") {
 		log("ERROR:");
 		log(res1);

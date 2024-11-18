@@ -59,7 +59,18 @@ export abstract class ParserLineErrBase extends ParserErrBase {
 	}
 
 	public abstract toMessage(): string;
-	public abstract toReport(): ReportLine[];
+	public toReport(): ReportLine[] {
+		const { content, indent, row } = this.head.lineInfo;
+		const errorString = this.lineErrorSlice.getErrorString();
+		const errorMessage = this.toMessage();
+		return [
+			{ content, indent, row },
+			{
+				content: `${errorString}: <${errorMessage}>`,
+				indent,
+			},
+		];
+	}
 }
 
 export abstract class ParserBlockErrBase extends ParserErrBase {
@@ -87,18 +98,6 @@ export class ParserNumberErr extends ParserLineErrBase {
 		const { numberErr } = this;
 		return `Number Error: ${numberErr.kind}`;
 	}
-
-	public toReport(): ReportLine[] {
-		const { content, indent, row } = this.head.lineInfo;
-		return [
-			{ content, indent, row },
-			{
-				content: this.lineErrorSlice.getErrorString(),
-				indent,
-				row,
-			},
-		];
-	}
 }
 export type StructureErrKind =
 	| "Invalid space tabs"
@@ -116,19 +115,6 @@ export class ParserStructureErr extends ParserLineErrBase {
 	public toMessage(): string {
 		const { kind } = this;
 		return `Structure Error: ${kind}`;
-	}
-
-	public toReport(): ReportLine[] {
-		const { keyHead } = this.head as KeyInvalidHead;
-		const { content, indent, row } = this.head.lineInfo;
-		return [
-			{ content: keyHead, indent, row },
-			{
-				content: this.lineErrorSlice.getErrorString(),
-				indent,
-				row,
-			},
-		];
 	}
 }
 
@@ -163,7 +149,7 @@ export class ParserIndentErr extends ParserBlockErrBase {
 		}));
 
 		return [
-			new ReportLine(this.toMessage(), this.indent),
+			new ReportLine(`<${this.toMessage()}>`, this.indent),
 			...childLines,
 		];
 	}

@@ -92,4 +92,4 @@ import { NumSeq, StrGraphemeSeq, StrSeq } from "@/utils/seq";
 
 // await logParseTraits();
 
-await logTraitReport();
+await logTraitReport("01-err-trait-tree.txt");

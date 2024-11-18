@@ -33,8 +33,7 @@ export const getTraitReport = async (
 			case "KeyTrait":
 				{
 					lines.push({ content: `${child.key}:`, indent, row });
-					const childLines = await getTraitReport(child, lines);
-					// lines.push(...childLines);
+					await getTraitReport(child, lines);
 				}
 				break;
 			case "ParserErr":

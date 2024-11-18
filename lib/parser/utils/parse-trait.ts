@@ -97,6 +97,12 @@ export const parseTrait = (
 
 		const indent = head.lineInfo.indent;
 
+		if (head.type === "ParserErr") {
+			children.push(head);
+			i++;
+			continue;
+		}
+
 		switch (true) {
 			// case: end of children
 			case indent < traitBodyIndent:
@@ -109,33 +115,25 @@ export const parseTrait = (
 					traitBodyIndent
 				);
 				const rowErrorRange = Range.fromLength(
-					i,
+					i + 1,
 					invalidChildren.length
 				);
 				const { lineInfo } = head;
+				const errKind =
+					children.length > 0
+						? "Invalid children"
+						: "Invalid over-indent";
 				// case: invalid children to non-KeyBodyReqHead
-				if (children.length > 0) {
-					const err = getIndentError(
-						invalidChildren,
-						rowErrorRange,
-						traitBodyIndent,
-						"Invalid children",
-						{ lineInfo }
-					);
-					children.push(err.trait);
-					i = err.nextIndex;
-					continue;
-				}
-				// case: invalid over-indent at start of KeyBodyReqHead children
-				else {
-					return getIndentError(
-						invalidChildren,
-						rowErrorRange,
-						traitBodyIndent,
-						"Invalid over-indent",
-						{ lineInfo }
-					);
-				}
+				const err = getIndentError(
+					invalidChildren,
+					rowErrorRange,
+					traitBodyIndent,
+					errKind,
+					{ lineInfo }
+				);
+				children.push(err.trait);
+				i = err.nextIndex;
+				continue;
 			}
 			// case: head is valid
 			default:
@@ -146,7 +144,6 @@ export const parseTrait = (
 			case "KeyValDefHead":
 			case "KeyValReqHead":
 			case "EmptyLine":
-			case "ParserErr":
 				children.push(head);
 				i++;
 				break;
