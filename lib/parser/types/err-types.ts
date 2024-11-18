@@ -136,9 +136,13 @@ export class ParserIndentErr extends ParserBlockErrBase {
 	public toMessage(): string {
 		const { kind } = this;
 		const { startIncl, endExcl } = this.rowErrorRange;
-		return `Indent Error: '${kind}'; lines: ${startIncl} - ${
-			endExcl - 1
-		}`;
+		const errPart = `Indent Error: '${kind}'`;
+		const errMsg =
+			kind === "Missing children"
+				? errPart
+				: `${errPart}; lines: ${startIncl} - ${endExcl - 1}`;
+
+		return errMsg;
 	}
 
 	public toReport(): ReportLine[] {
@@ -154,6 +158,7 @@ export class ParserIndentErr extends ParserBlockErrBase {
 		];
 	}
 }
+
 export type ParserErr = {
 	readonly type: "ParserErr";
 	readonly err: ParserErrBase;

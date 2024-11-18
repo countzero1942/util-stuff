@@ -27,7 +27,7 @@ export const isPerfectCube = (x: number) => {
 };
 
 export const triangularsSeq = (count: number) => {
-	const seq = MathSumSeq.from(x => x)
+	const seq = MathSumSeq.from(0, count, x => x)
 		.take(count)
 		.imap((i, sum) => {
 			const num = i + 1;
@@ -38,7 +38,7 @@ export const triangularsSeq = (count: number) => {
 };
 
 export const squareNumTriangularSeq = (count: number) => {
-	const seq = MathSumSeq.from(x => x)
+	const seq = MathSumSeq.from(0, count, x => x)
 		.take(count)
 		.imap((i, sum) => {
 			const num = i + 1;
@@ -55,7 +55,7 @@ export const squareNumTriangularSeq = (count: number) => {
 };
 
 export const squareSumTriangularSeq = (count: number) => {
-	const seq = MathSumSeq.from(x => x)
+	const seq = MathSumSeq.from(0, count, x => x)
 		.take(count)
 		.imap((i, sum) => {
 			const num = i + 1;
@@ -72,7 +72,7 @@ export const squareSumTriangularSeq = (count: number) => {
 };
 
 export const cubicNumTriangularSeq = (count: number) => {
-	const seq = MathSumSeq.from(x => x)
+	const seq = MathSumSeq.from(0, count, x => x)
 		.take(count)
 		.imap((i, sum) => {
 			const num = i + 1;
@@ -89,7 +89,7 @@ export const cubicNumTriangularSeq = (count: number) => {
 };
 
 export const cubicSumTriangularSeq = (count: number) => {
-	const seq = MathSumSeq.from(x => x)
+	const seq = MathSumSeq.from(0, count, x => x)
 		.take(count)
 		.imap((i, sum) => {
 			const num = i + 1;

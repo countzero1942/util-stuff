@@ -2,6 +2,7 @@ a: 42
 	stupid-a: evil
 	stupid-b: manipulator
 b: a string
+empty-head:
 c: 6.28
 d:
    spaces: 23
@@ -29,4 +30,6 @@ d:
 			ke-bab-4: 88
 		p: 1.234567e200
 	z: 99
+key:value:value
+key:value	
 e: the end

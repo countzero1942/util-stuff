@@ -1,4 +1,4 @@
-import { NumberError } from "@/parser/types/parse-types";
+import { NumberErr } from "@/parser/types/err-types";
 import {
 	getPrecisionCount,
 	parseDefNumber,
@@ -59,14 +59,14 @@ export const testPrecisionCount = () => {
 export const testParseNumber = (nums: string[]) => {
 	const failures: {
 		num: string;
-		err: NumberError;
+		err: NumberErr;
 	}[] = [];
 
 	for (const num of nums) {
 		logh(`Parsing: ${num}`);
 		const res = parseDefNumber(num);
 
-		if (res.type === "NumberError") {
+		if (res.type === "NumberErr") {
 			failures.push({ num, err: res });
 			log(res);
 			continue;

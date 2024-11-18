@@ -362,8 +362,12 @@ export const testSeqZipFunctionToZipSeq = () => {
 export const testSeqZipChained = () => {
 	const count = 10;
 	const countSeq = NumSeq.count(count);
-	const triangularSeq = MathSumSeq.from(x => x).take(count);
-	const factorialSeq = MathProdSeq.from(x => x).take(count);
+	const triangularSeq = MathSumSeq.from(0, count, x => x).take(
+		count
+	);
+	const factorialSeq = MathProdSeq.from(0, count, x => x).take(
+		count
+	);
 	const squareSeq = countSeq.map(x => x ** 2);
 	const allSeq = countSeq
 		.zip([triangularSeq], (count, triangular) => {

@@ -1,4 +1,5 @@
 import { ParserErr } from "@/parser/types/err-types";
+import { TypeValuePair } from "@/parser/types/parse-types";
 
 export type LineInfo = {
 	readonly lineInfo: {
@@ -41,12 +42,6 @@ export type KeyBodyReqHead = {
 	readonly keyHead: string;
 } & LineInfo;
 
-export type KeyTrait = {
-	readonly type: "KeyTrait";
-	readonly key: string;
-	readonly children: HeadType[];
-} & LineInfo;
-
 export type KeyInvalidHead = {
 	readonly type: "KeyInvalidHead";
 	readonly keyHead: string;
@@ -55,6 +50,18 @@ export type KeyInvalidHead = {
 export type EmptyLine = {
 	readonly type: "EmptyLine";
 	readonly isColon: boolean;
+} & LineInfo;
+
+export type KeyTrait = {
+	readonly type: "KeyTrait";
+	readonly key: string;
+	readonly children: HeadType[];
+} & LineInfo;
+
+export type KeyValDef = {
+	readonly type: "KeyValDef";
+	readonly key: string;
+	readonly value: TypeValuePair<any>;
 } & LineInfo;
 
 /**
@@ -70,25 +77,3 @@ export type HeadType =
 	| EmptyLine
 	| KeyTrait
 	| ParserErr;
-
-// export type KeyValueHead = Simplify<
-// 	{
-// 		readonly type: "KeyValueHead";
-// 		readonly keyHead: string;
-// 		readonly valueHead: string;
-// 	} & LineInfo
-// >;
-
-// export type KeyHead = Simplify<
-// 	{
-// 		readonly type: "KeyHead";
-// 		readonly keyHead: string;
-// 	} & LineInfo
-// >;
-
-// export type KeyBodyHead = Simplify<
-// 	{
-// 		readonly type: "KeyBodyHead";
-// 		readonly keyHead: string;
-// 	} & LineInfo
-// >;

@@ -1,36 +1,45 @@
 import {
 	IndentErrKind,
 	ParserIndentErr,
+	ParserNumberErr,
 } from "@/parser/types/err-types";
+import { StrCharSlice } from "@/parser/types/general";
 import {
 	HeadType,
 	KeyBodyReqHead,
+	KeyValDefHead,
 	LineInfo,
 } from "@/parser/types/head";
 import { ParseTraitResult } from "@/parser/types/parse-types";
+import { parseDefaultValue } from "@/parser/utils/parse-value";
 import { logh, logg } from "@/utils/log";
 import { Range } from "@/utils/seq";
+
+export const parseKeyValDefHead = (head: KeyValDefHead) => {
+	const { keyHead, valueHead } = head;
+	const res = parseDefaultValue(valueHead);
+
+	if (res.type === "NumberErr") {
+		const { content, indent } = head.lineInfo;
+		const slice: StrCharSlice = StrCharSlice.all(content);
+		return {
+			type: "ParserErr",
+			err: new ParserNumberErr(head, slice, res),
+		};
+	}
+
+	return {
+		type: "KeyValDef",
+		key: head.keyHead,
+		value: res,
+	} as const;
+};
 
 export const parseTrait = (
 	traitHead: KeyBodyReqHead,
 	heads: readonly HeadType[],
 	headIndex: number
 ): ParseTraitResult => {
-	const getSelfTrait = (
-		nextIndex: number,
-		children: HeadType[]
-	): ParseTraitResult => {
-		return {
-			trait: {
-				type: "KeyTrait",
-				key: traitHead.keyHead,
-				children,
-				lineInfo: traitHead.lineInfo,
-			},
-			nextIndex,
-		} as ParseTraitResult;
-	};
-
 	const getIndentError = (
 		invalidChildren: readonly HeadType[],
 		rowErrorRange: Range,
@@ -51,8 +60,35 @@ export const parseTrait = (
 				err,
 				...lineInfo,
 			},
-			nextIndex: rowErrorRange.endExcl,
+			// index is zero-based; rowErrorRange is one-based
+			nextIndex: rowErrorRange.endExcl - 1,
 		};
+	};
+
+	const getSelfTrait = (
+		nextIndex: number,
+		children: HeadType[]
+	): ParseTraitResult => {
+		if (children.length === 0 && traitHead.keyHead !== ":root") {
+			const lineInfo = traitHead.lineInfo;
+			const err = getIndentError(
+				[],
+				Range.from(0, 0),
+				traitBodyIndent,
+				"Missing children",
+				{ lineInfo }
+			);
+			children.push(err.trait);
+		}
+		return {
+			trait: {
+				type: "KeyTrait",
+				key: traitHead.keyHead,
+				children,
+				lineInfo: traitHead.lineInfo,
+			},
+			nextIndex,
+		} as ParseTraitResult;
 	};
 
 	const collectInvalidIndentChildren = (

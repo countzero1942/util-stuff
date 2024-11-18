@@ -9,7 +9,7 @@ import {
 } from "@/parser/utils/lines-to-heads";
 import { ErrorType, getError } from "@/utils/error";
 import { ArraySeq, NumSeq, Range } from "@/utils/seq";
-import { parseDefValue } from "@/parser/utils/parse-value";
+import { parseDefaultValue } from "@/parser/utils/parse-value";
 import {
 	HeadType,
 	KeyBodyReqHead,
@@ -136,7 +136,7 @@ export const logParseDefaultValues = async () => {
 		switch (head.type) {
 			case "KeyValDefHead":
 				const { keyHead, valueHead } = head;
-				const res = parseDefValue(valueHead);
+				const res = parseDefaultValue(valueHead);
 				if (res.type === "NumberErr") {
 					const { kind } = res;
 					log(`==> ERROR: ${keyHead}: ${kind}`);
