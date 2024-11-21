@@ -1,5 +1,4 @@
-import { ParserErr } from "@/parser/types/err-types";
-import { KeyTrait } from "@/parser/types/head";
+import { KeyTrait, ParserErr } from "@/parser/types/heads";
 import { TypeBase } from "@/parser/types/type-types";
 
 export type AnalyzeNumberString = {
@@ -11,11 +10,12 @@ export type AnalyzeNumberString = {
 	hasBreakingChars: boolean;
 };
 
-export type TypeValuePair<T> = {
-	type: "TypeValuePair";
-	valueType: TypeBase;
-	value: T;
-};
+export class TypeValuePair<T> {
+	constructor(
+		public readonly valueType: TypeBase,
+		public readonly value: T
+	) {}
+}
 
 export type ParseTraitResult = {
 	trait: KeyTrait | ParserErr;

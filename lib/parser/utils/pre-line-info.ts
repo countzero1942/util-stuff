@@ -1,18 +1,21 @@
-import {
-	ParserErr,
-	ParserStructureErr,
-} from "@/parser/types/err-types";
+import { ParserStructureErr } from "@/parser/types/err-types";
 import { StrCharSlice } from "@/parser/types/general";
-import { HeadType, LineInfo } from "@/parser/types/head";
+import {
+	KeyHead,
+	ParserErr,
+	LineInfo,
+	KeyInvalidHead,
+} from "@/parser/types/heads";
 import { logag } from "@/utils/log";
 import { formatTabsToSymbols } from "@/utils/string";
 
-export type PreLineInfo = {
-	readonly type: "PreLineInfo";
-	readonly content: string;
-	readonly indent: number;
-	readonly row: number;
-};
+export class PreLineInfo {
+	constructor(
+		public readonly content: string,
+		public readonly indent: number,
+		public readonly row: number
+	) {}
+}
 
 type TabsAndContent = {
 	tabs: number;
@@ -64,19 +67,22 @@ export const getPreLineInfo = (
 
 		const lineErrorSlice = getSlice();
 
-		const lineInfo: LineInfo = {
-			lineInfo: {
-				indent: 0,
-				content: line,
-				row: lineNumber,
-			},
-		};
+		const lineInfo = new LineInfo(line, 0, lineNumber);
+		// const lineInfo: LineInfo = {
+		// 	lineInfo: {
+		// 		indent: 0,
+		// 		content: line,
+		// 		row: lineNumber,
+		// 	},
+		// };
 
-		const head: HeadType = {
-			type: "KeyInvalidHead",
-			keyHead,
-			...lineInfo,
-		};
+		const head = new KeyInvalidHead(keyHead, lineInfo);
+
+		// const head: HeadType = {
+		// 	type: "KeyInvalidHead",
+		// 	keyHead,
+		// 	...lineInfo,
+		// };
 
 		const err = new ParserStructureErr(
 			head,
@@ -84,11 +90,13 @@ export const getPreLineInfo = (
 			"Invalid space tabs"
 		);
 
-		return {
-			type: "ParserErr",
-			err,
-			...lineInfo,
-		};
+		return new ParserErr(err, lineInfo);
+
+		// return {
+		// 	type: "ParserErr",
+		// 	err,
+		// 	...lineInfo,
+		// };
 	};
 
 	if (line.startsWith(" ")) {
@@ -101,11 +109,13 @@ export const getPreLineInfo = (
 		return getSpaceError();
 	}
 
-	const preLineInfo: PreLineInfo = {
-		type: "PreLineInfo",
-		content,
-		indent: tabs,
-		row: lineNumber,
-	};
+	const preLineInfo = new PreLineInfo(content, tabs, lineNumber);
+
+	// const preLineInfo: PreLineInfo = {
+	// 	type: "PreLineInfo",
+	// 	content,
+	// 	indent: tabs,
+	// 	row: lineNumber,
+	// };
 	return preLineInfo;
 };

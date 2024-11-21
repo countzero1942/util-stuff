@@ -1,23 +1,24 @@
 import {
-	ParserErr,
 	ParserStructureErr,
 	StructureErrKind,
 } from "@/parser/types/err-types";
 import { StrCharSlice } from "@/parser/types/general";
 import {
-	HeadType,
+	KeyHead,
 	KeyBodyReqHead,
 	KeyValReqHead,
 	KeyValDefHead,
 	LineInfo,
 	KeyInvalidHead,
-} from "@/parser/types/head";
+	ParserErr,
+	EmptyLine,
+} from "@/parser/types/heads";
 import { getPreLineInfo } from "@/parser/utils/pre-line-info";
 import { log } from "@/utils/log";
 import { countOccurencesOf, splitStringOnce } from "@/utils/string";
 import { toReadonlyTuple } from "@/utils/types";
 
-export const splitHead = (lineInfo: LineInfo): HeadType => {
+export const splitHead = (lineInfo: LineInfo): KeyHead => {
 	// create ParseErr error Object
 	const createParserStructureErr = (
 		head: KeyInvalidHead,
@@ -25,18 +26,14 @@ export const splitHead = (lineInfo: LineInfo): HeadType => {
 		lineErrorSlice: StrCharSlice
 	): ParserErr => {
 		const err = new ParserStructureErr(head, lineErrorSlice, kind);
-		return { type: "ParserErr", err, ...lineInfo };
+		return new ParserErr(err, lineInfo);
 	};
 
-	const { content: line } = lineInfo.lineInfo;
+	const { content: line } = lineInfo;
 
 	// case: empty line
 	if (line === "" || line === ":") {
-		return {
-			type: "EmptyLine",
-			isColon: line === ":",
-			...lineInfo,
-		};
+		return new EmptyLine(lineInfo);
 	}
 
 	// split line into keyHead and valueHead
@@ -49,12 +46,13 @@ export const splitHead = (lineInfo: LineInfo): HeadType => {
 		// case: "key: value", "key: value: value" => KeyValue Decl
 		case 2: {
 			const [keyHead, valueHead] = toReadonlyTuple(parts, 2);
-			return {
-				type: "KeyValDefHead",
-				keyHead,
-				valueHead,
-				...lineInfo,
-			};
+			return new KeyValDefHead(keyHead, valueHead, lineInfo);
+			// return {
+			// 	type: "KeyValDefHead",
+			// 	keyHead,
+			// 	valueHead,
+			// 	...lineInfo,
+			// };
 		}
 		// case: "key", "key:", "key:value", "key:key:value..."
 		case 1: {
@@ -63,28 +61,34 @@ export const splitHead = (lineInfo: LineInfo): HeadType => {
 			switch (colonCount) {
 				case 0:
 					// case: "key" => Key Declaration
-					return {
-						type: "KeyValReqHead",
-						keyHead,
-						...lineInfo,
-					};
+					return new KeyValReqHead(keyHead, lineInfo);
+				// return {
+				// 	type: "KeyValReqHead",
+				// 	keyHead,
+				// 	...lineInfo,
+				// };
 
 				default:
 					// case: "key:" "key stuff:8:" => Key Body Decl
 					if (line.endsWith(":")) {
-						return {
-							type: "KeyBodyReqHead",
-							keyHead: keyHead.slice(0, -1),
-							...lineInfo,
-						};
+						return new KeyBodyReqHead(
+							keyHead.slice(0, -1),
+							lineInfo
+						);
+						// return {
+						// 	type: "KeyBodyReqHead",
+						// 	keyHead: keyHead.slice(0, -1),
+						// 	...lineInfo,
+						// };
 					}
 					// case: "key:key:value", ... => ERR
 					return createParserStructureErr(
-						{
-							type: "KeyInvalidHead",
-							keyHead,
-							...lineInfo,
-						},
+						new KeyInvalidHead(keyHead, lineInfo),
+						// {
+						// 	type: "KeyInvalidHead",
+						// 	keyHead,
+						// 	...lineInfo,
+						// },
 						"Invalid key colon",
 						StrCharSlice.fromIndexOfDefaultAll(
 							keyHead,
@@ -100,9 +104,9 @@ export const splitHead = (lineInfo: LineInfo): HeadType => {
 
 export const parseLinesToHeads = async (
 	lines: readonly string[]
-): Promise<readonly HeadType[]> =>
+): Promise<readonly KeyHead[]> =>
 	new Promise(resolve => {
-		const heads: HeadType[] = [];
+		const heads: KeyHead[] = [];
 
 		let lineNumber = 0;
 		for (const line of lines) {
@@ -110,20 +114,30 @@ export const parseLinesToHeads = async (
 
 			const res1 = getPreLineInfo(line, lineNumber);
 
-			if (res1.type === "ParserErr") {
+			if (res1 instanceof ParserErr) {
 				heads.push(res1);
 				continue;
 			}
 
+			// if (res1.type === "ParserErr") {
+			// 	heads.push(res1);
+			// 	continue;
+			// }
+
 			const preLineInfo = res1;
 
-			const lineInfo: LineInfo = {
-				lineInfo: {
-					content: preLineInfo.content,
-					row: preLineInfo.row,
-					indent: preLineInfo.indent,
-				},
-			};
+			const lineInfo: LineInfo = new LineInfo(
+				preLineInfo.content,
+				preLineInfo.indent,
+				preLineInfo.row
+			);
+			// {
+			// 	lineInfo: {
+			// 		content: preLineInfo.content,
+			// 		row: preLineInfo.row,
+			// 		indent: preLineInfo.indent,
+			// 	},
+			// };
 
 			const head = splitHead(lineInfo);
 			heads.push(head);

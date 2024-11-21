@@ -1,160 +1,183 @@
 import {
 	IndentErrKind,
+	NumberErr,
 	ParserIndentErr,
 	ParserNumberErr,
 } from "@/parser/types/err-types";
 import { StrCharSlice } from "@/parser/types/general";
 import {
-	HeadType,
+	EmptyLine,
+	KeyHead,
 	KeyBodyReqHead,
+	KeyInvalidHead,
+	KeyValDef,
 	KeyValDefHead,
+	KeyValReqHead,
 	LineInfo,
-} from "@/parser/types/head";
+	ParserErr,
+	KeyTrait,
+} from "@/parser/types/heads";
 import { ParseTraitResult } from "@/parser/types/parse-types";
 import { parseDefaultValue } from "@/parser/utils/parse-value";
 import { logh, logg } from "@/utils/log";
 import { Range } from "@/utils/seq";
+import { getClassName } from "@/utils/types";
+import { Key } from "node:readline";
+
+export const getValueIndex = (head: KeyValDefHead) => {
+	const { content } = head.lineInfo;
+	const valueIndex = content.indexOf(": ") + 2;
+	return valueIndex;
+};
 
 export const parseKeyValDefHead = (head: KeyValDefHead) => {
 	const { keyHead, valueHead } = head;
 	const res = parseDefaultValue(valueHead);
 
-	if (res.type === "NumberErr") {
+	if (res instanceof NumberErr) {
 		const { content, indent } = head.lineInfo;
-		const slice: StrCharSlice = StrCharSlice.all(content);
-		return {
-			type: "ParserErr",
-			err: new ParserNumberErr(head, slice, res),
-		};
+		const valueIndex = getValueIndex(head);
+		const slice: StrCharSlice = StrCharSlice.from(
+			content,
+			valueIndex
+		);
+		return new ParserErr(
+			new ParserNumberErr(head, slice, res),
+			head.lineInfo
+		);
 	}
 
+	return new KeyValDef(head.keyHead, res, head.lineInfo);
+};
+
+const getIndentError = (
+	invalidChildren: readonly KeyHead[],
+	rowErrorRange: Range,
+	properIndent: number,
+	kind: IndentErrKind,
+	lineInfo: LineInfo
+): ParseTraitResult => {
+	const err = new ParserIndentErr(
+		invalidChildren,
+		rowErrorRange,
+		properIndent,
+		kind
+	);
+
 	return {
-		type: "KeyValDef",
-		key: head.keyHead,
-		value: res,
-	} as const;
+		trait: new ParserErr(err, lineInfo),
+
+		// index is zero-based; rowErrorRange is one-based
+		nextIndex: rowErrorRange.endExcl - 1,
+	};
+};
+
+const getSelfTrait = (
+	traitHead: KeyBodyReqHead,
+	traitBodyIndent: number,
+	nextIndex: number,
+	children: KeyHead[]
+): ParseTraitResult => {
+	if (children.length === 0 && traitHead.keyHead !== ":root") {
+		const err = getIndentError(
+			[],
+			Range.empty(),
+			traitBodyIndent,
+			"Missing children",
+			traitHead.lineInfo
+		);
+		children.push(err.trait);
+	}
+	return {
+		trait: new KeyTrait(
+			traitHead.keyHead,
+			children,
+			traitHead.lineInfo
+		),
+		nextIndex,
+	} as ParseTraitResult;
+};
+
+const collectInvalidIndentChildren = (
+	heads: readonly KeyHead[],
+	currentHeadIndex: number,
+	traitBodyIndent: number
+): readonly KeyHead[] => {
+	const invalidChildren: KeyHead[] = [];
+
+	while (currentHeadIndex < heads.length) {
+		const head = heads[currentHeadIndex] as KeyHead;
+
+		if (head.lineInfo.indent <= traitBodyIndent) {
+			break;
+		}
+
+		invalidChildren.push(head);
+		currentHeadIndex++;
+	}
+
+	return invalidChildren;
 };
 
 export const parseTrait = (
 	traitHead: KeyBodyReqHead,
-	heads: readonly HeadType[],
+	heads: readonly KeyHead[],
 	headIndex: number
 ): ParseTraitResult => {
-	const getIndentError = (
-		invalidChildren: readonly HeadType[],
-		rowErrorRange: Range,
-		properIndent: number,
-		kind: IndentErrKind,
-		lineInfo: LineInfo
-	): ParseTraitResult => {
-		const err = new ParserIndentErr(
-			invalidChildren,
-			rowErrorRange,
-			properIndent,
-			kind
-		);
-
-		return {
-			trait: {
-				type: "ParserErr",
-				err,
-				...lineInfo,
-			},
-			// index is zero-based; rowErrorRange is one-based
-			nextIndex: rowErrorRange.endExcl - 1,
-		};
-	};
-
-	const getSelfTrait = (
-		nextIndex: number,
-		children: HeadType[]
-	): ParseTraitResult => {
-		if (children.length === 0 && traitHead.keyHead !== ":root") {
-			const lineInfo = traitHead.lineInfo;
-			const err = getIndentError(
-				[],
-				Range.from(0, 0),
-				traitBodyIndent,
-				"Missing children",
-				{ lineInfo }
-			);
-			children.push(err.trait);
-		}
-		return {
-			trait: {
-				type: "KeyTrait",
-				key: traitHead.keyHead,
-				children,
-				lineInfo: traitHead.lineInfo,
-			},
-			nextIndex,
-		} as ParseTraitResult;
-	};
-
-	const collectInvalidIndentChildren = (
-		i: number,
-		traitBodyIndent: number
-	): readonly HeadType[] => {
-		const invalidChildren: HeadType[] = [];
-
-		while (i < heads.length) {
-			const head = heads[i] as HeadType;
-
-			if (head.lineInfo.indent <= traitBodyIndent) {
-				break;
-			}
-
-			invalidChildren.push(head);
-			i++;
-		}
-
-		return invalidChildren;
-	};
-
 	// logh(`Parse Trait: ${traitHead.keyHead}`);
 
-	const children: HeadType[] = [];
+	const children: KeyHead[] = [];
 
 	let traitBodyIndent = traitHead.lineInfo.indent + 1;
-	let i = headIndex;
+	let currentHeadIndex = headIndex;
 
 	while (true) {
-		if (i >= heads.length) {
-			return getSelfTrait(i, children);
+		if (currentHeadIndex >= heads.length) {
+			return getSelfTrait(
+				traitHead,
+				traitBodyIndent,
+				currentHeadIndex,
+				children
+			);
 		}
 
-		const head = heads[i] as HeadType;
+		const head = heads[currentHeadIndex] as KeyHead;
 
 		// logg(
-		// 	`i: ${i}, indent: ${head.lineInfo.indent}, row: ${head.lineInfo.row}`,
+		// 	`i: ${currentHeadIndex}, indent: ${head.lineInfo.indent}, row: ${head.lineInfo.row}`,
 		// 	`"${head.lineInfo.content}"`,
-		// 	head.type
+		// 	getClassName(head)
 		// );
 
 		const indent = head.lineInfo.indent;
 
-		if (head.type === "ParserErr") {
+		if (head instanceof ParserErr) {
 			children.push(head);
-			i++;
+			currentHeadIndex++;
 			continue;
 		}
 
 		switch (true) {
-			// case: end of children
+			// case: end of children/indent
 			case indent < traitBodyIndent:
 				// logh("End of indent");
-				return getSelfTrait(i, children);
+				return getSelfTrait(
+					traitHead,
+					traitBodyIndent,
+					currentHeadIndex,
+					children
+				);
 			// case: invalid children or over-indent
 			case indent > traitBodyIndent: {
 				const invalidChildren = collectInvalidIndentChildren(
-					i,
+					heads,
+					currentHeadIndex,
 					traitBodyIndent
 				);
 				const rowErrorRange = Range.fromLength(
-					i + 1,
+					currentHeadIndex + 1,
 					invalidChildren.length
 				);
-				const { lineInfo } = head;
 				const errKind =
 					children.length > 0
 						? "Invalid children"
@@ -165,10 +188,10 @@ export const parseTrait = (
 					rowErrorRange,
 					traitBodyIndent,
 					errKind,
-					{ lineInfo }
+					head.lineInfo
 				);
 				children.push(err.trait);
-				i = err.nextIndex;
+				currentHeadIndex = err.nextIndex;
 				continue;
 			}
 			// case: head is valid
@@ -176,25 +199,31 @@ export const parseTrait = (
 				break;
 		}
 
-		switch (head.type) {
-			case "KeyValDefHead":
-			case "KeyValReqHead":
-			case "EmptyLine":
+		switch (true) {
+			case head instanceof KeyValDefHead:
+				{
+					const res = parseKeyValDefHead(head);
+					children.push(res);
+					currentHeadIndex++;
+				}
+				break;
+			case head instanceof KeyValReqHead:
+			case head instanceof EmptyLine:
 				children.push(head);
-				i++;
+				currentHeadIndex++;
 				break;
 			// case: trait head, array head or set head
-			case "KeyBodyReqHead":
+			case head instanceof KeyBodyReqHead:
 				// recursive call to parseTrait
 				const { trait, nextIndex } = parseTrait(
 					head,
 					heads,
-					i + 1
+					currentHeadIndex + 1
 				);
 				children.push(trait);
-				i = nextIndex;
+				currentHeadIndex = nextIndex;
 				break;
-			case "KeyInvalidHead":
+			case head instanceof KeyInvalidHead:
 				// invalid heads are only inside ParserErr
 				throw "Never";
 			default:

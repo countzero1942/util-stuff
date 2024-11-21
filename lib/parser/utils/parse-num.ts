@@ -219,11 +219,7 @@ const getNumberError = (
 	errorKind: NumberErrKind,
 	numType: TypeBase
 ): NumberErr => {
-	return {
-		type: "NumberErr",
-		numType,
-		kind: errorKind,
-	};
+	return new NumberErr(numType, errorKind);
 };
 
 /**
@@ -418,11 +414,7 @@ export const parseRPrecExponent = (
 		return getNumberError("NaN", numType);
 	}
 
-	return {
-		type: "TypeValuePair",
-		valueType: numType,
-		value: num,
-	};
+	return new TypeValuePair<number>(numType, num);
 };
 
 /**
@@ -471,12 +463,7 @@ export const parseZNumExponent = (
 	if (!Number.isSafeInteger(num)) {
 		return getNumberError("Not safe integer", numType);
 	}
-
-	return {
-		type: "TypeValuePair",
-		valueType: new ZNum(),
-		value: num,
-	};
+	return new TypeValuePair<number>(numType, num);
 };
 
 /**
@@ -515,11 +502,7 @@ export const parseRPrec = (
 		return getNumberError("NaN", numType);
 	}
 
-	return {
-		type: "TypeValuePair",
-		valueType: numType,
-		value: num,
-	};
+	return new TypeValuePair<number>(numType, num);
 };
 
 /**
@@ -560,11 +543,7 @@ export const parseZNum = (
 		return getNumberError("Not safe integer", numType);
 	}
 
-	return {
-		type: "TypeValuePair",
-		valueType: new ZNum(),
-		value: num,
-	};
+	return new TypeValuePair<number>(numType, num);
 };
 
 /**

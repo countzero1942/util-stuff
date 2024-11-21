@@ -27,7 +27,16 @@ import {
 	getPrecisionCount,
 	parseDefNumber,
 } from "@/parser/utils/parse-num";
-import { testErrParseZNum } from "@/my-tests/parser/test-parseNumber";
+import {
+	testAParseRPrecExp,
+	testBParseRPrec,
+	testBParseRPrecExp,
+	testCParseRPrecExp,
+	testDParseRPrecExp,
+	testErrParseRPrec,
+	testErrParseZNum,
+	testErrParseZnumExp,
+} from "@/my-tests/parser/test-parseNumber";
 import {
 	logParseDefaultValues,
 	logParseTraits,
@@ -52,12 +61,6 @@ import { NumSeq, StrGraphemeSeq, StrSeq } from "@/utils/seq";
 // testZTypes();
 // ddivln();
 
-// testLog();
-
-// const a = 1e20;
-// log(a);
-// log(a.toPrecision());
-
 // testAParseRPrecExp();
 // testBParseRPrecExp();
 // testCParseRPrecExp();
@@ -65,30 +68,8 @@ import { NumSeq, StrGraphemeSeq, StrSeq } from "@/utils/seq";
 // testErrParseZnumExp();
 
 // testErrParseZnumExp();
-// testBParseRPrec();
 // testErrParseRPrec();
-
 // testErrParseZNum();
-
-// const logTestErrors = (vars: string[]) => {
-// 	for (const v of vars) {
-// 		const i = v.indexOf(": ");
-// 		if (i < 0) continue;
-// 		const slice = Slice.from(i + 2);
-// 		log(v);
-// 		log(slice.getErrorString(v));
-// 		div();
-// 	}
-// };
-
-// const strs: string[] = [
-// 	"a: 1e20",
-// 	"b: 1.23e20",
-// 	"c: +1.12e20",
-// 	"d: -1.12e200",
-// ];
-
-// logTestErrors(strs);
 
 // await logParseTraits();
 

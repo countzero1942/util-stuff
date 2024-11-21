@@ -1,6 +1,6 @@
 a: 42
-	stupid-a: evil
-	stupid-b: manipulator
+	invalid-a: misplaced children
+	invalid-b: indent error
 b: a string
 empty-head:
 c: 6.28
@@ -11,8 +11,8 @@ d:
 		m: 1e6
 		n: -1.e6
 		o: 
-				vile-a: evil
-				vile-b: user
+				over-a: over
+				over-b: indented children
 			ke-bab-1: 22
 			ke-bab-2: 44
 			ke-bab-3:

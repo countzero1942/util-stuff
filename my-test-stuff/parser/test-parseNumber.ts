@@ -66,11 +66,17 @@ export const testParseNumber = (nums: string[]) => {
 		logh(`Parsing: ${num}`);
 		const res = parseDefNumber(num);
 
-		if (res.type === "NumberErr") {
+		if (res instanceof NumberErr) {
 			failures.push({ num, err: res });
 			log(res);
 			continue;
 		}
+
+		// if (res.type === "NumberErr") {
+		// 	failures.push({ num, err: res });
+		// 	log(res);
+		// 	continue;
+		// }
 		log(res);
 	}
 

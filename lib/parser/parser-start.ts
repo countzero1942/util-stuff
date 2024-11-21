@@ -11,14 +11,16 @@ import { ErrorType, getError } from "@/utils/error";
 import { ArraySeq, NumSeq, Range } from "@/utils/seq";
 import { parseDefaultValue } from "@/parser/utils/parse-value";
 import {
-	HeadType,
+	KeyHead,
 	KeyBodyReqHead,
 	KeyTrait,
 	LineInfo,
-} from "@/parser/types/head";
+	ParserErr,
+	KeyValDefHead,
+} from "@/parser/types/heads";
 import {
 	IndentErrKind,
-	ParserErr,
+	NumberErr,
 	ParserIndentErr,
 } from "@/parser/types/err-types";
 import { ArraySlice, StrCharSlice } from "@/parser/types/general";
@@ -98,7 +100,8 @@ export const logSplitHeads = async () => {
 	const allHeads = await parseLinesToHeads(lines);
 
 	const [heads, errorHeads] = ArraySeq.from(allHeads).partArrays(
-		h => h.type !== "ParserErr"
+		// h => h.type !== "ParserErr"
+		h => !(h instanceof ParserErr)
 	);
 
 	logh(`Heads: ${heads.length}`);
@@ -133,17 +136,17 @@ export const logParseDefaultValues = async () => {
 	const allHeads = await parseLinesToHeads(lines);
 
 	for (const head of allHeads) {
-		switch (head.type) {
-			case "KeyValDefHead":
+		switch (true) {
+			case head instanceof KeyValDefHead:
 				const { keyHead, valueHead } = head;
 				const res = parseDefaultValue(valueHead);
-				if (res.type === "NumberErr") {
+				if (res instanceof NumberErr) {
 					const { kind } = res;
 					log(`==> ERROR: ${keyHead}: ${kind}`);
 					continue;
 				}
 				const { valueType, value } = res;
-				loggn(`${keyHead}: ${value}`, valueType);
+				loggn(`${keyHead}: ${valueHead} -> ${value}`, valueType);
 				break;
 			default:
 				break;
@@ -154,7 +157,7 @@ export const logParseDefaultValues = async () => {
 };
 
 export const logParseTraits = async () => {
-	logh("Log Parse: Parse Default Values");
+	logh("Log Parse: Parse Traits");
 	log();
 
 	const res1 = await fileToLines("01-trait-tree.txt");
@@ -168,11 +171,13 @@ export const logParseTraits = async () => {
 
 	const allHeads = await parseLinesToHeads(lines);
 
-	const root: KeyBodyReqHead = {
-		type: "KeyBodyReqHead",
-		keyHead: ":root",
-		lineInfo: { indent: -1, row: 0, content: "" },
-	};
+	// const root: KeyBodyReqHead = {
+	// 	type: "KeyBodyReqHead",
+	// 	keyHead: ":root",
+	// 	lineInfo: { indent: -1, row: 0, content: "" },
+	// };
+
+	const root = new KeyBodyReqHead(":root", new LineInfo("", -1, 0));
 
 	const trait = parseTrait(root, allHeads, 0);
 	div();
@@ -198,21 +203,29 @@ export const logTraitReport = async (
 
 	const allHeads = await parseLinesToHeads(lines);
 
-	const root: KeyBodyReqHead = {
-		type: "KeyBodyReqHead",
-		keyHead: ":root",
-		lineInfo: { indent: -1, row: 0, content: "" },
-	};
+	const root = new KeyBodyReqHead(":root", new LineInfo("", -1, 0));
+
+	// const root: KeyBodyReqHead = {
+	// 	type: "KeyBodyReqHead",
+	// 	keyHead: ":root",
+	// 	lineInfo: { indent: -1, row: 0, content: "" },
+	// };
 
 	const res = parseTrait(root, allHeads, 0);
 
 	const trait = res.trait;
 
-	if (trait.type === "ParserErr") {
-		logh("ERROR:");
+	if (trait instanceof ParserErr) {
+		log("ERROR:");
 		log(trait);
 		return;
 	}
+
+	// if (trait.type === "ParserErr") {
+	// 	logh("ERROR:");
+	// 	log(trait);
+	// 	return;
+	// }
 
 	const report = await getTraitReport(trait);
 	log(`Report: ${report.length} lines`);

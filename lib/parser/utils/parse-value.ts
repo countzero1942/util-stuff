@@ -12,9 +12,5 @@ export const parseDefaultValue = (
 		return parseDefNumber(value);
 	}
 
-	return {
-		type: "TypeValuePair",
-		valueType: new Str(),
-		value: value,
-	};
+	return new TypeValuePair(new Str(), value);
 };

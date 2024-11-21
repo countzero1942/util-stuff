@@ -1282,6 +1282,10 @@ export class Range {
 	public static fromLength(startIncl: number, length: number) {
 		return new Range(startIncl, startIncl + length);
 	}
+
+	public static empty() {
+		return new Range(0, 0);
+	}
 }
 
 /**
