@@ -68,21 +68,8 @@ export const getPreLineInfo = (
 		const lineErrorSlice = getSlice();
 
 		const lineInfo = new LineInfo(line, 0, lineNumber);
-		// const lineInfo: LineInfo = {
-		// 	lineInfo: {
-		// 		indent: 0,
-		// 		content: line,
-		// 		row: lineNumber,
-		// 	},
-		// };
 
 		const head = new KeyInvalidHead(keyHead, lineInfo);
-
-		// const head: HeadType = {
-		// 	type: "KeyInvalidHead",
-		// 	keyHead,
-		// 	...lineInfo,
-		// };
 
 		const err = new ParserStructureErr(
 			head,
@@ -91,12 +78,6 @@ export const getPreLineInfo = (
 		);
 
 		return new ParserErr(err, lineInfo);
-
-		// return {
-		// 	type: "ParserErr",
-		// 	err,
-		// 	...lineInfo,
-		// };
 	};
 
 	if (line.startsWith(" ")) {
@@ -111,11 +92,5 @@ export const getPreLineInfo = (
 
 	const preLineInfo = new PreLineInfo(content, tabs, lineNumber);
 
-	// const preLineInfo: PreLineInfo = {
-	// 	type: "PreLineInfo",
-	// 	content,
-	// 	indent: tabs,
-	// 	row: lineNumber,
-	// };
 	return preLineInfo;
 };

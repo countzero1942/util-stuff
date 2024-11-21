@@ -171,12 +171,6 @@ export const logParseTraits = async () => {
 
 	const allHeads = await parseLinesToHeads(lines);
 
-	// const root: KeyBodyReqHead = {
-	// 	type: "KeyBodyReqHead",
-	// 	keyHead: ":root",
-	// 	lineInfo: { indent: -1, row: 0, content: "" },
-	// };
-
 	const root = new KeyBodyReqHead(":root", new LineInfo("", -1, 0));
 
 	const trait = parseTrait(root, allHeads, 0);
@@ -205,12 +199,6 @@ export const logTraitReport = async (
 
 	const root = new KeyBodyReqHead(":root", new LineInfo("", -1, 0));
 
-	// const root: KeyBodyReqHead = {
-	// 	type: "KeyBodyReqHead",
-	// 	keyHead: ":root",
-	// 	lineInfo: { indent: -1, row: 0, content: "" },
-	// };
-
 	const res = parseTrait(root, allHeads, 0);
 
 	const trait = res.trait;
@@ -220,12 +208,6 @@ export const logTraitReport = async (
 		log(trait);
 		return;
 	}
-
-	// if (trait.type === "ParserErr") {
-	// 	logh("ERROR:");
-	// 	log(trait);
-	// 	return;
-	// }
 
 	const report = await getTraitReport(trait);
 	log(`Report: ${report.length} lines`);

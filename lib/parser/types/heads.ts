@@ -2,14 +2,6 @@ import { ParserErrBase } from "@/parser/types/err-types";
 import { TypeValuePair } from "@/parser/types/parse-types";
 import { Key } from "node:readline";
 
-// export type LineInfo = {
-// 	readonly lineInfo: {
-// 		readonly content: string;
-// 		readonly indent: number;
-// 		readonly row: number;
-// 	};
-// };
-
 export class LineInfo {
 	constructor(
 		readonly content: string,
@@ -100,17 +92,3 @@ export class ParserErr extends KeyHead {
 		super(lineInfo);
 	}
 }
-
-/**
- * All possible head types including ParserErr
- *
- * @see {@link HeadType}
- */
-// export type HeadType =
-// 	| KeyValDefHead
-// 	| KeyValReqHead
-// 	| KeyBodyReqHead
-// 	| KeyInvalidHead
-// 	| EmptyLine
-// 	| KeyTrait
-// 	| ParserErr;

@@ -35,13 +35,6 @@ export const getTraitReport = async (
 					row
 				);
 				break;
-			// case "KeyValDefHead":
-			// 	addLine(
-			// 		`${child.keyHead}: ${child.valueHead}`,
-			// 		indent,
-			// 		row
-			// 	);
-			// 	break;
 			case child instanceof KeyValDef:
 				{
 					const { key } = child;
@@ -55,7 +48,6 @@ export const getTraitReport = async (
 				}
 				break;
 			case child instanceof KeyTrait:
-				// case "KeyTrait":
 				{
 					lines.push({ content: `${child.key}:`, indent, row });
 					await getTraitReport(child, lines);
