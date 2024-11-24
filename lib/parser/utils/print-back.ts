@@ -41,7 +41,7 @@ export const getTraitReport = async (
 					const { value, valueType } = child.value;
 
 					addLine(
-						`${key} in ${valueType.toKey()}: ${value}`,
+						`${key} in ${valueType.uniqueKey}: ${value}`,
 						indent,
 						row
 					);

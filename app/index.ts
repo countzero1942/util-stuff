@@ -73,4 +73,5 @@ import { NumSeq, StrGraphemeSeq, StrSeq } from "@/utils/seq";
 
 // await logParseTraits();
 
-await logTraitReport("01-err-trait-tree.txt");
+// await logTraitReport("01-err-trait-tree.txt");
+await logTraitReport("01b-err-num-trait-tree.txt");

@@ -6,11 +6,11 @@ export class TypeMap {
 	constructor() {}
 
 	public has<T extends TypeBase>(type: T): boolean {
-		return this.typeMap.has(type.toKey());
+		return this.typeMap.has(type.uniqueKey);
 	}
 
 	public addOrGet<T extends TypeBase>(type: T): T {
-		const key = type.toKey();
+		const key = type.uniqueKey;
 		const t = this.typeMap.get(key) as T | undefined;
 
 		if (!t) {

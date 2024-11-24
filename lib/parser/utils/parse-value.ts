@@ -6,7 +6,7 @@ import { parseDefNumber } from "@/parser/utils/parse-num";
 export const parseDefaultValue = (
 	value: string
 ): TypeValuePair<any> | NumberErr => {
-	const startsWithDigit = /^[+-]?\d/.test(value);
+	const startsWithDigit = /^[+-_ ]*\d/.test(value);
 
 	if (startsWithDigit) {
 		return parseDefNumber(value);
