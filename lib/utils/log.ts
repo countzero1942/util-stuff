@@ -42,6 +42,7 @@ export const logobj = (obj: any) => {
 			return;
 
 		default:
+			console.log(obj);
 			break;
 	}
 };
@@ -88,7 +89,7 @@ export const loghn = (header: string) => {
 export const logg = (label: string, ...args: any[]) => {
 	console.group(`${label}:`);
 	for (const arg of args) {
-		log(arg);
+		logobj(arg);
 	}
 	console.groupEnd();
 };
@@ -105,7 +106,7 @@ export const logg = (label: string, ...args: any[]) => {
 export const logag = (label: string, ...args: any[]) => {
 	console.group(`══▶ ${label}:`);
 	for (const arg of args) {
-		log(arg);
+		logobj(arg);
 	}
 	console.groupEnd();
 };
