@@ -11,6 +11,7 @@ import {
 	logagn,
 	logag,
 	logobj,
+	logg,
 } from "@/utils/log";
 import {
 	NNum,
@@ -52,6 +53,7 @@ import { NumSeq, StrGraphemeSeq, StrSeq } from "@/utils/seq";
 import { TypeValuePair } from "@/parser/types/parse-types";
 import { NumberErr } from "@/parser/types/err-types";
 import { parseDefaultValue } from "@/parser/utils/parse-value";
+import { parse } from "node:path";
 
 export type FlagParam = {
 	readonly name: string;
@@ -107,26 +109,55 @@ const parseTypeOrFlag = (typeOrFlag: string): FlagParam => {
 			);
 		}
 	}
-	while (true) {
-		const matchColonParam = /[:][\w\-_.]*[ ]*/.exec(rest);
-		if (!matchColonParam) break;
-		const colonParamStr = matchColonParam[0].trim();
+
+	const colonParamMatches = rest.matchAll(
+		/[:][\w].*?(?=(?:[:][\w]|$))/g
+	);
+	for (const colonParamMatch of colonParamMatches) {
+		const colonParamStr = colonParamMatch[0].trim();
 		const result = parseDefaultValue(colonParamStr.slice(1));
 		if (result instanceof NumberErr) break;
 		colonParams.push(result);
-		rest = rest.substring(
-			matchColonParam.index + matchColonParam[0].length
-		);
 	}
 	return { name, dotParam, colonParams };
+};
+
+const splitTypeParts = (rest: string): string[] => {
+	const matches = rest.matchAll(
+		/[%$>][a-zA-Z].*?(?=(?:[%$>][a-zA-Z]|$))/gm
+	);
+
+	const parts: string[] = [];
+	let i = 0;
+	for (const match of matches) {
+		if (i === 0) {
+			parts.push(rest.slice(0, match.index).trim());
+		}
+
+		parts.push(match[0].trim());
+		i++;
+	}
+	if (i === 0) {
+		parts.push(rest.trim());
+	}
+
+	logag("parts", parts);
+
+	return parts;
+};
+
+const parseType = (rest: string) => {
+	const parts = splitTypeParts(rest);
+	if (parts.length === 0) throw "Never";
+	const res = parseTypeOrFlag(parts[0] as string);
+	return res;
 };
 
 const parseTypes = (rest: string) => {
 	const typeStrs = getTypeStrs(rest);
 	for (const typeStr of typeStrs) {
 		log(`typeStr: '${typeStr}'`);
-		const { name, dotParam, colonParams } =
-			parseTypeOrFlag(typeStr);
+		const { name, dotParam, colonParams } = parseType(typeStr);
 		logag("name", name);
 		logag("dotParam", dotParam);
 		logag("colonParams", colonParams);
@@ -160,8 +191,8 @@ export const parseKeyHead = (keyhead: string): KeyInfo => {
 };
 
 const keyHeads = [
-	"A beast in the sea in .X.2:6:12 %y %z.2:2 $abc $def xyz >kg.m/s2 .Y:2 .Z %g",
-	"A beast in the sea in .X.2.6:6.28:abc-def:12. %y %z.2:2 $abc $def xyz >kg.m/s2 .Y:2 .Z %g",
+	// "A beast in the sea in .X.2:6:12 %y %z.2:2 $abc $def xyz >kg.m/s2 .Y:2 .Z %g",
+	"A beast in the sea in .X.2.6:6.28:abc def:12. %y %z.2:2 $abc $def xyz >kg.m/s2 .Y:2 .Z %g",
 ];
 
 for (const keyHead of keyHeads) {
