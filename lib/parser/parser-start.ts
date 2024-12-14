@@ -23,7 +23,6 @@ import {
 	NumberErr,
 	ParserIndentErr,
 } from "@/parser/types/err-types";
-import { ArraySlice, StrCharSlice } from "@/parser/types/general";
 import { parseTrait } from "@/parser/utils/parse-trait";
 import { getTraitReport } from "@/parser/utils/print-back";
 

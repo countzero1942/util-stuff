@@ -1,4 +1,4 @@
-import { ArraySlice, StrCharSlice } from "@/parser/types/general";
+import { ArraySlice, StrCharSlice } from "@/utils/slice";
 import { KeyHead, KeyInvalidHead } from "@/parser/types/heads";
 import { TypeBase } from "@/parser/types/type-types";
 import { Range } from "@/utils/seq";

@@ -1,5 +1,5 @@
 import { ParserStructureErr } from "@/parser/types/err-types";
-import { StrCharSlice } from "@/parser/types/general";
+import { StrCharSlice } from "@/utils/slice";
 import {
 	KeyHead,
 	ParserErr,
