@@ -17,6 +17,43 @@ export const getTabIndentString = memoizee(
 	{ maxAge: 5000 }
 );
 
+export const isCodePointWhiteSpace = (codePoint: number) => {
+	if (codePoint < 0x1680) {
+		if (codePoint <= 0x20) {
+			switch (codePoint) {
+				case 0x20:
+				case 0x0d:
+				case 0x0a:
+				case 0x09:
+				case 0x0c:
+				case 0x0b:
+					return true;
+				default:
+					return false;
+			}
+		}
+		if (codePoint === 0xa0) {
+			return true;
+		}
+		return false;
+	} else {
+		switch (codePoint) {
+			case 0x1680:
+			case 0x2000:
+			case 0x200a:
+			case 0x2028:
+			case 0x2029:
+			case 0x202f:
+			case 0x205f:
+			case 0x3000:
+			case 0xfeff:
+				return true;
+			default:
+				return false;
+		}
+	}
+};
+
 /**
  * Converts starting spaces to tabs
  *

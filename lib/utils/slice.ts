@@ -1,4 +1,5 @@
 import { StrGraphemeSeq, StrSeq, Range, Seq } from "@/utils/seq";
+import { isCodePointWhiteSpace } from "@/utils/string";
 
 export const normalizeStartEnd = (
 	length: number,
@@ -71,38 +72,17 @@ export class ArraySlice<T> extends Seq<T> {
 }
 
 export class StrCharSlice {
-	/**
-	 * The parent starting index (inclusive) of the slice in UTF-16 char units.
-	 */
 	public readonly startIncl: number;
 
-	/**
-	 * The parent ending index (exclusive) of the slice in UTF-16 char units.
-	 */
 	public readonly endExcl: number;
 
-	/**
-	 * Construct a StrCharSlice from a string and a range of indices (inclusive-exclusive).
-	 *
-	 * The range is given as a start index (inclusive) and an end index (exclusive)
-	 * inside the parent string.
-	 *
-	 * If the end index is undefined, it will be set to the end of the string.
-	 *
-	 * If `startIncl` is negative, it will be interpreted as being relative to the end of the string.
-	 * If `endExcl` is negative, it will be interpreted as being relative to the end of the string.
-	 *
-	 * @param value The parent string.
-	 * @param startIncl The parent starting index (inclusive) of the slice in UTF-16 char units.
-	 * @param endExcl The parent ending index (exclusive) of the slice in UTF-16 char units.
-	 */
 	constructor(
-		public readonly value: string,
+		public readonly source: string,
 		startIncl?: number,
 		endExcl?: number
 	) {
 		const range = normalizeStartEnd(
-			this.value.length,
+			this.source.length,
 			startIncl,
 			endExcl
 		);
@@ -110,11 +90,6 @@ export class StrCharSlice {
 		this.endExcl = range.endExcl;
 	}
 
-	/**
-	 * The length of the slice in UTF-16 char units.
-	 *
-	 * This is a computed property.
-	 */
 	public get length(): number {
 		return this.endExcl - this.startIncl;
 	}
@@ -125,9 +100,9 @@ export class StrCharSlice {
 
 	private sliceCache: string | undefined = undefined;
 
-	public get slicedString(): string {
+	public get string(): string {
 		if (this.sliceCache === undefined) {
-			this.sliceCache = this.value.slice(
+			this.sliceCache = this.source.slice(
 				this.startIncl,
 				this.endExcl
 			);
@@ -139,26 +114,26 @@ export class StrCharSlice {
 		let start = this.startIncl;
 		while (
 			start < this.endExcl &&
-			this.value.charCodeAt(start) <= 32
+			isCodePointWhiteSpace(this.source.charCodeAt(start))
 		) {
 			start++;
 		}
 		return start === this.startIncl
 			? this
-			: new StrCharSlice(this.value, start, this.endExcl);
+			: new StrCharSlice(this.source, start, this.endExcl);
 	}
 
 	public trimEnd(): StrCharSlice {
-		let end = this.endExcl;
+		let endIncl = this.endExcl - 1;
 		while (
-			end > this.startIncl &&
-			this.value.charCodeAt(end - 1) <= 32
+			endIncl >= this.startIncl &&
+			isCodePointWhiteSpace(this.source.charCodeAt(endIncl))
 		) {
-			end--;
+			endIncl--;
 		}
-		return end === this.endExcl
+		return endIncl === this.endExcl - 1
 			? this
-			: new StrCharSlice(this.value, this.startIncl, end);
+			: new StrCharSlice(this.source, this.startIncl, endIncl + 1);
 	}
 
 	public trim(): StrCharSlice {
@@ -166,7 +141,7 @@ export class StrCharSlice {
 	}
 
 	public indexOf(value: string): number {
-		let i = this.value.indexOf(value, this.startIncl);
+		let i = this.source.indexOf(value, this.startIncl);
 		if (i > -1 && i + value.length <= this.endExcl) {
 			return i;
 		}
@@ -174,7 +149,7 @@ export class StrCharSlice {
 	}
 
 	public lastIndexOf(value: string): number {
-		let i = this.value.lastIndexOf(value, this.endExcl);
+		let i = this.source.lastIndexOf(value, this.endExcl);
 		if (
 			i > -1 &&
 			i >= this.startIncl &&
@@ -189,14 +164,14 @@ export class StrCharSlice {
 		if (value.length > this.length) {
 			return false;
 		}
-		return this.value.startsWith(value, this.startIncl);
+		return this.source.startsWith(value, this.startIncl);
 	}
 
 	public endsWith(value: string): boolean {
 		if (value.length > this.length) {
 			return false;
 		}
-		return this.value.endsWith(value, this.endExcl);
+		return this.source.endsWith(value, this.endExcl);
 	}
 
 	public slice(
@@ -210,7 +185,7 @@ export class StrCharSlice {
 		);
 
 		return new StrCharSlice(
-			this.value,
+			this.source,
 			this.startIncl + range.startIncl,
 			this.startIncl + range.endExcl
 		);
@@ -229,161 +204,74 @@ export class StrCharSlice {
 	}
 
 	public toString(): string {
-		return this.slicedString;
+		return this.string;
 	}
 
 	public static from(
-		value: string,
+		source: string,
 		startIncl: number,
 		endExcl?: number
 	): StrCharSlice {
-		return new StrCharSlice(value, startIncl, endExcl);
+		return new StrCharSlice(source, startIncl, endExcl);
 	}
 
 	public static fromLength(
-		value: string,
+		source: string,
 		startIncl: number,
 		length: number
 	): StrCharSlice {
-		return new StrCharSlice(value, startIncl, startIncl + length);
+		return new StrCharSlice(source, startIncl, startIncl + length);
 	}
 
-	/**
-	 * This function accepts a function call to string.indexOf(...) and returns a StrCharSlice
-	 * based on result.
-	 *
-	 * If there is no match, the whole string is returned.
-	 *
-	 * @param value The string to extract a StrCharSlice from
-	 * @param startIncl The starting index (inclusive) of the slice
-	 *
-	 * If startIncl is negative, the whole string is returned.
-	 * Otherwise, a slice of the string is returned, starting at startIncl.
-	 *
-	 * @returns A new StrCharSlice
-	 */
 	public static fromIndexOfDefaultAll(
-		value: string,
+		source: string,
 		startIncl: number
 	): StrCharSlice {
 		return startIncl >= 0
-			? StrCharSlice.from(value, startIncl)
-			: StrCharSlice.all(value);
+			? StrCharSlice.from(source, startIncl)
+			: StrCharSlice.all(source);
 	}
 
-	/**
-	 * This function accepts a function call to string.indexOf(...) and returns a StrCharSlice
-	 * based on result.
-	 *
-	 * If there is no match, a StrCharSlice of length 0 is returned.
-	 *
-	 * @param value The string to extract a StrCharSlice from
-	 * @param startIncl The starting index (inclusive) of the slice
-	 *
-	 * If startIncl is negative, StrCharSlice.none is returned.
-	 * Otherwise, a slice of the string is returned, starting at startIncl.
-	 *
-	 * @returns A new StrCharSlice
-	 */
 	public static fromIndexOfDefaultNone(
-		value: string,
+		source: string,
 		startIncl: number
 	): StrCharSlice {
 		return startIncl >= 0
-			? StrCharSlice.from(value, startIncl)
-			: StrCharSlice.none(value);
+			? StrCharSlice.from(source, startIncl)
+			: StrCharSlice.none(source);
 	}
 
-	/**
-	 * Create a StrCharSlice from a string and a range of element indices of: UTF-16 chars
-	 * or surrogate pairs (which cannot be directly indexed.)
-	 *
-	 * The range is given as a start index (inclusive) and an end index (exclusive).
-	 * If the end index is undefined, it will be set to the end of the string.
-	 *
-	 * If `startIncl` is negative, it will be interpreted as being relative to the end of the string.
-	 * If `endExcl` is negative, it will be interpreted as being relative to the end of the string.
-	 *
-	 * Elements of the string are either UTF-16 chars or surrogate pairs.
-	 *
-	 * @param value The input string.
-	 * @param startIncl The starting index (inclusive).
-	 * @param endExcl The ending index (exclusive).
-	 * @returns A new StrCharSlice from the input string and range of code point indices.
-	 */
 	public static fromCodePointIndices(
-		value: string,
+		source: string,
 		startIncl?: number,
 		endExcl?: number
 	): StrCharSlice {
-		const seq = StrSeq.from(value);
+		const seq = StrSeq.from(source);
 		const range = seq.getRange(startIncl, endExcl);
 
-		return new StrCharSlice(value, range.startIncl, range.endExcl);
+		return new StrCharSlice(source, range.startIncl, range.endExcl);
 	}
 
-	/**
-	 * Create a StrCharSlice from a string and a range of element indices of: UTF-16 chars,
-	 * surrogate pairs or grapheme clusters (which cannot be directly indexed.)
-	 *
-	 * The range is given as a start index (inclusive) and an end index (exclusive).
-	 * If the end index is undefined, it will be set to the end of the string.
-	 *
-	 * If `startIncl` is negative, it will be interpreted as being relative to the end of the string.
-	 * If `endExcl` is negative, it will be interpreted as being relative to the end of the string.
-	 *
-	 * Elements of the string are: UTF-16 chars, surrogate pairs or grapheme clusters.
-	 *
-	 * @param value The input string.
-	 * @param startIncl The starting index (inclusive).
-	 * @param endExcl The ending index (exclusive).
-	 * @returns A new StrCharSlice from the input string and range of grapheme indices.
-	 */
 	public static fromGraphemeIndices(
-		value: string,
+		source: string,
 		startIncl?: number,
 		endExcl?: number
 	): StrCharSlice {
-		const seq = StrGraphemeSeq.from(value);
+		const seq = StrGraphemeSeq.from(source);
 		const range = seq.getRange(startIncl, endExcl);
 
-		return new StrCharSlice(value, range.startIncl, range.endExcl);
+		return new StrCharSlice(source, range.startIncl, range.endExcl);
 	}
 
-	/**
-	 * Create a StrCharSlice from a string and the end index (exclusive).
-	 *
-	 * The start index is always 0.
-	 *
-	 * @param endExcl The ending index (exclusive).
-	 * @param value The input string.
-	 * @returns A new StrCharSlice from the input string and end index.
-	 */
-	public static to(value: string, endExcl: number): StrCharSlice {
-		return new StrCharSlice(value, 0, endExcl);
+	public static to(source: string, endExcl: number): StrCharSlice {
+		return new StrCharSlice(source, 0, endExcl);
 	}
 
-	/**
-	 * Create a StrCharSlice from a string, which spans the entire string.
-	 *
-	 * This is equivalent to calling `from(0, undefined)`.
-	 *
-	 * @param value The input string.
-	 * @returns A new StrCharSlice from the input string, which spans the entire string.
-	 */
-	public static all(value: string): StrCharSlice {
-		return new StrCharSlice(value, 0);
+	public static all(source: string): StrCharSlice {
+		return new StrCharSlice(source, 0);
 	}
 
-	/**
-	 * Create a StrCharSlice from a string, with no range.
-	 *
-	 * This is a StrCharSlice with start and end indices both 0.
-	 *
-	 * @param value The input string.
-	 * @returns A new StrCharSlice from the input string, with no range.
-	 */
-	public static none(value: string): StrCharSlice {
-		return new StrCharSlice(value, 0, 0);
+	public static none(source: string): StrCharSlice {
+		return new StrCharSlice(source, 0, 0);
 	}
 }
