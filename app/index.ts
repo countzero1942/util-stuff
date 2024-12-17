@@ -94,42 +94,45 @@ const keyHeads = [
 // await logTraitReport("01-err-trait-tree.txt");
 // await logTraitReport("01b-err-num-trait-tree.txt");
 
-const strs: string[] = ["   abc", "abc   ", "   abc   ", "abc"];
+// const str =
+// 	"A beast in the sea .X.2:6:12" +
+// 	" %y %z.2:2 $abc $def xyz >kg.m/s2 .Y:2 .Z %g";
+// const str = "abc abc def abc def efg abc";
+
+// const str = ".X.2.6_4.3^3.4";
+
+const strs: string[] = [
+	".X.2.6_4.3^3.4:6.28:zzy yzz:12.",
+	"%y.abc def_4.5:777:abc:44",
+	"%z_abc def^2.3:3.4:yyz zyy:33",
+];
 
 for (const str of strs) {
-	const slice = StrCharSlice.all(str);
-	const startTrim = slice.trimStart();
-	const endTrim = slice.trimEnd();
-	const allTrim = slice.trim();
+	log(`str: '${str}'`);
+	log("      01234567890123456789");
+	const sl1 = StrCharSlice.from(str, 1);
+	log(`sl1: '${sl1.string}'`);
 
-	log(`slice: '${slice.string}'`);
-	log(`   startIncl: ${slice.startIncl}, endExcl: ${slice.endExcl}`);
+	const flagDivider: string[] = [".", "_", "^"];
 
-	log(
-		`startTrim: '${startTrim.string}', ref equals slice: ${
-			startTrim === slice
-		}`
-	);
-	log(
-		`   startIncl: ${startTrim.startIncl}, endExcl: ${startTrim.endExcl}`
-	);
-
-	log(
-		`endTrim: '${endTrim.string}', ref equals slice: ${
-			endTrim === slice
-		}`
-	);
-	log(
-		`   startIncl: ${endTrim.startIncl}, endExcl: ${endTrim.endExcl}`
-	);
-
-	log(
-		`allTrim: '${allTrim.string}', ref equals slice: ${
-			allTrim === slice
-		}`
-	);
-	log(
-		`   startIncl: ${allTrim.startIncl}, endExcl: ${allTrim.endExcl}`
-	);
+	const colonParams = sl1.edgeSplitMany([":"]);
+	for (let i = 0; i < colonParams.length; i++) {
+		const colonParam = colonParams[i] as StrCharSlice;
+		switch (true) {
+			case i === 0:
+				{
+					log("name params:");
+					const nameParams =
+						colonParam.edgeSplitOrdered(flagDivider);
+					for (const nameParam of nameParams) {
+						log(`   '${nameParam}'`);
+					}
+				}
+				break;
+			default: {
+				log(`colon param: ${colonParam.string}`);
+			}
+		}
+	}
 	div();
 }

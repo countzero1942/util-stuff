@@ -88,6 +88,12 @@ export class StrCharSlice {
 		);
 		this.startIncl = range.startIncl;
 		this.endExcl = range.endExcl;
+		if (
+			this.startIncl === 0 &&
+			this.endExcl === this.source.length
+		) {
+			this.sliceCache = this.source;
+		}
 	}
 
 	public get length(): number {
@@ -174,7 +180,11 @@ export class StrCharSlice {
 		return this.source.endsWith(value, this.endExcl);
 	}
 
-	public slice(
+	public slice(startIncl?: number, endExcl?: number): StrCharSlice {
+		return new StrCharSlice(this.source, startIncl, endExcl);
+	}
+
+	public childSlice(
 		childStartIncl?: number,
 		childEndExcl?: number
 	): StrCharSlice {
@@ -189,6 +199,111 @@ export class StrCharSlice {
 			this.startIncl + range.startIncl,
 			this.startIncl + range.endExcl
 		);
+	}
+
+	public sliceOf(value: string): StrCharSlice {
+		const i = this.indexOf(value);
+		if (i === -1) {
+			return StrCharSlice.none(this.source);
+		}
+		return this.slice(i, i + value.length);
+	}
+
+	public indexOfMany(
+		values: readonly string[],
+		startIncl?: number
+	): [number, number] {
+		for (
+			let i =
+				startIncl === undefined
+					? this.startIncl
+					: Math.max(startIncl, this.startIncl);
+			i < this.endExcl;
+			i++
+		) {
+			for (let j = 0; j < values.length; j++) {
+				const value = values[j] as string;
+				if (this.source.startsWith(value, i)) {
+					return i + value.length <= this.endExcl
+						? [i, j]
+						: [-1, -1];
+				}
+			}
+		}
+		return [-1, -1];
+	}
+
+	public edgeSplitMany(values: readonly string[]): StrCharSlice[] {
+		// note: 'values' can only have 'undefined' if out of bounds
+		const slices: StrCharSlice[] = [];
+		let start = this.startIncl;
+		let next = start;
+		while (next <= this.endExcl) {
+			const [j, k] = this.indexOfMany(values, next);
+			if (j === -1) {
+				slices.push(
+					new StrCharSlice(
+						this.source,
+						start,
+						this.endExcl
+					).trim()
+				);
+				break;
+			}
+			if (start !== j) {
+				slices.push(
+					new StrCharSlice(this.source, start, j).trim()
+				);
+			}
+			start = j;
+			next = start + values[k]!.length;
+		}
+		return slices;
+	}
+
+	public indexesOfOrdered(
+		orderedValues: readonly string[]
+	): readonly number[] {
+		// note: 'orderedValues' can only be 'undefined' if indexed out of bounds
+		const valuesLength = orderedValues.length;
+		const indexes = Array.from({ length: valuesLength }, () => -1);
+		let currentOrder = 0;
+		for (
+			let i = this.startIncl;
+			i < this.endExcl && currentOrder < valuesLength;
+			i++
+		) {
+			for (let j = currentOrder; j < valuesLength; j++) {
+				const value = orderedValues[j] as string;
+				if (this.source.startsWith(value, i)) {
+					indexes[j] = i;
+					i += value.length;
+					currentOrder = j + 1;
+					break;
+				}
+			}
+		}
+		return indexes;
+	}
+
+	public edgeSplitOrdered(
+		values: readonly string[]
+	): StrCharSlice[] {
+		// 'indexes' will be same length as 'values'
+		const indexes = this.indexesOfOrdered(values);
+		const slices: StrCharSlice[] = [];
+		let start = this.startIncl;
+		for (let i = 0; i < indexes.length; i++) {
+			const end = indexes[i] as number;
+			if (end !== -1) {
+				slices.push(
+					new StrCharSlice(this.source, start, end).trim()
+				);
+				start = end;
+			}
+		}
+		slices.push(new StrCharSlice(this.source, start, this.endExcl));
+		return slices;
 	}
 
 	/**
