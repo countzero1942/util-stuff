@@ -4,13 +4,14 @@ import { TypeValuePair } from "@/parser/types/parse-types";
 export type FlagParam = {
 	readonly name: string;
 	readonly dotParam: TypeValuePair<any> | NumberErr | undefined;
-	readonly colonParams: TypeValuePair<any>[];
+	readonly subParam: TypeValuePair<any> | NumberErr | undefined;
+	readonly superParam: TypeValuePair<any> | NumberErr | undefined;
+	readonly colonParams: (TypeValuePair<any> | NumberErr)[];
 };
 
 export type TypeParams = {
 	readonly name: string;
-	readonly dotParam: TypeValuePair<any> | NumberErr | undefined;
-	readonly colonParams: TypeValuePair<any>[];
+	readonly nameParams: FlagParam;
 	readonly flagParams: FlagParam[];
 	readonly stringParams: string[];
 	readonly unitParam: string | undefined;

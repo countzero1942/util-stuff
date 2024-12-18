@@ -1,3 +1,4 @@
+import { Str } from "@/parser/types/type-types";
 import { StrGraphemeSeq, StrSeq, Range, Seq } from "@/utils/seq";
 import { isCodePointWhiteSpace } from "@/utils/string";
 
@@ -146,22 +147,40 @@ export class StrCharSlice {
 		return this.trimStart().trimEnd();
 	}
 
-	public indexOf(value: string): number {
-		let i = this.source.indexOf(value, this.startIncl);
-		if (i > -1 && i + value.length <= this.endExcl) {
-			return i;
+	public indexOf(value: string, startIncl?: number): number {
+		const l = value.length;
+		if (l === 0) {
+			return -1;
+		}
+		for (
+			let i =
+				startIncl === undefined
+					? this.startIncl
+					: Math.max(startIncl, this.startIncl);
+			i < this.endExcl - l;
+			i++
+		) {
+			if (this.source.startsWith(value, i)) {
+				return i;
+			}
 		}
 		return -1;
 	}
 
-	public lastIndexOf(value: string): number {
-		let i = this.source.lastIndexOf(value, this.endExcl);
-		if (
-			i > -1 &&
-			i >= this.startIncl &&
-			i + value.length <= this.endExcl
-		) {
-			return i;
+	public lastIndexOf(value: string, endExcl?: number): number {
+		const l = value.length;
+		if (l === 0) {
+			return -1;
+		}
+		const safeEndExcl =
+			endExcl === undefined
+				? this.endExcl
+				: Math.min(endExcl, this.endExcl);
+
+		for (let i = safeEndExcl - l; i >= this.startIncl; i--) {
+			if (this.source.endsWith(value, i)) {
+				return i;
+			}
 		}
 		return -1;
 	}
@@ -180,7 +199,38 @@ export class StrCharSlice {
 		return this.source.endsWith(value, this.endExcl);
 	}
 
-	public slice(startIncl?: number, endExcl?: number): StrCharSlice {
+	public split(
+		splitter: string,
+		maxSplits?: number
+	): StrCharSlice[] {
+		const strs: StrCharSlice[] = [];
+		let i = this.startIncl;
+		let splits = 0;
+		const safeMaxSplits =
+			maxSplits === undefined
+				? Number.MAX_SAFE_INTEGER
+				: maxSplits;
+		while (i < this.endExcl) {
+			const j = this.indexOf(splitter, i);
+			if (j > -1) {
+				splits++;
+			}
+			if (j === -1 || splits >= safeMaxSplits) {
+				strs.push(
+					new StrCharSlice(this.source, i, this.endExcl).trim()
+				);
+				break;
+			}
+			strs.push(new StrCharSlice(this.source, i, j).trim());
+			i = j + splitter.length;
+		}
+		return strs;
+	}
+
+	public parentSlice(
+		startIncl?: number,
+		endExcl?: number
+	): StrCharSlice {
 		return new StrCharSlice(this.source, startIncl, endExcl);
 	}
 
@@ -206,7 +256,7 @@ export class StrCharSlice {
 		if (i === -1) {
 			return StrCharSlice.none(this.source);
 		}
-		return this.slice(i, i + value.length);
+		return this.parentSlice(i, i + value.length);
 	}
 
 	public indexOfMany(
@@ -223,10 +273,11 @@ export class StrCharSlice {
 		) {
 			for (let j = 0; j < values.length; j++) {
 				const value = values[j] as string;
-				if (this.source.startsWith(value, i)) {
-					return i + value.length <= this.endExcl
-						? [i, j]
-						: [-1, -1];
+				if (
+					i + value.length <= this.endExcl &&
+					this.source.startsWith(value, i)
+				) {
+					return [i, j];
 				}
 			}
 		}

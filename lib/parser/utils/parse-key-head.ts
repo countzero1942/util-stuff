@@ -7,119 +7,59 @@ import {
 import { TypeValuePair } from "@/parser/types/parse-types";
 import { parseDefaultValue } from "@/parser/utils/parse-value";
 import { log, logag, div } from "@/utils/log";
+import { StrCharSlice } from "@/utils/slice";
 
-/**
- * This function takes the type part of a key-head and splits it into
- * individual type strings, begining with '. '.
- *
- * For example, if the type-part of the key-head is '.X.2:4:6 %flag $string .Y.3:5:7 .Z',
- * the output will be ['X.2:4:6 %flag $string', 'Y.3:5:7', 'Z'].
- *
- * @param {string} rest The string to split.
- * @returns {string[]} The array of type strings.
- */
-const getTypeStrs = (rest: string) => {
-	const typeStrs: string[] = [];
-	let i_start = 0;
-	while (true) {
-		const i = rest.indexOf(" .", i_start);
-		const i_end = i === -1 ? rest.length : i;
-		const typeStr = rest.substring(i_start, i_end);
-		// log(`--> typeStr: '${typeStr}'`);
-		typeStrs.push(typeStr);
-		if (i === -1) break;
-		i_start = i_end + 1;
-	}
-	return typeStrs;
-};
-
-/**
- * This function takes a string and parses it into a `FlagParam` object.
- *
- * The syntax is as follows: '.X.2:4:6' or '%flag.2:4:6'
- *
- * Since both types and flags have the same syntax,
- * this function can be used to parse both.
- *
- */
-const parseTypeOrFlag = (typeOrFlag: string): FlagParam => {
-	let rest = typeOrFlag;
+const parseTypeOrFlag = (typeOrFlag: StrCharSlice): FlagParam => {
 	let name: string = "";
-	let dotParam: TypeValuePair<any> | NumberErr | undefined;
-	let colonParams: TypeValuePair<any>[] = [];
-	const matchName = /[.%][a-zA-Z][\w\-_]*[ ]*/.exec(rest);
-	if (matchName) {
-		name = matchName[0].trim();
-		rest = rest.substring(matchName.index + matchName[0].length);
+	let dotParam: TypeValuePair<any> | NumberErr | undefined =
+		undefined;
+	let subParam: TypeValuePair<any> | NumberErr | undefined =
+		undefined;
+	let superParam: TypeValuePair<any> | NumberErr | undefined =
+		undefined;
+	let colonParams: (TypeValuePair<any> | NumberErr)[] = [];
+
+	const nameAndColonParamsSlices = typeOrFlag.edgeSplitMany([":"]);
+	const nameParamsSlices = nameAndColonParamsSlices[0]!
+		.childSlice(1)
+		.edgeSplitOrdered([".", "_", "^"]);
+
+	name = nameParamsSlices[0]!.string;
+
+	if (nameParamsSlices.length > 1) {
+		const paramSlices = nameParamsSlices.slice(1);
+		for (const paramSlice of paramSlices) {
+			const paramStr = paramSlice.childSlice(1).string;
+			switch (true) {
+				case paramSlice.startsWith("."):
+					dotParam = parseDefaultValue(paramStr);
+					break;
+				case paramSlice.startsWith("_"):
+					subParam = parseDefaultValue(paramStr);
+					break;
+				case paramSlice.startsWith("^"):
+					superParam = parseDefaultValue(paramStr);
+					break;
+				default:
+					throw "Never";
+			}
+		}
 	}
-	const matchDotParam = /[._^][\w\-_.]*[ ]*/.exec(rest);
-	if (matchDotParam) {
-		const dotParamStr = matchDotParam[0].trim();
-		if (dotParamStr.length > 1) {
-			dotParam = parseDefaultValue(dotParamStr.slice(1));
-			rest = rest.substring(
-				matchDotParam.index + matchDotParam[0].length
+
+	if (nameAndColonParamsSlices.length > 1) {
+		const colonParamSlices = nameAndColonParamsSlices.slice(1);
+		for (const colonParamSlice of colonParamSlices) {
+			colonParams.push(
+				parseDefaultValue(colonParamSlice.childSlice(1).string)
 			);
 		}
 	}
 
-	const colonParamMatches = rest.matchAll(
-		/[:][\w].*?(?=(?:[:][\w]|$))/g
-	);
-	for (const colonParamMatch of colonParamMatches) {
-		const colonParamStr = colonParamMatch[0].trim();
-		const result = parseDefaultValue(colonParamStr.slice(1));
-		if (result instanceof NumberErr) break;
-		colonParams.push(result);
-	}
-	return { name, dotParam, colonParams };
-};
-
-/**
- * Splits the type string into type parts.
- *
- * The input string is expected to be the type part of a key-head.
- * The output is an array of strings, where each string represents
- * a type part.
- *
- * E.g., if the type string is:
- *    '.X.2.6:6.28:abc def:12. %y %z.2:2 $abc $def xyz >kg.m/s2'
- *
- * the output will be:
- *    [ '.X.2.6:6.28:abc def:12.', '%y', '%z.2:2',
- *      '$abc', '$def xyz', '>kg.m/s2' ]
- *
- * If the input string is empty, the output will be an empty array.
- *
- * @param {string} rest The input string to split.
- * @returns {string[]} The array of type strings.
- */
-const splitTypeParts = (rest: string): string[] => {
-	const matches = rest.matchAll(
-		/[%$>][a-zA-Z].*?(?=(?:[%$>][a-zA-Z]|$))/g
-	);
-
-	const parts: string[] = [];
-	let i = 0;
-	for (const match of matches) {
-		if (i === 0) {
-			parts.push(rest.slice(0, match.index).trim());
-		}
-
-		parts.push(match[0].trim());
-		i++;
-	}
-	if (i === 0) {
-		parts.push(rest.trim());
-	}
-
-	logag("parts", parts);
-
-	return parts;
+	return { name, dotParam, subParam, superParam, colonParams };
 };
 
 const parseParams = (
-	parts: string[]
+	params: StrCharSlice[]
 ): {
 	flagParams: FlagParam[];
 	stringParams: string[];
@@ -128,16 +68,16 @@ const parseParams = (
 	const flagParams: FlagParam[] = [];
 	const stringParams: string[] = [];
 	let unitParam: string | undefined;
-	for (const part of parts) {
+	for (const param of params) {
 		switch (true) {
-			case part.startsWith("%"):
-				flagParams.push(parseTypeOrFlag(part));
+			case param.startsWith("%"):
+				flagParams.push(parseTypeOrFlag(param));
 				break;
-			case part.startsWith("$"):
-				stringParams.push(part.slice(1));
+			case param.startsWith("$"):
+				stringParams.push(param.childSlice(1).string);
 				break;
-			case part.startsWith(">"):
-				unitParam = part.slice(1);
+			case param.startsWith(">"):
+				unitParam = param.childSlice(1).string;
 				break;
 			default:
 				break;
@@ -146,59 +86,72 @@ const parseParams = (
 	return { flagParams, stringParams, unitParam };
 };
 
-const parseType = (rest: string): TypeParams => {
-	const parts = splitTypeParts(rest);
-	if (parts.length === 0) throw "Never";
-	const res = parseTypeOrFlag(parts[0] as string);
-	const paramParts = parts.length > 1 ? parts.slice(1) : [];
-	const params = parseParams(paramParts);
-	const typeParams: TypeParams = {
-		name: res.name,
-		dotParam: res.dotParam,
-		colonParams: res.colonParams,
-		flagParams: params.flagParams,
-		stringParams: params.stringParams,
-		unitParam: params.unitParam,
-	};
+const parseType = (typeSlice: StrCharSlice): TypeParams => {
+	const typeAndParamSlices = typeSlice.edgeSplitMany([
+		" %",
+		" $",
+		" >",
+	]);
+	const type = typeAndParamSlices[0] as StrCharSlice;
 
-	return typeParams;
+	const nameParams = parseTypeOrFlag(type);
+
+	if (typeAndParamSlices.length > 1) {
+		const paramSlices = typeAndParamSlices.slice(1);
+
+		const { flagParams, stringParams, unitParam } =
+			parseParams(paramSlices);
+
+		return {
+			name: nameParams.name,
+			nameParams,
+			flagParams,
+			stringParams,
+			unitParam,
+		};
+	}
+
+	return {
+		name: nameParams.name,
+		nameParams,
+		flagParams: [],
+		stringParams: [],
+		unitParam: undefined,
+	};
 };
 
-const parseTypes = (rest: string) => {
-	const typeStrs = getTypeStrs(rest);
+const parseTypes = (typeSlices: StrCharSlice[]) => {
 	const types: TypeParams[] = [];
-	for (const typeStr of typeStrs) {
-		const type = parseType(typeStr);
+	for (const typeSlice of typeSlices) {
+		const type = parseType(typeSlice);
 		types.push(type);
 	}
 	return types;
 };
 
 export const parseKeyHead = (keyhead: string): KeyParams => {
-	const getName = (i: number) => {
-		let name = keyhead.substring(0, i).trim();
-		// '%a in .X' or '%a .X'
-		return name.endsWith(" in")
-			? name.substring(0, name.length - 3).trim()
-			: name;
-	};
-
 	// see if keyhead contains a type reference: e.g., '.X'
-	const i = keyhead.indexOf(" .");
-	if (i === -1) {
+	const keyHeadSlice = StrCharSlice.all(keyhead);
+	log(`keyheadSlice: '${keyHeadSlice.string}'`);
+
+	const nameAndTypeSlices: StrCharSlice[] =
+		keyHeadSlice.edgeSplitMany([" ."]);
+	const nameSlice = nameAndTypeSlices[0] as StrCharSlice;
+	log(`name: '${nameSlice.string}'`);
+
+	if (nameAndTypeSlices.length === 1) {
 		return {
-			name: keyhead,
+			name: nameSlice.string,
 		};
 	}
-	log(`keyhead: '${keyhead}'`);
-	const name = getName(i);
-	log(`name: '${name}'`);
-	const rest = keyhead.substring(i + 1);
-	log(`rest: '${rest}'`);
-	const types = parseTypes(rest);
+
+	const typeSlices = nameAndTypeSlices.slice(1);
+
+	const types = parseTypes(typeSlices);
+
 	div();
 	return {
-		name,
+		name: nameSlice.string,
 		types,
 	};
 };

@@ -59,14 +59,15 @@ import { formatNum } from "@/utils/string";
 import { StrCharSlice } from "@/utils/slice";
 
 const keyHeads = [
-	// "A beast in the sea in .X.2:6:12 %y %z.2:2 $abc $def xyz >kg.m/s2 .Y:2 .Z %g",
-	"A beast in the sea in .X.2.6:6.28:abc def:12. %y %z.2:2 $abc $def xyz >kg.m/s2 .Y:2 .Z %g",
+	// "A beast in the sea .X.2:6:12 %m %n.2:4 %p.dot_sub^sup:22:44:77 $abc $def xyz >kg.m/s2 .Y:2 .Z %g",
+	"A beast in the sea in .X.2.6:6.28:abc def:12. " +
+		"%m %n.2:4 %p.dot_sub^sup:22:44:77 $abc $def xyz >kg.m/s2 .Y:2 .Z %g",
 ];
 
-// for (const keyHead of keyHeads) {
-// 	const keyParams = parseKeyHead(keyHead);
-// 	logobj(keyParams);
-// }
+for (const keyHead of keyHeads) {
+	const keyParams = parseKeyHead(keyHead);
+	logobj(keyParams);
+}
 
 // await logSplitHeads();
 
@@ -98,41 +99,3 @@ const keyHeads = [
 // 	"A beast in the sea .X.2:6:12" +
 // 	" %y %z.2:2 $abc $def xyz >kg.m/s2 .Y:2 .Z %g";
 // const str = "abc abc def abc def efg abc";
-
-// const str = ".X.2.6_4.3^3.4";
-
-const strs: string[] = [
-	".X.2.6_4.3^3.4:6.28:zzy yzz:12.",
-	"%y.abc def_4.5:777:abc:44",
-	"%z_abc def^2.3:3.4:yyz zyy:33",
-];
-
-for (const str of strs) {
-	log(`str: '${str}'`);
-	log("      01234567890123456789");
-	const sl1 = StrCharSlice.from(str, 1);
-	log(`sl1: '${sl1.string}'`);
-
-	const flagDivider: string[] = [".", "_", "^"];
-
-	const colonParams = sl1.edgeSplitMany([":"]);
-	for (let i = 0; i < colonParams.length; i++) {
-		const colonParam = colonParams[i] as StrCharSlice;
-		switch (true) {
-			case i === 0:
-				{
-					log("name params:");
-					const nameParams =
-						colonParam.edgeSplitOrdered(flagDivider);
-					for (const nameParam of nameParams) {
-						log(`   '${nameParam}'`);
-					}
-				}
-				break;
-			default: {
-				log(`colon param: ${colonParam.string}`);
-			}
-		}
-	}
-	div();
-}
