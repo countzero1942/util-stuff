@@ -32,14 +32,16 @@ export const splitHead = (lineInfo: LineInfo): KeyHead => {
 	const { content: line } = lineInfo;
 
 	// case: empty line
-	if (line === "" || line === ":") {
+	if (line.isEmpty || line.equals(":")) {
 		return new EmptyLine(lineInfo);
 	}
 
 	// split line into keyHead and valueHead
-	const parts: readonly string[] = splitStringOnce(line, ": ").map(
-		s => s.trim()
-	);
+	// const parts: readonly string[] = splitStringOnce(line, ": ").map(
+	// 	s => s.trim()
+	// );
+
+	const parts: readonly StrCharSlice[] = line.split(": ", 1);
 
 	// switch on keyHead and valueHead parts
 	switch (parts.length) {
@@ -51,7 +53,7 @@ export const splitHead = (lineInfo: LineInfo): KeyHead => {
 		// case: "key", "key:", "key:value", "key:key:value..."
 		case 1: {
 			const [keyHead] = toReadonlyTuple(parts, 1);
-			const colonCount = countOccurencesOf(keyHead, ":");
+			const colonCount = keyHead.countOccurencesOf(":");
 			switch (colonCount) {
 				case 0:
 					// case: "key" => Key Declaration
@@ -61,7 +63,7 @@ export const splitHead = (lineInfo: LineInfo): KeyHead => {
 					// case: "key:" "key stuff:8:" => Key Body Decl
 					if (line.endsWith(":")) {
 						return new KeyBodyReqHead(
-							keyHead.slice(0, -1),
+							keyHead.childSlice(0, -1),
 							lineInfo
 						);
 					}
@@ -70,7 +72,7 @@ export const splitHead = (lineInfo: LineInfo): KeyHead => {
 						new KeyInvalidHead(keyHead, lineInfo),
 						"Invalid key colon",
 						StrCharSlice.fromIndexOfDefaultAll(
-							keyHead,
+							keyHead.source,
 							keyHead.indexOf(":")
 						)
 					);
@@ -101,7 +103,7 @@ export const parseLinesToHeads = async (
 			const preLineInfo = res1;
 
 			const lineInfo: LineInfo = new LineInfo(
-				preLineInfo.content,
+				StrCharSlice.all(preLineInfo.content),
 				preLineInfo.indent,
 				preLineInfo.row
 			);

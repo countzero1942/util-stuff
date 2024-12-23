@@ -1,10 +1,12 @@
 import { ParserErrBase } from "@/parser/types/err-types";
 import { TypeValuePair } from "@/parser/types/parse-types";
+import { Str } from "@/parser/types/type-types";
+import { StrCharSlice } from "@/utils/slice";
 import { Key } from "node:readline";
 
 export class LineInfo {
 	constructor(
-		readonly content: string,
+		readonly content: StrCharSlice,
 		readonly indent: number,
 		readonly row: number
 	) {}
@@ -21,8 +23,8 @@ export class KeyHead {
  */
 export class KeyValDefHead extends KeyHead {
 	constructor(
-		readonly keyHead: string,
-		readonly valueHead: string,
+		readonly keyHead: StrCharSlice,
+		readonly valueHead: StrCharSlice,
 		lineInfo: LineInfo
 	) {
 		super(lineInfo);
@@ -35,7 +37,7 @@ export class KeyValDefHead extends KeyHead {
  * E.g.: "key"
  */
 export class KeyValReqHead extends KeyHead {
-	constructor(readonly keyHead: string, lineInfo: LineInfo) {
+	constructor(readonly keyHead: StrCharSlice, lineInfo: LineInfo) {
 		super(lineInfo);
 	}
 }
@@ -48,13 +50,13 @@ export class KeyValReqHead extends KeyHead {
  * E.g.: "key:"
  */
 export class KeyBodyReqHead extends KeyHead {
-	constructor(readonly keyHead: string, lineInfo: LineInfo) {
+	constructor(readonly keyHead: StrCharSlice, lineInfo: LineInfo) {
 		super(lineInfo);
 	}
 }
 
 export class KeyInvalidHead extends KeyHead {
-	constructor(readonly keyHead: string, lineInfo: LineInfo) {
+	constructor(readonly keyHead: StrCharSlice, lineInfo: LineInfo) {
 		super(lineInfo);
 	}
 }
@@ -63,7 +65,7 @@ export class EmptyLine extends KeyHead {
 	readonly isColon: boolean;
 	constructor(lineInfo: LineInfo) {
 		super(lineInfo);
-		this.isColon = lineInfo.content === ":";
+		this.isColon = lineInfo.content.equals(":");
 	}
 }
 

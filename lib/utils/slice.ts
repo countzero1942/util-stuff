@@ -1,4 +1,5 @@
 import { Str } from "@/parser/types/type-types";
+import { clamp } from "@/utils/math";
 import { StrGraphemeSeq, StrSeq, Range, Seq } from "@/utils/seq";
 import { isCodePointWhiteSpace } from "@/utils/string";
 
@@ -167,6 +168,31 @@ export class StrCharSlice {
 		return -1;
 	}
 
+	public countOccurencesOf = (
+		match: string,
+		childStartIncl: number = 0
+	): number => {
+		if (match.length == 0) {
+			return 0;
+		}
+		let i = clamp(
+			this.startIncl + childStartIncl,
+			this.startIncl,
+			this.endExcl
+		);
+		let count = 0;
+		while (true) {
+			i = this.indexOf(match, i);
+			if (i >= 0) {
+				count++;
+				i += match.length;
+			} else {
+				break;
+			}
+		}
+		return count;
+	};
+
 	public lastIndexOf(value: string, endExcl?: number): number {
 		const l = value.length;
 		if (l === 0) {
@@ -197,6 +223,10 @@ export class StrCharSlice {
 			return false;
 		}
 		return this.source.endsWith(value, this.endExcl);
+	}
+
+	public equals(value: string): boolean {
+		return this.length === value.length && this.startsWith(value);
 	}
 
 	public split(

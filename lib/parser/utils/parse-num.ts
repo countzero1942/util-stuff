@@ -32,6 +32,7 @@ import {
 	TypeBase,
 	ZNum,
 } from "@/parser/types/type-types";
+import { StrCharSlice } from "@/utils/slice";
 
 /**
  * Analyze a string representing a number to determine if it has a separator, decimal
@@ -42,8 +43,8 @@ import {
  * @returns an object with flags indicating the presence of each of the above features
  */
 const analyzeNumberString = (
-	value: string,
-	breakingChars: RegExp = /[ ,;]/
+	value: StrCharSlice,
+	breakingChars: string = " ,;"
 ) => {
 	const res: AnalyzeNumberString = {
 		hasSeparator: false,
@@ -54,31 +55,34 @@ const analyzeNumberString = (
 		hasBreakingChars: false,
 	};
 
-	for (let char of value) {
-		switch (char) {
-			case "_":
+	for (let i = value.startIncl; i < value.endExcl; i++) {
+		const code = value.source.charCodeAt(i);
+		switch (code) {
+			case 0x5f: // "_":
 				res.hasSeparator = true;
 				continue;
-			case "-":
-			case "+":
+			case 0x2d: // "-":
+			case 0x2b: // "+":
 				res.hasSign = true;
 				continue;
-			case ".":
+			case 0x2e: // ".":
 				res.hasDecimal = true;
 				continue;
-			case "e":
+			case 0x65: // "e":
 				res.hasENotation = true;
 				continue;
-			case "g":
+			case 0x67: // "g":
 				res.hasGNotation = true;
 				continue;
 			default:
 				break;
 		}
 
-		if (breakingChars.test(char)) {
-			res.hasBreakingChars = true;
-			break;
+		for (let j = 0; j < breakingChars.length; j++) {
+			if (code === breakingChars.charCodeAt(j)) {
+				res.hasBreakingChars = true;
+				break;
+			}
 		}
 	}
 
@@ -574,7 +578,7 @@ export const parseZNum = (
  * if the string is invalid.
  */
 export const parseDefNumber = (
-	value: string
+	value: StrCharSlice
 ): TypeValuePair<number> | NumberErr => {
 	const report = analyzeNumberString(value);
 	if (report.hasBreakingChars) {

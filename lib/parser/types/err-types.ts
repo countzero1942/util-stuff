@@ -61,7 +61,7 @@ export abstract class ParserLineErrBase extends ParserErrBase {
 		const errorString = this.lineErrorSlice.getErrorString();
 		const errorMessage = this.toMessage();
 		return [
-			{ content, indent, row },
+			{ content: content.string, indent, row },
 			{
 				content: `${errorString}: <${errorMessage}>`,
 				indent,
@@ -144,7 +144,7 @@ export class ParserIndentErr extends ParserBlockErrBase {
 
 	public toReport(): ReportLine[] {
 		const childLines = this.children.map(child => ({
-			content: child.lineInfo.content,
+			content: child.lineInfo.content.string,
 			indent: child.lineInfo.indent,
 			row: child.lineInfo.row,
 		}));

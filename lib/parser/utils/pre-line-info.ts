@@ -44,50 +44,60 @@ const getTabsAndContent = (line: string): TabsAndContent => {
 	};
 };
 
+const getSpaceError = (
+	line: string,
+	lineNumber: number
+): ParserErr => {
+	const keyHead = formatTabsToSymbols(line);
+
+	const getSlice = () => {
+		const match = keyHead.match(/[ ]+/);
+		const index = match?.index;
+		const length = match?.[0]?.length;
+		if (
+			match === null ||
+			index === undefined ||
+			length === undefined
+		) {
+			return StrCharSlice.none(keyHead);
+		}
+		return StrCharSlice.fromLength(keyHead, index, length);
+	};
+
+	const lineErrorSlice = getSlice();
+
+	const lineInfo = new LineInfo(
+		StrCharSlice.all(line),
+		0,
+		lineNumber
+	);
+
+	const head = new KeyInvalidHead(
+		StrCharSlice.all(keyHead),
+		lineInfo
+	);
+
+	const err = new ParserStructureErr(
+		head,
+		lineErrorSlice,
+		"Invalid space tabs"
+	);
+
+	return new ParserErr(err, lineInfo);
+};
+
 export const getPreLineInfo = (
 	line: string,
 	lineNumber: number
 ): PreLineInfo | ParserErr => {
-	const getSpaceError = (): ParserErr => {
-		const keyHead = formatTabsToSymbols(line);
-
-		const getSlice = () => {
-			const match = keyHead.match(/([ ]+)/);
-			const index = match?.index;
-			const length = match?.[1]?.length;
-			if (
-				match === null ||
-				index === undefined ||
-				length === undefined
-			) {
-				return StrCharSlice.none(keyHead);
-			}
-			return StrCharSlice.fromLength(keyHead, index, length);
-		};
-
-		const lineErrorSlice = getSlice();
-
-		const lineInfo = new LineInfo(line, 0, lineNumber);
-
-		const head = new KeyInvalidHead(keyHead, lineInfo);
-
-		const err = new ParserStructureErr(
-			head,
-			lineErrorSlice,
-			"Invalid space tabs"
-		);
-
-		return new ParserErr(err, lineInfo);
-	};
-
 	if (line.startsWith(" ")) {
-		return getSpaceError();
+		return getSpaceError(line, lineNumber);
 	}
 
 	const { tabs, content } = getTabsAndContent(line.trimEnd());
 
 	if (content.startsWith(" ")) {
-		return getSpaceError();
+		return getSpaceError(content, lineNumber);
 	}
 
 	const preLineInfo = new PreLineInfo(content, tabs, lineNumber);
