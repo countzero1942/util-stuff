@@ -71,7 +71,7 @@ export class EmptyLine extends KeyHead {
 
 export class KeyTrait extends KeyHead {
 	constructor(
-		readonly key: string,
+		readonly key: StrCharSlice,
 		readonly children: KeyHead[],
 		lineInfo: LineInfo
 	) {
@@ -81,7 +81,7 @@ export class KeyTrait extends KeyHead {
 
 export class KeyValDef extends KeyHead {
 	constructor(
-		readonly key: string,
+		readonly key: StrCharSlice,
 		readonly value: TypeValuePair<any>,
 		lineInfo: LineInfo
 	) {

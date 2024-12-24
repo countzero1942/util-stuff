@@ -35,19 +35,13 @@ export const parseKeyValDefHead = (head: KeyValDefHead) => {
 	const res = parseDefaultValue(valueHead);
 
 	if (res instanceof NumberErr) {
-		const { content, indent } = head.lineInfo;
-		const valueIndex = getValueIndex(head);
-		const slice: StrCharSlice = StrCharSlice.from(
-			content,
-			valueIndex
-		);
 		return new ParserErr(
-			new ParserNumberErr(head, slice, res),
+			new ParserNumberErr(head, valueHead, res),
 			head.lineInfo
 		);
 	}
 
-	return new KeyValDef(head.keyHead, res, head.lineInfo);
+	return new KeyValDef(keyHead, res, head.lineInfo);
 };
 
 const getIndentError = (
@@ -78,7 +72,7 @@ const getSelfTrait = (
 	nextIndex: number,
 	children: KeyHead[]
 ): ParseTraitResult => {
-	if (children.length === 0 && traitHead.keyHead !== ":root") {
+	if (children.length === 0 && !traitHead.keyHead.equals(":root")) {
 		const err = getIndentError(
 			[],
 			Range.empty(),

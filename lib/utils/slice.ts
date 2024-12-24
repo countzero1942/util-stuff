@@ -470,4 +470,8 @@ export class StrCharSlice {
 	public static none(source: string): StrCharSlice {
 		return new StrCharSlice(source, 0, 0);
 	}
+
+	public static empty(): StrCharSlice {
+		return new StrCharSlice("", 0, 0);
+	}
 }

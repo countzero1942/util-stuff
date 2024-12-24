@@ -110,7 +110,7 @@ export const getPrecisionCount = (numStr: string) => {
 	// numStr has no separators
 
 	let precCount = 0;
-	for (let char of numStr) {
+	for (let i = 0; i < numStr.length; i++) {
 		// Note: leading zeros are not counted
 		//       but middle and trailing zeros are
 		//       so ignore all 0s until precCount > 0
@@ -120,13 +120,14 @@ export const getPrecisionCount = (numStr: string) => {
 		// 0.12030
 		// .012030
 		// .00012030
+		const code = numStr.charCodeAt(i);
 
-		switch (char) {
-			case "+":
-			case "-":
-			case ".":
+		switch (code) {
+			case 0x2b: // "+":
+			case 0x2d: // "-":
+			case 0x2e: // ".":
 				continue;
-			case "0":
+			case 0x30: // "0":
 				if (precCount === 0) {
 					continue;
 				} else {
@@ -587,15 +588,17 @@ export const parseDefNumber = (
 
 	const hasExponent = report.hasENotation || report.hasGNotation;
 
+	const valueStr = value.string;
+
 	switch (true) {
 		case hasExponent && report.hasDecimal:
-			return parseRPrecExponent(value, report);
+			return parseRPrecExponent(valueStr, report);
 		case hasExponent && !report.hasDecimal:
-			return parseZNumExponent(value, report);
+			return parseZNumExponent(valueStr, report);
 		case !hasExponent && report.hasDecimal:
-			return parseRPrec(value, report);
+			return parseRPrec(valueStr, report);
 		case !hasExponent && !report.hasDecimal:
-			return parseZNum(value, report);
+			return parseZNum(valueStr, report);
 		default:
 			return getNumberError("NEVER", new NoNum());
 	}

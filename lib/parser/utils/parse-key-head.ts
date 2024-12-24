@@ -29,16 +29,16 @@ const parseTypeOrFlag = (typeOrFlag: StrCharSlice): FlagParam => {
 	if (nameParamsSlices.length > 1) {
 		const paramSlices = nameParamsSlices.slice(1);
 		for (const paramSlice of paramSlices) {
-			const paramStr = paramSlice.childSlice(1).string;
+			const paramValueSlice = paramSlice.childSlice(1);
 			switch (true) {
 				case paramSlice.startsWith("."):
-					dotParam = parseDefaultValue(paramStr);
+					dotParam = parseDefaultValue(paramValueSlice);
 					break;
 				case paramSlice.startsWith("_"):
-					subParam = parseDefaultValue(paramStr);
+					subParam = parseDefaultValue(paramValueSlice);
 					break;
 				case paramSlice.startsWith("^"):
-					superParam = parseDefaultValue(paramStr);
+					superParam = parseDefaultValue(paramValueSlice);
 					break;
 				default:
 					throw "Never";
@@ -49,9 +49,8 @@ const parseTypeOrFlag = (typeOrFlag: StrCharSlice): FlagParam => {
 	if (nameAndColonParamsSlices.length > 1) {
 		const colonParamSlices = nameAndColonParamsSlices.slice(1);
 		for (const colonParamSlice of colonParamSlices) {
-			colonParams.push(
-				parseDefaultValue(colonParamSlice.childSlice(1).string)
-			);
+			const colonParamValueSlice = colonParamSlice.childSlice(1);
+			colonParams.push(parseDefaultValue(colonParamValueSlice));
 		}
 	}
 
