@@ -30,13 +30,16 @@ import {
 } from "@/parser/utils/parse-num";
 import {
 	testAParseRPrecExp,
+	testAParseZnumExp,
 	testBParseRPrec,
 	testBParseRPrecExp,
+	testBParseZnumExp,
 	testCParseRPrecExp,
 	testDParseRPrecExp,
 	testErrParseRPrec,
 	testErrParseZNum,
 	testErrParseZnumExp,
+	testPrecisionCount,
 } from "@/my-tests/parser/test-parseNumber";
 import {
 	logParseDefaultValues,
@@ -57,6 +60,11 @@ import { parse } from "node:path";
 import { parseKeyHead } from "@/parser/utils/parse-key-head";
 import { formatNum } from "@/utils/string";
 import { StrCharSlice } from "@/utils/slice";
+import {
+	testRFixedTypeMap,
+	testRPrecTypeMap,
+	testZTypesTypeMap,
+} from "@/my-tests/parser/types/test-type-map";
 
 const keyHeads = [
 	// "A beast in the sea .X.2:6:12 %m %n.2:4 %p.dot_sub^sup:22:44:77 $abc $def xyz >kg.m/s2 .Y:2 .Z %g",
@@ -64,31 +72,41 @@ const keyHeads = [
 		"%m %n.2:4 %p.dot_sub^sup:22:44:77 $abc $def xyz >kg.m/s2 .Y:2 .Z %g",
 ];
 
-for (const keyHead of keyHeads) {
-	const keyParams = parseKeyHead(keyHead);
-	logobj(keyParams);
-}
+// for (const keyHead of keyHeads) {
+// 	const keyParams = parseKeyHead(keyHead);
+// 	logobj(keyParams);
+// }
 
 // await logSplitHeads();
 
 // await logParseDefaultValues();
 
-// testRPrec();
+/**
+ * Test TypeMap
+ */
+
+// testRPrecTypeMap();
 // ddivln();
-// testRFixed();
+// testRFixedTypeMap();
 // ddivln();
-// testZTypes();
+// testZTypesTypeMap();
 // ddivln();
 
+/**
+ * Test parseNumber
+ */
+
+// testPrecisionCount();
 // testAParseRPrecExp();
 // testBParseRPrecExp();
 // testCParseRPrecExp();
 // testDParseRPrecExp();
-// testErrParseZnumExp();
+// testAParseZnumExp();
+// testBParseZnumExp();
 
 // testErrParseZnumExp();
 // testErrParseRPrec();
-// testErrParseZNum();
+testErrParseZNum();
 
 // await logParseTraits();
 

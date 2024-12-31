@@ -8,6 +8,7 @@ import {
 	divl,
 	ddivln,
 	loghn,
+	logobj,
 } from "@/utils/log";
 import {
 	NNum,
@@ -20,7 +21,7 @@ import {
 import { TypeMap } from "@/parser/types/type-map";
 import { getFullType } from "@/utils/types";
 
-export const testRPrec = () => {
+export const testRPrecTypeMap = () => {
 	const logRT = (name: string, rt: TypeBase) => {
 		log(`${name}:`);
 		log(rt);
@@ -36,13 +37,13 @@ export const testRPrec = () => {
 	const rt3 = typeMap.addOrGet(new RPrec(6));
 	div();
 
-	loggn("rt", rt);
-	loggn("rt1", rt1);
-	loggn("rt2", rt2);
-	loggn("rt3", rt3);
+	loggn("rt .RPrec", rt);
+	loggn("rt1 .RPrec(rt)", rt1);
+	loggn("rt2 .RPrec(new RPrec())", rt2);
+	loggn("rt3 .RPrec:6", rt3);
 	div();
 
-	log(typeMap);
+	logobj(typeMap);
 	div();
 	log(`has rt: ${typeMap.has(rt)}`);
 	log(`has rt1: ${typeMap.has(rt1)}`);
@@ -54,7 +55,7 @@ export const testRPrec = () => {
 	log(`rt !== new RPrec(): ${rt !== new RPrec()}`);
 };
 
-export const testRFixed = () => {
+export const testRFixedTypeMap = () => {
 	loghn("test RFixed");
 
 	const typeMap = new TypeMap();
@@ -65,13 +66,13 @@ export const testRFixed = () => {
 	const rt3 = typeMap.addOrGet(new RFixed(4));
 	div();
 
-	loggn("rt", rt);
-	loggn("rt1", rt1);
-	loggn("rt2", rt2);
-	loggn("rt3", rt3);
+	loggn("rt .RFixed", rt);
+	loggn("rt1 .RFixed(rt)", rt1);
+	loggn("rt2 .RFixed(new RFixed())", rt2);
+	loggn("rt3 .RFixed:4", rt3);
 	div();
 
-	log(typeMap);
+	logobj(typeMap);
 	div();
 	log(`has rt: ${typeMap.has(rt)}`);
 	log(`has rt1: ${typeMap.has(rt1)}`);
@@ -83,7 +84,7 @@ export const testRFixed = () => {
 	log(`rt !== new RFixed(): ${rt !== new RFixed()}`);
 };
 
-export const testZTypes = () => {
+export const testZTypesTypeMap = () => {
 	const logZT = (name: string, zt: TypeBase) => {
 		const fullType = getFullType(zt);
 		loggn(`${name}: <${fullType.name}>`, zt);
@@ -101,14 +102,14 @@ export const testZTypes = () => {
 
 	div();
 
-	logZT("zt", zt);
-	logZT("zt1", zt1);
-	logZT("zt2", zt2);
-	logZT("nt1", nt1);
-	logZT("wt1", wt1);
+	logZT("zt .Z", zt);
+	logZT("zt1 .Z(zt)", zt1);
+	logZT("zt2 .Z(new ZNum())", zt2);
+	logZT("nt1 .N", nt1);
+	logZT("wt1 .W", wt1);
 	div();
 
-	log(typeMap);
+	logobj(typeMap);
 	div();
 	log(`has zt: ${typeMap.has(zt)}`);
 	log(`has zt1: ${typeMap.has(zt1)}`);

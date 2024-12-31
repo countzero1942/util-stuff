@@ -55,14 +55,14 @@ export abstract class TypeBase {
 	 */
 	private makeKey(additionalMembers?: string[]): string {
 		const types: string[] = [];
-		types.push(this.typeInfo.type);
+		types.push(`(T)${this.typeInfo.type}`);
 
 		if (this.typeInfo.parentType) {
-			types.push(this.typeInfo.parentType);
+			types.push(`(PT)${this.typeInfo.parentType}`);
 		}
 
 		if (this.typeInfo.variantType) {
-			types.push(this.typeInfo.variantType);
+			types.push(`(VT)${this.typeInfo.variantType}`);
 		}
 
 		if (additionalMembers) {
@@ -115,9 +115,13 @@ export class ZNum extends TypeBase {
 		public readonly max: number = Number.MAX_SAFE_INTEGER
 	) {
 		const minStr =
-			min === Number.MIN_SAFE_INTEGER ? "-MAX" : min.toString();
+			min === Number.MIN_SAFE_INTEGER
+				? "(min)-MAX"
+				: `(min)${min.toString()}`;
 		const maxStr =
-			max === Number.MAX_SAFE_INTEGER ? "+MAX" : max.toString();
+			max === Number.MAX_SAFE_INTEGER
+				? "(max)+MAX"
+				: `(max)${max.toString()}`;
 
 		super(typeInfo, [minStr, maxStr]);
 	}
