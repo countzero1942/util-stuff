@@ -88,7 +88,8 @@ export const logSplitHeads = async () => {
 	);
 	div();
 
-	const res1 = await fileToLines("00-with-errs.txt");
+	const res1 = await fileToLines("00-start.txt");
+	// const res1 = await fileToLines("00-with-errs.txt");
 	if (res1.type === "ErrorType") {
 		log("ERROR:");
 		log(res1);

@@ -2,6 +2,8 @@ import { StrCharSlice } from "@/utils/slice";
 
 describe("StrCharSlice factory methods", () => {
 	it("StrCharSlice.from", () => {
+		expect(StrCharSlice.from("hello").string).toBe("hello");
+		expect(StrCharSlice.from("hello", 0).string).toBe("hello");
 		expect(StrCharSlice.from("hello", 0, 5).string).toBe("hello");
 		expect(StrCharSlice.from("hello", 1, 3).string).toBe("el");
 		expect(StrCharSlice.from("hello", 5).string).toBe("");
@@ -88,5 +90,14 @@ describe("StrCharSlice factory methods", () => {
 
 	it("StrCharSlice.empty", () => {
 		expect(StrCharSlice.empty().string).toBe("");
+	});
+
+	it("should set 'sliceCache' to 'source' if slices entire source string", () => {
+		// @ts-ignore
+		expect(StrCharSlice.from("hello").sliceCache).toBe("hello");
+		// @ts-ignore
+		expect(StrCharSlice.from("hello", 0, 3).sliceCache).toBe(
+			undefined
+		);
 	});
 });

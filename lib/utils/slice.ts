@@ -148,21 +148,42 @@ export class StrCharSlice {
 		return this.trimStart().trimEnd();
 	}
 
-	public indexOf(value: string, startIncl?: number): number {
+	public indexOf(value: string, childStartIncl?: number): number {
+		// abcde
+		// 012345
+		// length = 5
+		//
+		// value = "", length = 0
+		// loopLength = 5 - 0 = 5
+		// lastIndex = 4
+		//
+		// value = "e", length = 1
+		// loopLength = 5 - 1 = 4
+		// lastIndex = 4 => wrong
+		// loopLength = 5 - 1 + 1 = 5
+		// lastIndex = 4
+		//
+		// value = "de", length = 2
+		// loopLength = 5 - 2 + 1 = 4
+		// lastIndex = 3
+		//
+		// So always add the 1 because we exclude empty value
+
 		const l = value.length;
 		if (l === 0) {
 			return -1;
 		}
+
+		const range = normalizeStartEnd(this.length, childStartIncl);
+
+		const loopLength = this.endExcl - l + 1;
 		for (
-			let i =
-				startIncl === undefined
-					? this.startIncl
-					: Math.max(startIncl, this.startIncl);
-			i < this.endExcl - l;
+			let i = this.startIncl + range.startIncl;
+			i < loopLength;
 			i++
 		) {
 			if (this.source.startsWith(value, i)) {
-				return i;
+				return i - this.startIncl;
 			}
 		}
 		return -1;
@@ -170,16 +191,16 @@ export class StrCharSlice {
 
 	public countOccurencesOf = (
 		match: string,
-		childStartIncl: number = 0
+		childStartIncl?: number
 	): number => {
 		if (match.length == 0) {
 			return 0;
 		}
-		let i = clamp(
-			this.startIncl + childStartIncl,
-			this.startIncl,
-			this.endExcl
-		);
+
+		const range = normalizeStartEnd(this.length, childStartIncl);
+
+		let i = range.startIncl;
+
 		let count = 0;
 		while (true) {
 			i = this.indexOf(match, i);
@@ -193,19 +214,20 @@ export class StrCharSlice {
 		return count;
 	};
 
-	public lastIndexOf(value: string, endExcl?: number): number {
+	public lastIndexOf(value: string, childEndExcl?: number): number {
+		// hello world
+		// 012345678901
+
 		const l = value.length;
 		if (l === 0) {
 			return -1;
 		}
-		const safeEndExcl =
-			endExcl === undefined
-				? this.endExcl
-				: Math.min(endExcl, this.endExcl);
 
-		for (let i = safeEndExcl - l; i >= this.startIncl; i--) {
-			if (this.source.endsWith(value, i)) {
-				return i;
+		const range = normalizeStartEnd(this.length, 0, childEndExcl);
+
+		for (let i = range.endExcl - l; i >= this.startIncl; i--) {
+			if (this.source.startsWith(value, i)) {
+				return i - this.startIncl;
 			}
 		}
 		return -1;
@@ -240,19 +262,26 @@ export class StrCharSlice {
 			maxSplits === undefined
 				? Number.MAX_SAFE_INTEGER
 				: maxSplits;
-		while (i < this.endExcl) {
+		while (true) {
 			const j = this.indexOf(splitter, i);
 			if (j > -1) {
 				splits++;
-			}
-			if (j === -1 || splits >= safeMaxSplits) {
+			} else {
 				strs.push(
 					new StrCharSlice(this.source, i, this.endExcl).trim()
 				);
 				break;
 			}
 			strs.push(new StrCharSlice(this.source, i, j).trim());
+
 			i = j + splitter.length;
+
+			if (splits >= safeMaxSplits) {
+				strs.push(
+					new StrCharSlice(this.source, i, this.endExcl).trim()
+				);
+				break;
+			}
 		}
 		return strs;
 	}
@@ -405,7 +434,7 @@ export class StrCharSlice {
 
 	public static from(
 		source: string,
-		startIncl: number,
+		startIncl?: number,
 		endExcl?: number
 	): StrCharSlice {
 		return new StrCharSlice(source, startIncl, endExcl);

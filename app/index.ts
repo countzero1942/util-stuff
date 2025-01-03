@@ -65,21 +65,7 @@ import {
 	testRPrecTypeMap,
 	testZTypesTypeMap,
 } from "@/my-tests/parser/types/test-type-map";
-
-const keyHeads = [
-	// "A beast in the sea .X.2:6:12 %m %n.2:4 %p.dot_sub^sup:22:44:77 $abc $def xyz >kg.m/s2 .Y:2 .Z %g",
-	"A beast in the sea in .X.2.6:6.28:abc def:12. " +
-		"%m %n.2:4 %p.dot_sub^sup:22:44:77 $abc $def xyz >kg.m/s2 .Y:2 .Z %g",
-];
-
-// for (const keyHead of keyHeads) {
-// 	const keyParams = parseKeyHead(keyHead);
-// 	logobj(keyParams);
-// }
-
-// await logSplitHeads();
-
-// await logParseDefaultValues();
+import { sleep } from "moderndash";
 
 /**
  * Test TypeMap
@@ -106,12 +92,64 @@ const keyHeads = [
 
 // testErrParseZnumExp();
 // testErrParseRPrec();
-testErrParseZNum();
+// testErrParseZNum();
+
+/**
+ * Test split heads
+ */
+
+// await logSplitHeads();
+
+// const s1 = "key: head";
+// const sl1 = StrCharSlice.all(s1);
+// const parts = sl1.split(": ", 1);
+
+// const str1 = "hello world";
+// //            012345678901
+// const sl1 = StrCharSlice.all(str1);
+// const i = sl1.lastIndexOf("world");
+
+// for (let i = str1.length + 3; i >= 0; i--) {
+// 	const index = sl1.lastIndexOf("world", i);
+// 	log(`i: ${i}, lastIndexOf: ${index}`);
+// }
+
+const slice = StrCharSlice.from("hello", 0, 3);
+// @ts-ignore
+const cache1 = slice.sliceCache;
+const str = slice.string;
+// @ts-ignore
+const cache2 = slice.sliceCache;
+
+// await logParseDefaultValues();
+
+/**
+ * Test Parse Traits
+ */
 
 // await logParseTraits();
 
 // await logTraitReport("01-err-trait-tree.txt");
 // await logTraitReport("01b-err-num-trait-tree.txt");
+
+/**
+ *
+ */
+
+/**
+ * Test parseKeyHead
+ */
+
+const keyHeads = [
+	// "A beast in the sea .X.2:6:12 %m %n.2:4 %p.dot_sub^sup:22:44:77 $abc $def xyz >kg.m/s2 .Y:2 .Z %g",
+	"A beast in the sea in .X.2.6:6.28:abc def:12. " +
+		"%m %n.2:4 %p.dot_sub^sup:22:44:77 $abc $def xyz >kg.m/s2 .Y:2 .Z %g",
+];
+
+// for (const keyHead of keyHeads) {
+// 	const keyParams = parseKeyHead(keyHead);
+// 	logobj(keyParams);
+// }
 
 // const str =
 // 	"A beast in the sea .X.2:6:12" +
