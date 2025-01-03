@@ -114,13 +114,15 @@ import { sleep } from "moderndash";
 // 	log(`i: ${i}, lastIndexOf: ${index}`);
 // }
 
-const slice = StrCharSlice.from("hello", 0, 3);
-// @ts-ignore
-const cache1 = slice.sliceCache;
-const str = slice.string;
-// @ts-ignore
-const cache2 = slice.sliceCache;
+const slice = StrCharSlice.from("hello world");
+const value1 = StrCharSlice.from("hello");
+const value2 = StrCharSlice.from("world");
+const resulta = slice.startsWith(value1);
+const resultb = slice.startsWith(value2, 6);
+const resultc = slice.endsWith(value2);
+const resultd = slice.endsWith(value1, value1.length);
 
+div();
 // await logParseDefaultValues();
 
 /**

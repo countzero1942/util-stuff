@@ -233,21 +233,77 @@ export class StrCharSlice {
 		return -1;
 	}
 
-	public startsWith(value: string): boolean {
-		if (value.length > this.length) {
+	public startsWith(
+		value: string | StrCharSlice,
+		startIncl?: number
+	): boolean {
+		const range = normalizeStartEnd(this.length, startIncl);
+
+		if (
+			value.length === 0 ||
+			range.startIncl + value.length > this.length
+		) {
 			return false;
 		}
-		return this.source.startsWith(value, this.startIncl);
+		if (typeof value === "string") {
+			return this.source.startsWith(
+				value,
+				this.startIncl + range.startIncl
+			);
+		} else {
+			let valueIndex = value.startIncl;
+			let sourceIndex = this.startIncl + range.startIncl;
+			let valueStr = value.source;
+			let sourceStr = this.source;
+			while (
+				valueIndex < value.endExcl &&
+				sourceIndex < this.endExcl
+			) {
+				if (
+					valueStr.charCodeAt(valueIndex) !==
+					sourceStr.charCodeAt(sourceIndex)
+				) {
+					return false;
+				}
+				valueIndex++;
+				sourceIndex++;
+			}
+			return valueIndex === value.endExcl;
+		}
 	}
 
-	public endsWith(value: string): boolean {
-		if (value.length > this.length) {
+	public endsWith(
+		value: string | StrCharSlice,
+		endExcl?: number
+	): boolean {
+		// hello world
+		// 012345678901
+		// 11 -
+
+		const range = normalizeStartEnd(this.length, 0, endExcl);
+
+		if (value.length === 0 || value.length > this.length) {
 			return false;
 		}
-		return this.source.endsWith(value, this.endExcl);
+		const startsWithIndex = range.endExcl - value.length;
+		return this.startsWith(value, startsWithIndex);
 	}
 
-	public equals(value: string): boolean {
+	public equals(value: string | StrCharSlice): boolean {
+		// if (typeof value === "string") {
+		// 	return (
+		// 		this.length === value.length && this.startsWith(value)
+		// 	);
+		// } else {
+		// 	return (
+		// 		this.length === value.length &&
+		// 		this.startsWith(value.string)
+		// 	);
+		// }
+		if (value.length === 0 && this.length === 0) {
+			return true;
+		}
+
 		return this.length === value.length && this.startsWith(value);
 	}
 

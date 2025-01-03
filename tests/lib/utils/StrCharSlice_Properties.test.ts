@@ -46,4 +46,12 @@ describe("StrCharSlice Properties", () => {
 		// @ts-ignore
 		expect(slice.sliceCache).toBe("hel");
 	});
+	it("should set 'sliceCache' on call to 'toString' method", () => {
+		const slice = StrCharSlice.from("hello", 0, 3);
+		// @ts-ignore
+		expect(slice.sliceCache).toBe(undefined);
+		const str = slice.toString();
+		// @ts-ignore
+		expect(slice.sliceCache).toBe("hel");
+	});
 });
