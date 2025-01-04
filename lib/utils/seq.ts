@@ -1288,10 +1288,16 @@ export class Range {
 	}
 }
 
+export type StrSeqElement = {
+	element: string;
+	elementIndex: number;
+	charIndex: number;
+};
+
 /**
  * Base class for String sequences.
  */
-export abstract class StrSeqBase extends Seq<string> {
+export abstract class StrSeqBase extends Seq<StrSeqElement> {
 	/**
 	 * Constructs a StrSeqBase.
 	 *
@@ -1343,13 +1349,13 @@ export abstract class StrSeqBase extends Seq<string> {
 			return Math.max(0, end);
 		};
 
-		let char = {
+		let charIndexes = {
 			i: 0,
 			start: -1,
 			end: -1,
 		};
 
-		let element = {
+		let elementIndexes = {
 			i: 0,
 			start: getStart(),
 			end: getEnd(),
@@ -1359,26 +1365,26 @@ export abstract class StrSeqBase extends Seq<string> {
 		// 012345678
 		// 0 1 2
 
-		for (const elementStr of this.gen()) {
-			if (element.i === element.start) {
-				char.start = char.i;
+		for (const { element, elementIndex, charIndex } of this.gen()) {
+			if (elementIndexes.i === elementIndexes.start) {
+				charIndexes.start = charIndexes.i;
 			}
-			if (element.i === element.end) {
-				char.end = char.i;
+			if (elementIndexes.i === elementIndexes.end) {
+				charIndexes.end = charIndexes.i;
 				break;
 			}
 
-			char.i += elementStr.length;
-			element.i++;
+			charIndexes.i += element.length;
+			elementIndexes.i++;
 		}
 
-		if (char.end === -1) {
-			char.end = char.i;
+		if (charIndexes.end === -1) {
+			charIndexes.end = charIndexes.i;
 		}
 
-		return char.start === -1
+		return charIndexes.start === -1
 			? Range.from(0, 0)
-			: Range.from(char.start, char.end);
+			: Range.from(charIndexes.start, charIndexes.end);
 	}
 
 	/**
@@ -1429,8 +1435,12 @@ export class StrSeq extends StrSeqBase {
 	 * from the input string.
 	 */
 	public override *gen() {
+		let elementIndex = 0;
+		let charIndex = 0;
 		for (const codePoint of this.str) {
-			yield codePoint;
+			yield { element: codePoint, elementIndex, charIndex };
+			charIndex += codePoint.length;
+			elementIndex++;
 		}
 	}
 
@@ -1474,8 +1484,12 @@ export class StrGraphemeSeq extends StrSeqBase {
 			granularity: "grapheme",
 		}).segment(this.str);
 
+		let elementIndex = 0;
+		let charIndex = 0;
 		for (const grapheme of itr) {
-			yield grapheme.segment;
+			yield { element: grapheme.segment, elementIndex, charIndex };
+			charIndex += grapheme.segment.length;
+			elementIndex++;
 		}
 	}
 

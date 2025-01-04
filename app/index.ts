@@ -59,7 +59,7 @@ import { parseDefaultValue } from "@/parser/utils/parse-value";
 import { parse } from "node:path";
 import { parseKeyHead } from "@/parser/utils/parse-key-head";
 import { formatNum } from "@/utils/string";
-import { StrCharSlice } from "@/utils/slice";
+import { StrSlice } from "@/utils/slice";
 import {
 	testRFixedTypeMap,
 	testRPrecTypeMap,
@@ -100,29 +100,6 @@ import { sleep } from "moderndash";
 
 // await logSplitHeads();
 
-// const s1 = "key: head";
-// const sl1 = StrCharSlice.all(s1);
-// const parts = sl1.split(": ", 1);
-
-// const str1 = "hello world";
-// //            012345678901
-// const sl1 = StrCharSlice.all(str1);
-// const i = sl1.lastIndexOf("world");
-
-// for (let i = str1.length + 3; i >= 0; i--) {
-// 	const index = sl1.lastIndexOf("world", i);
-// 	log(`i: ${i}, lastIndexOf: ${index}`);
-// }
-
-const slice = StrCharSlice.from("hello world");
-const value1 = StrCharSlice.from("hello");
-const value2 = StrCharSlice.from("world");
-const resulta = slice.startsWith(value1);
-const resultb = slice.startsWith(value2, 6);
-const resultc = slice.endsWith(value2);
-const resultd = slice.endsWith(value1, value1.length);
-
-div();
 // await logParseDefaultValues();
 
 /**
@@ -157,3 +134,24 @@ const keyHeads = [
 // 	"A beast in the sea .X.2:6:12" +
 // 	" %y %z.2:2 $abc $def xyz >kg.m/s2 .Y:2 .Z %g";
 // const str = "abc abc def abc def efg abc";
+
+/**
+ * Test StrSlice
+ */
+
+// const slice1 = new StrSlice("abc,def,ghi");
+// const values1 = slice1.split(",");
+// const matches = values1.map(s => s.value);
+// log(values1);
+// div();
+// log(matches);
+
+const str = "a😄😄b😺😺😄c👨‍👦😺👨‍👦😄👨‍👦";
+const seq = StrGraphemeSeq.from(str);
+const indexes = seq.toArray();
+log(indexes);
+
+const slice = new StrSlice(str);
+const indexes2 = slice.indexesOfOrdered(["😄", "😺", "👨‍👦"]);
+div();
+log(indexes2);

@@ -7,9 +7,9 @@ import {
 import { TypeValuePair } from "@/parser/types/parse-types";
 import { parseDefaultValue } from "@/parser/utils/parse-value";
 import { log, logag, div } from "@/utils/log";
-import { StrCharSlice } from "@/utils/slice";
+import { StrSlice } from "@/utils/slice";
 
-const parseTypeOrFlag = (typeOrFlag: StrCharSlice): FlagParam => {
+const parseTypeOrFlag = (typeOrFlag: StrSlice): FlagParam => {
 	let name: string = "";
 	let dotParam: TypeValuePair<any> | NumberErr | undefined =
 		undefined;
@@ -21,15 +21,15 @@ const parseTypeOrFlag = (typeOrFlag: StrCharSlice): FlagParam => {
 
 	const nameAndColonParamsSlices = typeOrFlag.edgeSplitMany([":"]);
 	const nameParamsSlices = nameAndColonParamsSlices[0]!
-		.childSlice(1)
+		.slice(1)
 		.edgeSplitOrdered([".", "_", "^"]);
 
-	name = nameParamsSlices[0]!.string;
+	name = nameParamsSlices[0]!.value;
 
 	if (nameParamsSlices.length > 1) {
 		const paramSlices = nameParamsSlices.slice(1);
 		for (const paramSlice of paramSlices) {
-			const paramValueSlice = paramSlice.childSlice(1);
+			const paramValueSlice = paramSlice.slice(1);
 			switch (true) {
 				case paramSlice.startsWith("."):
 					dotParam = parseDefaultValue(paramValueSlice);
@@ -49,7 +49,7 @@ const parseTypeOrFlag = (typeOrFlag: StrCharSlice): FlagParam => {
 	if (nameAndColonParamsSlices.length > 1) {
 		const colonParamSlices = nameAndColonParamsSlices.slice(1);
 		for (const colonParamSlice of colonParamSlices) {
-			const colonParamValueSlice = colonParamSlice.childSlice(1);
+			const colonParamValueSlice = colonParamSlice.slice(1);
 			colonParams.push(parseDefaultValue(colonParamValueSlice));
 		}
 	}
@@ -58,7 +58,7 @@ const parseTypeOrFlag = (typeOrFlag: StrCharSlice): FlagParam => {
 };
 
 const parseParams = (
-	params: StrCharSlice[]
+	params: StrSlice[]
 ): {
 	flagParams: FlagParam[];
 	stringParams: string[];
@@ -73,10 +73,10 @@ const parseParams = (
 				flagParams.push(parseTypeOrFlag(param));
 				break;
 			case param.startsWith("$"):
-				stringParams.push(param.childSlice(1).string);
+				stringParams.push(param.slice(1).value);
 				break;
 			case param.startsWith(">"):
-				unitParam = param.childSlice(1).string;
+				unitParam = param.slice(1).value;
 				break;
 			default:
 				break;
@@ -85,13 +85,13 @@ const parseParams = (
 	return { flagParams, stringParams, unitParam };
 };
 
-const parseType = (typeSlice: StrCharSlice): TypeParams => {
+const parseType = (typeSlice: StrSlice): TypeParams => {
 	const typeAndParamSlices = typeSlice.edgeSplitMany([
 		" %",
 		" $",
 		" >",
 	]);
-	const type = typeAndParamSlices[0] as StrCharSlice;
+	const type = typeAndParamSlices[0] as StrSlice;
 
 	const nameParams = parseTypeOrFlag(type);
 
@@ -119,7 +119,7 @@ const parseType = (typeSlice: StrCharSlice): TypeParams => {
 	};
 };
 
-const parseTypes = (typeSlices: StrCharSlice[]) => {
+const parseTypes = (typeSlices: StrSlice[]) => {
 	const types: TypeParams[] = [];
 	for (const typeSlice of typeSlices) {
 		const type = parseType(typeSlice);
@@ -130,17 +130,18 @@ const parseTypes = (typeSlices: StrCharSlice[]) => {
 
 export const parseKeyHead = (keyhead: string): KeyParams => {
 	// see if keyhead contains a type reference: e.g., '.X'
-	const keyHeadSlice = StrCharSlice.all(keyhead);
-	log(`keyheadSlice: '${keyHeadSlice.string}'`);
+	const keyHeadSlice = StrSlice.all(keyhead);
+	log(`keyheadSlice: '${keyHeadSlice.value}'`);
 
-	const nameAndTypeSlices: StrCharSlice[] =
-		keyHeadSlice.edgeSplitMany([" ."]);
-	const nameSlice = nameAndTypeSlices[0] as StrCharSlice;
-	log(`name: '${nameSlice.string}'`);
+	const nameAndTypeSlices: StrSlice[] = keyHeadSlice.edgeSplitMany([
+		" .",
+	]);
+	const nameSlice = nameAndTypeSlices[0] as StrSlice;
+	log(`name: '${nameSlice.value}'`);
 
 	if (nameAndTypeSlices.length === 1) {
 		return {
-			name: nameSlice.string,
+			name: nameSlice.value,
 		};
 	}
 
@@ -150,7 +151,7 @@ export const parseKeyHead = (keyhead: string): KeyParams => {
 
 	div();
 	return {
-		name: nameSlice.string,
+		name: nameSlice.value,
 		types,
 	};
 };

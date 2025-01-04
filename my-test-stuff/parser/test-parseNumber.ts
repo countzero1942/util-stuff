@@ -4,7 +4,7 @@ import {
 	parseDefNumber,
 } from "@/parser/utils/parse-num";
 import { ddivln, div, log, logh, loghn } from "@/utils/log";
-import { StrCharSlice } from "@/utils/slice";
+import { StrSlice } from "@/utils/slice";
 
 /**
  * Tests the getPrecisionCount function with a variety of decimal numbers.
@@ -65,7 +65,7 @@ export const testParseNumber = (nums: string[]) => {
 
 	for (const num of nums) {
 		logh(`Parsing: ${num}`);
-		const res = parseDefNumber(StrCharSlice.all(num));
+		const res = parseDefNumber(StrSlice.all(num));
 
 		if (res instanceof NumberErr) {
 			failures.push({ num, err: res });

@@ -25,7 +25,7 @@ import {
 } from "@/parser/types/err-types";
 import { parseTrait } from "@/parser/utils/parse-trait";
 import { getTraitReport } from "@/parser/utils/print-back";
-import { StrCharSlice } from "@/utils/slice";
+import { StrSlice } from "@/utils/slice";
 
 const getTextFilePath = (name: string) => `./text/parser/${name}`;
 
@@ -157,7 +157,7 @@ export const logParseDefaultValues = async () => {
 	return;
 };
 
-const rootSlice = StrCharSlice.all(":root");
+const rootSlice = StrSlice.all(":root");
 
 export const logParseTraits = async () => {
 	logh("Log Parse: Parse Traits");
@@ -176,7 +176,7 @@ export const logParseTraits = async () => {
 
 	const root = new KeyBodyReqHead(
 		rootSlice,
-		new LineInfo(StrCharSlice.empty(), -1, 0)
+		new LineInfo(StrSlice.empty(), -1, 0)
 	);
 
 	const trait = parseTrait(root, allHeads, 0);
@@ -205,7 +205,7 @@ export const logTraitReport = async (
 
 	const root = new KeyBodyReqHead(
 		rootSlice,
-		new LineInfo(StrCharSlice.empty(), -1, 0)
+		new LineInfo(StrSlice.empty(), -1, 0)
 	);
 
 	const res = parseTrait(root, allHeads, 0);

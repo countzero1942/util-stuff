@@ -2,12 +2,12 @@ import { NumberErr } from "@/parser/types/err-types";
 import { TypeValuePair } from "@/parser/types/parse-types";
 import { Str } from "@/parser/types/type-types";
 import { parseDefNumber } from "@/parser/utils/parse-num";
-import { StrCharSlice } from "@/utils/slice";
+import { StrSlice } from "@/utils/slice";
 
 export const parseDefaultValue = (
-	value: StrCharSlice
+	value: StrSlice
 ): TypeValuePair<any> | NumberErr => {
-	const startsWithDigit = /^[+-_ ]*\d/.test(value.string);
+	const startsWithDigit = /^[+-_ ]*\d/.test(value.value);
 
 	if (startsWithDigit) {
 		return parseDefNumber(value);

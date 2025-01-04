@@ -2,7 +2,7 @@ import {
 	ParserStructureErr,
 	StructureErrKind,
 } from "@/parser/types/err-types";
-import { StrCharSlice } from "@/utils/slice";
+import { StrSlice } from "@/utils/slice";
 import {
 	KeyHead,
 	KeyBodyReqHead,
@@ -23,7 +23,7 @@ export const splitHead = (lineInfo: LineInfo): KeyHead => {
 	const createParserStructureErr = (
 		head: KeyInvalidHead,
 		kind: StructureErrKind,
-		lineErrorSlice: StrCharSlice
+		lineErrorSlice: StrSlice
 	): ParserErr => {
 		const err = new ParserStructureErr(head, lineErrorSlice, kind);
 		return new ParserErr(err, lineInfo);
@@ -41,7 +41,7 @@ export const splitHead = (lineInfo: LineInfo): KeyHead => {
 	// 	s => s.trim()
 	// );
 
-	const parts: readonly StrCharSlice[] = line.split(": ", 1);
+	const parts: readonly StrSlice[] = line.split(": ", 1);
 
 	// switch on keyHead and valueHead parts
 	switch (parts.length) {
@@ -63,7 +63,7 @@ export const splitHead = (lineInfo: LineInfo): KeyHead => {
 					// case: "key:" "key stuff:8:" => Key Body Decl
 					if (line.endsWith(":")) {
 						return new KeyBodyReqHead(
-							keyHead.childSlice(0, -1),
+							keyHead.slice(0, -1),
 							lineInfo
 						);
 					}
@@ -71,7 +71,7 @@ export const splitHead = (lineInfo: LineInfo): KeyHead => {
 					return createParserStructureErr(
 						new KeyInvalidHead(keyHead, lineInfo),
 						"Invalid key colon",
-						StrCharSlice.fromIndexOfDefaultAll(
+						StrSlice.fromIndexOfDefaultAll(
 							keyHead.source,
 							keyHead.indexOf(":")
 						)
@@ -103,7 +103,7 @@ export const parseLinesToHeads = async (
 			const preLineInfo = res1;
 
 			const lineInfo: LineInfo = new LineInfo(
-				StrCharSlice.all(preLineInfo.content),
+				StrSlice.all(preLineInfo.content),
 				preLineInfo.indent,
 				preLineInfo.row
 			);

@@ -1,12 +1,12 @@
 import { ParserErrBase } from "@/parser/types/err-types";
 import { TypeValuePair } from "@/parser/types/parse-types";
 import { Str } from "@/parser/types/type-types";
-import { StrCharSlice } from "@/utils/slice";
+import { StrSlice } from "@/utils/slice";
 import { Key } from "node:readline";
 
 export class LineInfo {
 	constructor(
-		readonly content: StrCharSlice,
+		readonly content: StrSlice,
 		readonly indent: number,
 		readonly row: number
 	) {}
@@ -23,8 +23,8 @@ export class KeyHead {
  */
 export class KeyValDefHead extends KeyHead {
 	constructor(
-		readonly keyHead: StrCharSlice,
-		readonly valueHead: StrCharSlice,
+		readonly keyHead: StrSlice,
+		readonly valueHead: StrSlice,
 		lineInfo: LineInfo
 	) {
 		super(lineInfo);
@@ -37,7 +37,7 @@ export class KeyValDefHead extends KeyHead {
  * E.g.: "key"
  */
 export class KeyValReqHead extends KeyHead {
-	constructor(readonly keyHead: StrCharSlice, lineInfo: LineInfo) {
+	constructor(readonly keyHead: StrSlice, lineInfo: LineInfo) {
 		super(lineInfo);
 	}
 }
@@ -50,13 +50,13 @@ export class KeyValReqHead extends KeyHead {
  * E.g.: "key:"
  */
 export class KeyBodyReqHead extends KeyHead {
-	constructor(readonly keyHead: StrCharSlice, lineInfo: LineInfo) {
+	constructor(readonly keyHead: StrSlice, lineInfo: LineInfo) {
 		super(lineInfo);
 	}
 }
 
 export class KeyInvalidHead extends KeyHead {
-	constructor(readonly keyHead: StrCharSlice, lineInfo: LineInfo) {
+	constructor(readonly keyHead: StrSlice, lineInfo: LineInfo) {
 		super(lineInfo);
 	}
 }
@@ -71,7 +71,7 @@ export class EmptyLine extends KeyHead {
 
 export class KeyTrait extends KeyHead {
 	constructor(
-		readonly key: StrCharSlice,
+		readonly key: StrSlice,
 		readonly children: KeyHead[],
 		lineInfo: LineInfo
 	) {
@@ -81,7 +81,7 @@ export class KeyTrait extends KeyHead {
 
 export class KeyValDef extends KeyHead {
 	constructor(
-		readonly key: StrCharSlice,
+		readonly key: StrSlice,
 		readonly value: TypeValuePair<any>,
 		lineInfo: LineInfo
 	) {

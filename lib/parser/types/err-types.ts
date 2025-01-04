@@ -1,4 +1,4 @@
-import { ArraySlice, StrCharSlice } from "@/utils/slice";
+import { ArraySlice, StrSlice } from "@/utils/slice";
 import { KeyHead, KeyInvalidHead } from "@/parser/types/heads";
 import { TypeBase } from "@/parser/types/type-types";
 import { Range } from "@/utils/seq";
@@ -50,7 +50,7 @@ export abstract class ParserErrBase {
 export abstract class ParserLineErrBase extends ParserErrBase {
 	constructor(
 		public readonly head: KeyHead,
-		public readonly lineErrorSlice: StrCharSlice
+		public readonly lineErrorSlice: StrSlice
 	) {
 		super();
 	}
@@ -61,7 +61,7 @@ export abstract class ParserLineErrBase extends ParserErrBase {
 		const errorString = this.lineErrorSlice.getErrorString();
 		const errorMessage = this.toMessage();
 		return [
-			{ content: content.string, indent, row },
+			{ content: content.value, indent, row },
 			{
 				content: `${errorString}: <${errorMessage}>`,
 				indent,
@@ -85,7 +85,7 @@ export abstract class ParserBlockErrBase extends ParserErrBase {
 export class ParserNumberErr extends ParserLineErrBase {
 	constructor(
 		head: KeyHead,
-		lineErrorSlice: StrCharSlice,
+		lineErrorSlice: StrSlice,
 		public readonly numberErr: NumberErr
 	) {
 		super(head, lineErrorSlice);
@@ -103,7 +103,7 @@ export type StructureErrKind =
 export class ParserStructureErr extends ParserLineErrBase {
 	constructor(
 		head: KeyInvalidHead,
-		lineErrorSlice: StrCharSlice,
+		lineErrorSlice: StrSlice,
 		public readonly kind: StructureErrKind
 	) {
 		super(head, lineErrorSlice);
@@ -144,7 +144,7 @@ export class ParserIndentErr extends ParserBlockErrBase {
 
 	public toReport(): ReportLine[] {
 		const childLines = this.children.map(child => ({
-			content: child.lineInfo.content.string,
+			content: child.lineInfo.content.value,
 			indent: child.lineInfo.indent,
 			row: child.lineInfo.row,
 		}));

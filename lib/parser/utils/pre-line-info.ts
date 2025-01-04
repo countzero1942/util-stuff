@@ -1,5 +1,5 @@
 import { ParserStructureErr } from "@/parser/types/err-types";
-import { StrCharSlice } from "@/utils/slice";
+import { StrSlice } from "@/utils/slice";
 import {
 	KeyHead,
 	ParserErr,
@@ -59,23 +59,16 @@ const getSpaceError = (
 			index === undefined ||
 			length === undefined
 		) {
-			return StrCharSlice.none(keyHead);
+			return StrSlice.none(keyHead);
 		}
-		return StrCharSlice.fromLength(keyHead, index, length);
+		return StrSlice.fromLength(keyHead, index, length);
 	};
 
 	const lineErrorSlice = getSlice();
 
-	const lineInfo = new LineInfo(
-		StrCharSlice.all(line),
-		0,
-		lineNumber
-	);
+	const lineInfo = new LineInfo(StrSlice.all(line), 0, lineNumber);
 
-	const head = new KeyInvalidHead(
-		StrCharSlice.all(keyHead),
-		lineInfo
-	);
+	const head = new KeyInvalidHead(StrSlice.all(keyHead), lineInfo);
 
 	const err = new ParserStructureErr(
 		head,
