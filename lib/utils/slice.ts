@@ -399,7 +399,8 @@ export class StrSlice {
 		const slices: StrSlice[] = [];
 		let start = 0;
 		let next = start;
-		while (next <= this.endExcl) {
+		const str = this.value;
+		while (next <= this.length) {
 			const [j, k] = this.indexOfMany(values, next);
 			if (j === -1) {
 				slices.push(
@@ -412,13 +413,18 @@ export class StrSlice {
 				break;
 			}
 			if (start !== j) {
-				slices.push(
-					new StrSlice(
-						this.source,
-						this.startIncl + start,
-						j
-					).trim()
-				);
+				const entry = new StrSlice(
+					this.source,
+					this.startIncl + start,
+					this.startIncl + j
+				).trim();
+
+				const isEntryFirstAndEmpty =
+					slices.length === 0 && entry.isEmpty;
+
+				if (!isEntryFirstAndEmpty) {
+					slices.push(entry);
+				}
 			}
 			start = j;
 			next = start + values[k]!.length;
@@ -455,15 +461,33 @@ export class StrSlice {
 		// 'indexes' will be same length as 'values'
 		const indexes = this.indexesOfOrdered(values);
 		const slices: StrSlice[] = [];
-		let start = this.startIncl;
+		let start = 0;
 		for (let i = 0; i < indexes.length; i++) {
 			const end = indexes[i] as number;
 			if (end !== -1) {
-				slices.push(new StrSlice(this.source, start, end).trim());
+				const entry = new StrSlice(
+					this.source,
+					this.startIncl + start,
+					this.startIncl + end
+				).trim();
+
+				const isEntryFirstAndEmpty =
+					slices.length === 0 && entry.isEmpty;
+
+				if (!isEntryFirstAndEmpty) {
+					slices.push(entry);
+				}
+
 				start = end;
 			}
 		}
-		slices.push(new StrSlice(this.source, start, this.endExcl));
+		slices.push(
+			new StrSlice(
+				this.source,
+				this.startIncl + start,
+				this.endExcl
+			).trim()
+		);
 		return slices;
 	}
 

@@ -403,7 +403,7 @@ describe("StrSlice Non-Index-related methods", () => {
 			});
 		});
 
-		describe("equals StrCharValue value", () => {
+		describe("equals StrValue value", () => {
 			let strSlice: StrSlice;
 
 			beforeEach(() => {

@@ -28,6 +28,14 @@ describe("StrSlice Index related methods A", () => {
 			const slice = new StrSlice("hello world");
 			expect(slice.indexOfMany(["w", "l", "o"])).toEqual([2, 1]);
 		});
+		it("handles matching in middle of string", () => {
+			// "hello world"
+			//  012345678901
+			const slice1 = new StrSlice("hello world", 4, 9);
+			expect(slice1.value).toBe("o wor");
+			expect(slice1.indexOfMany(["w", "l"])).toEqual([2, 0]);
+			expect(slice1.indexOfMany(["l"])).toEqual([-1, -1]);
+		});
 
 		it("works with empty string", () => {
 			const slice = new StrSlice("");

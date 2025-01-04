@@ -65,7 +65,7 @@ import {
 	testRPrecTypeMap,
 	testZTypesTypeMap,
 } from "@/my-tests/parser/types/test-type-map";
-import { sleep } from "moderndash";
+import { isEqual, sleep } from "moderndash";
 
 /**
  * Test TypeMap
@@ -146,12 +146,58 @@ const keyHeads = [
 // div();
 // log(matches);
 
-const str = "a😄😄b😺😺😄c👨‍👦😺👨‍👦😄👨‍👦";
-const seq = StrGraphemeSeq.from(str);
-const indexes = seq.toArray();
-log(indexes);
+const matches = [".", "_", "^"];
+const strs = [
+	".999.2.6_4.3^3.4^999",
+	"_999_4.3^3.4^999",
+	".999.2.6^3.4^999",
+	".999.2.6_4.3^999",
+	".999.2.6_999",
+	"_999_4.3^999",
+	"^999^3.4^999",
+	".999X_999",
+	".999X and some stuff_999",
+];
+const strsShouldBe = [
+	".2.6_4.3^3.4",
+	"_4.3^3.4",
+	".2.6^3.4",
+	".2.6_4.3",
+	".2.6",
+	"_4.3",
+	"^3.4",
+	"X",
+	"X and some stuff",
+];
+const results = [
+	[".2.6", "_4.3", "^3.4"],
+	["_4.3", "^3.4"],
+	[".2.6", "^3.4"],
+	[".2.6", "_4.3"],
+	[".2.6"],
+	["_4.3"],
+	["^3.4"],
+	["X"],
+	["X and some stuff"],
+	[""],
+];
 
-const slice = new StrSlice(str);
-const indexes2 = slice.indexesOfOrdered(["😄", "😺", "👨‍👦"]);
-div();
-log(indexes2);
+for (let i = 0; i < strs.length; i++) {
+	const slice = new StrSlice(strs[i]!, 4, -4);
+
+	// expect(slice.value).toBe(strsShouldBe[i]);
+	const shouldBeEqual = slice.value === strsShouldBe[i];
+	const result = slice
+		.edgeSplitOrdered(matches)
+		.map(s => s.value) as string[];
+	const shouldResult = results[i];
+	const areEquals = isEqual(result, shouldResult);
+
+	log(`'${slice.value}'`);
+	log(`'${strsShouldBe[i]}'`);
+	log(shouldBeEqual);
+	log(result);
+	log(shouldResult);
+	log(areEquals);
+	div();
+}
