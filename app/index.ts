@@ -59,7 +59,7 @@ import { parseDefaultValue } from "@/parser/utils/parse-value";
 import { parse } from "node:path";
 import { parseKeyHead } from "@/parser/utils/parse-key-head";
 import { formatNum } from "@/utils/string";
-import { StrSlice } from "@/utils/slice";
+import { normalizeStartEnd, StrSlice } from "@/utils/slice";
 import {
 	testRFixedTypeMap,
 	testRPrecTypeMap,
@@ -146,58 +146,16 @@ const keyHeads = [
 // div();
 // log(matches);
 
-const matches = [".", "_", "^"];
-const strs = [
-	".999.2.6_4.3^3.4^999",
-	"_999_4.3^3.4^999",
-	".999.2.6^3.4^999",
-	".999.2.6_4.3^999",
-	".999.2.6_999",
-	"_999_4.3^999",
-	"^999^3.4^999",
-	".999X_999",
-	".999X and some stuff_999",
-];
-const strsShouldBe = [
-	".2.6_4.3^3.4",
-	"_4.3^3.4",
-	".2.6^3.4",
-	".2.6_4.3",
-	".2.6",
-	"_4.3",
-	"^3.4",
-	"X",
-	"X and some stuff",
-];
-const results = [
-	[".2.6", "_4.3", "^3.4"],
-	["_4.3", "^3.4"],
-	[".2.6", "^3.4"],
-	[".2.6", "_4.3"],
-	[".2.6"],
-	["_4.3"],
-	["^3.4"],
-	["X"],
-	["X and some stuff"],
-	[""],
-];
+const slice = StrSlice.from(":::hello worldly:", 3, -3);
+const sliceStr = slice.value;
+const sliceOf = slice.sliceOf(":");
+const sliceOfStr = sliceOf.value;
+const shouldBe = slice.slice(0, 0);
+const shouldBeStr = shouldBe.value;
+const b1 = sliceOf.equals(shouldBe);
+div();
 
-for (let i = 0; i < strs.length; i++) {
-	const slice = new StrSlice(strs[i]!, 4, -4);
-
-	// expect(slice.value).toBe(strsShouldBe[i]);
-	const shouldBeEqual = slice.value === strsShouldBe[i];
-	const result = slice
-		.edgeSplitOrdered(matches)
-		.map(s => s.value) as string[];
-	const shouldResult = results[i];
-	const areEquals = isEqual(result, shouldResult);
-
-	log(`'${slice.value}'`);
-	log(`'${strsShouldBe[i]}'`);
-	log(shouldBeEqual);
-	log(result);
-	log(shouldResult);
-	log(areEquals);
-	div();
-}
+// :::hello worldly:
+//    012345678901
+// 012345678901234567
+//       10987654321-

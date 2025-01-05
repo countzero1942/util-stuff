@@ -1,5 +1,6 @@
 import { Str } from "@/parser/types/type-types";
 import { div, log, logag } from "@/utils/log";
+import { Range } from "@/utils/slice";
 import {
 	FullType,
 	getFullType,
@@ -1256,35 +1257,6 @@ export class RecordSeq<
 			{ type: "Class", name: className },
 			"has-class"
 		);
-	}
-}
-
-/**
- * Represents a range of indices in a string or array.
- *
- * Unlike a slice range, the start and end indices are well-defined (positive values:
- * not optional or negative).
- */
-export class Range {
-	constructor(
-		public readonly startIncl: number,
-		public readonly endExcl: number
-	) {}
-
-	public length(): number {
-		return this.endExcl - this.startIncl;
-	}
-
-	public static from(startIncl: number, endExcl: number) {
-		return new Range(startIncl, endExcl);
-	}
-
-	public static fromLength(startIncl: number, length: number) {
-		return new Range(startIncl, startIncl + length);
-	}
-
-	public static empty() {
-		return new Range(0, 0);
 	}
 }
 

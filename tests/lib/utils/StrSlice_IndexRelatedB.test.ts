@@ -1,7 +1,7 @@
 import { StrSeqElement } from "@/utils/seq";
 import { StrSlice } from "@/utils/slice";
 
-describe("StrSlice Index related methods A", () => {
+describe("StrSlice Index related methods B", () => {
 	describe("StrSlice.indexOfMany", () => {
 		it("returns [-1,-1] when no match found", () => {
 			const slice = new StrSlice("hello world");

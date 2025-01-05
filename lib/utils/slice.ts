@@ -1,23 +1,53 @@
 import { Str } from "@/parser/types/type-types";
 import { clamp } from "@/utils/math";
-import { StrGraphemeSeq, StrSeq, Range, Seq } from "@/utils/seq";
+import { StrGraphemeSeq, StrSeq, Seq } from "@/utils/seq";
 import { isCodePointWhiteSpace } from "@/utils/string";
+
+/**
+ * Represents a range of indices in a string or array.
+ *
+ * Unlike a slice range, the start and end indices are well-defined
+ * (positive values: not optional or negative).
+ */
+export class Range {
+	constructor(
+		public readonly startIncl: number,
+		public readonly endExcl: number
+	) {}
+
+	public length(): number {
+		return this.endExcl - this.startIncl;
+	}
+
+	public static from(startIncl: number, endExcl: number) {
+		return new Range(startIncl, endExcl);
+	}
+
+	public static fromLength(startIncl: number, length: number) {
+		return new Range(startIncl, startIncl + length);
+	}
+
+	public static empty() {
+		return new Range(0, 0);
+	}
+}
 
 export const normalizeStartEnd = (
 	length: number,
 	startIncl?: number,
 	endExcl?: number
 ): Range => {
+	const safeLength = Math.max(0, length);
 	const getStart = () => {
 		let s = startIncl ?? 0;
-		s = s < 0 ? length + s : s;
-		return Math.max(0, s);
+		s = s < 0 ? safeLength + s : s;
+		return clamp(s, 0, safeLength);
 	};
 
 	const getEnd = () => {
-		let e = endExcl ?? length;
-		e = e < 0 ? length + e : e;
-		return Math.max(0, e);
+		let e = endExcl ?? safeLength;
+		e = e < 0 ? safeLength + e : e;
+		return clamp(e, 0, safeLength);
 	};
 
 	let s = getStart();
@@ -279,29 +309,15 @@ export class StrSlice {
 			if (j > -1) {
 				splits++;
 			} else {
-				strs.push(
-					new StrSlice(
-						this.source,
-						this.startIncl + i,
-						this.endExcl
-					).trim()
-				);
+				strs.push(this.slice(i).trim());
 				break;
 			}
-			strs.push(
-				new StrSlice(this.source, this.startIncl + i, j).trim()
-			);
+			strs.push(this.slice(i, j).trim());
 
 			i = j + splitter.length;
 
 			if (splits >= safeMaxSplits) {
-				strs.push(
-					new StrSlice(
-						this.source,
-						this.startIncl + i,
-						this.endExcl
-					).trim()
-				);
+				strs.push(this.slice(i).trim());
 				break;
 			}
 		}
@@ -344,7 +360,7 @@ export class StrSlice {
 		//
 		// value = "e", length = 1
 		// loopLength = 5 - 1 = 4
-		// lastIndex = 4 => wrong
+		// lastIndex = 3 => wrong
 		// loopLength = 5 - 1 + 1 = 5
 		// lastIndex = 4
 		//
@@ -354,14 +370,14 @@ export class StrSlice {
 		//
 		// So always add the 1 because we exclude empty value
 
-		const l = value.length;
-		if (l === 0) {
+		const valueLength = value.length;
+		if (valueLength === 0) {
 			return -1;
 		}
 
 		const range = normalizeStartEnd(this.length, childStartIncl);
 
-		const loopLength = this.endExcl - l + 1;
+		const loopLength = this.endExcl - valueLength + 1;
 		for (
 			let i = this.startIncl + range.startIncl;
 			i < loopLength;
@@ -404,20 +420,22 @@ export class StrSlice {
 			const [j, k] = this.indexOfMany(values, next);
 			if (j === -1) {
 				slices.push(
-					new StrSlice(
-						this.source,
-						this.startIncl + start,
-						this.endExcl
-					).trim()
+					// new StrSlice(
+					// 	this.source,
+					// 	this.startIncl + start,
+					// 	this.endExcl
+					// ).trim()
+					this.slice(start).trim()
 				);
 				break;
 			}
 			if (start !== j) {
-				const entry = new StrSlice(
-					this.source,
-					this.startIncl + start,
-					this.startIncl + j
-				).trim();
+				// const entry = new StrSlice(
+				// 	this.source,
+				// 	this.startIncl + start,
+				// 	this.startIncl + j
+				// ).trim();
+				const entry = this.slice(start, j).trim();
 
 				const isEntryFirstAndEmpty =
 					slices.length === 0 && entry.isEmpty;
@@ -465,11 +483,12 @@ export class StrSlice {
 		for (let i = 0; i < indexes.length; i++) {
 			const end = indexes[i] as number;
 			if (end !== -1) {
-				const entry = new StrSlice(
-					this.source,
-					this.startIncl + start,
-					this.startIncl + end
-				).trim();
+				// const entry = new StrSlice(
+				// 	this.source,
+				// 	this.startIncl + start,
+				// 	this.startIncl + end
+				// ).trim();
+				const entry = this.slice(start, end).trim();
 
 				const isEntryFirstAndEmpty =
 					slices.length === 0 && entry.isEmpty;
@@ -482,11 +501,12 @@ export class StrSlice {
 			}
 		}
 		slices.push(
-			new StrSlice(
-				this.source,
-				this.startIncl + start,
-				this.endExcl
-			).trim()
+			// new StrSlice(
+			// 	this.source,
+			// 	this.startIncl + start,
+			// 	this.endExcl
+			// ).trim()
+			this.slice(start).trim()
 		);
 		return slices;
 	}

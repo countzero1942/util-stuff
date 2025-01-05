@@ -1,30 +1,35 @@
 import { StrSlice } from "@/utils/slice";
 
-describe("StrSlice Properties", () => {
+describe("StrSlice Properties and slice method", () => {
 	let strSlice: StrSlice;
 
 	beforeEach(() => {
 		strSlice = new StrSlice("hello");
 	});
 
-	it("returns the correct length", () => {
+	it("returns the correct slice length", () => {
 		expect(strSlice.length).toBe(5);
 		expect(new StrSlice("").length).toBe(0);
 		expect(StrSlice.empty().length).toBe(0);
 	});
 
-	it("returns true if the string is empty", () => {
+	it("returns true if the slice is empty", () => {
 		const emptyStrSlice = new StrSlice("");
 		expect(emptyStrSlice.isEmpty).toBe(true);
 		expect(StrSlice.empty().isEmpty).toBe(true);
 	});
 
-	it("returns false if the string is not empty", () => {
+	it("returns false if the slice is not empty", () => {
 		expect(strSlice.isEmpty).toBe(false);
 	});
 
-	it("returns the correct value", () => {
+	it("returns the correct slice value from full source string", () => {
 		expect(strSlice.value).toBe("hello");
+	});
+
+	it("returns the correct slice value from partial source string", () => {
+		strSlice = new StrSlice("hello", 1, -1);
+		expect(strSlice.value).toBe("ell");
 	});
 
 	it("sets 'sliceCache' to 'source' if slices entire source string", () => {

@@ -1,6 +1,93 @@
 import { StrSlice } from "@/utils/slice";
 
 describe("StrSlice Index related methods A", () => {
+	describe("StrSlice.slice", () => {
+		it("tests all permutations of 'slice' against expected string value", () => {
+			const slice = StrSlice.from(":::hello worldly:", 3, -3);
+
+			let sliceOf: StrSlice;
+			let shouldBe: string;
+
+			sliceOf = slice.slice();
+			shouldBe = "hello world";
+			expect(sliceOf.equals(shouldBe)).toBe(true);
+
+			sliceOf = slice.slice(0, 0);
+			shouldBe = "";
+			expect(sliceOf.equals(shouldBe)).toBe(true);
+
+			sliceOf = slice.slice(0, 5);
+			shouldBe = "hello";
+			expect(sliceOf.equals(shouldBe)).toBe(true);
+
+			sliceOf = slice.slice(5, 0);
+			shouldBe = "hello";
+			expect(sliceOf.equals(shouldBe)).toBe(true);
+
+			sliceOf = slice.slice(-13, 5);
+			shouldBe = "hello";
+			expect(sliceOf.equals(shouldBe)).toBe(true);
+
+			sliceOf = slice.slice(6, 11);
+			shouldBe = "world";
+			expect(sliceOf.equals(shouldBe)).toBe(true);
+
+			sliceOf = slice.slice(6, 12);
+			shouldBe = "world";
+			expect(sliceOf.equals(shouldBe)).toBe(true);
+
+			sliceOf = slice.slice(2, 4);
+			shouldBe = "ll";
+			expect(sliceOf.equals(shouldBe)).toBe(true);
+
+			sliceOf = slice.slice(-9, -7);
+			shouldBe = "ll";
+			expect(sliceOf.equals(shouldBe)).toBe(true);
+
+			sliceOf = slice.slice(-7, -9);
+			shouldBe = "ll";
+			expect(sliceOf.equals(shouldBe)).toBe(true);
+
+			// :::hello worldly:
+			//    012345678901
+			//    10987654321-
+			// 012345678901234567
+			//
+		});
+	});
+
+	describe("StrSlice.sliceOf", () => {
+		it("tests all permutations of sliceOf value against manual slice", () => {
+			const slice = StrSlice.from(":::hello worldly:", 3, -3);
+			let sliceOf: StrSlice;
+			let shouldBe: StrSlice;
+
+			sliceOf = slice.sliceOf("world");
+			shouldBe = slice.slice(6, 11);
+			expect(sliceOf.equals(shouldBe)).toBe(true);
+
+			sliceOf = slice.sliceOf("hello");
+			shouldBe = slice.slice(0, 5);
+			expect(sliceOf.equals(shouldBe)).toBe(true);
+
+			sliceOf = slice.sliceOf(":");
+			shouldBe = slice.slice(0, 0);
+			expect(sliceOf.equals(shouldBe)).toBe(true);
+
+			sliceOf = slice.sliceOf("worldly");
+			shouldBe = slice.slice(0, 0);
+			expect(sliceOf.equals(shouldBe)).toBe(true);
+
+			sliceOf = slice.sliceOf("");
+			shouldBe = slice.slice(0, 0);
+			expect(sliceOf.equals(shouldBe)).toBe(true);
+
+			// :::hello worldly:
+			//    012345678901
+			// 012345678901234567
+			//       10987654321-
+		});
+	});
 	describe("StrSlice.indexOf", () => {
 		describe("Test slice of entire string", () => {
 			it("finds index of value if it exists or -1", () => {
