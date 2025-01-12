@@ -8,7 +8,7 @@ import {
 	splitHead,
 } from "@/parser/utils/lines-to-heads";
 import { ErrorType, getError } from "@/utils/error";
-import { ArraySeq, NumSeq, Range } from "@/utils/seq";
+import { ArraySeq, NumSeq } from "@/utils/seq";
 import { parseDefaultValue } from "@/parser/utils/parse-value";
 import {
 	KeyHead,

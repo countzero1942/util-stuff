@@ -1,5 +1,6 @@
-import { log } from "console";
 import { ReadonlyTuple } from "type-fest";
+
+export type KeyType = string | number | symbol;
 
 export type FullType = {
 	type:

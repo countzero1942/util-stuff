@@ -1,23 +1,43 @@
-import { Str } from "@/parser/types/type-types";
-import { div, log, logag } from "@/utils/log";
-import { Range } from "@/utils/slice";
 import {
 	FullType,
-	getFullType,
-	getType,
 	hasClassName,
 	isFullType,
 	isObject,
+	KeyType,
 } from "@/utils/types";
-import { setUncaughtExceptionCaptureCallback } from "node:process";
-import { stringify } from "node:querystring";
-import { Key } from "node:readline";
-import { ValueOf } from "type-fest";
-import { ValuesType } from "utility-types";
 
 export type AnySeq = Seq<any>;
 
 export type SeqType<T> = T extends Seq<infer U> ? U : never;
+
+/**
+ * Represents a range of indices in a string or array.
+ *
+ * Unlike a slice range, the start and end indices are well-defined
+ * (positive values: not optional or negative).
+ */
+export class Range {
+	constructor(
+		public readonly startIncl: number,
+		public readonly endExcl: number
+	) {}
+
+	public length(): number {
+		return this.endExcl - this.startIncl;
+	}
+
+	public static from(startIncl: number, endExcl: number) {
+		return new Range(startIncl, endExcl);
+	}
+
+	public static fromLength(startIncl: number, length: number) {
+		return new Range(startIncl, startIncl + length);
+	}
+
+	public static empty() {
+		return new Range(0, 0);
+	}
+}
 
 /**
  * Seq base class. Holds functional methods: 'map', 'filter', etc.
@@ -53,9 +73,12 @@ export abstract class Seq<T> {
 
 		for (const x of this) {
 			if (!isObject(x)) continue;
-			const key = x["key"];
+
+			const xObj = x as Record<KeyType, any>;
+
+			const key = xObj["key"];
 			if (!key) continue;
-			const value = x["value"];
+			const value = xObj["value"];
 			if (!value) continue;
 
 			obj[key] = value;
@@ -399,7 +422,7 @@ export abstract class Seq<T> {
 		max = max ?? Number.MAX_SAFE_INTEGER;
 		for (const x of this) {
 			if (c <= max) {
-				log(x);
+				console.log(x);
 			} else {
 				break;
 			}

@@ -1,4 +1,5 @@
-import { normalizeStartEnd, Range, StrSlice } from "@/utils/slice";
+import { Range } from "@/utils/seq";
+import { normalizeStartEnd, StrSlice } from "@/utils/slice";
 
 describe("StrSlice factory methods + normalizeStartEnd", () => {
 	it("tests normalizeStartEnd with edge cases", () => {

@@ -66,6 +66,9 @@ import {
 	testZTypesTypeMap,
 } from "@/my-tests/parser/types/test-type-map";
 import { isEqual, sleep } from "moderndash";
+import { logGeneratePassword } from "@/utils/password";
+
+logGeneratePassword();
 
 /**
  * Test TypeMap
@@ -146,14 +149,14 @@ const keyHeads = [
 // div();
 // log(matches);
 
-const slice = StrSlice.from(":::hello worldly:", 3, -3);
-const sliceStr = slice.value;
-const sliceOf = slice.sliceOf(":");
-const sliceOfStr = sliceOf.value;
-const shouldBe = slice.slice(0, 0);
-const shouldBeStr = shouldBe.value;
-const b1 = sliceOf.equals(shouldBe);
-div();
+// const slice = StrSlice.from(":::hello worldly:", 3, -3);
+// const sliceStr = slice.value;
+// const sliceOf = slice.sliceOf(":");
+// const sliceOfStr = sliceOf.value;
+// const shouldBe = slice.slice(0, 0);
+// const shouldBeStr = shouldBe.value;
+// const b1 = sliceOf.equals(shouldBe);
+// div();
 
 // :::hello worldly:
 //    012345678901

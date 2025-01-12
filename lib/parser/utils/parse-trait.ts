@@ -4,7 +4,6 @@ import {
 	ParserIndentErr,
 	ParserNumberErr,
 } from "@/parser/types/err-types";
-import { StrSlice } from "@/utils/slice";
 import {
 	EmptyLine,
 	KeyHead,
