@@ -371,3 +371,66 @@ export const cleanJSDocDescription = (
 
 	return lines.join("\n");
 };
+
+export const getRepeatingMatchesCount = (
+	source: string,
+	match: string,
+	index: number = 0
+) => {
+	// abcabc
+	// 0123456
+	// l = 6 - 3 + 1 = 4
+	if (match.length === 0) return 0;
+	let i = index;
+	let count = 0;
+	const length = source.length - match.length + 1;
+	while (i < length) {
+		if (source.startsWith(match, i)) {
+			i += match.length;
+			count++;
+		} else {
+			break;
+		}
+	}
+	return count;
+};
+
+export const getMinTabCharsCount = (
+	lines: string[],
+	tabChar: string = "\t"
+) => {
+	let minTabCharsCount = Number.MAX_SAFE_INTEGER;
+	for (const line of lines) {
+		if (line === "") continue;
+		const tabCharsCount = getRepeatingMatchesCount(line, tabChar);
+		minTabCharsCount = Math.min(minTabCharsCount, tabCharsCount);
+	}
+	return minTabCharsCount === Number.MAX_SAFE_INTEGER
+		? 0
+		: minTabCharsCount;
+};
+
+export const cleanMultiLineString = (
+	multiLineString: string,
+	tabChar: string = "\t"
+) => {
+	let lines = multiLineString
+		.split("\n")
+		.map(line => line.trimEnd());
+
+	lines = removeEmptyLinesFromStartAndEnd(lines);
+
+	const minTabCharsCount = getMinTabCharsCount(lines, tabChar);
+
+	lines = lines.map(line => {
+		if (line === "") return "";
+		const tabCharsCount = getRepeatingMatchesCount(line, tabChar);
+
+		if (tabCharsCount >= minTabCharsCount) {
+			return line.slice(minTabCharsCount * tabChar.length);
+		}
+		return line;
+	});
+
+	return lines.join("\n");
+};

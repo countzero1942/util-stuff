@@ -12,6 +12,7 @@ import {
 	logag,
 	logobj,
 	logg,
+	ddiv,
 } from "@/utils/log";
 import {
 	NNum,
@@ -58,7 +59,11 @@ import { NumberErr } from "@/parser/types/err-types";
 import { parseDefaultValue } from "@/parser/utils/parse-value";
 import { parse } from "node:path";
 import { parseKeyHead } from "@/parser/utils/parse-key-head";
-import { formatNum } from "@/utils/string";
+import {
+	cleanMultiLineString,
+	formatNum,
+	getMinTabCharsCount,
+} from "@/utils/string";
 import { normalizeStartEnd, StrSlice } from "@/utils/slice";
 import {
 	testRFixedTypeMap,
@@ -162,3 +167,41 @@ const keyHeads = [
 //    012345678901
 // 012345678901234567
 //       10987654321-
+
+const sqlLast10Customers = `
+		SELECT * FROM
+		(
+			SELECT * FROM customers 
+			ORDER BY CustomerID DESC 
+			LIMIT 10
+		) AS sub
+		ORDER BY CustomerID ASC;   
+	`;
+
+const sqlLast10CustomersWithOffset = `
+		SELECT * FROM customers
+		ORDER BY CustomerID DESC
+		LIMIT 10 OFFSET (n - 10);
+	`;
+
+// const clean1 = cleanMultiLineString(sqlLast10Customers);
+// const clean2 = cleanMultiLineString(sqlLast10CustomersWithOffset);
+
+// log(sqlLast10Customers);
+// div();
+// log(clean1);
+// ddiv();
+// log(sqlLast10CustomersWithOffset);
+// div();
+// log(clean2);
+// div();
+
+const input = `
+xxxxxxFirst line
+xxxxxxxxxSecond line
+xxxxxxThird line
+		  `;
+
+const s = cleanMultiLineString(input, "xxx");
+log(input);
+log(s);
