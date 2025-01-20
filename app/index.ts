@@ -196,12 +196,16 @@ const sqlLast10CustomersWithOffset = `
 // log(clean2);
 // div();
 
-const input = `
-xxxxxxFirst line
-xxxxxxxxxSecond line
-xxxxxxThird line
-		  `;
+// const input = `
+// xxxxxxFirst line
+// xxxxxxxxxSecond line
+// xxxxxxThird line
+// 		  `;
 
-const s = cleanMultiLineString(input, "xxx");
-log(input);
-log(s);
+// const s = cleanMultiLineString(input, "xxx");
+// log(input);
+// log(s);
+
+const input = "\t\tSingle Line";
+const s = cleanMultiLineString(input);
+log(`'${s}'`);

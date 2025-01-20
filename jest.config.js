@@ -8,7 +8,6 @@ export default {
 	coveragePathIgnorePatterns: ["/node_modules/"],
 	coverageReporters: ["json", "html"],
 	coverageDirectory: "coverage",
-
 	moduleNameMapper: {
 		"^@/utils/(.*)$": "<rootDir>/lib/utils/$1",
 	},

@@ -181,6 +181,11 @@ describe("cleanMultiLineString", () => {
 		);
 	});
 
+	it("removes indentation from a single line", () => {
+		const input = "\t\tSingle line";
+		expect(cleanMultiLineString(input)).toBe("Single line");
+	});
+
 	it("preserves relative indentation", () => {
 		const input = `
 				First line

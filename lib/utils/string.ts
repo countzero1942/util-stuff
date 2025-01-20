@@ -397,12 +397,12 @@ export const getRepeatingMatchesCount = (
 
 export const getMinTabCharsCount = (
 	lines: string[],
-	tabChar: string = "\t"
+	tabString: string = "\t"
 ) => {
 	let minTabCharsCount = Number.MAX_SAFE_INTEGER;
 	for (const line of lines) {
 		if (line === "") continue;
-		const tabCharsCount = getRepeatingMatchesCount(line, tabChar);
+		const tabCharsCount = getRepeatingMatchesCount(line, tabString);
 		minTabCharsCount = Math.min(minTabCharsCount, tabCharsCount);
 	}
 	return minTabCharsCount === Number.MAX_SAFE_INTEGER
@@ -410,27 +410,36 @@ export const getMinTabCharsCount = (
 		: minTabCharsCount;
 };
 
+export const cleanMultiLineArray = (
+	lines: string[],
+	tabString: string = "\t"
+) => {
+	lines = removeEmptyLinesFromStartAndEnd(lines);
+
+	const minTabCharsCount = getMinTabCharsCount(lines, tabString);
+
+	lines = lines.map(line => {
+		if (line === "") return "";
+		const tabCharsCount = getRepeatingMatchesCount(line, tabString);
+
+		if (tabCharsCount >= minTabCharsCount) {
+			return line.slice(minTabCharsCount * tabString.length);
+		}
+		return line;
+	});
+
+	return lines;
+};
+
 export const cleanMultiLineString = (
 	multiLineString: string,
-	tabChar: string = "\t"
+	tabString: string = "\t"
 ) => {
 	let lines = multiLineString
 		.split("\n")
 		.map(line => line.trimEnd());
 
-	lines = removeEmptyLinesFromStartAndEnd(lines);
-
-	const minTabCharsCount = getMinTabCharsCount(lines, tabChar);
-
-	lines = lines.map(line => {
-		if (line === "") return "";
-		const tabCharsCount = getRepeatingMatchesCount(line, tabChar);
-
-		if (tabCharsCount >= minTabCharsCount) {
-			return line.slice(minTabCharsCount * tabChar.length);
-		}
-		return line;
-	});
+	lines = cleanMultiLineArray(lines, tabString);
 
 	return lines.join("\n");
 };
