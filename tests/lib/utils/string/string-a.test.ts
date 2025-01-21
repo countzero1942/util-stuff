@@ -197,6 +197,28 @@ describe("cleanMultiLineString", () => {
 		);
 	});
 
+	it("preserves relative indentation with extra indent", () => {
+		const input = `
+				First line
+					Indented line
+				Third line
+		  `;
+		expect(cleanMultiLineString(input, { extraIndents: 1 })).toBe(
+			"\tFirst line\n\t\tIndented line\n\tThird line"
+		);
+	});
+
+	it("preserves relative indentation with many extra indents", () => {
+		const input = `
+				First line
+					Indented line
+				Third line
+		  `;
+		expect(cleanMultiLineString(input, { extraIndents: 3 })).toBe(
+			"\t\t\tFirst line\n\t\t\t\tIndented line\n\t\t\tThird line"
+		);
+	});
+
 	it("handles mixed indentation", () => {
 		const input = `
 				First line
@@ -214,9 +236,23 @@ describe("cleanMultiLineString", () => {
          Second line
       Third line
 		  `;
-		expect(cleanMultiLineString(input, "   ")).toBe(
+		expect(cleanMultiLineString(input, { tabString: "   " })).toBe(
 			"First line\n   Second line\nThird line"
 		);
+	});
+
+	it("works with custom tab character and extra indent", () => {
+		const input = `
+      First line
+         Second line
+      Third line
+		  `;
+		expect(
+			cleanMultiLineString(input, {
+				tabString: "   ",
+				extraIndents: 1,
+			})
+		).toBe("   First line\n      Second line\n   Third line");
 	});
 
 	it("works with single spaces", () => {
@@ -225,7 +261,7 @@ describe("cleanMultiLineString", () => {
          Second line
       Third line
 		  `;
-		expect(cleanMultiLineString(input, " ")).toBe(
+		expect(cleanMultiLineString(input, { tabString: " " })).toBe(
 			"First line\n   Second line\nThird line"
 		);
 	});

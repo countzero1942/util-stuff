@@ -412,8 +412,14 @@ export const getMinTabCharsCount = (
 
 export const cleanMultiLineArray = (
 	lines: string[],
-	tabString: string = "\t"
+	options?: {
+		tabString?: string;
+		extraIndents?: number;
+	}
 ) => {
+	const tabString = options?.tabString ?? "\t";
+	const extraIndents = options?.extraIndents ?? 0;
+
 	lines = removeEmptyLinesFromStartAndEnd(lines);
 
 	const minTabCharsCount = getMinTabCharsCount(lines, tabString);
@@ -428,18 +434,28 @@ export const cleanMultiLineArray = (
 		return line;
 	});
 
+	if (extraIndents > 0) {
+		const extraIndentString = tabString.repeat(extraIndents);
+		lines = lines.map(line => {
+			return `${extraIndentString}${line}`;
+		});
+	}
+
 	return lines;
 };
 
 export const cleanMultiLineString = (
 	multiLineString: string,
-	tabString: string = "\t"
+	options?: {
+		tabString?: string;
+		extraIndents?: number;
+	}
 ) => {
 	let lines = multiLineString
 		.split("\n")
 		.map(line => line.trimEnd());
 
-	lines = cleanMultiLineArray(lines, tabString);
+	lines = cleanMultiLineArray(lines, options);
 
 	return lines.join("\n");
 };
