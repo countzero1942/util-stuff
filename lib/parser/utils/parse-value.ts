@@ -6,7 +6,7 @@ import { StrSlice } from "@/utils/slice";
 
 export const parseDefaultValue = (
 	value: StrSlice
-): TypeValuePair<any> | NumberErr => {
+): TypeValuePair | NumberErr => {
 	const startsWithDigit = /^[+-_ ]*\d/.test(value.value);
 
 	if (startsWithDigit) {

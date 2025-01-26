@@ -82,7 +82,7 @@ export class KeyTrait extends KeyHead {
 export class KeyValDef extends KeyHead {
 	constructor(
 		readonly key: StrSlice,
-		readonly value: TypeValuePair<any>,
+		readonly value: TypeValuePair,
 		lineInfo: LineInfo
 	) {
 		super(lineInfo);

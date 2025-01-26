@@ -11,13 +11,10 @@ import { StrSlice } from "@/utils/slice";
 
 const parseTypeOrFlag = (typeOrFlag: StrSlice): FlagParam => {
 	let name: string = "";
-	let dotParam: TypeValuePair<any> | NumberErr | undefined =
-		undefined;
-	let subParam: TypeValuePair<any> | NumberErr | undefined =
-		undefined;
-	let superParam: TypeValuePair<any> | NumberErr | undefined =
-		undefined;
-	let colonParams: (TypeValuePair<any> | NumberErr)[] = [];
+	let dotParam: TypeValuePair | NumberErr | undefined = undefined;
+	let subParam: TypeValuePair | NumberErr | undefined = undefined;
+	let superParam: TypeValuePair | NumberErr | undefined = undefined;
+	let colonParams: (TypeValuePair | NumberErr)[] = [];
 
 	const nameAndColonParamsSlices = typeOrFlag.edgeSplitMany([":"]);
 	const nameParamsSlices = nameAndColonParamsSlices[0]!

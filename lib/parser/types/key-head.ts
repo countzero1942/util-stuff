@@ -3,10 +3,10 @@ import { TypeValuePair } from "@/parser/types/parse-types";
 
 export type FlagParam = {
 	readonly name: string;
-	readonly dotParam: TypeValuePair<any> | NumberErr | undefined;
-	readonly subParam: TypeValuePair<any> | NumberErr | undefined;
-	readonly superParam: TypeValuePair<any> | NumberErr | undefined;
-	readonly colonParams: (TypeValuePair<any> | NumberErr)[];
+	readonly dotParam: TypeValuePair | NumberErr | undefined;
+	readonly subParam: TypeValuePair | NumberErr | undefined;
+	readonly superParam: TypeValuePair | NumberErr | undefined;
+	readonly colonParams: (TypeValuePair | NumberErr)[];
 };
 
 export type TypeParams = {

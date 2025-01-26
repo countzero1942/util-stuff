@@ -26,6 +26,7 @@ import { TypeMap } from "@/parser/types/type-map";
 import { getFullType } from "@/utils/types";
 import { get } from "node:http";
 import {
+	analyzeNumberString,
 	getPrecisionCount,
 	parseDefNumber,
 } from "@/parser/utils/parse-num";
@@ -73,7 +74,7 @@ import {
 import { isEqual, sleep } from "moderndash";
 import { logGeneratePassword } from "@/utils/password";
 
-logGeneratePassword();
+// logGeneratePassword();
 
 /**
  * Test TypeMap
@@ -101,6 +102,7 @@ logGeneratePassword();
 // testErrParseZnumExp();
 // testErrParseRPrec();
 // testErrParseZNum();
+// testErrParseRPrec();
 
 /**
  * Test split heads
@@ -168,47 +170,7 @@ const keyHeads = [
 // 012345678901234567
 //       10987654321-
 
-const sqlLast10Customers = `
-		SELECT * FROM
-		(
-			SELECT * FROM customers 
-			ORDER BY CustomerID DESC 
-			LIMIT 10
-		) AS sub
-		ORDER BY CustomerID ASC;   
-	`;
-
-const sqlLast10CustomersWithOffset = `
-		SELECT * FROM customers
-		ORDER BY CustomerID DESC
-		LIMIT 10 OFFSET (n - 10);
-	`;
-
-// const clean1 = cleanMultiLineString(sqlLast10Customers);
-// const clean2 = cleanMultiLineString(sqlLast10CustomersWithOffset);
-
-// log(sqlLast10Customers);
-// div();
-// log(clean1);
-// ddiv();
-// log(sqlLast10CustomersWithOffset);
-// div();
-// log(clean2);
-// div();
-
-let input = `
-xxxxxxFirst line
-xxxxxxxxxSecond line
-xxxxxxThird line
-		  `;
-
-input = sqlLast10Customers;
-
-const output = cleanMultiLineString(input, { extraIndents: 1 });
-log(input);
+const result = parseDefNumber(StrSlice.from("123 456"));
 div();
-log(output);
-
-// const input = "\t\tSingle Line";
-// const s = cleanMultiLineString(input);
-// log(`'${s}'`);
+const result2 = parseDefNumber(StrSlice.from("123:456"));
+div();

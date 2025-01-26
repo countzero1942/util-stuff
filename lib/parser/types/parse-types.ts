@@ -10,10 +10,10 @@ export type AnalyzeNumberString = {
 	hasBreakingChars: boolean;
 };
 
-export class TypeValuePair<T> {
+export class TypeValuePair {
 	constructor(
 		public readonly valueType: TypeBase,
-		public readonly value: T
+		public readonly value: any
 	) {}
 }
 

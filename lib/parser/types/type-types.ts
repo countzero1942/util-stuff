@@ -55,14 +55,14 @@ export abstract class TypeBase {
 	 */
 	private makeKey(additionalMembers?: string[]): string {
 		const types: string[] = [];
-		types.push(`(T)${this.typeInfo.type}`);
+		types.push(`{T}${this.typeInfo.type}`);
 
 		if (this.typeInfo.parentType) {
-			types.push(`(PT)${this.typeInfo.parentType}`);
+			types.push(`{PT}${this.typeInfo.parentType}`);
 		}
 
 		if (this.typeInfo.variantType) {
-			types.push(`(VT)${this.typeInfo.variantType}`);
+			types.push(`{VT}${this.typeInfo.variantType}`);
 		}
 
 		if (additionalMembers) {
@@ -92,9 +92,9 @@ export class RPrec extends TypeBase {
 		public readonly SciNotPower: number = 9
 	) {
 		const additionalMembers: string[] = [
-			precision.toString(),
-			UseEngineeringNotation.toString(),
-			SciNotPower.toString(),
+			`{Prec}${precision}`,
+			`{G}${UseEngineeringNotation}`,
+			`{Pow}${SciNotPower}`,
 		];
 		super({ type: ".R", variantType: ":Prec" }, additionalMembers);
 	}
@@ -103,7 +103,7 @@ export class RPrec extends TypeBase {
 export class RFixed extends TypeBase {
 	constructor(public readonly fixed: number = 2) {
 		super({ type: ".R", variantType: ":Fixed" }, [
-			fixed.toString(),
+			`{Places}${fixed}`,
 		]);
 	}
 }

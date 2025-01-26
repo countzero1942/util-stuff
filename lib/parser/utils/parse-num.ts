@@ -42,9 +42,9 @@ import { StrSlice } from "@/utils/slice";
  * @param breakingChars a RegExp of characters to stop the analysis at. Defaults to /[ ,;]/
  * @returns an object with flags indicating the presence of each of the above features
  */
-const analyzeNumberString = (
+export const analyzeNumberString = (
 	value: StrSlice,
-	breakingChars: string = " ,;"
+	breakingChars: string = " ,;:^"
 ) => {
 	const res: AnalyzeNumberString = {
 		hasSeparator: false,
@@ -134,6 +134,9 @@ export const getPrecisionCount = (numStr: string) => {
 					precCount++;
 				}
 				break;
+			case 0x65: // "e":
+			case 0x67: // "g":
+				return precCount;
 			default:
 				precCount++;
 				break;
@@ -384,7 +387,7 @@ const getDetailedNumberError = (
 export const parseRPrecExponent = (
 	value: string,
 	report: AnalyzeNumberString
-): TypeValuePair<number> | NumberErr => {
+): TypeValuePair | NumberErr => {
 	const regex = getDecimalExponentRegex(report);
 
 	const match = regex.exec(value);
@@ -419,7 +422,7 @@ export const parseRPrecExponent = (
 		return getNumberError("NaN", numType);
 	}
 
-	return new TypeValuePair<number>(numType, num);
+	return new TypeValuePair(numType, num);
 };
 
 /**
@@ -436,7 +439,7 @@ export const parseRPrecExponent = (
 export const parseZNumExponent = (
 	value: string,
 	res: AnalyzeNumberString
-): TypeValuePair<number> | NumberErr => {
+): TypeValuePair | NumberErr => {
 	const regex = getIntExponentRegex(res);
 
 	const match = regex.exec(value);
@@ -468,7 +471,7 @@ export const parseZNumExponent = (
 	if (!Number.isSafeInteger(num)) {
 		return getNumberError("Not safe integer", numType);
 	}
-	return new TypeValuePair<number>(numType, num);
+	return new TypeValuePair(numType, num);
 };
 
 /**
@@ -485,7 +488,7 @@ export const parseZNumExponent = (
 export const parseRPrec = (
 	value: string,
 	report: AnalyzeNumberString
-): TypeValuePair<number> | NumberErr => {
+): TypeValuePair | NumberErr => {
 	const regex = getDecimalRegex(report);
 
 	const match = regex.exec(value);
@@ -507,7 +510,7 @@ export const parseRPrec = (
 		return getNumberError("NaN", numType);
 	}
 
-	return new TypeValuePair<number>(numType, num);
+	return new TypeValuePair(numType, num);
 };
 
 /**
@@ -524,7 +527,7 @@ export const parseRPrec = (
 export const parseZNum = (
 	value: string,
 	res: AnalyzeNumberString
-): TypeValuePair<number> | NumberErr => {
+): TypeValuePair | NumberErr => {
 	const regex = getIntRegex(res);
 
 	const match = regex.exec(value);
@@ -548,7 +551,7 @@ export const parseZNum = (
 		return getNumberError("Not safe integer", numType);
 	}
 
-	return new TypeValuePair<number>(numType, num);
+	return new TypeValuePair(numType, num);
 };
 
 /**
@@ -580,7 +583,7 @@ export const parseZNum = (
  */
 export const parseDefNumber = (
 	value: StrSlice
-): TypeValuePair<number> | NumberErr => {
+): TypeValuePair | NumberErr => {
 	const report = analyzeNumberString(value);
 	if (report.hasBreakingChars) {
 		return getNumberError("Invalid number input", new NoNum());
