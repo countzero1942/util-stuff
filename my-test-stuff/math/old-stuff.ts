@@ -199,9 +199,9 @@ const testPrec15Or16NeighborNumbersAgainstAreEqual = (
 			);
 			const msg: string = expectedIsEqual
 				? "All neighbor numbers > 15 digit precision:\n" +
-				  "   SHOULD BE INDISTINCT AND FALSELY EQUAL"
+					"   SHOULD BE INDISTINCT AND FALSELY EQUAL"
 				: "All neighbor numbers in 15 digit precision:\n" +
-				  "   SHOULD BE DISTINCT AND NOT EQUAL";
+					"   SHOULD BE DISTINCT AND NOT EQUAL";
 
 			log(msg);
 			div();

@@ -7,7 +7,9 @@ import { StrSlice } from "@/utils/slice";
 describe("parseDefNumber: RPrec exponent error examples", () => {
 	it("handles 'Invalid form' errors", () => {
 		{
-			const result = parseDefNumber(StrSlice.from("+-1_234.5e100"));
+			const result = parseDefNumber(
+				StrSlice.from("+-1_234.5e100")
+			);
 			if (result instanceof TypeValuePair) {
 				expect(true).toBe(false);
 			} else {
@@ -16,7 +18,9 @@ describe("parseDefNumber: RPrec exponent error examples", () => {
 			}
 		}
 		{
-			const result = parseDefNumber(StrSlice.from("+1_234..5e100"));
+			const result = parseDefNumber(
+				StrSlice.from("+1_234..5e100")
+			);
 			if (result instanceof TypeValuePair) {
 				expect(true).toBe(false);
 			} else {
@@ -25,7 +29,9 @@ describe("parseDefNumber: RPrec exponent error examples", () => {
 			}
 		}
 		{
-			const result = parseDefNumber(StrSlice.from("-1_234..5e100"));
+			const result = parseDefNumber(
+				StrSlice.from("-1_234..5e100")
+			);
 			if (result instanceof TypeValuePair) {
 				expect(true).toBe(false);
 			} else {
@@ -34,7 +40,9 @@ describe("parseDefNumber: RPrec exponent error examples", () => {
 			}
 		}
 		{
-			const result = parseDefNumber(StrSlice.from("-1_234.5678.e100"));
+			const result = parseDefNumber(
+				StrSlice.from("-1_234.5678.e100")
+			);
 			if (result instanceof TypeValuePair) {
 				expect(true).toBe(false);
 			} else {
@@ -47,7 +55,7 @@ describe("parseDefNumber: RPrec exponent error examples", () => {
 	it("handles 'Invalid chars' errors", () => {
 		{
 			const result = parseDefNumber(
-				StrSlice.from("+1_2a4.567_89e100")  
+				StrSlice.from("+1_2a4.567_89e100")
 			);
 			if (result instanceof TypeValuePair) {
 				expect(true).toBe(false);
@@ -68,7 +76,9 @@ describe("parseDefNumber: RPrec exponent error examples", () => {
 			}
 		}
 		{
-			const result = parseDefNumber(StrSlice.from("+1234.56z89e100"));
+			const result = parseDefNumber(
+				StrSlice.from("+1234.56z89e100")
+			);
 			if (result instanceof TypeValuePair) {
 				expect(true).toBe(false);
 			} else {
@@ -102,7 +112,9 @@ describe("parseDefNumber: RPrec exponent error examples", () => {
 			}
 		}
 		{
-			const result = parseDefNumber(StrSlice.from("-01234.56789e100"));
+			const result = parseDefNumber(
+				StrSlice.from("-01234.56789e100")
+			);
 			if (result instanceof TypeValuePair) {
 				expect(true).toBe(false);
 			} else {
@@ -114,7 +126,9 @@ describe("parseDefNumber: RPrec exponent error examples", () => {
 
 	it("handles 'Invalid grouping' errors", () => {
 		{
-			const result = parseDefNumber(StrSlice.from("+1_234.56789e100"));
+			const result = parseDefNumber(
+				StrSlice.from("+1_234.56789e100")
+			);
 			if (result instanceof TypeValuePair) {
 				expect(true).toBe(false);
 			} else {
@@ -123,7 +137,9 @@ describe("parseDefNumber: RPrec exponent error examples", () => {
 			}
 		}
 		{
-			const result = parseDefNumber(StrSlice.from("+1234.567_89e100"));
+			const result = parseDefNumber(
+				StrSlice.from("+1234.567_89e100")
+			);
 			if (result instanceof TypeValuePair) {
 				expect(true).toBe(false);
 			} else {
@@ -143,7 +159,9 @@ describe("parseDefNumber: RPrec exponent error examples", () => {
 			}
 		}
 		{
-			const result = parseDefNumber(StrSlice.from("-_234.567_89e100"));
+			const result = parseDefNumber(
+				StrSlice.from("-_234.567_89e100")
+			);
 			if (result instanceof TypeValuePair) {
 				expect(true).toBe(false);
 			} else {
@@ -175,9 +193,11 @@ describe("parseDefNumber: RPrec exponent error examples", () => {
 		}
 	});
 
-    it("handles 'Invalid exponent' errors", () => {
+	it("handles 'Invalid exponent' errors", () => {
 		{
-			const result = parseDefNumber(StrSlice.from("+1_234_5e7.8e+100"));
+			const result = parseDefNumber(
+				StrSlice.from("+1_234_5e7.8e+100")
+			);
 			if (result instanceof TypeValuePair) {
 				expect(true).toBe(false);
 			} else {
@@ -186,7 +206,9 @@ describe("parseDefNumber: RPrec exponent error examples", () => {
 			}
 		}
 		{
-			const result = parseDefNumber(StrSlice.from("+1_234_567.8ee+100"));
+			const result = parseDefNumber(
+				StrSlice.from("+1_234_567.8ee+100")
+			);
 			if (result instanceof TypeValuePair) {
 				expect(true).toBe(false);
 			} else {
@@ -196,9 +218,11 @@ describe("parseDefNumber: RPrec exponent error examples", () => {
 		}
 	});
 
-    it("handles power out of range errors", () => {
+	it("handles power out of range errors", () => {
 		{
-			const result = parseDefNumber(StrSlice.from("1_234_567.8e+308"));
+			const result = parseDefNumber(
+				StrSlice.from("1_234_567.8e+308")
+			);
 			if (result instanceof TypeValuePair) {
 				expect(true).toBe(false);
 			} else {
@@ -207,7 +231,9 @@ describe("parseDefNumber: RPrec exponent error examples", () => {
 			}
 		}
 		{
-			const result = parseDefNumber(StrSlice.from("1_234_567.8e-309"));
+			const result = parseDefNumber(
+				StrSlice.from("1_234_567.8e-309")
+			);
 			if (result instanceof TypeValuePair) {
 				expect(true).toBe(false);
 			} else {
@@ -216,6 +242,4 @@ describe("parseDefNumber: RPrec exponent error examples", () => {
 			}
 		}
 	});
-
-
 });

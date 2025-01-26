@@ -30,7 +30,6 @@ export const regexRPrecExponentWithSeparators =
 export const regexRPrecWithSeparators =
 	/^[+-]?(?:[1-9]\d{0,2}(?:_\d{3})*|0)?\.(?:(?:\d{3}_)*\d{1,3})?$/;
 
-
 /**
  * RegExp for parsing integer exponential notation
  * with separators.

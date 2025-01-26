@@ -277,7 +277,7 @@ export type ArrayLengthMutationKeys =
 
 export const toReadonlyTuple = <
 	L extends number,
-	TArray extends readonly any[]
+	TArray extends readonly any[],
 >(
 	arr: TArray,
 	length: L

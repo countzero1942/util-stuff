@@ -37,7 +37,10 @@ export class KeyValDefHead extends KeyHead {
  * E.g.: "key"
  */
 export class KeyValReqHead extends KeyHead {
-	constructor(readonly keyHead: StrSlice, lineInfo: LineInfo) {
+	constructor(
+		readonly keyHead: StrSlice,
+		lineInfo: LineInfo
+	) {
 		super(lineInfo);
 	}
 }
@@ -50,13 +53,19 @@ export class KeyValReqHead extends KeyHead {
  * E.g.: "key:"
  */
 export class KeyBodyReqHead extends KeyHead {
-	constructor(readonly keyHead: StrSlice, lineInfo: LineInfo) {
+	constructor(
+		readonly keyHead: StrSlice,
+		lineInfo: LineInfo
+	) {
 		super(lineInfo);
 	}
 }
 
 export class KeyInvalidHead extends KeyHead {
-	constructor(readonly keyHead: StrSlice, lineInfo: LineInfo) {
+	constructor(
+		readonly keyHead: StrSlice,
+		lineInfo: LineInfo
+	) {
 		super(lineInfo);
 	}
 }
@@ -90,7 +99,10 @@ export class KeyValDef extends KeyHead {
 }
 
 export class ParserErr extends KeyHead {
-	constructor(readonly err: ParserErrBase, lineInfo: LineInfo) {
+	constructor(
+		readonly err: ParserErrBase,
+		lineInfo: LineInfo
+	) {
 		super(lineInfo);
 	}
 }

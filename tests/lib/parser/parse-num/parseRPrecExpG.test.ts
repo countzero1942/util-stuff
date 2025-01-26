@@ -217,7 +217,7 @@ describe("parseDefNumber: RPrec g Exponent successful examples", () => {
 			}
 		}
 		{
-			const result = parseDefNumber(StrSlice.from("1_234.0g-100"));		
+			const result = parseDefNumber(StrSlice.from("1_234.0g-100"));
 			const expectedType = new RPrec(5, true);
 			const expectedValue = 1234.0e-100;
 			if (result instanceof TypeValuePair) {

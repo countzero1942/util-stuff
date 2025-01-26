@@ -201,7 +201,7 @@ export abstract class Seq<T> {
 			Seq<T6>,
 			Seq<T7>,
 			Seq<T8>,
-			Seq<T9>
+			Seq<T9>,
 		],
 		fn: (
 			a: T,
@@ -232,7 +232,7 @@ export abstract class Seq<T> {
 			Seq<T5>,
 			Seq<T6>,
 			Seq<T7>,
-			Seq<T8>
+			Seq<T8>,
 		],
 		fn: (
 			a: T,
@@ -981,7 +981,7 @@ export class AccumSeq<TIn, TValue> extends Seq<TValue> {
 
 export class RecordValueSeq<
 	TValue,
-	TKey extends KeyType = KeyType
+	TKey extends KeyType = KeyType,
 > extends Seq<TValue> {
 	/**
 	 * RecordValueSeq constructor.
@@ -1132,7 +1132,7 @@ export class RecordValueSeq<
 
 export class RecordSeq<
 	TValue,
-	TKey extends KeyType = KeyType
+	TKey extends KeyType = KeyType,
 > extends Seq<{
 	key: TKey;
 	value: TValue;

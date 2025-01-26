@@ -24,9 +24,7 @@ const logPreciscionRound = (n: number, sigDigits: number) => {
 	const cleanPR = Number(pr.toPrecision(15));
 	log(`n: ${format(n)}; sigDig: ${sigDigits}`);
 	log(
-		`   precRound: ${format(pr)} : clean precRound: ${format(
-			cleanPR
-		)}`
+		`   precRound: ${format(pr)} : clean precRound: ${format(cleanPR)}`
 	);
 	log(`  precRound - clearPrecRound = ${Math.abs(pr - cleanPR)}`);
 	log(`  relEpsilon:                  ${relEps}`);

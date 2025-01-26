@@ -104,8 +104,7 @@ import { logGeneratePassword } from "@/utils/password";
 // testErrParseRPrec();
 // testErrParseZNum();
 // testErrParseRPrec();
-testErrParseRPrecExp();
-
+// testErrParseRPrecExp();
 
 /**
  * Test split heads
@@ -173,3 +172,5 @@ const keyHeads = [
 // 012345678901234567
 //       10987654321-
 
+const result = parseDefNumber(StrSlice.from("123$"));
+div();
