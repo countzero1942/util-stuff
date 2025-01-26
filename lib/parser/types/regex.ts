@@ -25,6 +25,13 @@ export const regexRPrecExponentWithSeparators =
 	/^(?<num>[+-]?(?:[1-9]\d{0,2}(?:_\d{3})*|0)?\.(?:(?:\d{3}_)*\d{1,3})?)(?:[eg])(?<pow>[+-]?\d+)$/;
 
 /**
+ * RegExp for parsing plain decimal with separators.
+ */
+export const regexRPrecWithSeparators =
+	/^[+-]?(?:[1-9]\d{0,2}(?:_\d{3})*|0)?\.(?:(?:\d{3}_)*\d{1,3})?$/;
+
+
+/**
  * RegExp for parsing integer exponential notation
  * with separators.
  */
@@ -41,12 +48,6 @@ export const regexZNumExponentWithSeparators =
  */
 export const regexRPrecZNumNoSeparators =
 	/^[+-]?(?:[1-9]\d*|[1-9]\d*\.\d*|0|[0]?\.\d+)$/;
-
-/**
- * RegExp for parsing plain decimal with separators.
- */
-export const regexRPrecWithSeparators =
-	/^[+-]?(?:[1-9]\d{0,2}(?:_\d{3})*|0)?\.(?:(?:\d{3}_)*\d{1,3})?$/;
 
 /**
  * RegExp for parsing plain integer with separators.

@@ -1,6 +1,6 @@
 import { NumberErr, NumberErrKind } from "@/parser/types/err-types";
 import {
-	AnalyzeNumberString,
+	AnalyzeNumberStringResults,
 	TypeValuePair,
 } from "@/parser/types/parse-types";
 import {
@@ -46,7 +46,7 @@ export const analyzeNumberString = (
 	value: StrSlice,
 	breakingChars: string = " ,;:^"
 ) => {
-	const res: AnalyzeNumberString = {
+	const res: AnalyzeNumberStringResults = {
 		hasSeparator: false,
 		hasDecimal: false,
 		hasSign: false,
@@ -160,10 +160,12 @@ const MIN_POWER = -308;
  * Returns the appropriate regex for parsing decimal exponent notation
  * given the presence/absence of a separator.
  *
- * @param {AnalyzeNumberString} report - The result of calling analyzeNumberString() on the number string.
+ * @param {AnalyzeNumberStringResults} report - The result of calling analyzeNumberString() on the number string.
  * @return {RegExp} The regex for parsing decimal exponent notation.
  */
-const getDecimalExponentRegex = (report: AnalyzeNumberString) => {
+const getDecimalExponentRegex = (
+	report: AnalyzeNumberStringResults
+) => {
 	if (report.hasSeparator) {
 		return regexRPrecExponentWithSeparators;
 	} else {
@@ -175,10 +177,10 @@ const getDecimalExponentRegex = (report: AnalyzeNumberString) => {
  * Returns the appropriate regex for parsing integer exponent notation
  * given the presence/absence of a separator.
  *
- * @param {AnalyzeNumberString} report - The result of calling analyzeNumberString() on the number string.
+ * @param {AnalyzeNumberStringResults} report - The result of calling analyzeNumberString() on the number string.
  * @return {RegExp} The regex for parsing integer exponent notation.
  */
-const getIntExponentRegex = (report: AnalyzeNumberString) => {
+const getIntExponentRegex = (report: AnalyzeNumberStringResults) => {
 	if (report.hasSeparator) {
 		return regexZNumExponentWithSeparators;
 	} else {
@@ -190,10 +192,10 @@ const getIntExponentRegex = (report: AnalyzeNumberString) => {
  * Returns the appropriate regex for parsing a plain decimal number
  * given the presence/absence of a separator.
  *
- * @param {AnalyzeNumberString} report - The result of calling analyzeNumberString() on the number string.
+ * @param {AnalyzeNumberStringResults} report - The result of calling analyzeNumberString() on the number string.
  * @return {RegExp} The regex for parsing decimal notation.
  */
-const getDecimalRegex = (report: AnalyzeNumberString) => {
+const getDecimalRegex = (report: AnalyzeNumberStringResults) => {
 	if (report.hasSeparator) {
 		return regexRPrecWithSeparators;
 	} else {
@@ -205,10 +207,10 @@ const getDecimalRegex = (report: AnalyzeNumberString) => {
  * Returns the appropriate regex for parsing a plain integer number
  * given the presence/absence of a separator.
  *
- * @param {AnalyzeNumberString} report - The result of calling analyzeNumberString() on the number string.
+ * @param {AnalyzeNumberStringResults} report - The result of calling analyzeNumberString() on the number string.
  * @return {RegExp} The regex for parsing integer notation.
  */
-const getIntRegex = (report: AnalyzeNumberString) => {
+const getIntRegex = (report: AnalyzeNumberStringResults) => {
 	if (report.hasSeparator) {
 		return regexZNumWithSeparators;
 	} else {
@@ -269,14 +271,14 @@ const hasValidExponentChar = (value: string) => {
  * expressions to determine the error kind.
  *
  * @param {string} value - The string to test.
- * @param {AnalyzeNumberString} report - The result of the analyzeNumberString
+ * @param {AnalyzeNumberStringResults} report - The result of the analyzeNumberString
  * function.
  * @param {TypeBase} numType - The type of the number that caused the error.
  * @return {NumberErr} The NumberError object.
  */
 const getDetailedExponentNumberError = (
 	value: string,
-	report: AnalyzeNumberString,
+	report: AnalyzeNumberStringResults,
 	numType: TypeBase
 ): NumberErr => {
 	switch (true) {
@@ -331,14 +333,14 @@ const getDetailedExponentNumberError = (
  * expressions to determine the error kind.
  *
  * @param {string} value - The string to test.
- * @param {AnalyzeNumberString} report - The result of the analyzeNumberString
+ * @param {AnalyzeNumberStringResults} report - The result of the analyzeNumberString
  * function.
  * @param {TypeBase} numType - The type of the number that caused the error.
  * @return {NumberErr} The NumberError object.
  */
 const getDetailedNumberError = (
 	value: string,
-	report: AnalyzeNumberString,
+	report: AnalyzeNumberStringResults,
 	numType: TypeBase
 ): NumberErr => {
 	switch (true) {
@@ -379,14 +381,14 @@ const getDetailedNumberError = (
  * The returned type is a RPrec type.
  *
  * @param {string} value - The string to parse.
- * @param {AnalyzeNumberString} report - The result of the analyzeNumberString
+ * @param {AnalyzeNumberStringResults} report - The result of the analyzeNumberString
  * function.
  * @return {TypeValuePair<number>|NumberErr} The parsed number, or a NumberError
  * if the string is invalid.
  */
 export const parseRPrecExponent = (
 	value: string,
-	report: AnalyzeNumberString
+	report: AnalyzeNumberStringResults
 ): TypeValuePair | NumberErr => {
 	const regex = getDecimalExponentRegex(report);
 
@@ -431,14 +433,14 @@ export const parseRPrecExponent = (
  * The returned type is a ZNum type.
  *
  * @param {string} value - The string to parse.
- * @param {AnalyzeNumberString} report - The result of the analyzeNumberString
+ * @param {AnalyzeNumberStringResults} report - The result of the analyzeNumberString
  * function.
  * @return {TypeValuePair<number>|NumberErr} The parsed number, or a NumberError
  * if the string is invalid.
  */
 export const parseZNumExponent = (
 	value: string,
-	res: AnalyzeNumberString
+	res: AnalyzeNumberStringResults
 ): TypeValuePair | NumberErr => {
 	const regex = getIntExponentRegex(res);
 
@@ -480,14 +482,14 @@ export const parseZNumExponent = (
  * The returned type is a RPrec type.
  *
  * @param {string} value - The string to parse.
- * @param {AnalyzeNumberString} report - The result of the analyzeNumberString
+ * @param {AnalyzeNumberStringResults} report - The result of the analyzeNumberString
  * function.
  * @return {TypeValuePair<number>|NumberErr} The parsed number, or a NumberError
  * if the string is invalid.
  */
 export const parseRPrec = (
 	value: string,
-	report: AnalyzeNumberString
+	report: AnalyzeNumberStringResults
 ): TypeValuePair | NumberErr => {
 	const regex = getDecimalRegex(report);
 
@@ -519,14 +521,14 @@ export const parseRPrec = (
  * The returned type is a ZNum type.
  *
  * @param {string} value - The string to parse.
- * @param {AnalyzeNumberString} res - The result of the analyzeNumberString
+ * @param {AnalyzeNumberStringResults} res - The result of the analyzeNumberString
  * function.
  * @return {TypeValuePair<number>|NumberErr} The parsed number, or a NumberError
  * if the string is invalid.
  */
 export const parseZNum = (
 	value: string,
-	res: AnalyzeNumberString
+	res: AnalyzeNumberStringResults
 ): TypeValuePair | NumberErr => {
 	const regex = getIntRegex(res);
 

@@ -1,4 +1,4 @@
-import { AnalyzeNumberString } from "@/parser/types/parse-types";
+import { AnalyzeNumberStringResults } from "@/parser/types/parse-types";
 import {
 	analyzeNumberString,
 	getPrecisionCount,
@@ -9,7 +9,7 @@ import { StrSlice } from "@/utils/slice";
 describe("analyzeNumberString", () => {
 	it("correctly analyzes a number with no special features", () => {
 		const result = analyzeNumberString(StrSlice.all("12345"));
-		const expected: AnalyzeNumberString = {
+		const expected: AnalyzeNumberStringResults = {
 			hasSeparator: false,
 			hasDecimal: false,
 			hasSign: false,

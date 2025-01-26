@@ -1,7 +1,7 @@
 import { KeyTrait, ParserErr } from "@/parser/types/heads";
 import { TypeBase } from "@/parser/types/type-types";
 
-export type AnalyzeNumberString = {
+export type AnalyzeNumberStringResults = {
 	hasSeparator: boolean;
 	hasDecimal: boolean;
 	hasSign: boolean;
