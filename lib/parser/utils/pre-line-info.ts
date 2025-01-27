@@ -52,9 +52,6 @@ const getSpaceError = (
 	lineNumber: number
 ): ParserErr => {
 	const keyHead = formatTabsToSymbols(line);
-	log(`keyHead: '${keyHead}'`);
-	log(`line: '${line}'`);
-	div();
 	const getSlice = () => {
 		const match = keyHead.match(/^(?:(?:\\t)|(?:[ ]))+/);
 		const index = match?.index;

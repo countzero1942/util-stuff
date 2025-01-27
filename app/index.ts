@@ -55,7 +55,11 @@ import {
 	getPiSumSeq,
 	getPiThingSumSeq,
 } from "@/app/math-series";
-import { NumSeq, StrGraphemeSeq, StrSeq } from "@/utils/seq";
+import {
+	NumSeq,
+	StrGraphemeSeq,
+	StrSeq,
+} from "@/utils/seq";
 import { TypeValuePair } from "@/parser/types/parse-types";
 import { NumberErr } from "@/parser/types/err-types";
 import { parseDefaultValue } from "@/parser/utils/parse-value";
@@ -110,9 +114,9 @@ import { logGeneratePassword } from "@/utils/password";
  * Test split heads
  */
 
-await logSplitHeads();
+// await logSplitHeads();
 
-// await logParseDefaultValues();
+await logParseDefaultValues();
 
 /**
  * Test Parse Traits

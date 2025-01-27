@@ -126,26 +126,27 @@ export const logSplitHeads = async () => {
 		switch (true) {
 			case head instanceof KeyValDefHead:
 				log("<KeyValDefHead>");
-				log(`   keyHead: ${head.keyHead}`);
-				log(`   valueHead: ${head.valueHead}`);
+				log(`   keyHead: '${head.keyHead}'`);
+				log(`   valueHead: '${head.valueHead}'`);
 				break;
 			case head instanceof KeyBodyReqHead:
 				log("<KeyBodyReqHead>");
-				log(`   keyHead: ${head.keyHead}`);
+				log(`   keyHead: '${head.keyHead}'`);
 				break;
 			case head instanceof KeyValReqHead:
 				log("<KeyValReqHead>");
-				log(`   keyHead: ${head.keyHead}`);
+				log(`   keyHead: '${head.keyHead}'`);
 				break;
 			case head instanceof EmptyLine:
 				log("<EmptyLine>");
-				log(`   isColon: ${head.isColon}`);
+				log(`   isColon: '${head.isColon}'`);
 				break;
 			default:
 				log("Unknown head");
 				log(`   ${head}`);
 				break;
 		}
+		div();
 	}
 
 	log();
