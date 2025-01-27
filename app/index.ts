@@ -110,7 +110,7 @@ import { logGeneratePassword } from "@/utils/password";
  * Test split heads
  */
 
-// await logSplitHeads();
+await logSplitHeads();
 
 // await logParseDefaultValues();
 

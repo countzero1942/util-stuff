@@ -1,7 +1,11 @@
 import { ArraySlice, StrSlice } from "@/utils/slice";
-import { KeyHead, KeyInvalidHead } from "@/parser/types/heads";
+import {
+	KeyHead,
+	KeyInvalidHead,
+} from "@/parser/types/heads";
 import { TypeBase } from "@/parser/types/type-types";
 import { Range } from "@/utils/seq";
+import { formatTabsToSymbols } from "@/utils/string";
 
 export type NumberErrKind =
 	| "Invalid exponent"
@@ -58,10 +62,15 @@ export abstract class ParserLineErrBase extends ParserErrBase {
 	public abstract toMessage(): string;
 	public toReport(): ReportLine[] {
 		const { content, indent, row } = this.head.lineInfo;
-		const errorString = this.lineErrorSlice.getErrorString();
+		const errorString =
+			this.lineErrorSlice.getErrorString();
 		const errorMessage = this.toMessage();
 		return [
-			{ content: content.value, indent, row },
+			{
+				content: content.value,
+				indent,
+				row,
+			},
 			{
 				content: `${errorString}: <${errorMessage}>`,
 				indent,
@@ -150,7 +159,10 @@ export class ParserIndentErr extends ParserBlockErrBase {
 		}));
 
 		return [
-			new ReportLine(`<${this.toMessage()}>`, this.indent),
+			new ReportLine(
+				`<${this.toMessage()}>`,
+				this.indent
+			),
 			...childLines,
 		];
 	}

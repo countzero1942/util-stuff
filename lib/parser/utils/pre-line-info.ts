@@ -6,8 +6,9 @@ import {
 	LineInfo,
 	KeyInvalidHead,
 } from "@/parser/types/heads";
-import { logag } from "@/utils/log";
+import { div, logag } from "@/utils/log";
 import { formatTabsToSymbols } from "@/utils/string";
+import { log } from "console";
 
 export class PreLineInfo {
 	constructor(
@@ -22,7 +23,9 @@ type TabsAndContent = {
 	content: string;
 };
 
-const getTabsAndContent = (line: string): TabsAndContent => {
+const getTabsAndContent = (
+	line: string
+): TabsAndContent => {
 	// Note: due to Regex limits, 'content' picks up
 	// tabs on empty line, so they won't be counted.
 	// But it shouldn't matter
@@ -49,9 +52,11 @@ const getSpaceError = (
 	lineNumber: number
 ): ParserErr => {
 	const keyHead = formatTabsToSymbols(line);
-
+	log(`keyHead: '${keyHead}'`);
+	log(`line: '${line}'`);
+	div();
 	const getSlice = () => {
-		const match = keyHead.match(/[ ]+/);
+		const match = keyHead.match(/^(?:(?:\\t)|(?:[ ]))+/);
 		const index = match?.index;
 		const length = match?.[0]?.length;
 		if (
@@ -66,9 +71,16 @@ const getSpaceError = (
 
 	const lineErrorSlice = getSlice();
 
-	const lineInfo = new LineInfo(StrSlice.all(line), 0, lineNumber);
+	const lineInfo = new LineInfo(
+		StrSlice.all(keyHead),
+		0,
+		lineNumber
+	);
 
-	const head = new KeyInvalidHead(StrSlice.all(keyHead), lineInfo);
+	const head = new KeyInvalidHead(
+		StrSlice.all(keyHead),
+		lineInfo
+	);
 
 	const err = new ParserStructureErr(
 		head,
@@ -87,13 +99,19 @@ export const getPreLineInfo = (
 		return getSpaceError(line, lineNumber);
 	}
 
-	const { tabs, content } = getTabsAndContent(line.trimEnd());
+	const { tabs, content } = getTabsAndContent(
+		line.trimEnd()
+	);
 
 	if (content.startsWith(" ")) {
-		return getSpaceError(content, lineNumber);
+		return getSpaceError(line, lineNumber);
 	}
 
-	const preLineInfo = new PreLineInfo(content, tabs, lineNumber);
+	const preLineInfo = new PreLineInfo(
+		content,
+		tabs,
+		lineNumber
+	);
 
 	return preLineInfo;
 };

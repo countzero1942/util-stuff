@@ -1,4 +1,11 @@
-import { div, log, logg, loggn, logh, logobj } from "@/utils/log";
+import {
+	div,
+	log,
+	logg,
+	loggn,
+	logh,
+	logobj,
+} from "@/utils/log";
 import { open } from "node:fs/promises";
 import * as fs from "node:fs";
 
@@ -17,6 +24,8 @@ import {
 	LineInfo,
 	ParserErr,
 	KeyValDefHead,
+	KeyValReqHead,
+	EmptyLine,
 } from "@/parser/types/heads";
 import {
 	IndentErrKind,
@@ -27,7 +36,8 @@ import { parseTrait } from "@/parser/utils/parse-trait";
 import { getTraitReport } from "@/parser/utils/print-back";
 import { StrSlice } from "@/utils/slice";
 
-const getTextFilePath = (name: string) => `./text/parser/${name}`;
+const getTextFilePath = (name: string) =>
+	`./text/parser/${name}`;
 
 const formatLine = (line: string) => {
 	return line
@@ -81,15 +91,18 @@ export const logSplitHeads = async () => {
 	log("Legend:");
 	log("   Head: type and values yet to be parsed.");
 	log("   <KeyValueHead>: " + "Key and value declared.");
-	log("   <KeyHead>: " + "Key declared and value required on init.");
+	log(
+		"   <KeyHead>: " +
+			"Key declared and value required on init."
+	);
 	log(
 		"   <KeyBodyHead>: " +
 			"Key declared and indented body to follow."
 	);
 	div();
 
-	const res1 = await fileToLines("00-start.txt");
-	// const res1 = await fileToLines("00-with-errs.txt");
+	// const res1 = await fileToLines("00-start.txt");
+	const res1 = await fileToLines("00-with-errs.txt");
 	if (res1.type === "ErrorType") {
 		log("ERROR:");
 		log(res1);
@@ -100,19 +113,49 @@ export const logSplitHeads = async () => {
 
 	const allHeads = await parseLinesToHeads(lines);
 
-	const [heads, errorHeads] = ArraySeq.from(allHeads).partArrays(
+	const [heads, errorHeads] = ArraySeq.from(
+		allHeads
+	).partArrays(
 		// h => h.type !== "ParserErr"
 		h => !(h instanceof ParserErr)
 	);
 
 	logh(`Heads: ${heads.length}`);
-	log(heads);
+	// logobj(heads);
+	for (const head of heads) {
+		switch (true) {
+			case head instanceof KeyValDefHead:
+				log("<KeyValDefHead>");
+				log(`   keyHead: ${head.keyHead}`);
+				log(`   valueHead: ${head.valueHead}`);
+				break;
+			case head instanceof KeyBodyReqHead:
+				log("<KeyBodyReqHead>");
+				log(`   keyHead: ${head.keyHead}`);
+				break;
+			case head instanceof KeyValReqHead:
+				log("<KeyValReqHead>");
+				log(`   keyHead: ${head.keyHead}`);
+				break;
+			case head instanceof EmptyLine:
+				log("<EmptyLine>");
+				log(`   isColon: ${head.isColon}`);
+				break;
+			default:
+				log("Unknown head");
+				log(`   ${head}`);
+				break;
+		}
+	}
+
 	log();
 
 	logh(`Errors: ${errorHeads.length}`);
 	for (const err of errorHeads as ParserErr[]) {
 		log(err.err.toMessage());
-		log(err.err.toReport());
+		const report = err.err.toReport();
+		log(report[0]?.content);
+		log(report[1]?.content);
 		div();
 	}
 
@@ -147,7 +190,10 @@ export const logParseDefaultValues = async () => {
 					continue;
 				}
 				const { valueType, value } = res;
-				loggn(`${keyHead}: ${valueHead} -> ${value}`, valueType);
+				loggn(
+					`${keyHead}: ${valueHead} -> ${value}`,
+					valueType
+				);
 				break;
 			default:
 				break;
