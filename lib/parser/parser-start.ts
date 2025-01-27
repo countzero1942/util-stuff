@@ -32,7 +32,10 @@ import {
 	NumberErr,
 	ParserIndentErr,
 } from "@/parser/types/err-types";
-import { parseTrait } from "@/parser/utils/parse-trait";
+import {
+	createRootHead,
+	parseTrait,
+} from "@/parser/utils/parse-trait";
 import { getTraitReport } from "@/parser/utils/print-back";
 import { StrSlice } from "@/utils/slice";
 
@@ -204,8 +207,6 @@ export const logParseDefaultValues = async () => {
 	return;
 };
 
-const rootSlice = StrSlice.all(":root");
-
 export const logParseTraits = async () => {
 	logh("Log Parse: Parse Traits");
 	log();
@@ -221,12 +222,7 @@ export const logParseTraits = async () => {
 
 	const allHeads = await parseLinesToHeads(lines);
 
-	const root = new KeyBodyReqHead(
-		rootSlice,
-		new LineInfo(StrSlice.empty(), -1, 0)
-	);
-
-	const trait = parseTrait(root, allHeads, 0);
+	const trait = parseTrait(createRootHead(), allHeads, 0);
 	div();
 	logobj(trait);
 };
@@ -250,12 +246,7 @@ export const logTraitReport = async (
 
 	const allHeads = await parseLinesToHeads(lines);
 
-	const root = new KeyBodyReqHead(
-		rootSlice,
-		new LineInfo(StrSlice.empty(), -1, 0)
-	);
-
-	const res = parseTrait(root, allHeads, 0);
+	const res = parseTrait(createRootHead(), allHeads, 0);
 
 	const trait = res.trait;
 

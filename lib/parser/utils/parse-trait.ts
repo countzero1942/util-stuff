@@ -20,8 +20,25 @@ import { ParseTraitResult } from "@/parser/types/parse-types";
 import { parseDefaultValue } from "@/parser/utils/parse-value";
 import { logh, logg } from "@/utils/log";
 import { Range } from "@/utils/seq";
+import { StrSlice } from "@/utils/slice";
 import { getClassName } from "@/utils/types";
 import { Key } from "node:readline";
+
+export const createRootHead = (
+	rootName: string = ":root"
+) => {
+	if (rootName === "") {
+		throw new Error("Root name cannot be empty");
+	}
+	if (rootName[0] !== ":") {
+		throw new Error('Root name must start with ":"');
+	}
+	const root = new KeyBodyReqHead(
+		StrSlice.all(rootName),
+		new LineInfo(StrSlice.empty(), -1, 0)
+	);
+	return root;
+};
 
 export const getValueIndex = (head: KeyValDefHead) => {
 	const { content } = head.lineInfo;
@@ -71,7 +88,10 @@ const getSelfTrait = (
 	nextIndex: number,
 	children: KeyHead[]
 ): ParseTraitResult => {
-	if (children.length === 0 && !traitHead.keyHead.equals(":root")) {
+	if (
+		children.length === 0 &&
+		!traitHead.keyHead.equals(":root")
+	) {
 		const err = getIndentError(
 			[],
 			Range.empty(),
@@ -162,11 +182,12 @@ export const parseTrait = (
 				);
 			// case: invalid children or over-indent
 			case indent > traitBodyIndent: {
-				const invalidChildren = collectInvalidIndentChildren(
-					heads,
-					currentHeadIndex,
-					traitBodyIndent
-				);
+				const invalidChildren =
+					collectInvalidIndentChildren(
+						heads,
+						currentHeadIndex,
+						traitBodyIndent
+					);
 				const rowErrorRange = Range.fromLength(
 					currentHeadIndex + 1,
 					invalidChildren.length

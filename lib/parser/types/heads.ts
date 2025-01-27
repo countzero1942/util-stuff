@@ -1,6 +1,6 @@
 import { ParserErrBase } from "@/parser/types/err-types";
 import { TypeValuePair } from "@/parser/types/parse-types";
-import { Str } from "@/parser/types/type-types";
+import { Str, TypeBase } from "@/parser/types/type-types";
 import { StrSlice } from "@/utils/slice";
 import { Key } from "node:readline";
 
@@ -12,7 +12,7 @@ export class LineInfo {
 	) {}
 }
 
-export class KeyHead {
+export abstract class KeyHead {
 	constructor(readonly lineInfo: LineInfo) {}
 }
 
@@ -29,6 +29,18 @@ export class KeyValDefHead extends KeyHead {
 	) {
 		super(lineInfo);
 	}
+
+	public checkKeyHead(testKeyHead: string): boolean {
+		return this.keyHead.equals(testKeyHead);
+	}
+
+	public checkValueHead(testValueHead: string): boolean {
+		return this.valueHead.equals(testValueHead);
+	}
+
+	public toString(): string {
+		return `<KeyValDefHead> ${this.keyHead}: ${this.valueHead}`;
+	}
 }
 
 /**
@@ -42,6 +54,14 @@ export class KeyValReqHead extends KeyHead {
 		lineInfo: LineInfo
 	) {
 		super(lineInfo);
+	}
+
+	public checkKeyHead(testKeyHead: string): boolean {
+		return this.keyHead.equals(testKeyHead);
+	}
+
+	public toString(): string {
+		return `<KeyValReqHead> ${this.keyHead}`;
 	}
 }
 
@@ -59,6 +79,14 @@ export class KeyBodyReqHead extends KeyHead {
 	) {
 		super(lineInfo);
 	}
+
+	public checkKeyHead(testKeyHead: string): boolean {
+		return this.keyHead.equals(testKeyHead);
+	}
+
+	public toString(): string {
+		return `<KeyBodyReqHead> ${this.keyHead}:`;
+	}
 }
 
 export class KeyInvalidHead extends KeyHead {
@@ -67,6 +95,14 @@ export class KeyInvalidHead extends KeyHead {
 		lineInfo: LineInfo
 	) {
 		super(lineInfo);
+	}
+
+	public checkKeyHead(testKeyHead: string): boolean {
+		return this.keyHead.equals(testKeyHead);
+	}
+
+	public toString(): string {
+		return `<KeyInvalidHead> ${this.keyHead}`;
 	}
 }
 
@@ -86,6 +122,14 @@ export class KeyTrait extends KeyHead {
 	) {
 		super(lineInfo);
 	}
+
+	public checkKey(testKey: string): boolean {
+		return this.key.equals(testKey);
+	}
+
+	public toString(): string {
+		return `<KeyTrait> ${this.key}:`;
+	}
 }
 
 export class KeyValDef extends KeyHead {
@@ -95,6 +139,21 @@ export class KeyValDef extends KeyHead {
 		lineInfo: LineInfo
 	) {
 		super(lineInfo);
+	}
+
+	public checkKey(testKey: string): boolean {
+		return this.key.equals(testKey);
+	}
+
+	public checkValue(value: any, type: TypeBase): boolean {
+		return (
+			this.value.value.equals(value) &&
+			this.value.valueType.equals(type)
+		);
+	}
+
+	public toString(): string {
+		return `<KeyValDef> ${this.key}: ${this.value}`;
 	}
 }
 

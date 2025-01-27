@@ -40,6 +40,10 @@ export abstract class TypeBase {
 		return this.typeInfo.type;
 	}
 
+	public equals(other: TypeBase): boolean {
+		return this.uniqueKey === other.uniqueKey;
+	}
+
 	/**
 	 * Private function to generate a unique key for the type object.
 	 *
@@ -96,7 +100,10 @@ export class RPrec extends TypeBase {
 			`{G}${UseEngineeringNotation}`,
 			`{Pow}${SciNotPower}`,
 		];
-		super({ type: ".R", variantType: ":Prec" }, additionalMembers);
+		super(
+			{ type: ".R", variantType: ":Prec" },
+			additionalMembers
+		);
 	}
 }
 

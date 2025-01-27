@@ -78,6 +78,11 @@ import {
 } from "@/my-tests/parser/types/test-type-map";
 import { isEqual, sleep } from "moderndash";
 import { logGeneratePassword } from "@/utils/password";
+import { parseLinesToHeads } from "@/parser/utils/lines-to-heads";
+import {
+	parseTrait,
+	createRootHead,
+} from "@/parser/utils/parse-trait";
 
 // logGeneratePassword();
 
@@ -116,13 +121,19 @@ import { logGeneratePassword } from "@/utils/password";
 
 // await logSplitHeads();
 
-await logParseDefaultValues();
+// await logParseDefaultValues();
 
 /**
  * Test Parse Traits
  */
 
 // await logParseTraits();
+
+const lines = ["a: 42"];
+const heads = await parseLinesToHeads(lines);
+
+const result = parseTrait(createRootHead(), heads, 0);
+logobj(result);
 
 // await logTraitReport("01-err-trait-tree.txt");
 // await logTraitReport("01b-err-num-trait-tree.txt");
@@ -175,6 +186,3 @@ const keyHeads = [
 //    012345678901
 // 012345678901234567
 //       10987654321-
-
-const result = parseDefNumber(StrSlice.from("123$"));
-div();
