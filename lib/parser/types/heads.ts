@@ -131,7 +131,15 @@ export class KeyTrait extends KeyHead {
 		return `<KeyTrait> ${this.key}:`;
 	}
 }
-
+/**
+ * Key Value Defined.
+ *
+ * This is the finalized version of KeyValHead.
+ *
+ * The head is parsed into string key and contrained type
+ *
+ * The value is parsed into a TypeValuePair: actual value and type
+ */
 export class KeyValDef extends KeyHead {
 	constructor(
 		readonly key: StrSlice,

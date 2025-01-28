@@ -118,6 +118,10 @@ export class ParserStructureErr extends ParserLineErrBase {
 		super(head, lineErrorSlice);
 	}
 
+	public getHead(): KeyInvalidHead {
+		return this.head as KeyInvalidHead;
+	}
+
 	public toMessage(): string {
 		const { kind } = this;
 		return `Structure Error: ${kind}`;

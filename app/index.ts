@@ -197,3 +197,13 @@ const keyHeads = [
 // logobj(result);
 
 await logTraitReport("01-err-trait-tree.txt");
+
+// const input = `
+// d:
+//    spaces: 23
+// `;
+
+// const lines = cleanMultiLineStringToArray(input);
+// const heads = await parseLinesToHeads(lines);
+// const result = parseTrait(createRootHead(), heads, 0);
+// logobj(result);
