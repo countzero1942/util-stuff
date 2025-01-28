@@ -20,6 +20,7 @@ import {
 	ZNum,
 } from "@/parser/types/type-types";
 import { createDecipheriv } from "crypto";
+import { cleanMultiLineStringToArray } from "@/utils/string";
 
 describe("parseTrait - Success Cases", () => {
 	test("should parse simple key-value trait", async () => {
@@ -86,42 +87,57 @@ describe("parseTrait - Success Cases", () => {
 	});
 
 	test("should parse trait with kebab-case keys", async () => {
-		const lines = [
-			"o:",
-			"\tke-bab-1: 22",
-			"\tke-bab-2: 4.4",
-			"\tke-bab-3:",
-			"\t\tsnake_a: sss",
-		];
-		const heads = await parseLinesToHeads(lines);
+		// const lines = [
+		// 	"o:",
+		// 	"\tke-bab-1: 22",
+		// 	"\tke-bab-2: 4.4",
+		// 	"\tke-bab-3:",
+		// 	"\t\tsnake_a: sss",
+		// ];
+		const text = `
+			o:
+				ke-bab-1: 22
+				ke-bab-2: 4.4
+				ke-bab-3:
+					snake_a: sss
+		`;
+		const heads = await parseLinesToHeads(
+			cleanMultiLineStringToArray(text)
+		);
 
 		const result = parseTrait(createRootHead(), heads, 0);
 
 		expect(result.trait).toBeInstanceOf(KeyTrait);
 		const trait = result.trait as KeyTrait;
 		expect(trait.checkKey(":root")).toBe(true);
+		expect(trait.lineInfo.indent).toBe(-1);
 		expect(trait.children).toHaveLength(1);
 
 		expect(trait.children[0]).toBeInstanceOf(KeyTrait);
 		const oTrait = trait.children[0] as KeyTrait;
+		expect(oTrait.lineInfo.indent).toBe(0);
 		expect(oTrait.checkKey("o")).toBe(true);
 		expect(oTrait.children).toHaveLength(3);
 
 		const kebab1 = oTrait.children[0] as KeyValDef;
+		expect(kebab1.lineInfo.indent).toBe(1);
 		expect(kebab1.checkKey("ke-bab-1")).toBe(true);
 		expect(kebab1.value.value).toBe(22);
 		expect(kebab1.value.type).toStrictEqual(new ZNum());
 
 		const kebab2 = oTrait.children[1] as KeyValDef;
+		expect(kebab2.lineInfo.indent).toBe(1);
 		expect(kebab2.checkKey("ke-bab-2")).toBe(true);
 		expect(kebab2.value.value).toBe(4.4);
 		expect(kebab2.value.type).toStrictEqual(new RPrec(2));
 
 		const kebab3 = oTrait.children[2] as KeyTrait;
+		expect(kebab3.lineInfo.indent).toBe(1);
 		expect(kebab3.checkKey("ke-bab-3")).toBe(true);
 		expect(kebab3.children).toHaveLength(1);
 
 		const snakeA = kebab3.children[0] as KeyValDef;
+		expect(snakeA.lineInfo.indent).toBe(2);
 		expect(snakeA.key.toString()).toBe("snake_a");
 		expect(snakeA.value.value.toString()).toBe("sss");
 		expect(snakeA.value.type).toStrictEqual(new Str());
@@ -140,6 +156,7 @@ describe("parseTrait - Success Cases", () => {
 
 		expect(trait.children[0]).toBeInstanceOf(KeyValDef);
 		const snakeD = trait.children[0] as KeyValDef;
+		expect(snakeD.lineInfo.indent).toBe(0);
 		expect(snakeD.checkKey("snake_d")).toBe(true);
 		expect(snakeD.value.value.toString()).toBe(
 			"hiss boom bah"

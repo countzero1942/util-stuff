@@ -36,7 +36,10 @@ import {
 	createRootHead,
 	parseTrait,
 } from "@/parser/utils/parse-trait";
-import { getTraitReport } from "@/parser/utils/print-back";
+import {
+	formatTraitReport,
+	getTraitReport,
+} from "@/parser/utils/print-back";
 import { StrSlice } from "@/utils/slice";
 
 const getTextFilePath = (name: string) =>
@@ -259,14 +262,20 @@ export const logTraitReport = async (
 	const report = await getTraitReport(trait);
 	log(`Report: ${report.length} lines`);
 
-	const rowStrLen = 4;
-	for (const line of report) {
-		const { content, indent, row } = line;
-		const rowStr =
-			row !== undefined
-				? `${row.toString().padStart(rowStrLen, " ")}`
-				: " ".repeat(rowStrLen);
-		const indentStr = "   ".repeat(indent);
-		log(`${rowStr}  ${indentStr}${content}`);
+	const reportStrs = formatTraitReport(report);
+
+	for (const str of reportStrs) {
+		log(str);
 	}
+
+	// const rowStrLen = 4;
+	// for (const line of report) {
+	// 	const { content, indent, row } = line;
+	// 	const rowStr =
+	// 		row !== undefined
+	// 			? `${row.toString().padStart(rowStrLen, " ")}`
+	// 			: " ".repeat(rowStrLen);
+	// 	const indentStr = "   ".repeat(indent);
+	// 	log(`${rowStr}  ${indentStr}${content}`);
+	// }
 };

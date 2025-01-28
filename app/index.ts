@@ -67,6 +67,7 @@ import { parse } from "node:path";
 import { parseKeyHead } from "@/parser/utils/parse-key-head";
 import {
 	cleanMultiLineString,
+	cleanMultiLineStringToArray,
 	formatNum,
 	getMinTabCharsCount,
 } from "@/utils/string";
@@ -83,6 +84,7 @@ import {
 	parseTrait,
 	createRootHead,
 } from "@/parser/utils/parse-trait";
+import { KeyTrait } from "@/parser/types/heads";
 
 // logGeneratePassword();
 
@@ -129,7 +131,7 @@ import {
 
 // await logParseTraits();
 
-await logTraitReport("01-err-trait-tree.txt");
+// await logTraitReport("01-err-trait-tree.txt");
 // await logTraitReport("01b-err-num-trait-tree.txt");
 
 /**
@@ -180,3 +182,18 @@ const keyHeads = [
 //    012345678901
 // 012345678901234567
 //       10987654321-
+
+// const input = `
+// a: 42
+// 	invalid-a: misplaced children
+// 	invalid-b: indent error
+// `;
+
+// const lines = cleanMultiLineStringToArray(input);
+// const heads = await parseLinesToHeads(lines);
+// const result = parseTrait(createRootHead(), heads, 0);
+// const rootTrait = result.trait as KeyTrait;
+// log(rootTrait.children.length);
+// logobj(result);
+
+await logTraitReport("01-err-trait-tree.txt");

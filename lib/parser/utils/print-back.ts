@@ -42,11 +42,10 @@ export const getTraitReport = async (
 			case child instanceof KeyValDef:
 				{
 					const { key } = child;
-					const { value, type: valueType } =
-						child.value;
+					const { value, type } = child.value;
 
 					addLine(
-						`${key} in ${valueType.uniqueKey}: ${value}`,
+						`${key} .in ${type.toParsableString()}: ${value}`,
 						indent,
 						row
 					);
@@ -74,4 +73,22 @@ export const getTraitReport = async (
 	}
 
 	return lines;
+};
+
+export const formatTraitReport = (
+	lines: readonly ReportLine[],
+	rowGutterLen = 4,
+	indentStr = "   "
+) => {
+	const strLines = lines.map(line => {
+		const { content, indent, row } = line;
+		const rowStr =
+			row !== undefined
+				? `${row.toString().padStart(rowGutterLen, " ")}`
+				: " ".repeat(rowGutterLen);
+		const fullIndentStr = indentStr.repeat(indent);
+		return `${rowStr}  ${fullIndentStr}${content}`;
+	});
+
+	return strLines;
 };

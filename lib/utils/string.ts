@@ -17,7 +17,9 @@ export const getTabIndentString = memoizee(
 	{ maxAge: 5000 }
 );
 
-export const isCodePointWhiteSpace = (codePoint: number) => {
+export const isCodePointWhiteSpace = (
+	codePoint: number
+) => {
 	if (codePoint < 0x1680) {
 		if (codePoint <= 0x20) {
 			switch (codePoint) {
@@ -162,7 +164,9 @@ export const formatTabsToSymbols = (value: string) => {
  * @param lines The array of strings to clean
  * @returns The array of strings with joined lines
  */
-export const joinConnectedLinesWithoutDash = (lines: string[]) => {
+export const joinConnectedLinesWithoutDash = (
+	lines: string[]
+) => {
 	const newLines: string[] = [];
 
 	let currentLine: string[] = [];
@@ -221,7 +225,9 @@ export const joinConnectedLinesWithoutDash = (lines: string[]) => {
  * @returns The cleaned string
  */
 export const cleanLineOfMultipleSpaces = (line: string) => {
-	const doMultipleSpacesExistInLine = (text: string): boolean => {
+	const doMultipleSpacesExistInLine = (
+		text: string
+	): boolean => {
 		return /\s{2,}/g.test(text);
 	};
 
@@ -246,7 +252,10 @@ export const wordWrapLinesToMaxChars = (
 	lines: string[],
 	maxChars: number
 ) => {
-	const wrapLine = (line: string, wrappedLines: string[]) => {
+	const wrapLine = (
+		line: string,
+		wrappedLines: string[]
+	) => {
 		const words = line.split(" ");
 		let currentLine: {
 			words: string[];
@@ -279,7 +288,10 @@ export const wordWrapLinesToMaxChars = (
 		resetCurrentLine();
 
 		for (const word of words) {
-			if (currentLine.charLength + word.length > maxChars) {
+			if (
+				currentLine.charLength + word.length >
+				maxChars
+			) {
 				wrappedLines.push(joinCurrentLine());
 				resetCurrentLine();
 			}
@@ -291,7 +303,9 @@ export const wordWrapLinesToMaxChars = (
 	const wrappedLines: string[] = [];
 	let i = 0;
 	while (i < lines.length) {
-		const line = cleanLineOfMultipleSpaces(lines[i] as string);
+		const line = cleanLineOfMultipleSpaces(
+			lines[i] as string
+		);
 		if (line.length <= maxChars) {
 			wrappedLines.push(line);
 		} else {
@@ -313,7 +327,9 @@ export const wordWrapLinesToMaxChars = (
  * @returns The array of strings with empty lines removed
  * from the start and end
  */
-export const removeEmptyLinesFromStartAndEnd = (lines: string[]) => {
+export const removeEmptyLinesFromStartAndEnd = (
+	lines: string[]
+) => {
 	let start = 0;
 	while (start < lines.length && lines[start] === "") {
 		start++;
@@ -346,7 +362,8 @@ export const cleanJSDocDescription = (
 ) => {
 	const cleanLineOfCommentTags = (line: string) => {
 		switch (true) {
-			case eliminateParams && line.startsWith("* @param"):
+			case eliminateParams &&
+				line.startsWith("* @param"):
 				return "";
 			case line.startsWith("/**"):
 				return line.slice(3).trim();
@@ -402,8 +419,14 @@ export const getMinTabCharsCount = (
 	let minTabCharsCount = Number.MAX_SAFE_INTEGER;
 	for (const line of lines) {
 		if (line === "") continue;
-		const tabCharsCount = getRepeatingMatchesCount(line, tabString);
-		minTabCharsCount = Math.min(minTabCharsCount, tabCharsCount);
+		const tabCharsCount = getRepeatingMatchesCount(
+			line,
+			tabString
+		);
+		minTabCharsCount = Math.min(
+			minTabCharsCount,
+			tabCharsCount
+		);
 	}
 	return minTabCharsCount === Number.MAX_SAFE_INTEGER
 		? 0
@@ -416,26 +439,35 @@ export const cleanMultiLineArray = (
 		tabString?: string;
 		extraIndents?: number;
 	}
-) => {
+): readonly string[] => {
 	const tabString = options?.tabString ?? "\t";
 	const extraIndents = options?.extraIndents ?? 0;
 
 	lines = removeEmptyLinesFromStartAndEnd(lines);
 
-	const minTabCharsCount = getMinTabCharsCount(lines, tabString);
+	const minTabCharsCount = getMinTabCharsCount(
+		lines,
+		tabString
+	);
 
 	lines = lines.map(line => {
 		if (line === "") return "";
-		const tabCharsCount = getRepeatingMatchesCount(line, tabString);
+		const tabCharsCount = getRepeatingMatchesCount(
+			line,
+			tabString
+		);
 
 		if (tabCharsCount >= minTabCharsCount) {
-			return line.slice(minTabCharsCount * tabString.length);
+			return line.slice(
+				minTabCharsCount * tabString.length
+			);
 		}
 		return line;
 	});
 
 	if (extraIndents > 0) {
-		const extraIndentString = tabString.repeat(extraIndents);
+		const extraIndentString =
+			tabString.repeat(extraIndents);
 		lines = lines.map(line => {
 			return `${extraIndentString}${line}`;
 		});
@@ -455,7 +487,23 @@ export const cleanMultiLineString = (
 		.split("\n")
 		.map(line => line.trimEnd());
 
-	lines = cleanMultiLineArray(lines, options);
+	lines = cleanMultiLineArray(lines, options) as string[];
 
 	return lines.join("\n");
+};
+
+export const cleanMultiLineStringToArray = (
+	multiLineString: string,
+	options?: {
+		tabString?: string;
+		extraIndents?: number;
+	}
+): readonly string[] => {
+	let lines = multiLineString
+		.split("\n")
+		.map(line => line.trimEnd());
+
+	lines = cleanMultiLineArray(lines, options) as string[];
+
+	return lines as readonly string[];
 };

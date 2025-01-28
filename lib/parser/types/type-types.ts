@@ -75,6 +75,10 @@ export abstract class TypeBase {
 
 		return `|${types.join("|")}|`;
 	}
+
+	public toParsableString(): string {
+		return this.typeInfo.type;
+	}
 }
 
 export class Str extends TypeBase {
@@ -105,6 +109,14 @@ export class RPrec extends TypeBase {
 			additionalMembers
 		);
 	}
+
+	public toParsableString(): string {
+		const gString = this.UseEngineeringNotation
+			? " %g"
+			: "";
+
+		return `${this.typeInfo.type}:${this.precision}:${this.SciNotPower}${gString}`;
+	}
 }
 
 export class RFixed extends TypeBase {
@@ -112,6 +124,10 @@ export class RFixed extends TypeBase {
 		super({ type: ".R", variantType: ":Fixed" }, [
 			`{Places}${fixed}`,
 		]);
+	}
+
+	public toParsableString(): string {
+		return `${this.typeInfo.type}.${this.fixed}`;
 	}
 }
 
