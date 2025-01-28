@@ -193,7 +193,7 @@ export const logParseDefaultValues = async () => {
 					log(`==> ERROR: ${keyHead}: ${kind}`);
 					continue;
 				}
-				const { valueType, value } = res;
+				const { type: valueType, value } = res;
 				loggn(
 					`${keyHead}: ${valueHead} -> ${value}`,
 					valueType

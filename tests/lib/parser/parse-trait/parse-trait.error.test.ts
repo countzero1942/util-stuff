@@ -4,10 +4,11 @@ import {
 	KeyValDefHead,
 	LineInfo,
 	KeyTrait,
-} from "../../../../lib/parser/types/heads";
-import { ParserIndentErr } from "../../../../lib/parser/types/err-types";
-import { parseTrait } from "../../../../lib/parser/utils/parse-trait";
-import { StrSlice } from "../../../../lib/utils/slice";
-import { Range } from "../../../../lib/utils/seq";
+} from "@/parser/types/heads";
+import { ParserIndentErr } from "@/parser/types/err-types";
+import { parseTrait } from "@/parser/utils/parse-trait";
+import { StrSlice } from "@/utils/slice";
+import { Range } from "@/utils/seq";
+import { ZNum } from "@/parser/types/type-types";
 
 describe("parseTrait - Error Cases", () => {});

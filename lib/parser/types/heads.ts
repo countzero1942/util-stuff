@@ -147,13 +147,13 @@ export class KeyValDef extends KeyHead {
 
 	public checkValue(value: any, type: TypeBase): boolean {
 		return (
-			this.value.value.equals(value) &&
-			this.value.valueType.equals(type)
+			this.value.value === value &&
+			this.value.type.equals(type)
 		);
 	}
 
 	public toString(): string {
-		return `<KeyValDef> ${this.key}: ${this.value}`;
+		return `<KeyValDef> ${this.key}: ${this.value.value}`;
 	}
 }
 

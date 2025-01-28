@@ -129,13 +129,7 @@ import {
 
 // await logParseTraits();
 
-const lines = ["a: 42"];
-const heads = await parseLinesToHeads(lines);
-
-const result = parseTrait(createRootHead(), heads, 0);
-logobj(result);
-
-// await logTraitReport("01-err-trait-tree.txt");
+await logTraitReport("01-err-trait-tree.txt");
 // await logTraitReport("01b-err-num-trait-tree.txt");
 
 /**

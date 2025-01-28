@@ -14,7 +14,11 @@ export const getTraitReport = async (
 	// create lines array if not yet created
 	lines = lines ?? [];
 
-	const addLine = (content: string, indent: number, row: number) => {
+	const addLine = (
+		content: string,
+		indent: number,
+		row: number
+	) => {
 		const line: ReportLine = { content, indent, row };
 		lines.push(line);
 	};
@@ -38,7 +42,8 @@ export const getTraitReport = async (
 			case child instanceof KeyValDef:
 				{
 					const { key } = child;
-					const { value, valueType } = child.value;
+					const { value, type: valueType } =
+						child.value;
 
 					addLine(
 						`${key} in ${valueType.uniqueKey}: ${value}`,
@@ -49,7 +54,11 @@ export const getTraitReport = async (
 				break;
 			case child instanceof KeyTrait:
 				{
-					lines.push({ content: `${child.key}:`, indent, row });
+					lines.push({
+						content: `${child.key}:`,
+						indent,
+						row,
+					});
 					await getTraitReport(child, lines);
 				}
 				break;

@@ -12,7 +12,7 @@ export type AnalyzeNumberStringResults = {
 
 export class TypeValuePair {
 	constructor(
-		public readonly valueType: TypeBase,
+		public readonly type: TypeBase,
 		public readonly value: any
 	) {}
 }
