@@ -34,6 +34,10 @@ export class NumberErr {
 		public readonly numType: TypeBase,
 		public readonly kind: NumberErrKind
 	) {}
+
+	public toString(): string {
+		return `Number Error: ${this.kind}; type: ${this.numType.toParsableString()}`;
+	}
 }
 
 export class ReportLine {

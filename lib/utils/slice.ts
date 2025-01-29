@@ -1,5 +1,10 @@
 import { clamp } from "@/utils/math";
-import { StrGraphemeSeq, StrSeq, Seq, Range } from "@/utils/seq";
+import {
+	StrGraphemeSeq,
+	StrSeq,
+	Seq,
+	Range,
+} from "@/utils/seq";
 import { isCodePointWhiteSpace } from "@/utils/string";
 
 export const normalizeStartEnd = (
@@ -122,7 +127,9 @@ export class StrSlice {
 		let start = this.startIncl;
 		while (
 			start < this.endExcl &&
-			isCodePointWhiteSpace(this.source.charCodeAt(start))
+			isCodePointWhiteSpace(
+				this.source.charCodeAt(start)
+			)
 		) {
 			start++;
 		}
@@ -135,13 +142,19 @@ export class StrSlice {
 		let endIncl = this.endExcl - 1;
 		while (
 			endIncl >= this.startIncl &&
-			isCodePointWhiteSpace(this.source.charCodeAt(endIncl))
+			isCodePointWhiteSpace(
+				this.source.charCodeAt(endIncl)
+			)
 		) {
 			endIncl--;
 		}
 		return endIncl === this.endExcl - 1
 			? this
-			: new StrSlice(this.source, this.startIncl, endIncl + 1);
+			: new StrSlice(
+					this.source,
+					this.startIncl,
+					endIncl + 1
+				);
 	}
 
 	public trim(): StrSlice {
@@ -156,7 +169,10 @@ export class StrSlice {
 			return 0;
 		}
 
-		const range = normalizeStartEnd(this.length, childStartIncl);
+		const range = normalizeStartEnd(
+			this.length,
+			childStartIncl
+		);
 
 		let i = range.startIncl;
 
@@ -173,7 +189,10 @@ export class StrSlice {
 		return count;
 	};
 
-	public lastIndexOf(value: string, childEndExcl?: number): number {
+	public lastIndexOf(
+		value: string,
+		childEndExcl?: number
+	): number {
 		// hello world
 		// 012345678901
 
@@ -182,9 +201,17 @@ export class StrSlice {
 			return -1;
 		}
 
-		const range = normalizeStartEnd(this.length, 0, childEndExcl);
+		const range = normalizeStartEnd(
+			this.length,
+			0,
+			childEndExcl
+		);
 
-		for (let i = range.endExcl - l; i >= this.startIncl; i--) {
+		for (
+			let i = range.endExcl - l;
+			i >= this.startIncl;
+			i--
+		) {
 			if (this.source.startsWith(value, i)) {
 				return i - this.startIncl;
 			}
@@ -196,7 +223,10 @@ export class StrSlice {
 		value: string | StrSlice,
 		startIncl?: number
 	): boolean {
-		const range = normalizeStartEnd(this.length, startIncl);
+		const range = normalizeStartEnd(
+			this.length,
+			startIncl
+		);
 
 		if (
 			value.length === 0 ||
@@ -239,9 +269,16 @@ export class StrSlice {
 		// 012345678901
 		// 11 -
 
-		const range = normalizeStartEnd(this.length, 0, endExcl);
+		const range = normalizeStartEnd(
+			this.length,
+			0,
+			endExcl
+		);
 
-		if (value.length === 0 || value.length > this.length) {
+		if (
+			value.length === 0 ||
+			value.length > this.length
+		) {
 			return false;
 		}
 		const startsWithIndex = range.endExcl - value.length;
@@ -263,10 +300,16 @@ export class StrSlice {
 			return true;
 		}
 
-		return this.length === value.length && this.startsWith(value);
+		return (
+			this.length === value.length &&
+			this.startsWith(value)
+		);
 	}
 
-	public split(splitter: string, maxSplits?: number): StrSlice[] {
+	public split(
+		splitter: string,
+		maxSplits?: number
+	): StrSlice[] {
 		const strs: StrSlice[] = [];
 		let i = 0;
 		let splits = 0;
@@ -311,6 +354,28 @@ export class StrSlice {
 		);
 	}
 
+	public sliceByLength(
+		childStartIncl: number,
+		length: number
+	): StrSlice {
+		const range = normalizeStartEnd(
+			this.length,
+			childStartIncl,
+			undefined
+		);
+
+		const end = Math.min(
+			this.length,
+			range.startIncl + length
+		);
+
+		return new StrSlice(
+			this.source,
+			this.startIncl + range.startIncl,
+			this.startIncl + end
+		);
+	}
+
 	public sliceOf(value: string): StrSlice {
 		const i = this.indexOf(value);
 		if (i === -1) {
@@ -319,7 +384,10 @@ export class StrSlice {
 		return this.slice(i, i + value.length);
 	}
 
-	public indexOf(value: string, childStartIncl?: number): number {
+	public indexOf(
+		value: string,
+		childStartIncl?: number
+	): number {
 		// abcde
 		// 012345
 		// length = 5
@@ -345,7 +413,10 @@ export class StrSlice {
 			return -1;
 		}
 
-		const range = normalizeStartEnd(this.length, childStartIncl);
+		const range = normalizeStartEnd(
+			this.length,
+			childStartIncl
+		);
 
 		const loopLength = this.endExcl - valueLength + 1;
 		for (
@@ -364,9 +435,16 @@ export class StrSlice {
 		values: readonly string[],
 		childStartIncl?: number
 	): [number, number] {
-		const range = normalizeStartEnd(this.length, childStartIncl);
+		const range = normalizeStartEnd(
+			this.length,
+			childStartIncl
+		);
 
-		for (let i = range.startIncl; i < range.endExcl; i++) {
+		for (
+			let i = range.startIncl;
+			i < range.endExcl;
+			i++
+		) {
 			for (let j = 0; j < values.length; j++) {
 				const value = values[j] as string;
 				if (
@@ -380,7 +458,9 @@ export class StrSlice {
 		return [-1, -1];
 	}
 
-	public edgeSplitMany(values: readonly string[]): StrSlice[] {
+	public edgeSplitMany(
+		values: readonly string[]
+	): StrSlice[] {
 		// note: 'values' can only have 'undefined' if out of bounds
 		const slices: StrSlice[] = [];
 		let start = 0;
@@ -425,7 +505,10 @@ export class StrSlice {
 	): readonly number[] {
 		// note: 'orderedValues' can only be 'undefined' if indexed out of bounds
 		const valuesLength = orderedValues.length;
-		const indexes = Array.from({ length: valuesLength }, () => -1);
+		const indexes = Array.from(
+			{ length: valuesLength },
+			() => -1
+		);
 		let currentOrder = 0;
 		for (
 			let i = 0;
@@ -445,7 +528,9 @@ export class StrSlice {
 		return indexes;
 	}
 
-	public edgeSplitOrdered(values: readonly string[]): StrSlice[] {
+	public edgeSplitOrdered(
+		values: readonly string[]
+	): StrSlice[] {
 		// 'indexes' will be same length as 'values'
 		const indexes = this.indexesOfOrdered(values);
 		const slices: StrSlice[] = [];
@@ -481,6 +566,21 @@ export class StrSlice {
 		return slices;
 	}
 
+	public expandSlice(
+		expandStart: number,
+		expandEnd: number = 0
+	): StrSlice {
+		const start = Math.max(
+			0,
+			this.startIncl - expandStart
+		);
+		const end = Math.min(
+			this.source.length,
+			this.endExcl + expandEnd
+		);
+		return new StrSlice(this.source, start, end);
+	}
+
 	/**
 	 * If StrSlice represents a string with a parser error in it
 	 * this will return a string underlining the error.
@@ -510,7 +610,11 @@ export class StrSlice {
 		startIncl: number,
 		length: number
 	): StrSlice {
-		return new StrSlice(source, startIncl, startIncl + length);
+		return new StrSlice(
+			source,
+			startIncl,
+			startIncl + length
+		);
 	}
 
 	public static fromIndexOfDefaultAll(
@@ -539,7 +643,11 @@ export class StrSlice {
 		const seq = StrSeq.from(source);
 		const range = seq.getRange(startIncl, endExcl);
 
-		return new StrSlice(source, range.startIncl, range.endExcl);
+		return new StrSlice(
+			source,
+			range.startIncl,
+			range.endExcl
+		);
 	}
 
 	public static fromGraphemeIndices(
@@ -550,10 +658,17 @@ export class StrSlice {
 		const seq = StrGraphemeSeq.from(source);
 		const range = seq.getRange(startIncl, endExcl);
 
-		return new StrSlice(source, range.startIncl, range.endExcl);
+		return new StrSlice(
+			source,
+			range.startIncl,
+			range.endExcl
+		);
 	}
 
-	public static to(source: string, endExcl: number): StrSlice {
+	public static to(
+		source: string,
+		endExcl: number
+	): StrSlice {
 		return new StrSlice(source, 0, endExcl);
 	}
 

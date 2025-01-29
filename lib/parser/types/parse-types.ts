@@ -15,6 +15,10 @@ export class TypeValuePair {
 		public readonly type: TypeBase,
 		public readonly value: any
 	) {}
+
+	toString(): string {
+		return `${this.value} in ${this.type.toParsableString()}`;
+	}
 }
 
 export type ParseTraitResult = {

@@ -144,66 +144,16 @@ import { KeyTrait } from "@/parser/types/heads";
 
 const keyHeads = [
 	// "A beast in the sea .X.2:6:12 %m %n.2:4 %p.dot_sub^sup:22:44:77 $abc $def xyz >kg.m/s2 .Y:2 .Z %g",
-	"A beast in the sea in .X.2.6:6.28:abc def:12. " +
+	"A beast in the sea .X.2.6:6.28:abc def:12. " +
 		"%m %n.2:4 %p.dot_sub^sup:22:44:77 $abc $def xyz >kg.m/s2 .Y:2 .Z %g",
 ];
 
-// for (const keyHead of keyHeads) {
-// 	const keyParams = parseKeyHead(keyHead);
-// 	logobj(keyParams);
-// }
+for (const keyHead of keyHeads) {
+	const keyParams = parseKeyHead(keyHead);
+	logobj(keyParams);
+}
 
 // const str =
 // 	"A beast in the sea .X.2:6:12" +
 // 	" %y %z.2:2 $abc $def xyz >kg.m/s2 .Y:2 .Z %g";
 // const str = "abc abc def abc def efg abc";
-
-/**
- * Test StrSlice
- */
-
-// const slice1 = new StrSlice("abc,def,ghi");
-// const values1 = slice1.split(",");
-// const matches = values1.map(s => s.value);
-// log(values1);
-// div();
-// log(matches);
-
-// const slice = StrSlice.from(":::hello worldly:", 3, -3);
-// const sliceStr = slice.value;
-// const sliceOf = slice.sliceOf(":");
-// const sliceOfStr = sliceOf.value;
-// const shouldBe = slice.slice(0, 0);
-// const shouldBeStr = shouldBe.value;
-// const b1 = sliceOf.equals(shouldBe);
-// div();
-
-// :::hello worldly:
-//    012345678901
-// 012345678901234567
-//       10987654321-
-
-// const input = `
-// a: 42
-// 	invalid-a: misplaced children
-// 	invalid-b: indent error
-// `;
-
-// const lines = cleanMultiLineStringToArray(input);
-// const heads = await parseLinesToHeads(lines);
-// const result = parseTrait(createRootHead(), heads, 0);
-// const rootTrait = result.trait as KeyTrait;
-// log(rootTrait.children.length);
-// logobj(result);
-
-await logTraitReport("01-err-trait-tree.txt");
-
-// const input = `
-// d:
-//    spaces: 23
-// `;
-
-// const lines = cleanMultiLineStringToArray(input);
-// const heads = await parseLinesToHeads(lines);
-// const result = parseTrait(createRootHead(), heads, 0);
-// logobj(result);

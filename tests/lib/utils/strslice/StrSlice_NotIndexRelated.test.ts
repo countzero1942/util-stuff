@@ -3,7 +3,7 @@ import { StrSlice } from "@/utils/slice";
 import exp from "constants";
 
 describe("StrSlice Non-Index-related methods", () => {
-	describe("StrSlice - Trim Related Methods", () => {
+	describe("StrSlice - Trim Related Methods + expandSlice", () => {
 		let strSlice: StrSlice;
 
 		beforeEach(() => {
@@ -73,6 +73,28 @@ describe("StrSlice Non-Index-related methods", () => {
 			const result = strSlice.trim();
 			expect(result.isEmpty).toBe(true);
 		});
+
+		it("handles expandSlice and edge cases", () => {
+			strSlice = StrSlice.from("X .Y .Z");
+			//                        0123456789012345
+			const sliceA = strSlice.sliceByLength(3, 1);
+			expect(sliceA.value).toBe("Y");
+			const expandedA1 = sliceA.expandSlice(1);
+			expect(expandedA1.value).toBe(".Y");
+
+			const expandedA2 = sliceA.expandSlice(1, 1);
+			expect(expandedA2.value).toBe(".Y ");
+
+			const sliceB = strSlice.sliceByLength(0, 1);
+			expect(sliceB.value).toBe("X");
+			const expandedB1 = sliceB.expandSlice(1, 1);
+			expect(expandedB1.value).toBe("X ");
+
+			const sliceC = strSlice.sliceByLength(6, 1);
+			expect(sliceC.value).toBe("Z");
+			const expandedC = sliceC.expandSlice(1, 1);
+			expect(expandedC.value).toBe(".Z");
+		});
 	});
 
 	describe("StrSlice - StartsWith and EndsWith Methods", () => {
@@ -129,15 +151,27 @@ describe("StrSlice Non-Index-related methods", () => {
 			});
 
 			it("returns false: startsWith value matches in bounds but also goes beyond bounds", () => {
-				const result = strSlice.startsWith("worldly", 6);
+				const result = strSlice.startsWith(
+					"worldly",
+					6
+				);
 				expect(result).toBe(false);
 			});
 
 			it("returns false: startsWith value goes beyond slice bounds but matches source", () => {
-				strSlice = StrSlice.from("hello worldly", 0, -2);
+				strSlice = StrSlice.from(
+					"hello worldly",
+					0,
+					-2
+				);
 				expect(strSlice.value).toBe("hello world");
-				expect(strSlice.startsWith("world", 6)).toBe(true);
-				const result = strSlice.startsWith("worldly", 6);
+				expect(strSlice.startsWith("world", 6)).toBe(
+					true
+				);
+				const result = strSlice.startsWith(
+					"worldly",
+					6
+				);
 				expect(result).toBe(false);
 			});
 		});
@@ -156,7 +190,11 @@ describe("StrSlice Non-Index-related methods", () => {
 			});
 
 			it("returns true: slice starts with value slice that's offset", () => {
-				const value = new StrSlice("abc hello abc", 4, 9);
+				const value = new StrSlice(
+					"abc hello abc",
+					4,
+					9
+				);
 				expect(value.value).toBe("hello");
 				const result = strSlice.startsWith(value);
 				expect(result).toBe(true);
@@ -169,7 +207,11 @@ describe("StrSlice Non-Index-related methods", () => {
 			});
 
 			it("returns false: slice does not start with value slice that's offset", () => {
-				const value = new StrSlice("abc world abc", 4, 9);
+				const value = new StrSlice(
+					"abc world abc",
+					4,
+					9
+				);
 				expect(value.value).toBe("world");
 				const result = strSlice.startsWith(value);
 				expect(result).toBe(false);
@@ -185,9 +227,15 @@ describe("StrSlice Non-Index-related methods", () => {
 			});
 
 			it("returns false: startsWith value goes beyond slice bounds but matches source", () => {
-				strSlice = StrSlice.from("hello worldly", 0, -2);
+				strSlice = StrSlice.from(
+					"hello worldly",
+					0,
+					-2
+				);
 				expect(strSlice.value).toBe("hello world");
-				expect(strSlice.startsWith("world", 6)).toBe(true);
+				expect(strSlice.startsWith("world", 6)).toBe(
+					true
+				);
 				const value = new StrSlice("worldly");
 				const result = strSlice.startsWith(value, 6);
 				expect(result).toBe(false);
@@ -225,9 +273,15 @@ describe("StrSlice Non-Index-related methods", () => {
 
 			it("returns false: startsWith value goes beyond slice bounds but matches source", () => {
 				const value = new StrSlice("worldly");
-				strSlice = StrSlice.from("hello worldly", 0, -2);
+				strSlice = StrSlice.from(
+					"hello worldly",
+					0,
+					-2
+				);
 				expect(strSlice.value).toBe("hello world");
-				expect(strSlice.startsWith("world", 6)).toBe(true);
+				expect(strSlice.startsWith("world", 6)).toBe(
+					true
+				);
 				const result = strSlice.startsWith(value, 6);
 				expect(result).toBe(false);
 			});
@@ -264,9 +318,15 @@ describe("StrSlice Non-Index-related methods", () => {
 
 			it("returns false: startsWith value goes beyond slice bounds but matches source", () => {
 				const value = new StrSlice("worldly");
-				strSlice = StrSlice.from("hello worldly", 0, -2);
+				strSlice = StrSlice.from(
+					"hello worldly",
+					0,
+					-2
+				);
 				expect(strSlice.value).toBe("hello world");
-				expect(strSlice.startsWith("world", 6)).toBe(true);
+				expect(strSlice.startsWith("world", 6)).toBe(
+					true
+				);
 				const result = strSlice.startsWith(value, -5);
 				expect(result).toBe(false);
 			});
@@ -314,13 +374,19 @@ describe("StrSlice Non-Index-related methods", () => {
 
 			it("returns true: slice starts with value at start index", () => {
 				const value = "hello";
-				const result = strSlice.endsWith(value, value.length);
+				const result = strSlice.endsWith(
+					value,
+					value.length
+				);
 				expect(result).toBe(true);
 			});
 
 			it("returns false: slice does not start with value at index", () => {
 				const value = "world";
-				const result = strSlice.endsWith(value, value.length);
+				const result = strSlice.endsWith(
+					value,
+					value.length
+				);
 				expect(result).toBe(false);
 			});
 
@@ -329,7 +395,10 @@ describe("StrSlice Non-Index-related methods", () => {
 				expect(strSlice.value).toBe("world");
 				expect(strSlice.startsWith("world")).toBe(true);
 				const value = "worldly";
-				const result = strSlice.endsWith(value, value.length);
+				const result = strSlice.endsWith(
+					value,
+					value.length
+				);
 				expect(result).toBe(false);
 			});
 		});
@@ -355,7 +424,10 @@ describe("StrSlice Non-Index-related methods", () => {
 			});
 
 			it("returns true: endsWith 'hello' at index 5: 'hello'.length", () => {
-				const resultd = slice.endsWith(value1, value1.length);
+				const resultd = slice.endsWith(
+					value1,
+					value1.length
+				);
 				expect(resultd).toBe(true);
 			});
 		});
@@ -424,7 +496,11 @@ describe("StrSlice Non-Index-related methods", () => {
 
 			it("returns true: offset slices are equal", () => {
 				strSlice = new StrSlice("abc hello abc", 4, -4);
-				const value = new StrSlice("O hello world", 2, 7);
+				const value = new StrSlice(
+					"O hello world",
+					2,
+					7
+				);
 				expect(strSlice.value).toBe("hello");
 				expect(value.value).toBe("hello");
 				const result = strSlice.equals(value);
