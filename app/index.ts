@@ -45,7 +45,9 @@ import {
 	testPrecisionCount,
 } from "@/my-tests/parser/test-parseNumber";
 import {
+	compareParseKeyHeadReport,
 	logParseDefaultValues,
+	logParseKeyHeadReport,
 	logParseTraits,
 	logSplitHeads,
 	logTraitReport,
@@ -142,18 +144,27 @@ import { KeyTrait } from "@/parser/types/heads";
  * Test parseKeyHead
  */
 
-const keyHeads = [
-	// "A beast in the sea .X.2:6:12 %m %n.2:4 %p.dot_sub^sup:22:44:77 $abc $def xyz >kg.m/s2 .Y:2 .Z %g",
-	"A beast in the sea .X.2.6:6.28:abc def:12. " +
-		"%m %n.2:4 %p.dot_sub^sup:22:44:77 $abc $def xyz >kg.m/s2 .Y:2 .Z %g",
-];
+// const keyHeads = [
+// 	// "A beast in the sea .X.2:6:12 %m %n.2:4 %p.dot_sub^sup:22:44:77 $abc $def xyz >kg.m/s2 .Y:2 .Z %g",
+// 	"A beast in the sea .X.2.6:6.28:abc def:12. " +
+// 		"%m %n.2:4 %p.dot_sub^sup:22:44:77 $abc $def xyz >kg.m/s2 .Y:2 %x.2:2 %y_2^4 .Z %g",
+// ];
 
-for (const keyHead of keyHeads) {
-	const keyParams = parseKeyHead(keyHead);
-	logobj(keyParams);
-}
+// // for (const keyHead of keyHeads) {
+// // 	const keyParams = parseKeyHead(keyHead);
+// // 	logobj(keyParams);
+// // }
+
+// const keyParams = parseKeyHead(keyHeads[0] as string);
+// const report = keyParams.toReport();
+// log(report.join("\n"));
 
 // const str =
 // 	"A beast in the sea .X.2:6:12" +
 // 	" %y %z.2:2 $abc $def xyz >kg.m/s2 .Y:2 .Z %g";
 // const str = "abc abc def abc def efg abc";
+
+// logParseKeyHeadReport();
+
+compareParseKeyHeadReport();
+//

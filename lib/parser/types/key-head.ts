@@ -43,14 +43,14 @@ export class FlagParam extends ParamBase {
 		);
 	}
 
-	public toString(
+	public toReport(
 		indents: number = 0,
 		indentStr: string = "   "
-	): string {
+	): string[] {
 		const strs: string[] = [];
 		const indentStr1 = indentStr.repeat(indents);
 		const indentStr2 = indentStr.repeat(indents + 1);
-		const indentStr3 = indentStr.repeat(indents + 1);
+		const indentStr3 = indentStr.repeat(indents + 2);
 
 		const nameStr = `${indentStr1}${this.fullName.value}`;
 		strs.push(nameStr);
@@ -74,14 +74,13 @@ export class FlagParam extends ParamBase {
 		}
 
 		if (this.colonParams.length > 0) {
-			strs.push(
-				`${indentStr2}colonParams:${this.colonParams
-					.map(p => p.toString())
-					.join(":")}`
+			strs.push(`${indentStr2}colonParams:`);
+			this.colonParams.forEach(p =>
+				strs.push(`${indentStr3}${p.toString()}`)
 			);
 		}
 
-		return strs.join("\n");
+		return strs;
 	}
 }
 
@@ -102,17 +101,79 @@ export class TypeParams extends ParamBase {
 			FlagParam.empty()
 		);
 	}
+
+	public toReport(
+		indents: number = 0,
+		indentStr: string = "   "
+	): string[] {
+		const strs: string[] = [];
+		const indentStr1 = indentStr.repeat(indents);
+		const indentStr2 = indentStr.repeat(indents + 1);
+		const indentStr3 = indentStr.repeat(indents + 2);
+
+		strs.push(
+			`${indentStr1}Type: ${this.fullName.toString()}`
+		);
+		strs.push(`${indentStr1}Name param: `);
+		strs.push(
+			...this.nameParams.toReport(indents + 1, indentStr)
+		);
+		if (this.flagParams.length > 0) {
+			strs.push(`${indentStr1}Flags: `);
+			this.flagParams.forEach(p =>
+				strs.push(...p.toReport(indents + 1, indentStr))
+			);
+		}
+		if (this.stringParams.length > 0) {
+			strs.push(`${indentStr1}String params: `);
+			this.stringParams.forEach(p =>
+				strs.push(`${indentStr2}${p}`)
+			);
+		}
+		if (this.unitParam) {
+			strs.push(
+				`${indentStr1}Unit param: ${this.unitParam}`
+			);
+		}
+
+		return strs;
+	}
 }
 
 export class KeyParams extends ParamBase {
 	constructor(
 		name: StrSlice,
-		public readonly types?: TypeParams[]
+		public readonly typeParams?: TypeParams[]
 	) {
 		super(name);
 	}
 
 	public static empty(): KeyParams {
 		return new KeyParams(StrSlice.empty());
+	}
+
+	public toReport(
+		indents: number = 0,
+		indentStr: string = "   "
+	): string[] {
+		const strs: string[] = [];
+		const indentStr1 = indentStr.repeat(indents);
+		const indentStr2 = indentStr.repeat(indents + 1);
+		const indentStr3 = indentStr.repeat(indents + 2);
+
+		strs.push(
+			`${indentStr1}Key: ${this.fullName.toString()}`
+		);
+		if (this.typeParams) {
+			strs.push(`${indentStr1}Types: `);
+			this.typeParams.forEach(typeParam => {
+				strs.push(
+					...typeParam.toReport(indents + 1, indentStr)
+				);
+				strs.push("");
+			});
+		}
+
+		return strs;
 	}
 }

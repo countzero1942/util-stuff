@@ -458,11 +458,11 @@ export const cleanMultiLineArray = (
 		);
 
 		if (tabCharsCount >= minTabCharsCount) {
-			return line.slice(
-				minTabCharsCount * tabString.length
-			);
+			return line
+				.slice(minTabCharsCount * tabString.length)
+				.trimEnd();
 		}
-		return line;
+		return line.trimEnd();
 	});
 
 	if (extraIndents > 0) {

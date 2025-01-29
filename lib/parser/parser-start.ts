@@ -41,6 +41,16 @@ import {
 	getTraitReport,
 } from "@/parser/utils/print-back";
 import { StrSlice } from "@/utils/slice";
+import { parseKeyHead } from "./utils/parse-key-head";
+import clipboard from "clipboardy";
+import {
+	cleanMultiLineArray,
+	cleanMultiLineStringToArray,
+} from "@/utils/string";
+import {
+	expectedParseKeyHeadTestTextReport,
+	parseKeyHeadTestText,
+} from "@/tests/data/test-data";
 
 const getTextFilePath = (name: string) =>
 	`./text/parser/${name}`;
@@ -278,4 +288,54 @@ export const logTraitReport = async (
 	// 	const indentStr = "   ".repeat(indent);
 	// 	log(`${rowStr}  ${indentStr}${content}`);
 	// }
+};
+
+export const logParseKeyHeadReport = () => {
+	const keyParams = parseKeyHead(parseKeyHeadTestText);
+	const report = keyParams.toReport();
+	const reportText = report.join("\n");
+	log(reportText);
+	div();
+	clipboard.writeSync(reportText);
+	log("Copied to clipboard");
+	div();
+};
+
+export const compareParseKeyHeadReport = () => {
+	const keyParams = parseKeyHead(parseKeyHeadTestText);
+	const reportLines = cleanMultiLineArray(
+		keyParams.toReport(0, "\t")
+	);
+
+	const expectedReportLines = cleanMultiLineStringToArray(
+		expectedParseKeyHeadTestTextReport
+	);
+
+	let i = 0;
+	let failCount = 0;
+	while (
+		i < expectedReportLines.length &&
+		i < reportLines.length
+	) {
+		const match: boolean =
+			expectedReportLines[i] === reportLines[i];
+		const failText = !match ? "<FAIL>" : "";
+
+		if (!match) {
+			failCount++;
+		}
+
+		log(`${i}: expected then report ${failText}`);
+		log(`'${expectedReportLines[i]}'`);
+		log(`'${reportLines[i]}'`);
+		div();
+		i++;
+	}
+
+	log(`failCount: ${failCount}`);
+	log(`reportLines.length: ${reportLines.length}`);
+	log(
+		`expectedReportLines.length: ${expectedReportLines.length}`
+	);
+	div();
 };

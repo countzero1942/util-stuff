@@ -23,6 +23,7 @@
 			"@/parser/*": ["lib/parser/*"],
 			"@/utils/*": ["lib/utils/*"],
 			"@/types/*": ["lib/types/*"],
+			"@/tests/*": ["tests/*"],
 			"@/my-tests/*": ["my-test-stuff/*"]
 		}
 	},

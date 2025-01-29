@@ -7,6 +7,7 @@
 		"build": "tsc",
 		"dev": "tsx ./app/index.ts",
 		"test": "jest",
+		"test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
 		"format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
 		"format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\""
 	},
@@ -30,6 +31,7 @@
 		"typescript": "^5.6.2"
 	},
 	"dependencies": {
+		"clipboardy": "^4.0.0",
 		"crypto-random-string": "^5.0.0",
 		"generate-password": "^1.7.1",
 		"memoizee": "^0.4.17",

@@ -7,6 +7,24 @@
 		 */
 
 		{
+			"name": "Debug Jest Tests",
+			"type": "node",
+			"request": "launch",
+			"runtimeExecutable": "tsx",
+			"runtimeArgs": [
+				"--experimental-vm-modules",
+				"./node_modules/jest/bin/jest.js",
+				"--runInBand",
+				"${relativeFile}"
+			],
+			"console": "integratedTerminal",
+			"internalConsoleOptions": "neverOpen",
+			"env": {
+				"NODE_OPTIONS": "--experimental-vm-modules"
+			}
+		},
+
+		{
 			"name": "tsx",
 			"type": "node",
 			"request": "launch",

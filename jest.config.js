@@ -1,16 +1,20 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} **/
 export default {
-	preset: "ts-jest",
 	testEnvironment: "node",
+	preset: "ts-jest",
 	transform: {
-		"^.+.tsx?$": ["ts-jest", {}],
+		"^.+\\.tsx?$": ["ts-jest", {
+			useESM: true,
+		}]
 	},
+	extensionsToTreatAsEsm: [".ts", ".tsx"],
 	coveragePathIgnorePatterns: ["/node_modules/"],
 	coverageReporters: ["json", "html"],
 	coverageDirectory: "coverage",
 	moduleNameMapper: {
 		"^@/utils/(.*)$": "<rootDir>/lib/utils/$1",
 		"^@/parser/(.*)$": "<rootDir>/lib/parser/$1",
+		"^@/tests/(.*)$": "<rootDir>/tests/$1",
 	},
 };
 // "@/app/*": ["app/*"],
