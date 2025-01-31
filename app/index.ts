@@ -166,5 +166,35 @@ import { KeyTrait } from "@/parser/types/heads";
 
 // logParseKeyHeadReport();
 
-compareParseKeyHeadReport();
-//
+// compareParseKeyHeadReport();
+
+const tabstr = `
+		a:
+			b:
+				c:	
+`;
+
+const spacestr = `
+      a:
+         b:
+            c:
+`;
+
+const a = cleanMultiLineString(tabstr, { tabString: "\t" });
+log(a);
+div();
+const b = cleanMultiLineString(spacestr, {
+	tabString: "   ",
+});
+log(b);
+div();
+const c = cleanMultiLineString(tabstr, {
+	tabString: "   ",
+});
+log(c);
+div();
+const d = cleanMultiLineString(spacestr, {
+	tabString: "\t",
+});
+log(d);
+div();

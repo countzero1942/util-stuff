@@ -415,40 +415,93 @@ export const getRepeatingMatchesCount = (
 export const getMinTabCharsCount = (
 	lines: string[],
 	tabString: string = "\t"
-) => {
+): {
+	minTabCharsCount: number;
+	tabCharMismatchCount: number;
+} => {
+	const isTabIndented = tabString.startsWith("\t");
+	const isSpaceIndented = tabString.startsWith(" ");
 	let minTabCharsCount = Number.MAX_SAFE_INTEGER;
+	let tabCharMismatchCount = 0;
 	for (const line of lines) {
 		if (line === "") continue;
 		const tabCharsCount = getRepeatingMatchesCount(
 			line,
 			tabString
 		);
+		if (tabCharsCount === 0) {
+			if (isTabIndented && line.startsWith(" ")) {
+				tabCharMismatchCount++;
+			} else if (
+				isSpaceIndented &&
+				line.startsWith("\t")
+			) {
+				tabCharMismatchCount++;
+			}
+		}
+
 		minTabCharsCount = Math.min(
 			minTabCharsCount,
 			tabCharsCount
 		);
 	}
-	return minTabCharsCount === Number.MAX_SAFE_INTEGER
-		? 0
-		: minTabCharsCount;
+	return {
+		minTabCharsCount:
+			minTabCharsCount === Number.MAX_SAFE_INTEGER
+				? 0
+				: minTabCharsCount,
+		tabCharMismatchCount,
+	};
 };
 
+/**
+ * Options for funtions
+ */
+export type CleanMultiLineOptions = {
+	/**
+	 * The tab string to use for indents.
+	 *
+	 * Default: "\t"
+	 */
+	tabString?: string;
+	/**
+	 * The number of indents to insert after extra
+	 * intial indentation is removed.
+	 */
+	extraIndents?: number;
+};
+
+/**
+ * Cleans template strings by removing extra indentation and
+ * empty lines at the start and end.
+ *
+ * @param lines The array of strings to clean
+ * @param options
+ *
+ * tabString: The tab string used to indentify indents. Default: "\t"
+ *
+ * extraIndents: The number of indents to insert after extra
+ * intial indentation is removed. Default: 0
+ *
+ * @returns The cleaned array of strings
+ */
 export const cleanMultiLineArray = (
 	lines: string[],
-	options?: {
-		tabString?: string;
-		extraIndents?: number;
-	}
+	options?: CleanMultiLineOptions
 ): readonly string[] => {
 	const tabString = options?.tabString ?? "\t";
 	const extraIndents = options?.extraIndents ?? 0;
 
 	lines = removeEmptyLinesFromStartAndEnd(lines);
 
-	const minTabCharsCount = getMinTabCharsCount(
-		lines,
-		tabString
-	);
+	const { minTabCharsCount, tabCharMismatchCount } =
+		getMinTabCharsCount(lines, tabString);
+
+	if (tabCharMismatchCount > 0) {
+		return [
+			`TAB STRING ERROR: Tab character mismatches found: ${tabCharMismatchCount}`,
+		];
+	}
 
 	lines = lines.map(line => {
 		if (line === "") return "";
@@ -476,12 +529,23 @@ export const cleanMultiLineArray = (
 	return lines;
 };
 
+/**
+ * Cleans template strings by removing extra indentation and
+ * empty lines at the start and end.
+ *
+ * @param lines The array of strings to clean
+ * @param options
+ *
+ * tabString: The tab string used to indentify indents. Default: "\t"
+ *
+ * extraIndents: The number of indents to insert after extra
+ * intial indentation is removed. Default: 0
+ *
+ * @returns The cleaned array of strings
+ */
 export const cleanMultiLineString = (
 	multiLineString: string,
-	options?: {
-		tabString?: string;
-		extraIndents?: number;
-	}
+	options?: CleanMultiLineOptions
 ) => {
 	let lines = multiLineString
 		.split("\n")
@@ -492,12 +556,23 @@ export const cleanMultiLineString = (
 	return lines.join("\n");
 };
 
+/**
+ * Cleans template strings by removing extra indentation and
+ * empty lines at the start and end.
+ *
+ * @param lines The array of strings to clean
+ * @param options
+ *
+ * tabString: The tab string used to indentify indents. Default: "\t"
+ *
+ * extraIndents: The number of indents to insert after extra
+ * intial indentation is removed. Default: 0
+ *
+ * @returns The cleaned array of strings
+ */
 export const cleanMultiLineStringToArray = (
 	multiLineString: string,
-	options?: {
-		tabString?: string;
-		extraIndents?: number;
-	}
+	options?: CleanMultiLineOptions
 ): readonly string[] => {
 	let lines = multiLineString
 		.split("\n")
