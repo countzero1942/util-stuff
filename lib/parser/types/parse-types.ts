@@ -1,4 +1,7 @@
-import { KeyTrait, ParserErr } from "@/parser/types/heads";
+import {
+	KeyTrait,
+	ParserErrHead,
+} from "@/parser/types/heads";
 import { TypeBase } from "@/parser/types/type-types";
 
 export type AnalyzeNumberStringResults = {
@@ -22,6 +25,6 @@ export class TypeValuePair {
 }
 
 export type ParseTraitResult = {
-	trait: KeyTrait | ParserErr;
+	trait: KeyTrait | ParserErrHead;
 	nextIndex: number;
 };

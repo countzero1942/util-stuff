@@ -212,7 +212,7 @@ describe("getMinTabCharsCount", () => {
 		});
 	});
 
-	it("handles mixed indentation", () => {
+	it("handles mixed levels of indentation", () => {
 		expect(
 			getMinTabCharsCount(["\tabc", "def", "\t\tghi"])
 		).toEqual({
@@ -244,12 +244,20 @@ describe("getMinTabCharsCount", () => {
                b:
                   c:
       `;
+		const tabSpaceInput = `
+				a:
+               b:
+						c:
+		`;
 
 		const tabLines = removeEmptyLinesFromStartAndEnd(
 			tabInput.split("\n").map(s => s.trimEnd())
 		);
 		const spaceLines = removeEmptyLinesFromStartAndEnd(
 			spaceInput.split("\n").map(s => s.trimEnd())
+		);
+		const tabSpaceLines = removeEmptyLinesFromStartAndEnd(
+			tabSpaceInput.split("\n").map(s => s.trimEnd())
 		);
 
 		expect(getMinTabCharsCount(tabLines, "   ")).toEqual({
@@ -263,6 +271,20 @@ describe("getMinTabCharsCount", () => {
 				tabCharMismatchCount: 3,
 			}
 		);
+
+		expect(
+			getMinTabCharsCount(tabSpaceLines, "\t")
+		).toEqual({
+			minTabCharsCount: 0,
+			tabCharMismatchCount: 1,
+		});
+
+		expect(
+			getMinTabCharsCount(tabSpaceLines, "   ")
+		).toEqual({
+			minTabCharsCount: 0,
+			tabCharMismatchCount: 2,
+		});
 	});
 });
 

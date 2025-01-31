@@ -1,9 +1,9 @@
 import { ReportLine } from "@/parser/types/err-types";
 import {
 	KeyTrait,
-	KeyValDef,
-	KeyValDefHead,
-	ParserErr,
+	KeyValueDefinedPair,
+	KeyValueDefinedHead,
+	ParserErrHead,
 } from "@/parser/types/heads";
 import { log } from "@/utils/log";
 
@@ -32,14 +32,14 @@ export const getTraitReport = async (
 		}
 
 		switch (true) {
-			case child instanceof KeyValDefHead:
+			case child instanceof KeyValueDefinedHead:
 				addLine(
 					`${child.keyHead}: ${child.valueHead}`,
 					indent,
 					row
 				);
 				break;
-			case child instanceof KeyValDef:
+			case child instanceof KeyValueDefinedPair:
 				{
 					const { key } = child;
 					const { value, type } = child.value;
@@ -61,7 +61,7 @@ export const getTraitReport = async (
 					await getTraitReport(child, lines);
 				}
 				break;
-			case child instanceof ParserErr:
+			case child instanceof ParserErrHead:
 				{
 					const childLines = child.err.toReport();
 					lines.push(...childLines);

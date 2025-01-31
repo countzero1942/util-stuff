@@ -21,7 +21,7 @@ export abstract class KeyHead {
  *
  * E.g.: "key: value"
  */
-export class KeyValDefHead extends KeyHead {
+export class KeyValueDefinedHead extends KeyHead {
 	constructor(
 		readonly keyHead: StrSlice,
 		readonly valueHead: StrSlice,
@@ -39,7 +39,7 @@ export class KeyValDefHead extends KeyHead {
 	}
 
 	public toString(): string {
-		return `<KeyValDefHead> ${this.keyHead}: ${this.valueHead}`;
+		return `<KeyValueDefinedHead> ${this.keyHead}: ${this.valueHead}`;
 	}
 }
 
@@ -48,7 +48,7 @@ export class KeyValDefHead extends KeyHead {
  *
  * E.g.: "key"
  */
-export class KeyValReqHead extends KeyHead {
+export class KeyValueRequiredHead extends KeyHead {
 	constructor(
 		readonly keyHead: StrSlice,
 		lineInfo: LineInfo
@@ -61,7 +61,7 @@ export class KeyValReqHead extends KeyHead {
 	}
 
 	public toString(): string {
-		return `<KeyValReqHead> ${this.keyHead}`;
+		return `<KeyValueRequiredHead> ${this.keyHead}`;
 	}
 }
 
@@ -72,7 +72,7 @@ export class KeyValReqHead extends KeyHead {
  *
  * E.g.: "key:"
  */
-export class KeyBodyReqHead extends KeyHead {
+export class KeyBodyRequiredHead extends KeyHead {
 	constructor(
 		readonly keyHead: StrSlice,
 		lineInfo: LineInfo
@@ -85,7 +85,7 @@ export class KeyBodyReqHead extends KeyHead {
 	}
 
 	public toString(): string {
-		return `<KeyBodyReqHead> ${this.keyHead}:`;
+		return `<KeyBodyRequiredHead> ${this.keyHead}:`;
 	}
 }
 
@@ -131,8 +131,9 @@ export class KeyTrait extends KeyHead {
 		return `<KeyTrait> ${this.key}:`;
 	}
 }
+
 /**
- * Key Value Defined.
+ * Key Value Defined Pair
  *
  * This is the finalized version of KeyValHead.
  *
@@ -140,7 +141,7 @@ export class KeyTrait extends KeyHead {
  *
  * The value is parsed into a TypeValuePair: actual value and type
  */
-export class KeyValDef extends KeyHead {
+export class KeyValueDefinedPair extends KeyHead {
 	constructor(
 		readonly key: StrSlice,
 		readonly value: TypeValuePair,
@@ -161,11 +162,11 @@ export class KeyValDef extends KeyHead {
 	}
 
 	public toString(): string {
-		return `<KeyValDef> ${this.key}: ${this.value.value}`;
+		return `<KeyValueDefinedPair> ${this.key}: ${this.value.value}`;
 	}
 }
 
-export class ParserErr extends KeyHead {
+export class ParserErrHead extends KeyHead {
 	constructor(
 		readonly err: ParserErrBase,
 		lineInfo: LineInfo

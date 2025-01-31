@@ -19,12 +19,12 @@ import { ArraySeq, NumSeq } from "@/utils/seq";
 import { parseDefaultValue } from "@/parser/utils/parse-value";
 import {
 	KeyHead,
-	KeyBodyReqHead,
+	KeyBodyRequiredHead,
 	KeyTrait,
 	LineInfo,
-	ParserErr,
-	KeyValDefHead,
-	KeyValReqHead,
+	ParserErrHead,
+	KeyValueDefinedHead,
+	KeyValueRequiredHead,
 	EmptyLine,
 } from "@/parser/types/heads";
 import {
@@ -133,23 +133,23 @@ export const logSplitHeads = async () => {
 		allHeads
 	).partArrays(
 		// h => h.type !== "ParserErr"
-		h => !(h instanceof ParserErr)
+		h => !(h instanceof ParserErrHead)
 	);
 
 	logh(`Heads: ${heads.length}`);
 	// logobj(heads);
 	for (const head of heads) {
 		switch (true) {
-			case head instanceof KeyValDefHead:
+			case head instanceof KeyValueDefinedHead:
 				log("<KeyValDefHead>");
 				log(`   keyHead: '${head.keyHead}'`);
 				log(`   valueHead: '${head.valueHead}'`);
 				break;
-			case head instanceof KeyBodyReqHead:
+			case head instanceof KeyBodyRequiredHead:
 				log("<KeyBodyReqHead>");
 				log(`   keyHead: '${head.keyHead}'`);
 				break;
-			case head instanceof KeyValReqHead:
+			case head instanceof KeyValueRequiredHead:
 				log("<KeyValReqHead>");
 				log(`   keyHead: '${head.keyHead}'`);
 				break;
@@ -168,7 +168,7 @@ export const logSplitHeads = async () => {
 	log();
 
 	logh(`Errors: ${errorHeads.length}`);
-	for (const err of errorHeads as ParserErr[]) {
+	for (const err of errorHeads as ParserErrHead[]) {
 		log(err.err.toMessage());
 		const report = err.err.toReport();
 		log(report[0]?.content);
@@ -198,7 +198,7 @@ export const logParseDefaultValues = async () => {
 
 	for (const head of allHeads) {
 		switch (true) {
-			case head instanceof KeyValDefHead:
+			case head instanceof KeyValueDefinedHead:
 				const { keyHead, valueHead } = head;
 				const res = parseDefaultValue(valueHead);
 				if (res instanceof NumberErr) {
@@ -263,7 +263,7 @@ export const logTraitReport = async (
 
 	const trait = res.trait;
 
-	if (trait instanceof ParserErr) {
+	if (trait instanceof ParserErrHead) {
 		log("ERROR:");
 		log(trait);
 		return;

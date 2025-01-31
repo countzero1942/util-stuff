@@ -2,14 +2,14 @@ import { describe, it, expect } from "@jest/globals";
 import {
 	LineInfo,
 	KeyHead,
-	KeyValDefHead,
-	KeyValReqHead,
-	KeyBodyReqHead,
+	KeyValueDefinedHead,
+	KeyValueRequiredHead,
+	KeyBodyRequiredHead,
 	KeyInvalidHead,
 	EmptyLine,
 	KeyTrait,
-	KeyValDef,
-	ParserErr,
+	KeyValueDefinedPair,
+	ParserErrHead,
 } from "@/parser/types/heads";
 import { StrSlice } from "@/utils/slice";
 import { TypeValuePair } from "@/parser/types/parse-types";
@@ -40,7 +40,7 @@ describe("KeyValDefHead", () => {
 	const valueHead = new StrSlice("value");
 
 	it("creates KeyValDefHead instance with correct properties", () => {
-		const head = new KeyValDefHead(
+		const head = new KeyValueDefinedHead(
 			keyHead,
 			valueHead,
 			lineInfo
@@ -52,7 +52,7 @@ describe("KeyValDefHead", () => {
 	});
 
 	it("correctly checks key head", () => {
-		const head = new KeyValDefHead(
+		const head = new KeyValueDefinedHead(
 			keyHead,
 			valueHead,
 			lineInfo
@@ -63,7 +63,7 @@ describe("KeyValDefHead", () => {
 	});
 
 	it("correctly checks value head", () => {
-		const head = new KeyValDefHead(
+		const head = new KeyValueDefinedHead(
 			keyHead,
 			valueHead,
 			lineInfo
@@ -74,42 +74,53 @@ describe("KeyValDefHead", () => {
 	});
 
 	it("provides correct string representation", () => {
-		const head = new KeyValDefHead(
+		const head = new KeyValueDefinedHead(
 			keyHead,
 			valueHead,
 			lineInfo
 		);
 		expect(head.toString()).toBe(
-			"<KeyValDefHead> key: value"
+			"<KeyValueDefinedHead> key: value"
 		);
 	});
 });
 
-describe("KeyValReqHead", () => {
+describe("KeyValueRequiredHead", () => {
 	const lineInfo = new LineInfo(new StrSlice("key"), 0, 1);
 	const keyHead = new StrSlice("key");
 
-	it("creates KeyValReqHead instance with correct properties", () => {
-		const head = new KeyValReqHead(keyHead, lineInfo);
+	it("creates KeyValueRequiredHead instance with correct properties", () => {
+		const head = new KeyValueRequiredHead(
+			keyHead,
+			lineInfo
+		);
 
 		expect(head.keyHead).toBe(keyHead);
 		expect(head.lineInfo).toBe(lineInfo);
 	});
 
 	it("correctly checks key head", () => {
-		const head = new KeyValReqHead(keyHead, lineInfo);
+		const head = new KeyValueRequiredHead(
+			keyHead,
+			lineInfo
+		);
 
 		expect(head.checkKeyHead("key")).toBe(true);
 		expect(head.checkKeyHead("other")).toBe(false);
 	});
 
 	it("provides correct string representation", () => {
-		const head = new KeyValReqHead(keyHead, lineInfo);
-		expect(head.toString()).toBe("<KeyValReqHead> key");
+		const head = new KeyValueRequiredHead(
+			keyHead,
+			lineInfo
+		);
+		expect(head.toString()).toBe(
+			"<KeyValueRequiredHead> key"
+		);
 	});
 });
 
-describe("KeyBodyReqHead", () => {
+describe("KeyBodyRequiredHead", () => {
 	const lineInfo = new LineInfo(
 		new StrSlice("key:"),
 		0,
@@ -117,23 +128,34 @@ describe("KeyBodyReqHead", () => {
 	);
 	const keyHead = new StrSlice("key");
 
-	it("creates KeyBodyReqHead instance with correct properties", () => {
-		const head = new KeyBodyReqHead(keyHead, lineInfo);
+	it("creates KeyBodyRequiredHead instance with correct properties", () => {
+		const head = new KeyBodyRequiredHead(
+			keyHead,
+			lineInfo
+		);
 
 		expect(head.keyHead).toBe(keyHead);
 		expect(head.lineInfo).toBe(lineInfo);
 	});
 
 	it("correctly checks key head", () => {
-		const head = new KeyBodyReqHead(keyHead, lineInfo);
+		const head = new KeyBodyRequiredHead(
+			keyHead,
+			lineInfo
+		);
 
 		expect(head.checkKeyHead("key")).toBe(true);
 		expect(head.checkKeyHead("other")).toBe(false);
 	});
 
 	it("provides correct string representation", () => {
-		const head = new KeyBodyReqHead(keyHead, lineInfo);
-		expect(head.toString()).toBe("<KeyBodyReqHead> key:");
+		const head = new KeyBodyRequiredHead(
+			keyHead,
+			lineInfo
+		);
+		expect(head.toString()).toBe(
+			"<KeyBodyRequiredHead> key:"
+		);
 	});
 });
 
@@ -194,7 +216,7 @@ describe("KeyTrait", () => {
 		1,
 		2
 	);
-	const childHead = new KeyValDefHead(
+	const childHead = new KeyValueDefinedHead(
 		new StrSlice("child"),
 		new StrSlice("value"),
 		childLineInfo
@@ -233,7 +255,7 @@ describe("KeyTrait", () => {
 	});
 });
 
-describe("KeyValDef with string value", () => {
+describe("KeyValueDefinedPair with string value", () => {
 	const lineInfo = new LineInfo(
 		new StrSlice("key: value"),
 		0,
@@ -243,8 +265,12 @@ describe("KeyValDef with string value", () => {
 	const strType = new Str();
 	const value = new TypeValuePair(strType, "value");
 
-	it("creates KeyValDef instance with correct properties", () => {
-		const def = new KeyValDef(key, value, lineInfo);
+	it("creates KeyValueDefinedPair instance with correct properties", () => {
+		const def = new KeyValueDefinedPair(
+			key,
+			value,
+			lineInfo
+		);
 
 		expect(def.key).toBe(key);
 		expect(def.value).toBe(value);
@@ -252,26 +278,40 @@ describe("KeyValDef with string value", () => {
 	});
 
 	it("correctly checks key", () => {
-		const def = new KeyValDef(key, value, lineInfo);
+		const def = new KeyValueDefinedPair(
+			key,
+			value,
+			lineInfo
+		);
 
 		expect(def.checkKey("key")).toBe(true);
 		expect(def.checkKey("other")).toBe(false);
 	});
 
 	it("correctly checks value", () => {
-		const def = new KeyValDef(key, value, lineInfo);
+		const def = new KeyValueDefinedPair(
+			key,
+			value,
+			lineInfo
+		);
 
 		expect(def.checkValue("value", strType)).toBe(true);
 		expect(def.checkValue("other", strType)).toBe(false);
 	});
 
 	it("provides correct string representation", () => {
-		const def = new KeyValDef(key, value, lineInfo);
-		expect(def.toString()).toBe("<KeyValDef> key: value");
+		const def = new KeyValueDefinedPair(
+			key,
+			value,
+			lineInfo
+		);
+		expect(def.toString()).toBe(
+			"<KeyValueDefinedPair> key: value"
+		);
 	});
 });
 
-describe("KeyValDef with RPrec value", () => {
+describe("KeyValueDefinedPair with RPrec value", () => {
 	const lineInfo = new LineInfo(
 		new StrSlice("key: 123.4"),
 		0,
@@ -281,8 +321,12 @@ describe("KeyValDef with RPrec value", () => {
 	const valueType = new RPrec(4);
 	const value = new TypeValuePair(valueType, 123.4);
 
-	it("creates KeyValDef instance with correct properties", () => {
-		const def = new KeyValDef(key, value, lineInfo);
+	it("creates KeyValueDefinedPair instance with correct properties", () => {
+		const def = new KeyValueDefinedPair(
+			key,
+			value,
+			lineInfo
+		);
 
 		expect(def.key).toBe(key);
 		expect(def.value).toBe(value);
@@ -290,14 +334,22 @@ describe("KeyValDef with RPrec value", () => {
 	});
 
 	it("correctly checks key", () => {
-		const def = new KeyValDef(key, value, lineInfo);
+		const def = new KeyValueDefinedPair(
+			key,
+			value,
+			lineInfo
+		);
 
 		expect(def.checkKey("key")).toBe(true);
 		expect(def.checkKey("other")).toBe(false);
 	});
 
 	it("correctly checks value", () => {
-		const def = new KeyValDef(key, value, lineInfo);
+		const def = new KeyValueDefinedPair(
+			key,
+			value,
+			lineInfo
+		);
 
 		expect(def.checkValue(123.4, valueType)).toBe(true);
 		expect(def.checkValue(123.4, new RPrec(5))).toBe(
@@ -307,8 +359,14 @@ describe("KeyValDef with RPrec value", () => {
 	});
 
 	it("provides correct string representation", () => {
-		const def = new KeyValDef(key, value, lineInfo);
-		expect(def.toString()).toBe("<KeyValDef> key: 123.4");
+		const def = new KeyValueDefinedPair(
+			key,
+			value,
+			lineInfo
+		);
+		expect(def.toString()).toBe(
+			"<KeyValueDefinedPair> key: 123.4"
+		);
 	});
 });
 
@@ -330,7 +388,7 @@ class TestParserError extends ParserErrBase {
 	}
 }
 
-describe("ParserErr", () => {
+describe("ParserErrHead", () => {
 	const lineInfo = new LineInfo(
 		new StrSlice("error line"),
 		0,
@@ -338,8 +396,8 @@ describe("ParserErr", () => {
 	);
 	const err = new TestParserError("Test error");
 
-	it("creates ParserErr instance with correct properties", () => {
-		const parserErr = new ParserErr(err, lineInfo);
+	it("creates ParserErrHead instance with correct properties", () => {
+		const parserErr = new ParserErrHead(err, lineInfo);
 
 		expect(parserErr.err).toBe(err);
 		expect(parserErr.lineInfo).toBe(lineInfo);

@@ -5,17 +5,20 @@ import {
 import { StrSlice } from "@/utils/slice";
 import {
 	KeyHead,
-	KeyBodyReqHead,
-	KeyValReqHead,
-	KeyValDefHead,
+	KeyBodyRequiredHead,
+	KeyValueRequiredHead,
+	KeyValueDefinedHead,
 	LineInfo,
 	KeyInvalidHead,
-	ParserErr,
+	ParserErrHead,
 	EmptyLine,
 } from "@/parser/types/heads";
 import { getPreLineInfo } from "@/parser/utils/pre-line-info";
 import { log } from "@/utils/log";
-import { countOccurencesOf, splitStringOnce } from "@/utils/string";
+import {
+	countOccurencesOf,
+	splitStringOnce,
+} from "@/utils/string";
 import { toReadonlyTuple } from "@/utils/types";
 
 export const splitHead = (lineInfo: LineInfo): KeyHead => {
@@ -24,9 +27,13 @@ export const splitHead = (lineInfo: LineInfo): KeyHead => {
 		head: KeyInvalidHead,
 		kind: StructureErrKind,
 		lineErrorSlice: StrSlice
-	): ParserErr => {
-		const err = new ParserStructureErr(head, lineErrorSlice, kind);
-		return new ParserErr(err, lineInfo);
+	): ParserErrHead => {
+		const err = new ParserStructureErr(
+			head,
+			lineErrorSlice,
+			kind
+		);
+		return new ParserErrHead(err, lineInfo);
 	};
 
 	const { content: line } = lineInfo;
@@ -47,8 +54,15 @@ export const splitHead = (lineInfo: LineInfo): KeyHead => {
 	switch (parts.length) {
 		// case: "key: value", "key: value: value" => KeyValue Decl
 		case 2: {
-			const [keyHead, valueHead] = toReadonlyTuple(parts, 2);
-			return new KeyValDefHead(keyHead, valueHead, lineInfo);
+			const [keyHead, valueHead] = toReadonlyTuple(
+				parts,
+				2
+			);
+			return new KeyValueDefinedHead(
+				keyHead,
+				valueHead,
+				lineInfo
+			);
 		}
 		// case: "key", "key:", "key:value", "key:key:value..."
 		case 1: {
@@ -57,12 +71,15 @@ export const splitHead = (lineInfo: LineInfo): KeyHead => {
 			switch (colonCount) {
 				case 0:
 					// case: "key" => Key Declaration
-					return new KeyValReqHead(keyHead, lineInfo);
+					return new KeyValueRequiredHead(
+						keyHead,
+						lineInfo
+					);
 
 				default:
 					// case: "key:" "key stuff:8:" => Key Body Decl
 					if (line.endsWith(":")) {
-						return new KeyBodyReqHead(
+						return new KeyBodyRequiredHead(
 							keyHead.slice(0, -1),
 							lineInfo
 						);
@@ -95,7 +112,7 @@ export const parseLinesToHeads = async (
 
 			const res1 = getPreLineInfo(line, lineNumber);
 
-			if (res1 instanceof ParserErr) {
+			if (res1 instanceof ParserErrHead) {
 				heads.push(res1);
 				continue;
 			}

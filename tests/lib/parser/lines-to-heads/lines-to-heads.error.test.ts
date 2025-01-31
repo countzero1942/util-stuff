@@ -3,8 +3,8 @@ import {
 	StructureErrKind,
 } from "@/parser/types/err-types";
 import {
-	KeyValDefHead,
-	ParserErr,
+	KeyValueDefinedHead,
+	ParserErrHead,
 } from "@/parser/types/heads";
 import { parseLinesToHeads } from "@/parser/utils/lines-to-heads";
 
@@ -12,9 +12,9 @@ describe("parseLinesToHeads - Error Cases", () => {
 	it("rejects lines starting with spaces", async () => {
 		const lines = ["   key: value"];
 		const result = await parseLinesToHeads(lines);
-		expect(result[0]).toBeInstanceOf(ParserErr);
+		expect(result[0]).toBeInstanceOf(ParserErrHead);
 
-		const err = (result[0] as ParserErr).err;
+		const err = (result[0] as ParserErrHead).err;
 		expect(err).toBeInstanceOf(ParserStructureErr);
 
 		const structureErr = err as ParserStructureErr;
@@ -58,9 +58,9 @@ describe("parseLinesToHeads - Error Cases", () => {
 			for (let i = 0; i < lines.length; i++) {
 				const line = lines[i] as string;
 				const result = await parseLinesToHeads([line]);
-				expect(result[0]).toBeInstanceOf(ParserErr);
+				expect(result[0]).toBeInstanceOf(ParserErrHead);
 
-				const err = (result[0] as ParserErr).err;
+				const err = (result[0] as ParserErrHead).err;
 				expect(err).toBeInstanceOf(ParserStructureErr);
 
 				const structureErr = err as ParserStructureErr;
@@ -80,13 +80,15 @@ describe("parseLinesToHeads - Error Cases", () => {
 		const result = await parseLinesToHeads(lines);
 		expect(result).toHaveLength(3);
 		result.forEach(head => {
-			expect(head).toBeInstanceOf(ParserErr);
-			expect((head as ParserErr).err).toBeInstanceOf(
+			expect(head).toBeInstanceOf(ParserErrHead);
+			expect((head as ParserErrHead).err).toBeInstanceOf(
 				ParserStructureErr
 			);
 			expect(
-				((head as ParserErr).err as ParserStructureErr)
-					.kind
+				(
+					(head as ParserErrHead)
+						.err as ParserStructureErr
+				).kind
 			).toBe("Invalid space tabs" as StructureErrKind);
 		});
 	});
@@ -106,17 +108,19 @@ describe("parseLinesToHeads - Error Cases", () => {
 			switch (i) {
 				case 0:
 				case 2:
-					expect(result).toBeInstanceOf(KeyValDefHead);
+					expect(result).toBeInstanceOf(
+						KeyValueDefinedHead
+					);
 					break;
 				case 1:
 				case 3:
-					expect(result).toBeInstanceOf(ParserErr);
+					expect(result).toBeInstanceOf(ParserErrHead);
 					expect(
-						(result as ParserErr).err
+						(result as ParserErrHead).err
 					).toBeInstanceOf(ParserStructureErr);
 					expect(
 						(
-							(result as ParserErr)
+							(result as ParserErrHead)
 								.err as ParserStructureErr
 						).kind
 					).toBe(
@@ -137,18 +141,19 @@ describe("parseLinesToHeads - Error Cases", () => {
 		expect(results).toHaveLength(2);
 		for (let i = 0; i < results.length; i++) {
 			const result = results[i];
-			expect(result).toBeInstanceOf(ParserErr);
-			expect((result as ParserErr).err).toBeInstanceOf(
-				ParserStructureErr
-			);
+			expect(result).toBeInstanceOf(ParserErrHead);
+			expect(
+				(result as ParserErrHead).err
+			).toBeInstanceOf(ParserStructureErr);
 			expect(
 				(
-					(result as ParserErr)
+					(result as ParserErrHead)
 						.err as ParserStructureErr
 				).kind
 			).toBe("Invalid key colon" as StructureErrKind);
 			expect(
-				(result as ParserErr).err.toReport()[1]?.content
+				(result as ParserErrHead).err.toReport()[1]
+					?.content
 			).toBe(errors[i]);
 		}
 	});

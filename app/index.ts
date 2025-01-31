@@ -134,7 +134,7 @@ import { KeyTrait } from "@/parser/types/heads";
 // await logParseTraits();
 
 // await logTraitReport("01-err-trait-tree.txt");
-// await logTraitReport("01b-err-num-trait-tree.txt");
+await logTraitReport("01b-err-num-trait-tree.txt");
 
 /**
  *
@@ -167,34 +167,3 @@ import { KeyTrait } from "@/parser/types/heads";
 // logParseKeyHeadReport();
 
 // compareParseKeyHeadReport();
-
-const tabstr = `
-		a:
-			b:
-				c:	
-`;
-
-const spacestr = `
-      a:
-         b:
-            c:
-`;
-
-const a = cleanMultiLineString(tabstr, { tabString: "\t" });
-log(a);
-div();
-const b = cleanMultiLineString(spacestr, {
-	tabString: "   ",
-});
-log(b);
-div();
-const c = cleanMultiLineString(tabstr, {
-	tabString: "   ",
-});
-log(c);
-div();
-const d = cleanMultiLineString(spacestr, {
-	tabString: "\t",
-});
-log(d);
-div();
