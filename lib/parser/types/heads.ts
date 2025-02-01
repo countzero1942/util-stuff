@@ -63,6 +63,18 @@ export class KeyValueRequiredHead extends KeyHead {
 	public toString(): string {
 		return `<KeyValueRequiredHead> ${this.keyHead}`;
 	}
+
+	public static fromString(
+		str: string
+	): KeyValueRequiredHead {
+		const lineInfo = new LineInfo(
+			new StrSlice(str),
+			0,
+			1
+		);
+		const keyHead = new StrSlice(str);
+		return new KeyValueRequiredHead(keyHead, lineInfo);
+	}
 }
 
 /**

@@ -50,20 +50,20 @@ export const getValueIndex = (
 
 export const parseKeyValDefinedHead = (
 	head: KeyValueDefinedHead
-) => {
+): KeyValueDefinedPair | ParserErrHead => {
 	const { keyHead, valueHead } = head;
-	const res = parseDefaultValue(valueHead);
+	const typeValuePairOrErr = parseDefaultValue(
+		head,
+		valueHead
+	);
 
-	if (res instanceof NumberErr) {
-		return new ParserErrHead(
-			new ParserNumberErr(head, valueHead, res),
-			head.lineInfo
-		);
+	if (typeValuePairOrErr instanceof ParserErrHead) {
+		return typeValuePairOrErr; // is ParserErrHead
 	}
 
 	return new KeyValueDefinedPair(
 		keyHead,
-		res,
+		typeValuePairOrErr, // is TypeValuePair
 		head.lineInfo
 	);
 };

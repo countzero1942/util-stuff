@@ -1,4 +1,5 @@
 import { NumberErr } from "@/parser/types/err-types";
+import { ParserErrHead } from "@/parser/types/heads";
 import {
 	FlagParam,
 	KeyParams,
@@ -7,18 +8,26 @@ import {
 import { TypeValuePair } from "@/parser/types/parse-types";
 import { parseDefaultValue } from "@/parser/utils/parse-value";
 import { StrSlice } from "@/utils/slice";
+import { KeyHead } from "../types/heads";
 
-const parseTypeOrFlag = (
+const parseTypeOrFlagParams = (
+	head: KeyHead,
 	typeOrFlag: StrSlice
-): FlagParam => {
+): FlagParam | ParserErrHead => {
 	let name: StrSlice = StrSlice.empty();
-	let dotParam: TypeValuePair | NumberErr | undefined =
-		undefined;
-	let subParam: TypeValuePair | NumberErr | undefined =
-		undefined;
-	let superParam: TypeValuePair | NumberErr | undefined =
-		undefined;
-	let colonParams: (TypeValuePair | NumberErr)[] = [];
+	let dotParamOrErr:
+		| TypeValuePair
+		| ParserErrHead
+		| undefined = undefined;
+	let subParamOrErr:
+		| TypeValuePair
+		| ParserErrHead
+		| undefined = undefined;
+	let superParamOrErr:
+		| TypeValuePair
+		| ParserErrHead
+		| undefined = undefined;
+	let colonParams: TypeValuePair[] = [];
 
 	const nameAndColonParamsSlices =
 		typeOrFlag.edgeSplitMany([":"]);
@@ -34,16 +43,22 @@ const parseTypeOrFlag = (
 			const paramValueSlice = paramSlice.slice(1);
 			switch (true) {
 				case paramSlice.startsWith("."):
-					dotParam =
-						parseDefaultValue(paramValueSlice);
+					dotParamOrErr = parseDefaultValue(
+						head,
+						paramValueSlice
+					);
 					break;
 				case paramSlice.startsWith("_"):
-					subParam =
-						parseDefaultValue(paramValueSlice);
+					subParamOrErr = parseDefaultValue(
+						head,
+						paramValueSlice
+					);
 					break;
 				case paramSlice.startsWith("^"):
-					superParam =
-						parseDefaultValue(paramValueSlice);
+					superParamOrErr = parseDefaultValue(
+						head,
+						paramValueSlice
+					);
 					break;
 				default:
 					throw "Never";
@@ -57,36 +72,63 @@ const parseTypeOrFlag = (
 		for (const colonParamSlice of colonParamSlices) {
 			const colonParamValueSlice =
 				colonParamSlice.slice(1);
-			colonParams.push(
-				parseDefaultValue(colonParamValueSlice)
+
+			const colonParamOrErr = parseDefaultValue(
+				head,
+				colonParamValueSlice
 			);
+			if (colonParamOrErr instanceof ParserErrHead) {
+				return colonParamOrErr; // is ParserErrHead
+			}
+			colonParams.push(colonParamOrErr); // is TypeValuePair
 		}
+	}
+
+	if (dotParamOrErr instanceof ParserErrHead) {
+		return dotParamOrErr; // is ParserErrHead
+	}
+	if (subParamOrErr instanceof ParserErrHead) {
+		return subParamOrErr; // is ParserErrHead
+	}
+	if (superParamOrErr instanceof ParserErrHead) {
+		return superParamOrErr; // is ParserErrHead
 	}
 
 	return new FlagParam(
 		name,
-		dotParam,
-		subParam,
-		superParam,
-		colonParams
+		dotParamOrErr, // is TypeValuePair | undefined
+		subParamOrErr, // is TypeValuePair | undefined
+		superParamOrErr, // is TypeValuePair | undefined
+		colonParams // is TypeValuePair[]
 	);
 };
 
-const parseParams = (
-	params: StrSlice[]
-): {
+export type TypeOuterParams = {
 	flagParams: FlagParam[];
 	stringParams: string[];
 	unitParam?: string;
-} => {
+};
+
+const parseTypeOuterParams = (
+	head: KeyHead,
+	params: StrSlice[]
+): TypeOuterParams | ParserErrHead => {
 	const flagParams: FlagParam[] = [];
 	const stringParams: string[] = [];
 	let unitParam: string | undefined;
 	for (const param of params) {
 		switch (true) {
-			case param.startsWith("%"):
-				flagParams.push(parseTypeOrFlag(param));
+			case param.startsWith("%"): {
+				const flagParamOrErr = parseTypeOrFlagParams(
+					head,
+					param
+				);
+				if (flagParamOrErr instanceof ParserErrHead) {
+					return flagParamOrErr; // is ParserErrHead
+				}
+				flagParams.push(flagParamOrErr); // is FlagParam
 				break;
+			}
 			case param.startsWith("$"):
 				stringParams.push(param.slice(1).value);
 				break;
@@ -97,10 +139,13 @@ const parseParams = (
 				break;
 		}
 	}
-	return { flagParams, stringParams, unitParam };
+	return { flagParams, stringParams, unitParam }; // is TypeOuterParams
 };
 
-const parseType = (typeSlice: StrSlice): TypeParams => {
+const parseType = (
+	head: KeyHead,
+	typeSlice: StrSlice
+): TypeParams | ParserErrHead => {
 	const typeAndParamSlices = typeSlice.edgeSplitMany([
 		" %",
 		" $",
@@ -108,40 +153,60 @@ const parseType = (typeSlice: StrSlice): TypeParams => {
 	]);
 	const type = typeAndParamSlices[0] as StrSlice;
 
-	const nameParams = parseTypeOrFlag(type);
+	const typeNameParamsOrErr = parseTypeOrFlagParams(
+		head,
+		type
+	);
+	if (typeNameParamsOrErr instanceof ParserErrHead) {
+		return typeNameParamsOrErr; // is ParserErrHead
+	}
 
 	if (typeAndParamSlices.length > 1) {
 		const paramSlices = typeAndParamSlices.slice(1);
+		const paramsOrErr = parseTypeOuterParams(
+			head,
+			paramSlices
+		);
+		if (paramsOrErr instanceof ParserErrHead) {
+			return paramsOrErr; // is ParserErrHead
+		}
 		const { flagParams, stringParams, unitParam } =
-			parseParams(paramSlices);
+			paramsOrErr; // is TypeOuterParams
 
 		return new TypeParams(
-			nameParams.name,
-			nameParams,
+			typeNameParamsOrErr.name, // is FlagParam
+			typeNameParamsOrErr, // is FlagParam
 			flagParams,
 			stringParams,
 			unitParam
 		);
 	}
 
-	return new TypeParams(nameParams.name, nameParams);
+	return new TypeParams(
+		typeNameParamsOrErr.name, // is FlagParam
+		typeNameParamsOrErr // is FlagParam
+	);
 };
 
-const parseTypes = (typeSlices: StrSlice[]) => {
+const parseTypes = (
+	head: KeyHead,
+	typeSlices: StrSlice[]
+): TypeParams[] | ParserErrHead => {
 	const types: TypeParams[] = [];
 	for (const typeSlice of typeSlices) {
-		const type = parseType(typeSlice);
-		types.push(type);
+		const typeOrErr = parseType(head, typeSlice);
+		if (typeOrErr instanceof ParserErrHead) {
+			return typeOrErr; // is ParserErrHead
+		}
+		types.push(typeOrErr); // is TypeParams
 	}
 	return types;
 };
 
 export const parseKeyHead = (
-	keyhead: string
-): KeyParams => {
-	// see if keyhead contains a type reference: e.g., '.X'
-	const keyHeadSlice = StrSlice.all(keyhead);
-
+	head: KeyHead,
+	keyHeadSlice: StrSlice
+): KeyParams | ParserErrHead => {
 	const nameAndTypeSlices: StrSlice[] =
 		keyHeadSlice.edgeSplitMany([" ."]);
 	const nameSlice = nameAndTypeSlices[0] as StrSlice;
@@ -151,6 +216,10 @@ export const parseKeyHead = (
 	}
 
 	const typeSlices = nameAndTypeSlices.slice(1);
-	const types = parseTypes(typeSlices);
-	return new KeyParams(nameSlice, types);
+	const typesOrErr = parseTypes(head, typeSlices);
+
+	if (typesOrErr instanceof ParserErrHead) {
+		return typesOrErr; // is ParserErrHead
+	}
+	return new KeyParams(nameSlice, typesOrErr); // is TypeParams[]
 };

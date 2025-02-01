@@ -31,6 +31,7 @@ import {
 	IndentErrKind,
 	NumberErr,
 	ParserIndentErr,
+	ParserNumberErr,
 } from "@/parser/types/err-types";
 import {
 	createRootHead,
@@ -200,13 +201,27 @@ export const logParseDefaultValues = async () => {
 		switch (true) {
 			case head instanceof KeyValueDefinedHead:
 				const { keyHead, valueHead } = head;
-				const res = parseDefaultValue(valueHead);
-				if (res instanceof NumberErr) {
-					const { kind } = res;
-					log(`==> ERROR: ${keyHead}: ${kind}`);
-					continue;
+				const typeValuePairOrErr = parseDefaultValue(
+					head,
+					valueHead
+				);
+				if (
+					typeValuePairOrErr instanceof ParserErrHead
+				) {
+					if (
+						typeValuePairOrErr.err instanceof
+						ParserNumberErr
+					) {
+						const { kind } =
+							typeValuePairOrErr.err.numberErr;
+						log(`==> ERROR: ${keyHead}: ${kind}`);
+						continue;
+					} else {
+						throw "Never";
+					}
 				}
-				const { type: valueType, value } = res;
+				const { type: valueType, value } =
+					typeValuePairOrErr;
 				loggn(
 					`${keyHead}: ${valueHead} -> ${value}`,
 					valueType
@@ -291,8 +306,17 @@ export const logTraitReport = async (
 };
 
 export const logParseKeyHeadReport = () => {
-	const keyParams = parseKeyHead(parseKeyHeadTestText);
-	const report = keyParams.toReport();
+	const head = KeyValueRequiredHead.fromString(
+		parseKeyHeadTestText
+	);
+
+	const keyParamsOrErr = parseKeyHead(head, head.keyHead);
+	if (keyParamsOrErr instanceof ParserErrHead) {
+		log("ERROR:");
+		log(keyParamsOrErr);
+		return;
+	}
+	const report = keyParamsOrErr.toReport();
 	const reportText = report.join("\n");
 	log(reportText);
 	div();
@@ -302,7 +326,17 @@ export const logParseKeyHeadReport = () => {
 };
 
 export const compareParseKeyHeadReport = () => {
-	const keyParams = parseKeyHead(parseKeyHeadTestText);
+	const head = KeyValueRequiredHead.fromString(
+		parseKeyHeadTestText
+	);
+
+	const keyParamsOrErr = parseKeyHead(head, head.keyHead);
+	if (keyParamsOrErr instanceof ParserErrHead) {
+		log("ERROR:");
+		log(keyParamsOrErr);
+		return;
+	}
+	const keyParams = keyParamsOrErr;
 	const reportLines = cleanMultiLineArray(
 		keyParams.toReport(0, "\t")
 	);
@@ -325,7 +359,7 @@ export const compareParseKeyHeadReport = () => {
 			failCount++;
 		}
 
-		log(`${i}: expected then report ${failText}`);
+		log(`${i}: expected / report ${failText}`);
 		log(`'${expectedReportLines[i]}'`);
 		log(`'${reportLines[i]}'`);
 		div();

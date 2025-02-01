@@ -55,7 +55,9 @@ describe("parseTrait - Error Cases", () => {
 		const childA = rootTrait
 			.children[0] as KeyValueDefinedPair;
 		expect(childA.checkKey("a")).toBe(true);
-		expect(childA.checkValue(42, new ZNum())).toBe(true);
+		expect(childA.value.value).toBe(42);
+		expect(childA.value.type).toBeInstanceOf(ZNum);
+		// expect(childA.checkValue(42, new ZNum())).toBe(true);
 		expect(childA.lineInfo.indent).toBe(0);
 
 		expect(rootTrait.children[1]).toBeInstanceOf(

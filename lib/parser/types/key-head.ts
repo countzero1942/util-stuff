@@ -13,22 +13,10 @@ export abstract class ParamBase {
 export class FlagParam extends ParamBase {
 	constructor(
 		name: StrSlice,
-		public readonly dotParam:
-			| TypeValuePair
-			| NumberErr
-			| undefined,
-		public readonly subParam:
-			| TypeValuePair
-			| NumberErr
-			| undefined,
-		public readonly superParam:
-			| TypeValuePair
-			| NumberErr
-			| undefined,
-		public readonly colonParams: (
-			| TypeValuePair
-			| NumberErr
-		)[] = []
+		public readonly dotParam: TypeValuePair | undefined,
+		public readonly subParam: TypeValuePair | undefined,
+		public readonly superParam: TypeValuePair | undefined,
+		public readonly colonParams: TypeValuePair[] = []
 	) {
 		super(name);
 	}
