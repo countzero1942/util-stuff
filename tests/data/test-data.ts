@@ -53,3 +53,12 @@ export const expectedParseKeyHeadTestTextReport = `
 		Flags: 
 			%g
 `;
+
+export const parseKeyHeadErrorTestTextA1 = `
+	key1 .X.2a6_1.e310^+-34:1ee6:+-6.28:12.: 42
+	key2 .X.26_1.e310^+-34:1ee6:+-6.28:12.: 42
+	key3 .X.26_1.e300^+-34:1ee6:+-6.28:12.: 42
+	key4 .X.26_1.e300^+34:1ee6:+-6.28:12.: 42
+	key5 .X.26_1.e300^+34:1e6:+-6.28:12.: 42
+	key6 .X.26_1.e300^+34:1e6:-6.28:12.: 42
+`;

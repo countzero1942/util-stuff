@@ -47,18 +47,29 @@ const parseTypeOrFlagParams = (
 						head,
 						paramValueSlice
 					);
+					if (dotParamOrErr instanceof ParserErrHead) {
+						return dotParamOrErr; // is ParserErrHead
+					}
 					break;
 				case paramSlice.startsWith("_"):
 					subParamOrErr = parseDefaultValue(
 						head,
 						paramValueSlice
 					);
+					if (subParamOrErr instanceof ParserErrHead) {
+						return subParamOrErr; // is ParserErrHead
+					}
 					break;
 				case paramSlice.startsWith("^"):
 					superParamOrErr = parseDefaultValue(
 						head,
 						paramValueSlice
 					);
+					if (
+						superParamOrErr instanceof ParserErrHead
+					) {
+						return superParamOrErr; // is ParserErrHead
+					}
 					break;
 				default:
 					throw "Never";
@@ -82,16 +93,6 @@ const parseTypeOrFlagParams = (
 			}
 			colonParams.push(colonParamOrErr); // is TypeValuePair
 		}
-	}
-
-	if (dotParamOrErr instanceof ParserErrHead) {
-		return dotParamOrErr; // is ParserErrHead
-	}
-	if (subParamOrErr instanceof ParserErrHead) {
-		return subParamOrErr; // is ParserErrHead
-	}
-	if (superParamOrErr instanceof ParserErrHead) {
-		return superParamOrErr; // is ParserErrHead
 	}
 
 	return new FlagParam(

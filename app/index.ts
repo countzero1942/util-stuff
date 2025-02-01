@@ -51,6 +51,7 @@ import {
 	logParseTraits,
 	logSplitHeads,
 	logTraitReport,
+	logTraitReportFromString,
 } from "@/parser/parser-start";
 import {
 	getInversePiSumSeq,
@@ -90,6 +91,7 @@ import {
 	KeyTrait,
 	KeyValueDefinedPair,
 } from "@/parser/types/heads";
+import { parseKeyHeadErrorTestTextA1 } from "@/tests/data/test-data";
 
 // logGeneratePassword();
 
@@ -149,7 +151,7 @@ import {
 
 // logParseKeyHeadReport();
 
-compareParseKeyHeadReport();
+// compareParseKeyHeadReport();
 
 // const input = `
 // a: 42
@@ -170,3 +172,5 @@ compareParseKeyHeadReport();
 // expect(childA.checkKey("a")).toBe(true);
 // expect(childA.value.value).toBe(42);
 // expect(childA.value.type).toBeInstanceOf(ZNum);
+
+await logTraitReportFromString(parseKeyHeadErrorTestTextA1);

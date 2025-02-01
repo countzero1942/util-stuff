@@ -23,6 +23,7 @@ import { Range } from "@/utils/seq";
 import { StrSlice } from "@/utils/slice";
 import { getClassName } from "@/utils/types";
 import { Key } from "node:readline";
+import { parseKeyHead } from "@/parser/utils/parse-key-head";
 
 export const createRootHead = (
 	rootName: string = ":root"
@@ -48,10 +49,17 @@ export const getValueIndex = (
 	return valueIndex;
 };
 
-export const parseKeyValDefinedHead = (
+export const parseKeyValueDefinedHead = (
 	head: KeyValueDefinedHead
 ): KeyValueDefinedPair | ParserErrHead => {
 	const { keyHead, valueHead } = head;
+
+	const keyParamsOrErr = parseKeyHead(head, keyHead);
+
+	if (keyParamsOrErr instanceof ParserErrHead) {
+		return keyParamsOrErr; // is ParserErrHead
+	}
+
 	const typeValuePairOrErr = parseDefaultValue(
 		head,
 		valueHead
@@ -224,7 +232,7 @@ export const parseTrait = (
 		switch (true) {
 			case head instanceof KeyValueDefinedHead:
 				{
-					const res = parseKeyValDefinedHead(head);
+					const res = parseKeyValueDefinedHead(head);
 					children.push(res);
 					currentHeadIndex++;
 				}

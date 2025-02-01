@@ -305,6 +305,47 @@ export const logTraitReport = async (
 	// }
 };
 
+export const logTraitReportFromString = async (
+	str: string
+) => {
+	logh("Log Trait Report");
+	log();
+	log(`Text:`);
+	log();
+
+	const lines = cleanMultiLineStringToArray(str);
+
+	lines.forEach(line => log(line));
+	log();
+	div();
+
+	const allHeads = await parseLinesToHeads(lines);
+
+	const res = parseTrait(createRootHead(), allHeads, 0);
+	// div();
+	// logobj(res);
+	// div();
+
+	const trait = res.trait;
+
+	if (trait instanceof ParserErrHead) {
+		log("ERROR:");
+		log(trait);
+		return;
+	}
+
+	const report = await getTraitReport(trait);
+	log(`Report: ${report.length} lines:\n`);
+
+	const reportStrs = formatTraitReport(report);
+
+	for (const str of reportStrs) {
+		log(str);
+	}
+	log();
+	div();
+};
+
 export const logParseKeyHeadReport = () => {
 	const head = KeyValueRequiredHead.fromString(
 		parseKeyHeadTestText
