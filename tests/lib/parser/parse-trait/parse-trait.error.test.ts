@@ -4,7 +4,7 @@ import {
 	KeyValueDefinedHead,
 	LineInfo,
 	KeyTrait,
-	KeyValueDefinedPair,
+	KeyValueDefinedField,
 	ParserErrHead,
 } from "@/parser/types/heads";
 import {
@@ -50,10 +50,10 @@ describe("parseTrait - Error Cases", () => {
 		expect(rootTrait.children).toHaveLength(2);
 
 		expect(rootTrait.children[0]).toBeInstanceOf(
-			KeyValueDefinedPair
+			KeyValueDefinedField
 		);
 		const childA = rootTrait
-			.children[0] as KeyValueDefinedPair;
+			.children[0] as KeyValueDefinedField;
 		expect(childA.checkKey("a")).toBe(true);
 		expect(childA.value.value).toBe(42);
 		expect(childA.value.type).toBeInstanceOf(ZNum);
@@ -140,10 +140,10 @@ describe("parseTrait - Error Cases", () => {
 		);
 
 		expect(rootTrait.children[1]).toBeInstanceOf(
-			KeyValueDefinedPair
+			KeyValueDefinedField
 		);
 		const c = rootTrait
-			.children[1] as KeyValueDefinedPair;
+			.children[1] as KeyValueDefinedField;
 		expect(c.checkKey("c")).toBe(true);
 		expect(c.checkValue(6.28, new RPrec(3))).toBe(true);
 

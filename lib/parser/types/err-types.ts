@@ -109,6 +109,17 @@ export class ParserNumberErr extends ParserLineErrBase {
 		return `Number Error: ${numberErr.kind}`;
 	}
 }
+
+export class ParserParamValidatorErr extends ParserLineErrBase {
+	constructor(head: KeyHead, lineErrorSlice: StrSlice) {
+		super(head, lineErrorSlice);
+	}
+
+	public toMessage(): string {
+		return `Param Validator Error`;
+	}
+}
+
 export type StructureErrKind =
 	| "Invalid space tabs"
 	| "Invalid key colon";

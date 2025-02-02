@@ -1,6 +1,7 @@
 import { NumberErr } from "@/parser/types/err-types";
 import { TypeValuePair } from "@/parser/types/parse-types";
 import { StrSlice } from "@/utils/slice";
+import { TypeInfo, TypeBase } from "./type-types";
 
 export abstract class ParamBase {
 	constructor(readonly name: StrSlice) {}
@@ -70,7 +71,30 @@ export class FlagParam extends ParamBase {
 
 		return strs;
 	}
+
+	public validate(
+		validator: FlagParamsValidator
+	): NumberErr[] {
+		const errs: NumberErr[] = [];
+		return errs;
+	}
 }
+
+export type FlagParamsValidator = {
+	name: StrSlice;
+	dotParam: TypeInfo | TypeBase | undefined;
+	subParam: TypeInfo | TypeBase | undefined;
+	superParam: TypeInfo | TypeBase | undefined;
+	colonParams: (TypeInfo | TypeBase)[] | undefined;
+};
+
+export type TypeParamsValidator = {
+	name: StrSlice;
+	nameParams: FlagParamsValidator | undefined;
+	flagParams: FlagParamsValidator[] | undefined;
+	stringParams: string[] | undefined;
+	unitParam: string | undefined;
+};
 
 export class TypeParams extends ParamBase {
 	constructor(

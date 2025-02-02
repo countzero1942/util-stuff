@@ -8,7 +8,7 @@ import {
 	KeyInvalidHead,
 	EmptyLine,
 	KeyTrait,
-	KeyValueDefinedPair,
+	KeyValueDefinedField,
 	ParserErrHead,
 } from "@/parser/types/heads";
 import { StrSlice } from "@/utils/slice";
@@ -266,7 +266,7 @@ describe("KeyValueDefinedPair with string value", () => {
 	const value = new TypeValuePair(strType, "value");
 
 	it("creates KeyValueDefinedPair instance with correct properties", () => {
-		const def = new KeyValueDefinedPair(
+		const def = new KeyValueDefinedField(
 			key,
 			value,
 			lineInfo
@@ -278,7 +278,7 @@ describe("KeyValueDefinedPair with string value", () => {
 	});
 
 	it("correctly checks key", () => {
-		const def = new KeyValueDefinedPair(
+		const def = new KeyValueDefinedField(
 			key,
 			value,
 			lineInfo
@@ -289,7 +289,7 @@ describe("KeyValueDefinedPair with string value", () => {
 	});
 
 	it("correctly checks value", () => {
-		const def = new KeyValueDefinedPair(
+		const def = new KeyValueDefinedField(
 			key,
 			value,
 			lineInfo
@@ -300,7 +300,7 @@ describe("KeyValueDefinedPair with string value", () => {
 	});
 
 	it("provides correct string representation", () => {
-		const def = new KeyValueDefinedPair(
+		const def = new KeyValueDefinedField(
 			key,
 			value,
 			lineInfo
@@ -322,7 +322,7 @@ describe("KeyValueDefinedPair with RPrec value", () => {
 	const value = new TypeValuePair(valueType, 123.4);
 
 	it("creates KeyValueDefinedPair instance with correct properties", () => {
-		const def = new KeyValueDefinedPair(
+		const def = new KeyValueDefinedField(
 			key,
 			value,
 			lineInfo
@@ -334,7 +334,7 @@ describe("KeyValueDefinedPair with RPrec value", () => {
 	});
 
 	it("correctly checks key", () => {
-		const def = new KeyValueDefinedPair(
+		const def = new KeyValueDefinedField(
 			key,
 			value,
 			lineInfo
@@ -345,7 +345,7 @@ describe("KeyValueDefinedPair with RPrec value", () => {
 	});
 
 	it("correctly checks value", () => {
-		const def = new KeyValueDefinedPair(
+		const def = new KeyValueDefinedField(
 			key,
 			value,
 			lineInfo
@@ -359,7 +359,7 @@ describe("KeyValueDefinedPair with RPrec value", () => {
 	});
 
 	it("provides correct string representation", () => {
-		const def = new KeyValueDefinedPair(
+		const def = new KeyValueDefinedField(
 			key,
 			value,
 			lineInfo

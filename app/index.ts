@@ -89,7 +89,7 @@ import {
 } from "@/parser/utils/parse-trait";
 import {
 	KeyTrait,
-	KeyValueDefinedPair,
+	KeyValueDefinedField,
 } from "@/parser/types/heads";
 import { parseKeyHeadErrorTestTextA1 } from "@/tests/data/test-data";
 

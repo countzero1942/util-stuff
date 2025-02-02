@@ -1,7 +1,7 @@
 import { ReportLine } from "@/parser/types/err-types";
 import {
 	KeyTrait,
-	KeyValueDefinedPair,
+	KeyValueDefinedField,
 	KeyValueDefinedHead,
 	ParserErrHead,
 } from "@/parser/types/heads";
@@ -39,7 +39,7 @@ export const getTraitReport = async (
 					row
 				);
 				break;
-			case child instanceof KeyValueDefinedPair:
+			case child instanceof KeyValueDefinedField:
 				{
 					const { key } = child;
 					const { value, type } = child.value;

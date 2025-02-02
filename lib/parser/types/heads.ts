@@ -153,7 +153,7 @@ export class KeyTrait extends KeyHead {
  *
  * The value is parsed into a TypeValuePair: actual value and type
  */
-export class KeyValueDefinedPair extends KeyHead {
+export class KeyValueDefinedField extends KeyHead {
 	constructor(
 		readonly key: StrSlice,
 		readonly value: TypeValuePair,

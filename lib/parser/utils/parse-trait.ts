@@ -9,7 +9,7 @@ import {
 	KeyHead,
 	KeyBodyRequiredHead,
 	KeyInvalidHead,
-	KeyValueDefinedPair,
+	KeyValueDefinedField,
 	KeyValueDefinedHead,
 	KeyValueRequiredHead,
 	LineInfo,
@@ -51,7 +51,7 @@ export const getValueIndex = (
 
 export const parseKeyValueDefinedHead = (
 	head: KeyValueDefinedHead
-): KeyValueDefinedPair | ParserErrHead => {
+): KeyValueDefinedField | ParserErrHead => {
 	const { keyHead, valueHead } = head;
 
 	const keyParamsOrErr = parseKeyHead(head, keyHead);
@@ -69,7 +69,7 @@ export const parseKeyValueDefinedHead = (
 		return typeValuePairOrErr; // is ParserErrHead
 	}
 
-	return new KeyValueDefinedPair(
+	return new KeyValueDefinedField(
 		keyHead,
 		typeValuePairOrErr, // is TypeValuePair
 		head.lineInfo
@@ -232,6 +232,7 @@ export const parseTrait = (
 		switch (true) {
 			case head instanceof KeyValueDefinedHead:
 				{
+					// res is KeyValueDefinedField or ParserErrHead
 					const res = parseKeyValueDefinedHead(head);
 					children.push(res);
 					currentHeadIndex++;
