@@ -161,6 +161,8 @@ const parseType = (
 	if (typeNameParamsOrErr instanceof ParserErrHead) {
 		return typeNameParamsOrErr; // is ParserErrHead
 	}
+	const typeNameParams = typeNameParamsOrErr;
+	const typeName = typeNameParams.name;
 
 	if (typeAndParamSlices.length > 1) {
 		const paramSlices = typeAndParamSlices.slice(1);
@@ -175,18 +177,15 @@ const parseType = (
 			paramsOrErr; // is TypeOuterParams
 
 		return new TypeParams(
-			typeNameParamsOrErr.name, // is FlagParam
-			typeNameParamsOrErr, // is FlagParam
+			typeName,
+			typeNameParams,
 			flagParams,
 			stringParams,
 			unitParam
 		);
 	}
 
-	return new TypeParams(
-		typeNameParamsOrErr.name, // is FlagParam
-		typeNameParamsOrErr // is FlagParam
-	);
+	return new TypeParams(typeName, typeNameParams);
 };
 
 const parseTypes = (

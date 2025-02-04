@@ -22,6 +22,15 @@ export class FlagParam extends ParamBase {
 		super(name);
 	}
 
+	public isNameOnly(): boolean {
+		return (
+			this.dotParam === undefined &&
+			this.subParam === undefined &&
+			this.superParam === undefined &&
+			this.colonParams.length === 0
+		);
+	}
+
 	public static empty(): FlagParam {
 		return new FlagParam(
 			StrSlice.empty(),

@@ -1,6 +1,9 @@
-import { NumberErr, NumberErrKind } from "@/parser/types/err-types";
 import {
-	AnalyzeNumberStringResults,
+	NumberErr,
+	NumberErrKind,
+} from "@/parser/types/err-types";
+import {
+	AnalyzeNumberStringReport,
 	TypeValuePair,
 } from "@/parser/types/parse-types";
 import {
@@ -46,14 +49,7 @@ export const analyzeNumberString = (
 	value: StrSlice,
 	breakingChars: string = " ,;:^"
 ) => {
-	const res: AnalyzeNumberStringResults = {
-		hasSeparator: false,
-		hasDecimal: false,
-		hasSign: false,
-		hasENotation: false,
-		hasGNotation: false,
-		hasBreakingChars: false,
-	};
+	const res: AnalyzeNumberStringReport = {};
 
 	for (let i = value.startIncl; i < value.endExcl; i++) {
 		const code = value.source.charCodeAt(i);
@@ -160,11 +156,11 @@ const MIN_POWER = -308;
  * Returns the appropriate regex for parsing decimal exponent notation
  * given the presence/absence of a separator.
  *
- * @param {AnalyzeNumberStringResults} report - The result of calling analyzeNumberString() on the number string.
+ * @param {AnalyzeNumberStringReport} report - The result of calling analyzeNumberString() on the number string.
  * @return {RegExp} The regex for parsing decimal exponent notation.
  */
 const getDecimalExponentRegex = (
-	report: AnalyzeNumberStringResults
+	report: AnalyzeNumberStringReport
 ) => {
 	if (report.hasSeparator) {
 		return regexRPrecExponentWithSeparators;
@@ -177,10 +173,12 @@ const getDecimalExponentRegex = (
  * Returns the appropriate regex for parsing integer exponent notation
  * given the presence/absence of a separator.
  *
- * @param {AnalyzeNumberStringResults} report - The result of calling analyzeNumberString() on the number string.
+ * @param {AnalyzeNumberStringReport} report - The result of calling analyzeNumberString() on the number string.
  * @return {RegExp} The regex for parsing integer exponent notation.
  */
-const getIntExponentRegex = (report: AnalyzeNumberStringResults) => {
+const getIntExponentRegex = (
+	report: AnalyzeNumberStringReport
+) => {
 	if (report.hasSeparator) {
 		return regexZNumExponentWithSeparators;
 	} else {
@@ -192,10 +190,12 @@ const getIntExponentRegex = (report: AnalyzeNumberStringResults) => {
  * Returns the appropriate regex for parsing a plain decimal number
  * given the presence/absence of a separator.
  *
- * @param {AnalyzeNumberStringResults} report - The result of calling analyzeNumberString() on the number string.
+ * @param {AnalyzeNumberStringReport} report - The result of calling analyzeNumberString() on the number string.
  * @return {RegExp} The regex for parsing decimal notation.
  */
-const getDecimalRegex = (report: AnalyzeNumberStringResults) => {
+const getDecimalRegex = (
+	report: AnalyzeNumberStringReport
+) => {
 	if (report.hasSeparator) {
 		return regexRPrecWithSeparators;
 	} else {
@@ -207,10 +207,10 @@ const getDecimalRegex = (report: AnalyzeNumberStringResults) => {
  * Returns the appropriate regex for parsing a plain integer number
  * given the presence/absence of a separator.
  *
- * @param {AnalyzeNumberStringResults} report - The result of calling analyzeNumberString() on the number string.
+ * @param {AnalyzeNumberStringReport} report - The result of calling analyzeNumberString() on the number string.
  * @return {RegExp} The regex for parsing integer notation.
  */
-const getIntRegex = (report: AnalyzeNumberStringResults) => {
+const getIntRegex = (report: AnalyzeNumberStringReport) => {
 	if (report.hasSeparator) {
 		return regexZNumWithSeparators;
 	} else {
@@ -271,14 +271,14 @@ const hasValidExponentChar = (value: string) => {
  * expressions to determine the error kind.
  *
  * @param {string} value - The string to test.
- * @param {AnalyzeNumberStringResults} report - The result of the analyzeNumberString
+ * @param {AnalyzeNumberStringReport} report - The result of the analyzeNumberString
  * function.
  * @param {TypeBase} numType - The type of the number that caused the error.
  * @return {NumberErr} The NumberError object.
  */
 const getDetailedExponentNumberError = (
 	value: string,
-	report: AnalyzeNumberStringResults,
+	report: AnalyzeNumberStringReport,
 	numType: TypeBase
 ): NumberErr => {
 	switch (true) {
@@ -302,7 +302,10 @@ const getDetailedExponentNumberError = (
 			return getNumberError("Invalid chars", numType);
 		// ivalid leading zero
 		case regexHasInvalidLeadingZero.test(value):
-			return getNumberError("Invalid leading zero", numType);
+			return getNumberError(
+				"Invalid leading zero",
+				numType
+			);
 		// invalid decimal grouping
 		case report.hasSeparator &&
 			report.hasDecimal &&
@@ -333,32 +336,39 @@ const getDetailedExponentNumberError = (
  * expressions to determine the error kind.
  *
  * @param {string} value - The string to test.
- * @param {AnalyzeNumberStringResults} report - The result of the analyzeNumberString
+ * @param {AnalyzeNumberStringReport} report - The result of the analyzeNumberString
  * function.
  * @param {TypeBase} numType - The type of the number that caused the error.
  * @return {NumberErr} The NumberError object.
  */
 const getDetailedNumberError = (
 	value: string,
-	report: AnalyzeNumberStringResults,
+	report: AnalyzeNumberStringReport,
 	numType: TypeBase
 ): NumberErr => {
 	switch (true) {
 		// decimal exponent invalid form
-		case report.hasDecimal && !regexHasValidFormRPrec.test(value):
+		case report.hasDecimal &&
+			!regexHasValidFormRPrec.test(value):
 			return getNumberError("Invalid form", numType);
 		// integer exponent invalid form
-		case !report.hasDecimal && !regexHasValidFormZNum.test(value):
+		case !report.hasDecimal &&
+			!regexHasValidFormZNum.test(value):
 			return getNumberError("Invalid form", numType);
 		// decimal exponent invalid chars
-		case report.hasDecimal && !regexHasValidCharsRPrec.test(value):
+		case report.hasDecimal &&
+			!regexHasValidCharsRPrec.test(value):
 			return getNumberError("Invalid chars", numType);
 		// integer exponent invalid chars
-		case !report.hasDecimal && !regexHasValidCharsZNum.test(value):
+		case !report.hasDecimal &&
+			!regexHasValidCharsZNum.test(value):
 			return getNumberError("Invalid chars", numType);
 		// ivalid leading zero
 		case regexHasInvalidLeadingZero.test(value):
-			return getNumberError("Invalid leading zero", numType);
+			return getNumberError(
+				"Invalid leading zero",
+				numType
+			);
 		// invalid decimal grouping
 		case report.hasSeparator &&
 			report.hasDecimal &&
@@ -375,40 +385,38 @@ const getDetailedNumberError = (
 	}
 };
 
-/**
- * Parses a string as a decimal number with an exponent.
- *
- * The returned type is a RPrec type.
- *
- * @param {string} value - The string to parse.
- * @param {AnalyzeNumberStringResults} report - The result of the analyzeNumberString
- * function.
- * @return {TypeValuePair<number>|NumberErr} The parsed number, or a NumberError
- * if the string is invalid.
- */
-export const parseRPrecExponent = (
-	value: string,
-	report: AnalyzeNumberStringResults
+const parseDefaultRPrecExponent = (
+	valueSlice: StrSlice,
+	numberStringReport: AnalyzeNumberStringReport
 ): TypeValuePair | NumberErr => {
-	const regex = getDecimalExponentRegex(report);
+	const regex = getDecimalExponentRegex(
+		numberStringReport
+	);
 
-	const match = regex.exec(value);
+	const match = regex.exec(valueSlice.value);
 
 	if (!match) {
 		return getDetailedExponentNumberError(
-			value,
-			report,
+			valueSlice.value,
+			numberStringReport,
 			new RPrec()
 		);
 	}
 
 	const groups = match.groups as RegexExponentNumberGroups;
-	const numStr = report.hasSeparator
+	const numStr = numberStringReport.hasSeparator
 		? groups.num.replaceAll("_", "")
 		: groups.num;
-	const precision = Math.min(getPrecisionCount(numStr), 15);
-	const useEngineeringNotation = report.hasGNotation;
-	const numType = new RPrec(precision, useEngineeringNotation);
+	const precision = Math.min(
+		getPrecisionCount(numStr),
+		15
+	);
+	const useEngineeringNotation =
+		numberStringReport.hasGNotation;
+	const numType = new RPrec(
+		precision,
+		useEngineeringNotation
+	);
 
 	const pow = parseInt(groups.pow);
 	if (pow > MAX_POWER) {
@@ -424,7 +432,12 @@ export const parseRPrecExponent = (
 		return getNumberError("NaN", numType);
 	}
 
-	return new TypeValuePair(numType, num);
+	return new TypeValuePair(
+		numType,
+		num,
+		valueSlice,
+		numberStringReport
+	);
 };
 
 /**
@@ -432,26 +445,30 @@ export const parseRPrecExponent = (
  *
  * The returned type is a ZNum type.
  *
- * @param {string} value - The string to parse.
- * @param {AnalyzeNumberStringResults} report - The result of the analyzeNumberString
+ * @param {string} valueSlice - The string to parse.
+ * @param {AnalyzeNumberStringReport} numberStringReport - The result of the analyzeNumberString
  * function.
  * @return {TypeValuePair<number>|NumberErr} The parsed number, or a NumberError
  * if the string is invalid.
  */
-export const parseZNumExponent = (
-	value: string,
-	res: AnalyzeNumberStringResults
+const parseDefaultZNumExponent = (
+	valueSlice: StrSlice,
+	numberStringReport: AnalyzeNumberStringReport
 ): TypeValuePair | NumberErr => {
-	const regex = getIntExponentRegex(res);
+	const regex = getIntExponentRegex(numberStringReport);
 
-	const match = regex.exec(value);
+	const match = regex.exec(valueSlice.value);
 
 	if (!match) {
-		return getDetailedExponentNumberError(value, res, new ZNum());
+		return getDetailedExponentNumberError(
+			valueSlice.value,
+			numberStringReport,
+			new ZNum()
+		);
 	}
 
 	const groups = match.groups as RegexExponentNumberGroups;
-	const numStr = res.hasSeparator
+	const numStr = numberStringReport.hasSeparator
 		? groups.num.replaceAll("_", "")
 		: groups.num;
 	const numType = new ZNum();
@@ -460,7 +477,10 @@ export const parseZNumExponent = (
 	if (pow > MAX_POWER) {
 		return getNumberError("Power > max", numType);
 	} else if (pow < 0) {
-		return getNumberError("Power must produce integer", numType);
+		return getNumberError(
+			"Power must produce integer",
+			numType
+		);
 	}
 
 	const finalNumStr = `${numStr}e${groups.pow}`;
@@ -473,7 +493,12 @@ export const parseZNumExponent = (
 	if (!Number.isSafeInteger(num)) {
 		return getNumberError("Not safe integer", numType);
 	}
-	return new TypeValuePair(numType, num);
+	return new TypeValuePair(
+		numType,
+		num,
+		valueSlice,
+		numberStringReport
+	);
 };
 
 /**
@@ -482,29 +507,40 @@ export const parseZNumExponent = (
  * The returned type is a RPrec type.
  *
  * @param {string} value - The string to parse.
- * @param {AnalyzeNumberStringResults} report - The result of the analyzeNumberString
+ * @param {AnalyzeNumberStringReport} numberStringReport - The result of the analyzeNumberString
  * function.
  * @return {TypeValuePair<number>|NumberErr} The parsed number, or a NumberError
  * if the string is invalid.
  */
-export const parseRPrec = (
-	value: string,
-	report: AnalyzeNumberStringResults
+const parseDefaultRPrec = (
+	valueSlice: StrSlice,
+	numberStringReport: AnalyzeNumberStringReport
 ): TypeValuePair | NumberErr => {
-	const regex = getDecimalRegex(report);
+	const regex = getDecimalRegex(numberStringReport);
 
-	const match = regex.exec(value);
+	const match = regex.exec(valueSlice.value);
 
 	if (!match) {
-		return getDetailedNumberError(value, report, new RPrec());
+		return getDetailedNumberError(
+			valueSlice.value,
+			numberStringReport,
+			new RPrec()
+		);
 	}
 
-	const numStr = report.hasSeparator
+	const numStr = numberStringReport.hasSeparator
 		? match[0].replaceAll("_", "")
 		: match[0];
-	const precision = Math.min(getPrecisionCount(numStr), 15);
-	const useEngineeringNotation = report.hasGNotation;
-	const numType = new RPrec(precision, useEngineeringNotation);
+	const precision = Math.min(
+		getPrecisionCount(numStr),
+		15
+	);
+	const useEngineeringNotation =
+		numberStringReport.hasGNotation;
+	const numType = new RPrec(
+		precision,
+		useEngineeringNotation
+	);
 
 	const num = Number(numStr);
 
@@ -520,25 +556,29 @@ export const parseRPrec = (
  *
  * The returned type is a ZNum type.
  *
- * @param {string} value - The string to parse.
- * @param {AnalyzeNumberStringResults} res - The result of the analyzeNumberString
+ * @param {string} valueSlice - The string to parse.
+ * @param {AnalyzeNumberStringReport} numberStringReport - The result of the analyzeNumberString
  * function.
  * @return {TypeValuePair<number>|NumberErr} The parsed number, or a NumberError
  * if the string is invalid.
  */
-export const parseZNum = (
-	value: string,
-	res: AnalyzeNumberStringResults
+const parseDefaultZNum = (
+	valueSlice: StrSlice,
+	numberStringReport: AnalyzeNumberStringReport
 ): TypeValuePair | NumberErr => {
-	const regex = getIntRegex(res);
+	const regex = getIntRegex(numberStringReport);
 
-	const match = regex.exec(value);
+	const match = regex.exec(valueSlice.value);
 
 	if (!match) {
-		return getDetailedNumberError(value, res, new ZNum());
+		return getDetailedNumberError(
+			valueSlice.value,
+			numberStringReport,
+			new ZNum()
+		);
 	}
 
-	const numStr = res.hasSeparator
+	const numStr = numberStringReport.hasSeparator
 		? match[0].replaceAll("_", "")
 		: match[0];
 	const numType = new ZNum();
@@ -553,7 +593,12 @@ export const parseZNum = (
 		return getNumberError("Not safe integer", numType);
 	}
 
-	return new TypeValuePair(numType, num);
+	return new TypeValuePair(
+		numType,
+		num,
+		valueSlice,
+		numberStringReport
+	);
 };
 
 /**
@@ -579,31 +624,39 @@ export const parseZNum = (
  * The function tests the given value against a series of regular
  * expressions to determine the error kind.
  *
- * @param {string} value - The string to parse.
+ * @param {string} valueSlice - The string to parse.
  * @return {TypeValuePair<number>|NumberErr} The parsed number, or a NumberError
  * if the string is invalid.
  */
 export const parseDefNumber = (
-	value: StrSlice
+	valueSlice: StrSlice
 ): TypeValuePair | NumberErr => {
-	const report = analyzeNumberString(value);
+	const report = analyzeNumberString(valueSlice);
 	if (report.hasBreakingChars) {
-		return getNumberError("Invalid number input", new NoNum());
+		return getNumberError(
+			"Invalid number input",
+			new NoNum()
+		);
 	}
 
-	const hasExponent = report.hasENotation || report.hasGNotation;
-
-	const valueStr = value.value;
+	const hasExponent =
+		report.hasENotation || report.hasGNotation;
 
 	switch (true) {
 		case hasExponent && report.hasDecimal:
-			return parseRPrecExponent(valueStr, report);
+			return parseDefaultRPrecExponent(
+				valueSlice,
+				report
+			);
 		case hasExponent && !report.hasDecimal:
-			return parseZNumExponent(valueStr, report);
+			return parseDefaultZNumExponent(
+				valueSlice,
+				report
+			);
 		case !hasExponent && report.hasDecimal:
-			return parseRPrec(valueStr, report);
+			return parseDefaultRPrec(valueSlice, report);
 		case !hasExponent && !report.hasDecimal:
-			return parseZNum(valueStr, report);
+			return parseDefaultZNum(valueSlice, report);
 		default:
 			return getNumberError("NEVER", new NoNum());
 	}

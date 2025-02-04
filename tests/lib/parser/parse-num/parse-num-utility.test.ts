@@ -1,67 +1,79 @@
-import { AnalyzeNumberStringResults } from "@/parser/types/parse-types";
+import {
+	AnalyzeNumberStringReport,
+	TypeValuePair,
+} from "@/parser/types/parse-types";
+import { RPrec, ZNum } from "@/parser/types/type-types";
 import {
 	analyzeNumberString,
 	getPrecisionCount,
+	parseDefNumber,
 } from "@/parser/utils/parse-num";
 
 import { StrSlice } from "@/utils/slice";
 
 describe("analyzeNumberString", () => {
 	it("correctly analyzes a number with no special features", () => {
-		const result = analyzeNumberString(StrSlice.all("12345"));
-		const expected: AnalyzeNumberStringResults = {
-			hasSeparator: false,
-			hasDecimal: false,
-			hasSign: false,
-			hasENotation: false,
-			hasGNotation: false,
-			hasBreakingChars: false,
-		};
+		const result = analyzeNumberString(
+			StrSlice.all("12345")
+		);
+		const expected: AnalyzeNumberStringReport = {};
 
 		expect(result).toEqual(expected);
 	});
 
 	it("detects a separator", () => {
-		const result = analyzeNumberString(StrSlice.all("1_234_567"));
+		const result = analyzeNumberString(
+			StrSlice.all("1_234_567")
+		);
 		expect(result.hasSeparator).toBe(true);
 	});
 
 	it("detects a decimal point", () => {
-		const result = analyzeNumberString(StrSlice.all("123.45"));
+		const result = analyzeNumberString(
+			StrSlice.all("123.45")
+		);
 		expect(result.hasDecimal).toBe(true);
 	});
 
 	it("detects a sign", () => {
-		let result = analyzeNumberString(StrSlice.all("-123"));
+		let result = analyzeNumberString(
+			StrSlice.all("-123")
+		);
 		expect(result.hasSign).toBe(true);
 		result = analyzeNumberString(StrSlice.all("+123"));
 		expect(result.hasSign).toBe(true);
 	});
 
 	it("detects e notation", () => {
-		const result = analyzeNumberString(StrSlice.all("1.23e4"));
+		const result = analyzeNumberString(
+			StrSlice.all("1.23e4")
+		);
 		expect(result.hasENotation).toBe(true);
 	});
 
 	it("detects g notation", () => {
-		const result = analyzeNumberString(StrSlice.all("1.23g4"));
+		const result = analyzeNumberString(
+			StrSlice.all("1.23g4")
+		);
 		expect(result.hasGNotation).toBe(true);
 	});
 
 	it("detects breaking characters", () => {
-		let result = analyzeNumberString(StrSlice.all("123 456"));
+		let result = analyzeNumberString(
+			StrSlice.all("123 456")
+		);
 		expect(result.hasBreakingChars).toBe(true);
 	});
 
 	it("correctly analyzes a multiple signatures", () => {
-		const result = analyzeNumberString(StrSlice.all("-1_234.56e7"));
+		const result = analyzeNumberString(
+			StrSlice.all("-1_234.56e7")
+		);
 		expect(result).toEqual({
 			hasSeparator: true,
 			hasDecimal: true,
 			hasSign: true,
 			hasENotation: true,
-			hasGNotation: false,
-			hasBreakingChars: false,
 		});
 	});
 
@@ -111,4 +123,153 @@ describe("getPrecisionCount", () => {
 		expect(getPrecisionCount(".123")).toBe(3);
 		expect(getPrecisionCount("-.0045")).toBe(2);
 	});
+});
+
+describe("typeValuePair", () => {
+	it("returns all members of TypeValuePair from parseDefNumber", () => {
+		{
+			const valueSlice = StrSlice.all("123");
+			const typeValuePairOrErr =
+				parseDefNumber(valueSlice);
+			if (typeValuePairOrErr instanceof TypeValuePair) {
+				const typeValuePair = typeValuePairOrErr;
+				expect(typeValuePair.value).toBe(123);
+				expect(typeValuePair.type).toBeInstanceOf(ZNum);
+				expect(typeValuePair.valueSlice).toEqual(
+					valueSlice
+				);
+				expect(
+					typeValuePair.numberStringReport
+				).toEqual({});
+			} else {
+				expect(true).toBe(false);
+			}
+		}
+		{
+			const valueSlice = StrSlice.all("-1_234.e100");
+			const typeValuePairOrErr =
+				parseDefNumber(valueSlice);
+			if (typeValuePairOrErr instanceof TypeValuePair) {
+				const typeValuePair = typeValuePairOrErr;
+				expect(typeValuePair.value).toBe(-1234e100);
+				expect(typeValuePair.type).toBeInstanceOf(
+					RPrec
+				);
+				expect(typeValuePair.valueSlice).toEqual(
+					valueSlice
+				);
+				expect(
+					typeValuePair.numberStringReport
+				).toEqual({
+					hasSeparator: true,
+					hasDecimal: true,
+					hasSign: true,
+					hasENotation: true,
+				});
+			} else {
+				expect(true).toBe(false);
+			}
+		}
+		{
+			const valueSlice = StrSlice.all("-1_234.g100");
+			const typeValuePairOrErr =
+				parseDefNumber(valueSlice);
+			if (typeValuePairOrErr instanceof TypeValuePair) {
+				const typeValuePair = typeValuePairOrErr;
+				expect(typeValuePair.value).toBe(-1234e100);
+				expect(typeValuePair.type).toBeInstanceOf(
+					RPrec
+				);
+				expect(typeValuePair.valueSlice).toEqual(
+					valueSlice
+				);
+				expect(
+					typeValuePair.numberStringReport
+				).toEqual({
+					hasSeparator: true,
+					hasDecimal: true,
+					hasSign: true,
+					hasGNotation: true,
+				});
+			} else {
+				expect(true).toBe(false);
+			}
+		}
+	});
+
+	it(
+		"returns a TypeValuePair with 'valueSlice' and 'report'" +
+			" trimmed (via parseDefNumber)",
+		() => {
+			{
+				const valueSlice = StrSlice.all("123");
+				const typeValuePairOrErr =
+					parseDefNumber(valueSlice);
+				if (
+					typeValuePairOrErr instanceof TypeValuePair
+				) {
+					const typeValuePair =
+						typeValuePairOrErr.trim();
+					expect(typeValuePair.value).toBe(123);
+					expect(typeValuePair.type).toBeInstanceOf(
+						ZNum
+					);
+					expect(typeValuePair.valueSlice).toBe(
+						undefined
+					);
+					expect(
+						typeValuePair.numberStringReport
+					).toEqual(undefined);
+				} else {
+					expect(true).toBe(false);
+				}
+			}
+			{
+				const valueSlice = StrSlice.all("-1_234.e100");
+				const typeValuePairOrErr =
+					parseDefNumber(valueSlice);
+				if (
+					typeValuePairOrErr instanceof TypeValuePair
+				) {
+					const typeValuePair =
+						typeValuePairOrErr.trim();
+					expect(typeValuePair.value).toBe(-1234e100);
+					expect(typeValuePair.type).toBeInstanceOf(
+						RPrec
+					);
+					expect(typeValuePair.valueSlice).toBe(
+						undefined
+					);
+					expect(
+						typeValuePair.numberStringReport
+					).toBe(undefined);
+				} else {
+					expect(true).toBe(false);
+				}
+			}
+			{
+				const valueSlice = StrSlice.all("-1_234.g100");
+				const typeValuePairOrErr =
+					parseDefNumber(valueSlice);
+				if (
+					typeValuePairOrErr instanceof TypeValuePair
+				) {
+					const typeValuePair =
+						typeValuePairOrErr.trim();
+					expect(typeValuePair.value).toBe(-1234e100);
+					expect(typeValuePair.type).toBeInstanceOf(
+						RPrec
+					);
+					expect(typeValuePair.valueSlice).toBe(
+						undefined
+					);
+					expect(
+						typeValuePair.numberStringReport
+					).toBe(undefined);
+				} else {
+					expect(true).toBe(false);
+				}
+			}
+		}
+	);
 });
