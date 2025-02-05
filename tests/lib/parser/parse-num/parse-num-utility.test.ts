@@ -7,6 +7,7 @@ import {
 	analyzeNumberString,
 	getPrecisionCount,
 	parseDefNumber,
+	countDecimalPlaces,
 } from "@/parser/utils/parse-num";
 
 import { StrSlice } from "@/utils/slice";
@@ -122,6 +123,19 @@ describe("getPrecisionCount", () => {
 	it("handles numbers with only decimal point", () => {
 		expect(getPrecisionCount(".123")).toBe(3);
 		expect(getPrecisionCount("-.0045")).toBe(2);
+	});
+
+	it("handles numbers with grouping", () => {
+		expect(getPrecisionCount("1_234.567_8")).toBe(8);
+		expect(getPrecisionCount("-1_234.0")).toBe(5);
+	});
+
+	it("handles very large precision > 15", () => {
+		expect(
+			getPrecisionCount(
+				"1.23456789012345678901234567890"
+			)
+		).toBe(30);
 	});
 });
 
@@ -272,4 +286,76 @@ describe("typeValuePair", () => {
 			}
 		}
 	);
+
+	// describe("countDigits", () => {
+	// 	test.each([
+	// 		['123', 3],
+	// 		['0.123', 3],
+	// 		['123.45', 5],
+	// 		['-123', 3],
+	// 		['+123', 3],
+	// 		['1,234', 4], // Ignores commas
+	// 		['12_34', 4], // Ignores underscores
+	// 		['1.2e3', 1], // Counts significant digits in scientific notation
+	// 		['0', 1],
+	// 		['000123', 3], // Leading zeros don't count
+	// 	])('returns correct count for %s', (input, expected) => {
+	// 		expect(countDigits(input)).toBe(expected);
+	// 	});
+
+	// 	test('throws for non-numeric characters', () => {
+	// 		expect(() => countDigits('12a3')).toThrow(InvalidNumberFormatError);
+	// 	});
+	// });
+});
+
+describe("countDecimalPlaces", () => {
+	describe("it handles unsigned numbers", () => {
+		test.each([
+			["123", 0],
+			["123.45", 2],
+			["123.4500", 4],
+			["0.0000001", 7],
+			[".1234", 4],
+			["123.", 0],
+		])(
+			"returns correct count for %s",
+			(input, expected) => {
+				expect(
+					countDecimalPlaces(StrSlice.all(input))
+				).toBe(expected);
+			}
+		);
+	});
+
+	it("handles grouped numbers", () => {
+		expect(
+			countDecimalPlaces(StrSlice.all("123_456.789_01"))
+		).toBe(5);
+		expect(
+			countDecimalPlaces(StrSlice.all("123_456.789_000"))
+		).toBe(6);
+	});
+
+	it("handles signed numbers", () => {
+		expect(
+			countDecimalPlaces(StrSlice.all("-123_456.789_01"))
+		).toBe(5);
+		expect(
+			countDecimalPlaces(
+				StrSlice.all("+123_456.789_000")
+			)
+		).toBe(6);
+	});
+
+	it("returns -1 for invalid scientific notation", () => {
+		expect(
+			countDecimalPlaces(StrSlice.all("1.2e3.4"))
+		).toBe(-1);
+	});
+	it("returns -1 for invalid decimal places", () => {
+		expect(
+			countDecimalPlaces(StrSlice.all("1.23.4"))
+		).toBe(-1);
+	});
 });

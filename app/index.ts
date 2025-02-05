@@ -27,8 +27,10 @@ import { getFullType } from "@/utils/types";
 import { get } from "node:http";
 import {
 	analyzeNumberString,
+	countDecimalPlaces,
 	getPrecisionCount,
 	parseDefNumber,
+	parseWNum,
 } from "@/parser/utils/parse-num";
 import {
 	testAParseRPrecExp,
@@ -173,4 +175,9 @@ import { parseKeyHeadErrorTestTextA1 } from "@/tests/data/test-data";
 // expect(childA.value.value).toBe(42);
 // expect(childA.value.type).toBeInstanceOf(ZNum);
 
-await logTraitReportFromString(parseKeyHeadErrorTestTextA1);
+// await logTraitReportFromString(parseKeyHeadErrorTestTextA1);
+
+const input = StrSlice.all("0");
+const result = parseWNum(input);
+logobj(result);
+div();

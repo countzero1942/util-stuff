@@ -29,10 +29,13 @@ import {
 	regexZNumWithSeparators,
 } from "@/parser/types/regex";
 import {
+	NNum,
 	NoNum,
+	RFixed,
 	RPrec,
 	Str,
 	TypeBase,
+	WNum,
 	ZNum,
 } from "@/parser/types/type-types";
 import { StrSlice } from "@/utils/slice";
@@ -122,6 +125,7 @@ export const getPrecisionCount = (numStr: string) => {
 			case 0x2b: // "+":
 			case 0x2d: // "-":
 			case 0x2e: // ".":
+			case 0x5f: // "_":
 				continue;
 			case 0x30: // "0":
 				if (precCount === 0) {
@@ -660,4 +664,178 @@ export const parseDefNumber = (
 		default:
 			return getNumberError("NEVER", new NoNum());
 	}
+};
+
+export const parseZNum = (
+	valueSlice: StrSlice
+): TypeValuePair | NumberErr => {
+	const typeValuePairOrErr = parseDefNumber(valueSlice);
+	if (typeValuePairOrErr instanceof NumberErr) {
+		return typeValuePairOrErr;
+	}
+	const typeValuePair = typeValuePairOrErr;
+	if (!(typeValuePair.type instanceof ZNum)) {
+		return getNumberError(
+			"Not an Integer",
+			typeValuePair.type
+		);
+	}
+	return typeValuePair.trim();
+};
+
+export const parseWNum = (
+	valueSlice: StrSlice
+): TypeValuePair | NumberErr => {
+	const typeValuePairOrErr = parseDefNumber(valueSlice);
+	if (typeValuePairOrErr instanceof NumberErr) {
+		return typeValuePairOrErr;
+	}
+	const typeValuePair = typeValuePairOrErr;
+	if (!(typeValuePair.type instanceof ZNum)) {
+		return getNumberError(
+			"Not an Integer",
+			typeValuePair.type
+		);
+	}
+
+	const report = typeValuePair.numberStringReport;
+	if (report?.hasSign) {
+		return getNumberError(
+			"Natural and Whole numbers can't have signs",
+			typeValuePair.type
+		);
+	}
+
+	return new TypeValuePair(
+		new WNum(),
+		typeValuePair.value
+	);
+};
+
+export const parseNNum = (
+	valueSlice: StrSlice
+): TypeValuePair | NumberErr => {
+	const typeValuePairOrErr = parseWNum(valueSlice);
+	if (typeValuePairOrErr instanceof NumberErr) {
+		return typeValuePairOrErr;
+	}
+	const typeValuePair = typeValuePairOrErr;
+	const value = typeValuePair.value as number;
+	if (value < 1) {
+		return getNumberError(
+			"Not a Natural number",
+			typeValuePair.type
+		);
+	}
+	return new TypeValuePair(
+		new NNum(),
+		typeValuePair.value
+	);
+};
+
+export const parseRPrecNum = (
+	valueSlice: StrSlice
+): TypeValuePair | NumberErr => {
+	const typeValuePairOrErr = parseDefNumber(valueSlice);
+	if (typeValuePairOrErr instanceof NumberErr) {
+		return typeValuePairOrErr;
+	}
+	const typeValuePair = typeValuePairOrErr;
+	if (typeValuePair.type instanceof RPrec) {
+		return typeValuePair.trim();
+	}
+	return getNumberError(
+		"Not a Real precision number",
+		typeValuePair.type
+	);
+};
+
+export const countDecimalPlaces = (
+	valueSlice: StrSlice
+): number => {
+	let decimalPlacesCount = 0;
+	let isPastDecimal = false;
+	for (
+		let i = valueSlice.startIncl;
+		i < valueSlice.endExcl;
+		i++
+	) {
+		const charCode = valueSlice.source.charCodeAt(i);
+		switch (true) {
+			case charCode === 46: // "."
+				if (isPastDecimal) {
+					return -1;
+				}
+				isPastDecimal = true;
+				break;
+			case charCode >= 48 && charCode <= 57: // "0"-"9"
+				if (isPastDecimal) {
+					decimalPlacesCount++;
+				}
+				break;
+			case charCode === 95: // "_"
+			case charCode === 45: // "-"
+			case charCode === 43: // "+"
+				break;
+			default:
+				return -1;
+		}
+	}
+	return decimalPlacesCount;
+};
+
+export const parseRFixedNum = (
+	valueSlice: StrSlice,
+	decimalPlaces: number
+): TypeValuePair | NumberErr => {
+	const MAX_DIGITS = 15;
+
+	const typeValuePairOrErr = parseDefNumber(valueSlice);
+	if (typeValuePairOrErr instanceof NumberErr) {
+		return typeValuePairOrErr;
+	}
+	const typeValuePair = typeValuePairOrErr;
+	if (!(typeValuePair.type instanceof RPrec)) {
+		return getNumberError(
+			"Not a Real fixed-place number",
+			typeValuePair.type
+		);
+	}
+	const report = typeValuePair.numberStringReport;
+	if (report !== undefined) {
+		if (report.hasENotation || report.hasGNotation) {
+			return getNumberError(
+				"Fixed-place can't have exponent",
+				typeValuePair.type
+			);
+		}
+	}
+
+	const decimalPlacesCount =
+		countDecimalPlaces(valueSlice);
+	if (decimalPlacesCount === -1) {
+		return getNumberError(
+			"Invalid form",
+			typeValuePair.type
+		);
+	}
+	if (decimalPlacesCount > decimalPlaces) {
+		return getNumberError(
+			"Wrong number of fixed-place digits",
+			typeValuePair.type
+		);
+	}
+
+	const digitsCount = getPrecisionCount(valueSlice.value);
+	if (digitsCount > MAX_DIGITS) {
+		return getNumberError(
+			"Fixed-place digits > max",
+			typeValuePair.type
+		);
+	}
+
+	return new TypeValuePair(
+		new RFixed(decimalPlaces),
+		typeValuePair.value
+	);
 };
