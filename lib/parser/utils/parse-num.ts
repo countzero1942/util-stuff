@@ -552,7 +552,12 @@ const parseDefaultRPrec = (
 		return getNumberError("NaN", numType);
 	}
 
-	return new TypeValuePair(numType, num);
+	return new TypeValuePair(
+		numType,
+		num,
+		valueSlice,
+		numberStringReport
+	);
 };
 
 /**
@@ -819,7 +824,7 @@ export const parseRFixedNum = (
 			typeValuePair.type
 		);
 	}
-	if (decimalPlacesCount > decimalPlaces) {
+	if (decimalPlacesCount !== decimalPlaces) {
 		return getNumberError(
 			"Wrong number of fixed-place digits",
 			typeValuePair.type
@@ -829,7 +834,7 @@ export const parseRFixedNum = (
 	const digitsCount = getPrecisionCount(valueSlice.value);
 	if (digitsCount > MAX_DIGITS) {
 		return getNumberError(
-			"Fixed-place digits > max",
+			"Fixed-place number digit count > max safe precision",
 			typeValuePair.type
 		);
 	}

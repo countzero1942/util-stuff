@@ -1,6 +1,21 @@
 import { div, divl, divs, log, logh } from "@/utils/log";
+import { StrSlice } from "@/utils/slice";
 import { getFullType } from "@/utils/types";
 import { get } from "node:http";
+import { TypeValuePair } from "@/parser/types/parse-types";
+import { NumberErr } from "@/parser/types/err-types";
+import {
+	parseNNum,
+	parseRFixedNum,
+	parseRPrecNum,
+	parseWNum,
+	parseZNum,
+} from "@/parser/utils/parse-num";
+import { convertParseNumberToHeadVersion } from "@/parser/utils/parse-value";
+import {
+	KeyHead,
+	ParserErrHead,
+} from "@/parser/types/heads";
 
 export type TypeInfo = {
 	type: string;
@@ -93,7 +108,48 @@ export class NoNum extends TypeBase {
 	}
 }
 
-export class RPrec extends TypeBase {
+export abstract class NumBase extends TypeBase {
+	constructor(
+		typeInfo: TypeInfo,
+		uniqueKeyMembers?: string[]
+	) {
+		super(typeInfo, uniqueKeyMembers);
+	}
+
+	public abstract parseNum(
+		valueSlice: StrSlice
+	): TypeValuePair | NumberErr;
+
+	public parseNumHeadVersion(
+		head: KeyHead,
+		valueSlice: StrSlice
+	): TypeValuePair | ParserErrHead {
+		const typeValuePairOrErr = this.parseNum(valueSlice);
+
+		return convertParseNumberToHeadVersion(
+			typeValuePairOrErr,
+			head,
+			valueSlice
+		);
+	}
+}
+
+export class RNumBase extends NumBase {
+	constructor(
+		typeInfo: TypeInfo = { type: ".R" },
+		uniqueKeyMembers?: string[]
+	) {
+		super(typeInfo, uniqueKeyMembers);
+	}
+
+	public parseNum(
+		valueSlice: StrSlice
+	): TypeValuePair | NumberErr {
+		return parseRPrecNum(valueSlice);
+	}
+}
+
+export class RPrec extends RNumBase {
 	constructor(
 		public readonly precision: number = 15,
 		public readonly UseEngineeringNotation: boolean = false,
@@ -119,7 +175,7 @@ export class RPrec extends TypeBase {
 	}
 }
 
-export class RFixed extends TypeBase {
+export class RFixed extends RNumBase {
 	constructor(public readonly fixed: number = 2) {
 		super({ type: ".R", variantType: ":Fixed" }, [
 			`{Places}${fixed}`,
@@ -129,9 +185,15 @@ export class RFixed extends TypeBase {
 	public toParsableString(): string {
 		return `${this.typeInfo.type}.${this.fixed}`;
 	}
+
+	public parseNum(
+		valueSlice: StrSlice
+	): TypeValuePair | NumberErr {
+		return parseRFixedNum(valueSlice, this.fixed);
+	}
 }
 
-export class ZNum extends TypeBase {
+export class ZNum extends NumBase {
 	constructor(
 		typeInfo: TypeInfo = { type: ".Z" },
 		public readonly min: number = Number.MIN_SAFE_INTEGER,
@@ -148,16 +210,34 @@ export class ZNum extends TypeBase {
 
 		super(typeInfo, [minStr, maxStr]);
 	}
+
+	public parseNum(
+		valueSlice: StrSlice
+	): TypeValuePair | NumberErr {
+		return parseZNum(valueSlice);
+	}
 }
 
 export class WNum extends ZNum {
 	constructor() {
 		super({ type: ".W", parentType: ".Z" }, 0);
 	}
+
+	public parseNum(
+		valueSlice: StrSlice
+	): TypeValuePair | NumberErr {
+		return parseWNum(valueSlice);
+	}
 }
 
 export class NNum extends ZNum {
 	constructor() {
 		super({ type: ".N", parentType: ".Z" }, 1);
+	}
+
+	public parseNum(
+		valueSlice: StrSlice
+	): TypeValuePair | NumberErr {
+		return parseNNum(valueSlice);
 	}
 }

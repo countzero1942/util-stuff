@@ -11,6 +11,24 @@ import {
 	ParserErrHead,
 } from "@/parser/types/heads";
 
+export const convertParseNumberToHeadVersion = (
+	typeValuePairOrErr: TypeValuePair | NumberErr,
+	head: KeyHead,
+	value: StrSlice
+) => {
+	if (typeValuePairOrErr instanceof NumberErr) {
+		return new ParserErrHead(
+			new ParserNumberErr(
+				head,
+				value,
+				typeValuePairOrErr // is NumberErr
+			),
+			head.lineInfo
+		);
+	}
+	return typeValuePairOrErr; // is TypeValuePair
+};
+
 export const parseDefaultValue = (
 	head: KeyHead,
 	value: StrSlice
@@ -19,17 +37,22 @@ export const parseDefaultValue = (
 
 	if (startsWithDigit) {
 		const typeValuePairOrErr = parseDefNumber(value);
-		if (typeValuePairOrErr instanceof NumberErr) {
-			return new ParserErrHead(
-				new ParserNumberErr(
-					head,
-					value,
-					typeValuePairOrErr // is NumberErr
-				),
-				head.lineInfo
-			);
-		}
-		return typeValuePairOrErr; // is TypeValuePair
+		return convertParseNumberToHeadVersion(
+			typeValuePairOrErr,
+			head,
+			value
+		);
+		// if (typeValuePairOrErr instanceof NumberErr) {
+		// 	return new ParserErrHead(
+		// 		new ParserNumberErr(
+		// 			head,
+		// 			value,
+		// 			typeValuePairOrErr // is NumberErr
+		// 		),
+		// 		head.lineInfo
+		// 	);
+		// }
+		// return typeValuePairOrErr; // is TypeValuePair
 	}
 
 	return new TypeValuePair(new Str(), value);

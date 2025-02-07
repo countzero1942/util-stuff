@@ -65,6 +65,7 @@ describe("parseWNum", () => {
 				expect(err.kind).toBe(
 					"Natural and Whole numbers can't have signs" as NumberErrKind
 				);
+				expect(err.numType.type).toBe(".Z");
 			} else {
 				expect(true).toBe(false);
 			}
@@ -80,6 +81,7 @@ describe("parseWNum", () => {
 			expect(err.kind).toBe(
 				"Not safe integer" as NumberErrKind
 			);
+			expect(err.numType.type).toBe(".Z");
 		} else {
 			expect(true).toBe(false);
 		}
@@ -94,6 +96,7 @@ describe("parseWNum", () => {
 			expect(err.kind).toBe(
 				"Not an Integer" as NumberErrKind
 			);
+			expect(err.numType.type).toBe(".R");
 		} else {
 			expect(true).toBe(false);
 		}

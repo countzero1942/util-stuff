@@ -26,7 +26,7 @@ export type NumberErrKind =
 	| "Not a Real precision number"
 	| "Not a Real fixed-place number"
 	| "Fixed-place can't have exponent"
-	| "Fixed-place digits > max"
+	| "Fixed-place number digit count > max safe precision"
 	| "Wrong number of fixed-place digits"
 	| "RegEx Fail"
 	| "Invalid number"
