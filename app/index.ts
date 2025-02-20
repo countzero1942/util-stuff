@@ -95,7 +95,7 @@ import {
 } from "@/parser/types/heads";
 import { parseKeyHeadErrorTestTextA1 } from "@/tests/data/test-data";
 
-// logGeneratePassword();
+logGeneratePassword();
 
 /**
  * Test TypeMap
@@ -177,7 +177,35 @@ import { parseKeyHeadErrorTestTextA1 } from "@/tests/data/test-data";
 
 // await logTraitReportFromString(parseKeyHeadErrorTestTextA1);
 
-const input = StrSlice.all("0");
-const result = parseWNum(input);
-logobj(result);
+// const input = StrSlice.all("0");
+// const result = parseWNum(input);
+// logobj(result);
+// div();
+
+// type Stuff = {
+// 	a: number;
+// 	b?: string;
+// 	c: boolean | null;
+// };
+
+// const stuff1: Stuff = {
+// 	a: 42,
+// 	b: "hello",
+// 	c: null,
+// };
+
+// logobj(stuff1);
+// const stuff2: Stuff = {
+// 	a: 42,
+// 	c: null,
+// };
+
+// logobj(stuff2);
+
+// const thing = stuff2.b;
+// log(thing);
+
+const slice = StrSlice.from("hello world");
+const i1 = slice.indexOf("world", 5);
+const i2 = slice.indexOf("world", 6);
 div();

@@ -189,6 +189,53 @@ export class StrSlice {
 		return count;
 	};
 
+	public indexOf(
+		value: string,
+		childStartIncl?: number
+	): number {
+		// abcde
+		// 012345
+		// length = 5
+		//
+		// value = "", length = 0
+		// loopLength = 5 - 0 = 5
+		// lastIndex = 4
+		//
+		// value = "e", length = 1
+		// loopLength = 5 - 1 = 4
+		// lastIndex = 3 => wrong
+		// loopLength = 5 - 1 + 1 = 5
+		// lastIndex = 4
+		//
+		// value = "de", length = 2
+		// loopLength = 5 - 2 + 1 = 4
+		// lastIndex = 3
+		//
+		// So always add the 1 because we exclude empty value
+
+		const valueLength = value.length;
+		if (valueLength === 0) {
+			return -1;
+		}
+
+		const range = normalizeStartEnd(
+			this.length,
+			childStartIncl
+		);
+
+		const loopLength = this.endExcl - valueLength + 1;
+		for (
+			let i = this.startIncl + range.startIncl;
+			i < loopLength;
+			i++
+		) {
+			if (this.source.startsWith(value, i)) {
+				return i - this.startIncl;
+			}
+		}
+		return -1;
+	}
+
 	public lastIndexOf(
 		value: string,
 		childEndExcl?: number
@@ -322,7 +369,14 @@ export class StrSlice {
 			if (j > -1) {
 				splits++;
 			} else {
-				strs.push(this.slice(i).trim());
+				strs.push(
+					// new StrSlice(
+					// 	this.source,
+					// 	this.startIncl + start,
+					// 	this.endExcl
+					// ).trim()
+					this.slice(i).trim()
+				);
 				break;
 			}
 			strs.push(this.slice(i, j).trim());
@@ -335,6 +389,64 @@ export class StrSlice {
 			}
 		}
 		return strs;
+	}
+
+	public indexOfMany(
+		values: readonly string[],
+		childStartIncl?: number
+	): [number, number] {
+		if (values.length === 0) {
+			return [-1, -1];
+		}
+
+		const range = normalizeStartEnd(
+			this.length,
+			childStartIncl
+		);
+
+		for (let i = range.startIncl; i < this.length; i++) {
+			for (let j = 0; j < values.length; j++) {
+				const value = values[j] as string;
+				if (this.startsWith(value, i)) {
+					return [i, j];
+				}
+			}
+		}
+
+		return [-1, -1];
+	}
+
+	public lastIndexOfMany(
+		values: readonly string[],
+		childEndExcl?: number
+	): [number, number] {
+		if (values.length === 0) {
+			return [-1, -1];
+		}
+
+		const range = normalizeStartEnd(
+			this.length,
+			undefined,
+			childEndExcl
+		);
+
+		for (
+			let i = Math.min(
+				range.endExcl - 1,
+				this.length - 1
+			);
+			i >= 0;
+			i--
+		) {
+			for (let j = 0; j < values.length; j++) {
+				const value = values[j] as string;
+				if (this.startsWith(value, i)) {
+					return [i, j];
+				}
+			}
+		}
+
+		return [-1, -1];
 	}
 
 	public slice(
@@ -384,80 +496,6 @@ export class StrSlice {
 		return this.slice(i, i + value.length);
 	}
 
-	public indexOf(
-		value: string,
-		childStartIncl?: number
-	): number {
-		// abcde
-		// 012345
-		// length = 5
-		//
-		// value = "", length = 0
-		// loopLength = 5 - 0 = 5
-		// lastIndex = 4
-		//
-		// value = "e", length = 1
-		// loopLength = 5 - 1 = 4
-		// lastIndex = 3 => wrong
-		// loopLength = 5 - 1 + 1 = 5
-		// lastIndex = 4
-		//
-		// value = "de", length = 2
-		// loopLength = 5 - 2 + 1 = 4
-		// lastIndex = 3
-		//
-		// So always add the 1 because we exclude empty value
-
-		const valueLength = value.length;
-		if (valueLength === 0) {
-			return -1;
-		}
-
-		const range = normalizeStartEnd(
-			this.length,
-			childStartIncl
-		);
-
-		const loopLength = this.endExcl - valueLength + 1;
-		for (
-			let i = this.startIncl + range.startIncl;
-			i < loopLength;
-			i++
-		) {
-			if (this.source.startsWith(value, i)) {
-				return i - this.startIncl;
-			}
-		}
-		return -1;
-	}
-
-	public indexOfMany(
-		values: readonly string[],
-		childStartIncl?: number
-	): [number, number] {
-		const range = normalizeStartEnd(
-			this.length,
-			childStartIncl
-		);
-
-		for (
-			let i = range.startIncl;
-			i < range.endExcl;
-			i++
-		) {
-			for (let j = 0; j < values.length; j++) {
-				const value = values[j] as string;
-				if (
-					i + value.length <= range.endExcl &&
-					this.startsWith(value, i)
-				) {
-					return [i, j];
-				}
-			}
-		}
-		return [-1, -1];
-	}
-
 	public edgeSplitMany(
 		values: readonly string[]
 	): StrSlice[] {
@@ -468,6 +506,7 @@ export class StrSlice {
 		const str = this.value;
 		while (next <= this.length) {
 			const [j, k] = this.indexOfMany(values, next);
+
 			if (j === -1) {
 				slices.push(
 					// new StrSlice(
@@ -564,6 +603,41 @@ export class StrSlice {
 			this.slice(start).trim()
 		);
 		return slices;
+	}
+
+	public keyWordSplitMany(
+		keywords: readonly string[],
+		isForwardSearch: boolean = true
+	): {
+		startSlice: StrSlice;
+		keywordSlice?: StrSlice;
+		endSlice?: StrSlice;
+	} {
+		if (keywords.length === 0 || this.isEmpty) {
+			return { startSlice: this };
+		}
+
+		const [index, keywordIndex] = isForwardSearch
+			? this.indexOfMany(keywords)
+			: this.lastIndexOfMany(keywords);
+
+		if (index === -1) {
+			return { startSlice: this };
+		}
+
+		const keyword = keywords[keywordIndex] as string;
+		const keywordSlice = this.slice(
+			index,
+			index + keyword.length
+		);
+		const startSlice = this.slice(0, index);
+		const endSlice = this.slice(index + keyword.length);
+
+		return {
+			startSlice,
+			keywordSlice,
+			endSlice,
+		};
 	}
 
 	public expandSlice(
