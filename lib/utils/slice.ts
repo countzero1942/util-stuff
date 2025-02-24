@@ -255,7 +255,7 @@ export class StrSlice {
 		);
 
 		for (
-			let i = range.endExcl - l;
+			let i = this.startIncl + range.endExcl - l;
 			i >= this.startIncl;
 			i--
 		) {
@@ -610,11 +610,18 @@ export class StrSlice {
 		isForwardSearch: boolean = true
 	): {
 		startSlice: StrSlice;
-		keywordSlice?: StrSlice;
-		endSlice?: StrSlice;
+		keywordSlice: StrSlice;
+		keywordIndex: number;
+		endSlice: StrSlice;
 	} {
+		const defaultReturn = {
+			startSlice: this,
+			keywordSlice: StrSlice.empty(),
+			keywordIndex: -1,
+			endSlice: StrSlice.empty(),
+		};
 		if (keywords.length === 0 || this.isEmpty) {
-			return { startSlice: this };
+			return defaultReturn;
 		}
 
 		const [index, keywordIndex] = isForwardSearch
@@ -622,20 +629,23 @@ export class StrSlice {
 			: this.lastIndexOfMany(keywords);
 
 		if (index === -1) {
-			return { startSlice: this };
+			return defaultReturn;
 		}
 
 		const keyword = keywords[keywordIndex] as string;
 		const keywordSlice = this.slice(
 			index,
 			index + keyword.length
-		);
-		const startSlice = this.slice(0, index);
-		const endSlice = this.slice(index + keyword.length);
+		).trim();
+		const startSlice = this.slice(0, index).trim();
+		const endSlice = this.slice(
+			index + keyword.length
+		).trim();
 
 		return {
 			startSlice,
 			keywordSlice,
+			keywordIndex,
 			endSlice,
 		};
 	}
@@ -754,7 +764,9 @@ export class StrSlice {
 		return new StrSlice(source, 0, 0);
 	}
 
+	private static readonly EMPTY = new StrSlice("", 0, 0);
+
 	public static empty(): StrSlice {
-		return new StrSlice("", 0, 0);
+		return StrSlice.EMPTY;
 	}
 }

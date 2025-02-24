@@ -261,7 +261,7 @@ describe("StrSlice Index related methods A", () => {
 					15
 				);
 				expect(slice.lastIndexOf("world")).toBe(6);
-				expect(slice.lastIndexOf("o")).toBe(4);
+				expect(slice.lastIndexOf("o")).toBe(7);
 				expect(slice.lastIndexOf("x")).toBe(-1);
 				expect(slice.lastIndexOf("")).toBe(-1);
 				// abc hello world abc
@@ -276,14 +276,14 @@ describe("StrSlice Index related methods A", () => {
 					4,
 					15
 				);
-				expect(slice.lastIndexOf("world", 5)).toBe(6);
-				expect(slice.lastIndexOf("world", 6)).toBe(6);
-				expect(slice.lastIndexOf("world", 7)).toBe(-1);
-				expect(slice.lastIndexOf("world", 11)).toBe(-1);
-				expect(slice.lastIndexOf("o", 4)).toBe(4);
-				expect(slice.lastIndexOf("o", 5)).toBe(7);
-				expect(slice.lastIndexOf("d", 10)).toBe(10);
-				expect(slice.lastIndexOf("d", 11)).toBe(-1);
+				expect(slice.lastIndexOf("world", 11)).toBe(6);
+				expect(slice.lastIndexOf("world", 10)).toBe(-1);
+				expect(slice.lastIndexOf("hello", 5)).toBe(0);
+				expect(slice.lastIndexOf("world", 4)).toBe(-1);
+				expect(slice.lastIndexOf("o", 8)).toBe(7);
+				expect(slice.lastIndexOf("o", 5)).toBe(4);
+				expect(slice.lastIndexOf("d", 11)).toBe(10);
+				expect(slice.lastIndexOf("d", 10)).toBe(-1);
 				// abc hello world abc
 				//     012345678901
 				//     10987654321
@@ -299,24 +299,24 @@ describe("StrSlice Index related methods A", () => {
 						4,
 						15
 					);
-					expect(slice.lastIndexOf("world", -6)).toBe(
+					expect(slice.lastIndexOf("worl", -1)).toBe(
 						6
 					);
-					expect(slice.lastIndexOf("world", -5)).toBe(
-						6
-					);
-					expect(slice.lastIndexOf("world", -4)).toBe(
+					expect(slice.lastIndexOf("worl", -2)).toBe(
 						-1
 					);
-					expect(slice.lastIndexOf("world", -12)).toBe(
-						6
+					expect(slice.lastIndexOf("hello", -6)).toBe(
+						0
 					);
-					expect(slice.lastIndexOf("o", -7)).toBe(4);
-					expect(slice.lastIndexOf("o", -6)).toBe(7);
-					expect(slice.lastIndexOf("d", -1)).toBe(10);
+					expect(slice.lastIndexOf("hello", -7)).toBe(
+						-1
+					);
+					expect(slice.lastIndexOf("o", -3)).toBe(7);
+					expect(slice.lastIndexOf("o", -6)).toBe(4);
+					expect(slice.lastIndexOf("l", -1)).toBe(9);
 					// abc hello world abc
 					//     012345678901
-					//     10987654321
+					//     10987654321-
 					// 01234567890123456789
 				}
 			);

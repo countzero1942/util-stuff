@@ -208,4 +208,10 @@ logGeneratePassword();
 const slice = StrSlice.from("hello world");
 const i1 = slice.indexOf("world", 5);
 const i2 = slice.indexOf("world", 6);
+
+const slice2 = StrSlice.from("abc hello world abc", 4, 15);
+const str = slice2.value;
+const i3 = slice2.lastIndexOf("world");
+const i4 = slice2.lastIndexOf("world", 11);
+
 div();

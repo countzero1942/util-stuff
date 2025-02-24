@@ -57,56 +57,64 @@ describe("StrSlice Index related methods B", () => {
 		});
 	});
 
-	describe("StrSlice.indexOfMany reverse search", () => {
+	describe("StrSlice.lastIndexOfMany", () => {
 		it("returns [-1,-1] when no match found", () => {
 			const slice = new StrSlice("hello world");
-			expect(slice.indexOfMany(["x", "y", "z"])).toEqual(
-				[-1, -1]
-			);
+			expect(
+				slice.lastIndexOfMany(["x", "y", "z"])
+			).toEqual([-1, -1]);
 		});
 
-		it("returns first match with its array index", () => {
+		it("returns last match with its array index", () => {
 			const slice = new StrSlice("hello world");
-			expect(slice.indexOfMany(["x", "o", "z"])).toEqual(
-				[4, 1]
-			);
+			expect(
+				slice.lastIndexOfMany(["x", "o", "z"])
+			).toEqual([7, 1]);
 		});
 
 		it("handles empty array", () => {
 			const slice = new StrSlice("hello world");
-			expect(slice.indexOfMany([])).toEqual([-1, -1]);
-		});
-
-		it("handles empty string in matching array", () => {
-			const slice = new StrSlice("hello world");
-			expect(slice.indexOfMany([""])).toEqual([-1, -1]);
-			expect(slice.indexOfMany(["x", "", "y"])).toEqual([
+			expect(slice.lastIndexOfMany([])).toEqual([
 				-1, -1,
 			]);
 		});
 
-		it("finds earliest occurrence when multiple matches exist", () => {
+		it("handles empty string in matching array", () => {
 			const slice = new StrSlice("hello world");
-			expect(slice.indexOfMany(["w", "l", "o"])).toEqual(
-				[2, 1]
-			);
+			expect(slice.lastIndexOfMany([""])).toEqual([
+				-1, -1,
+			]);
+			expect(
+				slice.lastIndexOfMany(["x", "", "y"])
+			).toEqual([-1, -1]);
 		});
+
+		it("finds latest occurrence when multiple matches exist", () => {
+			const slice = new StrSlice("hello world");
+			expect(
+				slice.lastIndexOfMany(["w", "l", "o"])
+			).toEqual([9, 1]);
+		});
+
 		it("handles matching in middle of string", () => {
 			// "hello world"
 			//  012345678901
 			const slice1 = new StrSlice("hello world", 4, 9);
 			expect(slice1.value).toBe("o wor");
-			expect(slice1.indexOfMany(["w", "l"])).toEqual([
-				2, 0,
-			]);
-			expect(slice1.indexOfMany(["l"])).toEqual([
+			expect(slice1.lastIndexOfMany(["w", "o"])).toEqual(
+				[3, 1]
+			);
+			expect(slice1.lastIndexOfMany(["w", " "])).toEqual(
+				[2, 0]
+			);
+			expect(slice1.lastIndexOfMany(["l"])).toEqual([
 				-1, -1,
 			]);
 		});
 
 		it("works with empty string", () => {
 			const slice = new StrSlice("");
-			expect(slice.indexOfMany(["a", "b"])).toEqual([
+			expect(slice.lastIndexOfMany(["a", "b"])).toEqual([
 				-1, -1,
 			]);
 		});
@@ -286,6 +294,97 @@ describe("StrSlice Index related methods B", () => {
 			expect(
 				slice.indexesOfOrdered(orderedMatches)
 			).toEqual([1, 5, -1]);
+		});
+	});
+
+	describe("StrSlice.keyWordSplitMany", () => {
+		const keywords = ["in", "of", "on"];
+
+		it("returns only startSlice when no keyword found", () => {
+			const slice = StrSlice.from("key_name .Z");
+			const result = slice.keyWordSplitMany(keywords);
+			expect(result.startSlice.value).toBe(
+				"key_name .Z"
+			);
+			expect(result.keywordSlice.value).toBe("");
+			expect(result.keywordIndex).toBe(-1);
+			expect(result.endSlice.value).toBe("");
+		});
+
+		it("splits on first keyword found", () => {
+			const slice = StrSlice.from("key_name in .Z");
+			const result = slice.keyWordSplitMany(keywords);
+			expect(result.startSlice.value).toBe("key_name");
+			expect(result.keywordSlice.value).toBe("in");
+			expect(result.keywordIndex).toBe(0);
+			expect(result.endSlice.value).toBe(".Z");
+		});
+
+		it("handles multiple keywords and takes first one", () => {
+			const slice = StrSlice.from(
+				"items of .$ values in .foo keys on .bar"
+			);
+			const result = slice.keyWordSplitMany(keywords);
+			expect(result.startSlice.value).toBe("items");
+			expect(result.keywordSlice.value).toBe("of");
+			expect(result.keywordIndex).toBe(1);
+			expect(result.endSlice.value).toBe(
+				".$ values in .foo keys on .bar"
+			);
+		});
+
+		it("handles whitespace around keywords", () => {
+			const slice = StrSlice.from(
+				"  key_name   on  .Z  "
+			);
+			const result = slice.keyWordSplitMany(keywords);
+			expect(result.startSlice.value).toBe("key_name");
+			expect(result.keywordSlice.value).toBe("on");
+			expect(result.keywordIndex).toBe(2);
+			expect(result.endSlice.value).toBe(".Z");
+		});
+
+		it("handles empty string", () => {
+			const slice = StrSlice.from("");
+			const result = slice.keyWordSplitMany(keywords);
+			expect(result.startSlice.value).toBe("");
+			expect(result.keywordSlice.value).toBe("");
+			expect(result.keywordIndex).toBe(-1);
+			expect(result.endSlice.value).toBe("");
+		});
+
+		it("handles no start value", () => {
+			const slice = StrSlice.from("in .Z");
+			const result = slice.keyWordSplitMany(keywords);
+			expect(result.startSlice.value).toBe("");
+			expect(result.keywordSlice.value).toBe("in");
+			expect(result.keywordIndex).toBe(0);
+			expect(result.endSlice.value).toBe(".Z");
+		});
+
+		it("handles no end value", () => {
+			const slice = StrSlice.from("key_name in");
+			const result = slice.keyWordSplitMany(keywords);
+			expect(result.startSlice.value).toBe("key_name");
+			expect(result.keywordSlice.value).toBe("in");
+			expect(result.keywordIndex).toBe(0);
+			expect(result.endSlice.value).toBe("");
+		});
+
+		it("splits on last keyword found allowing for keyword in title", () => {
+			const slice = StrSlice.from(
+				"the beast in the sea in .Z"
+			);
+			const result = slice.keyWordSplitMany(
+				keywords,
+				false
+			);
+			expect(result.startSlice.value).toBe(
+				"the beast in the sea"
+			);
+			expect(result.keywordSlice.value).toBe("in");
+			expect(result.keywordIndex).toBe(0);
+			expect(result.endSlice.value).toBe(".Z");
 		});
 	});
 });
