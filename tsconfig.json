@@ -21,7 +21,7 @@
 		"paths": {
 			"@/app/*": ["app/*"],
 			"@/parser/*": ["lib/parser/*"],
-			"@/new-parser/*": ["lib/new-parser/*"],
+			"@/new-parser/*": ["z_old_code/new-parser/*"],
 			"@/utils/*": ["lib/utils/*"],
 			"@/types/*": ["lib/types/*"],
 			"@/tests/*": ["tests/*"],
@@ -29,5 +29,10 @@
 		}
 	},
 	"include": ["**/*.ts"],
-	"exclude": ["node_modules"]
+	"exclude": [
+		"node_modules",
+		"build",
+		"coverage",
+		"z_old_code"
+	]
 }

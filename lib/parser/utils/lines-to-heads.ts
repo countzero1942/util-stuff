@@ -4,15 +4,15 @@ import {
 } from "@/parser/types/err-types";
 import { StrSlice } from "@/utils/slice";
 import {
-	KeyHead,
-	KeyBodyRequiredHead,
-	KeyValueRequiredHead,
-	KeyValueDefinedHead,
+	KeyValueBase,
+	KeyBodyRequiredSource,
+	KeyValueRequiredSource,
+	KeyValueDefinedSource,
 	LineInfo,
-	KeyInvalidHead,
-	ParserErrHead,
-	EmptyLine,
-} from "@/parser/types/heads";
+	KeyInvalidSource,
+	ParserErrNode,
+	EmptyLineNode,
+} from "@/parser/types/key-value";
 import { getPreLineInfo } from "@/parser/utils/pre-line-info";
 import { log } from "@/utils/log";
 import {
@@ -21,26 +21,28 @@ import {
 } from "@/utils/string";
 import { toReadonlyTuple } from "@/utils/types";
 
-export const splitHead = (lineInfo: LineInfo): KeyHead => {
+export const splitHead = (
+	lineInfo: LineInfo
+): KeyValueBase => {
 	// create ParseErr error Object
 	const createParserStructureErr = (
-		head: KeyInvalidHead,
+		head: KeyInvalidSource,
 		kind: StructureErrKind,
 		lineErrorSlice: StrSlice
-	): ParserErrHead => {
+	): ParserErrNode => {
 		const err = new ParserStructureErr(
 			head,
 			lineErrorSlice,
 			kind
 		);
-		return new ParserErrHead(err, lineInfo);
+		return new ParserErrNode(err, lineInfo);
 	};
 
 	const { content: line } = lineInfo;
 
 	// case: empty line
 	if (line.isEmpty || line.equals(":")) {
-		return new EmptyLine(lineInfo);
+		return new EmptyLineNode(lineInfo);
 	}
 
 	// split line into keyHead and valueHead
@@ -58,7 +60,7 @@ export const splitHead = (lineInfo: LineInfo): KeyHead => {
 				parts,
 				2
 			);
-			return new KeyValueDefinedHead(
+			return new KeyValueDefinedSource(
 				keyHead,
 				valueHead,
 				lineInfo
@@ -71,7 +73,7 @@ export const splitHead = (lineInfo: LineInfo): KeyHead => {
 			switch (colonCount) {
 				case 0:
 					// case: "key" => Key Declaration
-					return new KeyValueRequiredHead(
+					return new KeyValueRequiredSource(
 						keyHead,
 						lineInfo
 					);
@@ -79,14 +81,14 @@ export const splitHead = (lineInfo: LineInfo): KeyHead => {
 				default:
 					// case: "key:" "key stuff:8:" => Key Body Decl
 					if (line.endsWith(":")) {
-						return new KeyBodyRequiredHead(
+						return new KeyBodyRequiredSource(
 							keyHead.slice(0, -1),
 							lineInfo
 						);
 					}
 					// case: "key:key:value", ... => ERR
 					return createParserStructureErr(
-						new KeyInvalidHead(keyHead, lineInfo),
+						new KeyInvalidSource(keyHead, lineInfo),
 						"Invalid key colon",
 						StrSlice.fromIndexOfDefaultAll(
 							keyHead.source,
@@ -102,9 +104,9 @@ export const splitHead = (lineInfo: LineInfo): KeyHead => {
 
 export const parseLinesToHeads = async (
 	lines: readonly string[]
-): Promise<readonly KeyHead[]> =>
+): Promise<readonly KeyValueBase[]> =>
 	new Promise(resolve => {
-		const heads: KeyHead[] = [];
+		const heads: KeyValueBase[] = [];
 
 		let lineNumber = 0;
 		for (const line of lines) {
@@ -112,7 +114,7 @@ export const parseLinesToHeads = async (
 
 			const res1 = getPreLineInfo(line, lineNumber);
 
-			if (res1 instanceof ParserErrHead) {
+			if (res1 instanceof ParserErrNode) {
 				heads.push(res1);
 				continue;
 			}

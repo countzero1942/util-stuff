@@ -1,5 +1,5 @@
 import { NumberErr } from "@/parser/types/err-types";
-import { ParserErrHead } from "@/parser/types/heads";
+import { ParserErrNode } from "@/parser/types/key-value";
 import {
 	FlagParam,
 	KeyParams,
@@ -8,24 +8,24 @@ import {
 import { TypeValuePair } from "@/parser/types/parse-types";
 import { parseDefaultValue } from "@/parser/utils/parse-value";
 import { StrSlice } from "@/utils/slice";
-import { KeyHead } from "../types/heads";
+import { KeyValueBase } from "../types/key-value";
 
 const parseTypeOrFlagParams = (
-	head: KeyHead,
+	head: KeyValueBase,
 	typeOrFlag: StrSlice
-): FlagParam | ParserErrHead => {
+): FlagParam | ParserErrNode => {
 	let name: StrSlice = StrSlice.empty();
 	let dotParamOrErr:
 		| TypeValuePair
-		| ParserErrHead
+		| ParserErrNode
 		| undefined = undefined;
 	let subParamOrErr:
 		| TypeValuePair
-		| ParserErrHead
+		| ParserErrNode
 		| undefined = undefined;
 	let superParamOrErr:
 		| TypeValuePair
-		| ParserErrHead
+		| ParserErrNode
 		| undefined = undefined;
 	let colonParams: TypeValuePair[] = [];
 
@@ -47,7 +47,7 @@ const parseTypeOrFlagParams = (
 						head,
 						paramValueSlice
 					);
-					if (dotParamOrErr instanceof ParserErrHead) {
+					if (dotParamOrErr instanceof ParserErrNode) {
 						return dotParamOrErr; // is ParserErrHead
 					}
 					break;
@@ -56,7 +56,7 @@ const parseTypeOrFlagParams = (
 						head,
 						paramValueSlice
 					);
-					if (subParamOrErr instanceof ParserErrHead) {
+					if (subParamOrErr instanceof ParserErrNode) {
 						return subParamOrErr; // is ParserErrHead
 					}
 					break;
@@ -66,7 +66,7 @@ const parseTypeOrFlagParams = (
 						paramValueSlice
 					);
 					if (
-						superParamOrErr instanceof ParserErrHead
+						superParamOrErr instanceof ParserErrNode
 					) {
 						return superParamOrErr; // is ParserErrHead
 					}
@@ -88,7 +88,7 @@ const parseTypeOrFlagParams = (
 				head,
 				colonParamValueSlice
 			);
-			if (colonParamOrErr instanceof ParserErrHead) {
+			if (colonParamOrErr instanceof ParserErrNode) {
 				return colonParamOrErr; // is ParserErrHead
 			}
 			colonParams.push(colonParamOrErr); // is TypeValuePair
@@ -111,9 +111,9 @@ export type TypeOuterParams = {
 };
 
 const parseTypeOuterParams = (
-	head: KeyHead,
+	head: KeyValueBase,
 	params: StrSlice[]
-): TypeOuterParams | ParserErrHead => {
+): TypeOuterParams | ParserErrNode => {
 	const flagParams: FlagParam[] = [];
 	const stringParams: string[] = [];
 	let unitParam: string | undefined;
@@ -124,7 +124,7 @@ const parseTypeOuterParams = (
 					head,
 					param
 				);
-				if (flagParamOrErr instanceof ParserErrHead) {
+				if (flagParamOrErr instanceof ParserErrNode) {
 					return flagParamOrErr; // is ParserErrHead
 				}
 				flagParams.push(flagParamOrErr); // is FlagParam
@@ -144,9 +144,9 @@ const parseTypeOuterParams = (
 };
 
 const parseType = (
-	head: KeyHead,
+	head: KeyValueBase,
 	typeSlice: StrSlice
-): TypeParams | ParserErrHead => {
+): TypeParams | ParserErrNode => {
 	const typeAndParamSlices = typeSlice.edgeSplitMany([
 		" %",
 		" $",
@@ -158,7 +158,7 @@ const parseType = (
 		head,
 		type
 	);
-	if (typeNameParamsOrErr instanceof ParserErrHead) {
+	if (typeNameParamsOrErr instanceof ParserErrNode) {
 		return typeNameParamsOrErr; // is ParserErrHead
 	}
 	const typeNameParams = typeNameParamsOrErr;
@@ -170,7 +170,7 @@ const parseType = (
 			head,
 			paramSlices
 		);
-		if (paramsOrErr instanceof ParserErrHead) {
+		if (paramsOrErr instanceof ParserErrNode) {
 			return paramsOrErr; // is ParserErrHead
 		}
 		const { flagParams, stringParams, unitParam } =
@@ -189,13 +189,13 @@ const parseType = (
 };
 
 const parseTypes = (
-	head: KeyHead,
+	head: KeyValueBase,
 	typeSlices: StrSlice[]
-): TypeParams[] | ParserErrHead => {
+): TypeParams[] | ParserErrNode => {
 	const types: TypeParams[] = [];
 	for (const typeSlice of typeSlices) {
 		const typeOrErr = parseType(head, typeSlice);
-		if (typeOrErr instanceof ParserErrHead) {
+		if (typeOrErr instanceof ParserErrNode) {
 			return typeOrErr; // is ParserErrHead
 		}
 		types.push(typeOrErr); // is TypeParams
@@ -204,9 +204,9 @@ const parseTypes = (
 };
 
 export const parseKeyHead = (
-	head: KeyHead,
+	head: KeyValueBase,
 	keyHeadSlice: StrSlice
-): KeyParams | ParserErrHead => {
+): KeyParams | ParserErrNode => {
 	const nameAndTypeSlices: StrSlice[] =
 		keyHeadSlice.edgeSplitMany([" ."]);
 	const nameSlice = nameAndTypeSlices[0] as StrSlice;
@@ -218,7 +218,7 @@ export const parseKeyHead = (
 	const typeSlices = nameAndTypeSlices.slice(1);
 	const typesOrErr = parseTypes(head, typeSlices);
 
-	if (typesOrErr instanceof ParserErrHead) {
+	if (typesOrErr instanceof ParserErrNode) {
 		return typesOrErr; // is ParserErrHead
 	}
 	return new KeyParams(nameSlice, typesOrErr); // is TypeParams[]

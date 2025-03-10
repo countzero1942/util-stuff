@@ -1,13 +1,13 @@
 import { describe, it, expect } from "@jest/globals";
 import { splitHead } from "@/parser/utils/lines-to-heads";
 import { StrSlice } from "@/utils/slice";
-import { LineInfo } from "@/parser/types/heads";
+import { LineInfo } from "@/parser/types/key-value";
 import {
-	KeyValueDefinedHead,
-	KeyValueRequiredHead,
-	KeyBodyRequiredHead,
-	EmptyLine,
-} from "@/parser/types/heads";
+	KeyValueDefinedSource,
+	KeyValueRequiredSource,
+	KeyBodyRequiredSource,
+	EmptyLineNode,
+} from "@/parser/types/key-value";
 
 describe("splitHead - Success Cases", () => {
 	const createLineInfo = (content: string): LineInfo =>
@@ -19,14 +19,14 @@ describe("splitHead - Success Cases", () => {
 
 	it("handles empty lines", () => {
 		const result = splitHead(createLineInfo(""));
-		expect(result).toBeInstanceOf(EmptyLine);
-		expect((result as EmptyLine).isColon).toBe(false);
+		expect(result).toBeInstanceOf(EmptyLineNode);
+		expect((result as EmptyLineNode).isColon).toBe(false);
 	});
 
 	it("handles single colon lines", () => {
 		const result = splitHead(createLineInfo(":"));
-		expect(result).toBeInstanceOf(EmptyLine);
-		expect((result as EmptyLine).isColon).toBe(true);
+		expect(result).toBeInstanceOf(EmptyLineNode);
+		expect((result as EmptyLineNode).isColon).toBe(true);
 	});
 
 	it("parses key-value definition (key: value)", () => {
@@ -34,15 +34,17 @@ describe("splitHead - Success Cases", () => {
 			const result = splitHead(
 				createLineInfo("name: John")
 			);
-			expect(result).toBeInstanceOf(KeyValueDefinedHead);
+			expect(result).toBeInstanceOf(
+				KeyValueDefinedSource
+			);
 			expect(
 				(
-					result as KeyValueDefinedHead
+					result as KeyValueDefinedSource
 				).keyHead.toString()
 			).toBe("name");
 			expect(
 				(
-					result as KeyValueDefinedHead
+					result as KeyValueDefinedSource
 				).valueHead.toString()
 			).toBe("John");
 		}
@@ -50,15 +52,17 @@ describe("splitHead - Success Cases", () => {
 			const result = splitHead(
 				createLineInfo("value .in .R:6:9: 1.23456")
 			);
-			expect(result).toBeInstanceOf(KeyValueDefinedHead);
+			expect(result).toBeInstanceOf(
+				KeyValueDefinedSource
+			);
 			expect(
 				(
-					result as KeyValueDefinedHead
+					result as KeyValueDefinedSource
 				).keyHead.toString()
 			).toBe("value .in .R:6:9");
 			expect(
 				(
-					result as KeyValueDefinedHead
+					result as KeyValueDefinedSource
 				).valueHead.toString()
 			).toBe("1.23456");
 		}
@@ -73,16 +77,16 @@ describe("splitHead - Success Cases", () => {
 					createLineInfo("value: thing: stuff")
 				);
 				expect(result).toBeInstanceOf(
-					KeyValueDefinedHead
+					KeyValueDefinedSource
 				);
 				expect(
 					(
-						result as KeyValueDefinedHead
+						result as KeyValueDefinedSource
 					).keyHead.toString()
 				).toBe("value");
 				expect(
 					(
-						result as KeyValueDefinedHead
+						result as KeyValueDefinedSource
 					).valueHead.toString()
 				).toBe("thing: stuff");
 			}
@@ -93,11 +97,11 @@ describe("splitHead - Success Cases", () => {
 		{
 			const result = splitHead(createLineInfo("age"));
 			expect(result).toBeInstanceOf(
-				KeyValueRequiredHead
+				KeyValueRequiredSource
 			);
 			expect(
 				(
-					result as KeyValueRequiredHead
+					result as KeyValueRequiredSource
 				).keyHead.toString()
 			).toBe("age");
 		}
@@ -106,11 +110,11 @@ describe("splitHead - Success Cases", () => {
 				createLineInfo("a4 in .Z")
 			);
 			expect(result).toBeInstanceOf(
-				KeyValueRequiredHead
+				KeyValueRequiredSource
 			);
 			expect(
 				(
-					result as KeyValueRequiredHead
+					result as KeyValueRequiredSource
 				).keyHead.toString()
 			).toBe("a4 in .Z");
 		}
@@ -121,10 +125,12 @@ describe("splitHead - Success Cases", () => {
 			const result = splitHead(
 				createLineInfo("person:")
 			);
-			expect(result).toBeInstanceOf(KeyBodyRequiredHead);
+			expect(result).toBeInstanceOf(
+				KeyBodyRequiredSource
+			);
 			expect(
 				(
-					result as KeyBodyRequiredHead
+					result as KeyBodyRequiredSource
 				).keyHead.toString()
 			).toBe("person");
 		}
@@ -139,11 +145,11 @@ describe("splitHead - Success Cases", () => {
 					createLineInfo("x R:6:9:")
 				);
 				expect(result).toBeInstanceOf(
-					KeyBodyRequiredHead
+					KeyBodyRequiredSource
 				);
 				expect(
 					(
-						result as KeyBodyRequiredHead
+						result as KeyBodyRequiredSource
 					).keyHead.toString()
 				).toBe("x R:6:9");
 			}
@@ -152,11 +158,11 @@ describe("splitHead - Success Cases", () => {
 					createLineInfo("a2 .in .trait:")
 				);
 				expect(result).toBeInstanceOf(
-					KeyBodyRequiredHead
+					KeyBodyRequiredSource
 				);
 				expect(
 					(
-						result as KeyBodyRequiredHead
+						result as KeyBodyRequiredSource
 					).keyHead.toString()
 				).toBe("a2 .in .trait");
 			}

@@ -13,9 +13,9 @@ import {
 } from "@/parser/utils/parse-num";
 import { convertParseNumberToHeadVersion } from "@/parser/utils/parse-value";
 import {
-	KeyHead,
-	ParserErrHead,
-} from "@/parser/types/heads";
+	KeyValueBase,
+	ParserErrNode,
+} from "@/parser/types/key-value";
 
 export type TypeInfo = {
 	type: string;
@@ -121,9 +121,9 @@ export abstract class NumBase extends TypeBase {
 	): TypeValuePair | NumberErr;
 
 	public parseNumHeadVersion(
-		head: KeyHead,
+		head: KeyValueBase,
 		valueSlice: StrSlice
-	): TypeValuePair | ParserErrHead {
+	): TypeValuePair | ParserErrNode {
 		const typeValuePairOrErr = this.parseNum(valueSlice);
 
 		return convertParseNumberToHeadVersion(

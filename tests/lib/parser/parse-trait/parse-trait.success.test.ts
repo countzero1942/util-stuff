@@ -1,12 +1,13 @@
 import { describe, expect, test } from "@jest/globals";
 import {
-	KeyBodyRequiredHead,
-	KeyValueDefinedHead,
+	KeyBodyRequiredSource,
+	KeyValueDefinedSource,
 	LineInfo,
-	KeyTrait,
-	ParserErrHead,
-	KeyValueDefinedField,
-} from "@/parser/types/heads";
+	ParserErrNode,
+	KeyTraitNode,
+	KeyValueDefinedNode,
+} from "@/parser/types/key-value";
+
 import {
 	createRootHead,
 	parseTrait,
@@ -19,7 +20,6 @@ import {
 	Str,
 	ZNum,
 } from "@/parser/types/type-types";
-import { createDecipheriv } from "crypto";
 import { cleanMultiLineStringToArray } from "@/utils/string";
 
 describe("parseTrait - Success Cases", () => {
@@ -28,17 +28,17 @@ describe("parseTrait - Success Cases", () => {
 		const heads = await parseLinesToHeads(lines);
 
 		const result = parseTrait(createRootHead(), heads, 0);
-		expect(result.trait).toBeInstanceOf(KeyTrait);
+		expect(result.trait).toBeInstanceOf(KeyTraitNode);
 
-		const trait = result.trait as KeyTrait;
+		const trait = result.trait as KeyTraitNode;
 		expect(trait.checkKey(":root")).toBe(true);
 		expect(trait.children.length).toBe(1);
 		expect(trait.children[0]).toBeInstanceOf(
-			KeyValueDefinedField
+			KeyValueDefinedNode
 		);
 
 		const child = trait
-			.children[0] as KeyValueDefinedField;
+			.children[0] as KeyValueDefinedNode;
 		expect(child.checkKey("a")).toBe(true);
 		expect(child.checkValue(42, new ZNum())).toBe(true);
 	});
@@ -55,44 +55,48 @@ describe("parseTrait - Success Cases", () => {
 
 		const result = parseTrait(createRootHead(), heads, 0);
 
-		expect(result.trait).toBeInstanceOf(KeyTrait);
-		const trait = result.trait as KeyTrait;
+		expect(result.trait).toBeInstanceOf(KeyTraitNode);
+		const trait = result.trait as KeyTraitNode;
 		expect(trait.checkKey(":root")).toBe(true);
 		expect(trait.children).toHaveLength(1);
 
-		expect(trait.children[0]).toBeInstanceOf(KeyTrait);
-		const dTrait = trait.children[0] as KeyTrait;
+		expect(trait.children[0]).toBeInstanceOf(
+			KeyTraitNode
+		);
+		const dTrait = trait.children[0] as KeyTraitNode;
 		expect(dTrait.checkKey("d")).toBe(true);
 		expect(dTrait.children).toHaveLength(2);
 
 		expect(dTrait.children[0]).toBeInstanceOf(
-			KeyValueDefinedField
+			KeyValueDefinedNode
 		);
 		const xValue = dTrait
-			.children[0] as KeyValueDefinedField;
+			.children[0] as KeyValueDefinedNode;
 		expect(xValue.checkKey("x")).toBe(true);
 		expect(xValue.checkValue(33, new ZNum())).toBe(true);
 
-		expect(dTrait.children[1]).toBeInstanceOf(KeyTrait);
-		const yTrait = dTrait.children[1] as KeyTrait;
+		expect(dTrait.children[1]).toBeInstanceOf(
+			KeyTraitNode
+		);
+		const yTrait = dTrait.children[1] as KeyTraitNode;
 		expect(yTrait.checkKey("y")).toBe(true);
 		expect(yTrait.children).toHaveLength(2);
 
 		expect(yTrait.children[0]).toBeInstanceOf(
-			KeyValueDefinedField
+			KeyValueDefinedNode
 		);
 		const mValue = yTrait
-			.children[0] as KeyValueDefinedField;
+			.children[0] as KeyValueDefinedNode;
 		expect(mValue.checkKey("m")).toBe(true);
 		expect(mValue.checkValue(1.234, new RPrec(4))).toBe(
 			true
 		);
 
 		expect(yTrait.children[1]).toBeInstanceOf(
-			KeyValueDefinedField
+			KeyValueDefinedNode
 		);
 		const nValue = yTrait
-			.children[1] as KeyValueDefinedField;
+			.children[1] as KeyValueDefinedNode;
 		expect(nValue.checkKey("n")).toBe(true);
 		expect(nValue.value.value).toBe(-1_000_000);
 		expect(nValue.value.type).toStrictEqual(new ZNum());
@@ -119,41 +123,43 @@ describe("parseTrait - Success Cases", () => {
 
 		const result = parseTrait(createRootHead(), heads, 0);
 
-		expect(result.trait).toBeInstanceOf(KeyTrait);
-		const trait = result.trait as KeyTrait;
+		expect(result.trait).toBeInstanceOf(KeyTraitNode);
+		const trait = result.trait as KeyTraitNode;
 		expect(trait.checkKey(":root")).toBe(true);
 		expect(trait.lineInfo.indent).toBe(-1);
 		expect(trait.children).toHaveLength(1);
 
-		expect(trait.children[0]).toBeInstanceOf(KeyTrait);
-		const oTrait = trait.children[0] as KeyTrait;
+		expect(trait.children[0]).toBeInstanceOf(
+			KeyTraitNode
+		);
+		const oTrait = trait.children[0] as KeyTraitNode;
 		expect(oTrait.lineInfo.indent).toBe(0);
 		expect(oTrait.checkKey("o")).toBe(true);
 		expect(oTrait.children).toHaveLength(3);
 
 		const kebab1 = oTrait
-			.children[0] as KeyValueDefinedField;
+			.children[0] as KeyValueDefinedNode;
 		expect(kebab1.lineInfo.indent).toBe(1);
 		expect(kebab1.checkKey("ke-bab-1")).toBe(true);
 		expect(kebab1.value.value).toBe(22);
 		expect(kebab1.value.type).toStrictEqual(new ZNum());
 
 		const kebab2 = oTrait
-			.children[1] as KeyValueDefinedField;
+			.children[1] as KeyValueDefinedNode;
 		expect(kebab2.lineInfo.indent).toBe(1);
 		expect(kebab2.checkKey("ke-bab-2")).toBe(true);
 		expect(kebab2.value.value).toBe(4.4);
 		expect(kebab2.value.type).toStrictEqual(new RPrec(2));
 
-		const kebab3 = oTrait.children[2] as KeyTrait;
+		const kebab3 = oTrait.children[2] as KeyTraitNode;
 		expect(kebab3.lineInfo.indent).toBe(1);
 		expect(kebab3.checkKey("ke-bab-3")).toBe(true);
 		expect(kebab3.children).toHaveLength(1);
 
 		const snakeA = kebab3
-			.children[0] as KeyValueDefinedField;
+			.children[0] as KeyValueDefinedNode;
 		expect(snakeA.lineInfo.indent).toBe(2);
-		expect(snakeA.key.toString()).toBe("snake_a");
+		expect(snakeA.checkKey("snake_a")).toBe(true);
 		expect(snakeA.value.value.toString()).toBe("sss");
 		expect(snakeA.value.type).toStrictEqual(new Str());
 	});
@@ -164,16 +170,16 @@ describe("parseTrait - Success Cases", () => {
 
 		const result = parseTrait(createRootHead(), heads, 0);
 
-		expect(result.trait).toBeInstanceOf(KeyTrait);
-		const trait = result.trait as KeyTrait;
+		expect(result.trait).toBeInstanceOf(KeyTraitNode);
+		const trait = result.trait as KeyTraitNode;
 		expect(trait.checkKey(":root")).toBe(true);
 		expect(trait.children).toHaveLength(1);
 
 		expect(trait.children[0]).toBeInstanceOf(
-			KeyValueDefinedField
+			KeyValueDefinedNode
 		);
 		const snakeD = trait
-			.children[0] as KeyValueDefinedField;
+			.children[0] as KeyValueDefinedNode;
 		expect(snakeD.lineInfo.indent).toBe(0);
 		expect(snakeD.checkKey("snake_d")).toBe(true);
 		expect(snakeD.value.value.toString()).toBe(

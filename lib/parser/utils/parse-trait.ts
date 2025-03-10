@@ -5,17 +5,17 @@ import {
 	ParserNumberErr,
 } from "@/parser/types/err-types";
 import {
-	EmptyLine,
-	KeyHead,
-	KeyBodyRequiredHead,
-	KeyInvalidHead,
-	KeyValueDefinedField,
-	KeyValueDefinedHead,
-	KeyValueRequiredHead,
+	EmptyLineNode,
+	KeyValueBase,
+	KeyBodyRequiredSource,
+	KeyInvalidSource,
+	KeyValueDefinedSource,
+	KeyValueRequiredSource,
 	LineInfo,
-	ParserErrHead,
-	KeyTrait,
-} from "@/parser/types/heads";
+	ParserErrNode,
+	KeyTraitNode,
+	KeyValueDefinedNode,
+} from "@/parser/types/key-value";
 import { ParseTraitResult } from "@/parser/types/parse-types";
 import { parseDefaultValue } from "@/parser/utils/parse-value";
 import { logh, logg } from "@/utils/log";
@@ -34,7 +34,7 @@ export const createRootHead = (
 	if (rootName[0] !== ":") {
 		throw new Error('Root name must start with ":"');
 	}
-	const root = new KeyBodyRequiredHead(
+	const root = new KeyBodyRequiredSource(
 		StrSlice.all(rootName),
 		new LineInfo(StrSlice.empty(), -1, 0)
 	);
@@ -42,7 +42,7 @@ export const createRootHead = (
 };
 
 export const getValueIndex = (
-	head: KeyValueDefinedHead
+	head: KeyValueDefinedSource
 ) => {
 	const { content } = head.lineInfo;
 	const valueIndex = content.indexOf(": ") + 2;
@@ -50,13 +50,13 @@ export const getValueIndex = (
 };
 
 export const parseKeyValueDefinedHead = (
-	head: KeyValueDefinedHead
-): KeyValueDefinedField | ParserErrHead => {
+	head: KeyValueDefinedSource
+): KeyValueDefinedNode | ParserErrNode => {
 	const { keyHead, valueHead } = head;
 
 	const keyParamsOrErr = parseKeyHead(head, keyHead);
 
-	if (keyParamsOrErr instanceof ParserErrHead) {
+	if (keyParamsOrErr instanceof ParserErrNode) {
 		return keyParamsOrErr; // is ParserErrHead
 	}
 
@@ -65,11 +65,11 @@ export const parseKeyValueDefinedHead = (
 		valueHead
 	);
 
-	if (typeValuePairOrErr instanceof ParserErrHead) {
+	if (typeValuePairOrErr instanceof ParserErrNode) {
 		return typeValuePairOrErr; // is ParserErrHead
 	}
 
-	return new KeyValueDefinedField(
+	return new KeyValueDefinedNode(
 		keyHead,
 		typeValuePairOrErr, // is TypeValuePair
 		head.lineInfo
@@ -77,7 +77,7 @@ export const parseKeyValueDefinedHead = (
 };
 
 const getIndentError = (
-	invalidChildren: readonly KeyHead[],
+	invalidChildren: readonly KeyValueBase[],
 	rowErrorRange: Range,
 	properIndent: number,
 	kind: IndentErrKind,
@@ -91,7 +91,7 @@ const getIndentError = (
 	);
 
 	return {
-		trait: new ParserErrHead(err, lineInfo),
+		trait: new ParserErrNode(err, lineInfo),
 
 		// index is zero-based; rowErrorRange is one-based
 		nextIndex: rowErrorRange.endExcl - 1,
@@ -99,10 +99,10 @@ const getIndentError = (
 };
 
 const getSelfTrait = (
-	traitHead: KeyBodyRequiredHead,
+	traitHead: KeyBodyRequiredSource,
 	traitBodyIndent: number,
 	nextIndex: number,
-	children: KeyHead[]
+	children: KeyValueBase[]
 ): ParseTraitResult => {
 	if (
 		children.length === 0 &&
@@ -118,7 +118,7 @@ const getSelfTrait = (
 		children.push(err.trait);
 	}
 	return {
-		trait: new KeyTrait(
+		trait: new KeyTraitNode(
 			traitHead.keyHead,
 			children,
 			traitHead.lineInfo
@@ -128,14 +128,14 @@ const getSelfTrait = (
 };
 
 const collectInvalidIndentChildren = (
-	heads: readonly KeyHead[],
+	heads: readonly KeyValueBase[],
 	currentHeadIndex: number,
 	traitBodyIndent: number
-): readonly KeyHead[] => {
-	const invalidChildren: KeyHead[] = [];
+): readonly KeyValueBase[] => {
+	const invalidChildren: KeyValueBase[] = [];
 
 	while (currentHeadIndex < heads.length) {
-		const head = heads[currentHeadIndex] as KeyHead;
+		const head = heads[currentHeadIndex] as KeyValueBase;
 
 		if (head.lineInfo.indent <= traitBodyIndent) {
 			break;
@@ -149,13 +149,13 @@ const collectInvalidIndentChildren = (
 };
 
 export const parseTrait = (
-	traitHead: KeyBodyRequiredHead,
-	heads: readonly KeyHead[],
+	traitHead: KeyBodyRequiredSource,
+	heads: readonly KeyValueBase[],
 	headIndex: number
 ): ParseTraitResult => {
 	// logh(`Parse Trait: ${traitHead.keyHead}`);
 
-	const children: KeyHead[] = [];
+	const children: KeyValueBase[] = [];
 
 	let traitBodyIndent = traitHead.lineInfo.indent + 1;
 	let currentHeadIndex = headIndex;
@@ -170,7 +170,7 @@ export const parseTrait = (
 			);
 		}
 
-		const head = heads[currentHeadIndex] as KeyHead;
+		const head = heads[currentHeadIndex] as KeyValueBase;
 
 		// logg(
 		// 	`i: ${currentHeadIndex}, indent: ${head.lineInfo.indent}, row: ${head.lineInfo.row}`,
@@ -180,7 +180,7 @@ export const parseTrait = (
 
 		const indent = head.lineInfo.indent;
 
-		if (head instanceof ParserErrHead) {
+		if (head instanceof ParserErrNode) {
 			children.push(head);
 			currentHeadIndex++;
 			continue;
@@ -230,21 +230,21 @@ export const parseTrait = (
 		}
 
 		switch (true) {
-			case head instanceof KeyValueDefinedHead:
+			case head instanceof KeyValueDefinedSource:
 				{
-					// res is KeyValueDefinedField or ParserErrHead
+					// res is KeyValueDefinedNode or ParserErrNode
 					const res = parseKeyValueDefinedHead(head);
 					children.push(res);
 					currentHeadIndex++;
 				}
 				break;
-			case head instanceof KeyValueRequiredHead:
-			case head instanceof EmptyLine:
+			case head instanceof KeyValueRequiredSource:
+			case head instanceof EmptyLineNode:
 				children.push(head);
 				currentHeadIndex++;
 				break;
 			// case: trait head, array head or set head
-			case head instanceof KeyBodyRequiredHead:
+			case head instanceof KeyBodyRequiredSource:
 				// recursive call to parseTrait
 				const { trait, nextIndex } = parseTrait(
 					head,
@@ -254,7 +254,7 @@ export const parseTrait = (
 				children.push(trait);
 				currentHeadIndex = nextIndex;
 				break;
-			case head instanceof KeyInvalidHead:
+			case head instanceof KeyInvalidSource:
 				// invalid heads are only inside ParserErr
 				throw "Never";
 			default:

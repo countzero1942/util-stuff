@@ -1,9 +1,9 @@
-import {
-	KeyTrait,
-	ParserErrHead,
-} from "@/parser/types/heads";
 import { TypeBase } from "@/parser/types/type-types";
 import { StrSlice } from "@/utils/slice";
+import {
+	ParserErrNode,
+	KeyTraitNode,
+} from "@/parser/types/key-value";
 
 export type AnalyzeNumberStringReport = {
 	hasSeparator?: boolean;
@@ -36,6 +36,6 @@ export class TypeValuePair {
 }
 
 export type ParseTraitResult = {
-	trait: KeyTrait | ParserErrHead;
+	trait: KeyTraitNode | ParserErrNode;
 	nextIndex: number;
 };

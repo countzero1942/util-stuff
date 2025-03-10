@@ -1,14 +1,14 @@
 import { ReportLine } from "@/parser/types/err-types";
-import {
-	KeyTrait,
-	KeyValueDefinedField,
-	KeyValueDefinedHead,
-	ParserErrHead,
-} from "@/parser/types/heads";
 import { log } from "@/utils/log";
+import {
+	KeyValueDefinedSource,
+	ParserErrNode,
+	KeyTraitNode,
+	KeyValueDefinedNode,
+} from "@/parser/types/key-value";
 
 export const getTraitReport = async (
-	trait: KeyTrait,
+	trait: KeyTraitNode,
 	lines?: ReportLine[]
 ): Promise<ReportLine[]> => {
 	// create lines array if not yet created
@@ -32,14 +32,14 @@ export const getTraitReport = async (
 		}
 
 		switch (true) {
-			case child instanceof KeyValueDefinedHead:
+			case child instanceof KeyValueDefinedSource:
 				addLine(
 					`${child.keyHead}: ${child.valueHead}`,
 					indent,
 					row
 				);
 				break;
-			case child instanceof KeyValueDefinedField:
+			case child instanceof KeyValueDefinedNode:
 				{
 					const { key } = child;
 					const { value, type } = child.value;
@@ -51,7 +51,7 @@ export const getTraitReport = async (
 					);
 				}
 				break;
-			case child instanceof KeyTrait:
+			case child instanceof KeyTraitNode:
 				{
 					lines.push({
 						content: `${child.key}:`,
@@ -61,7 +61,7 @@ export const getTraitReport = async (
 					await getTraitReport(child, lines);
 				}
 				break;
-			case child instanceof ParserErrHead:
+			case child instanceof ParserErrNode:
 				{
 					const childLines = child.err.toReport();
 					lines.push(...childLines);

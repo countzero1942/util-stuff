@@ -2,7 +2,7 @@ import {
 	KeyTrait,
 	KeyValueDefinedField,
 	LineInfo,
-} from "@/parser/types/heads";
+} from "@/parser/types/key-value-source";
 import { TypeValuePair as OldTypeValuePair } from "@/parser/types/parse-types";
 import { TypeBase, Str } from "@/parser/types/type-types";
 import { StrSlice } from "@/utils/slice";
@@ -148,11 +148,11 @@ export function convertSourceContext(
 	if (!context) {
 		return null;
 	}
-	
+
 	return {
 		content: context.content,
 		indent: context.indent,
-		row: context.range.start.line
+		row: context.range.start.line,
 	};
 }
 
@@ -162,8 +162,13 @@ export function migrateToNewTrait(
 	return new TraitNode(
 		oldTrait.key.value,
 		oldTrait.children
-			.filter((child): child is KeyTrait | KeyValueDefinedField => 
-				child instanceof KeyTrait || child instanceof KeyValueDefinedField)
+			.filter(
+				(
+					child
+				): child is KeyTrait | KeyValueDefinedField =>
+					child instanceof KeyTrait ||
+					child instanceof KeyValueDefinedField
+			)
 			.map(migrateToNewNode),
 		[new TypeConstraint(new StringType())],
 		null
@@ -173,10 +178,12 @@ export function migrateToNewTrait(
 export function migrateToOldTrait(
 	newTrait: TraitNode | TypedFieldNode
 ): KeyTrait {
-	const lineInfo = convertSourceContext(newTrait.sourceContext) || {
+	const lineInfo = convertSourceContext(
+		newTrait.sourceContext
+	) || {
 		content: StrSlice.from(""),
 		indent: 0,
-		row: 0
+		row: 0,
 	};
 
 	if (newTrait instanceof TypedFieldNode) {
@@ -189,7 +196,11 @@ export function migrateToOldTrait(
 
 	return new KeyTrait(
 		StrSlice.from(newTrait.key),
-		newTrait.children.map((child) => migrateToOldNode(child as TraitNode | TypedFieldNode)),
+		newTrait.children.map(child =>
+			migrateToOldNode(
+				child as TraitNode | TypedFieldNode
+			)
+		),
 		lineInfo
 	);
 }
@@ -200,8 +211,13 @@ export function migrateToNewNode(
 	if (oldNode instanceof KeyValueDefinedField) {
 		return new TypedFieldNode(
 			oldNode.key.value,
-			new TypeValuePair(oldNode.value.value.toString(), new StringType()),
-			oldNode.lineInfo ? convertLineInfo(oldNode.lineInfo) : null
+			new TypeValuePair(
+				oldNode.value.value.toString(),
+				new StringType()
+			),
+			oldNode.lineInfo
+				? convertLineInfo(oldNode.lineInfo)
+				: null
 		);
 	}
 
@@ -211,10 +227,12 @@ export function migrateToNewNode(
 export function migrateToOldNode(
 	newNode: TraitNode | TypedFieldNode
 ): KeyTrait | KeyValueDefinedField {
-	const lineInfo = convertSourceContext(newNode.sourceContext) || {
+	const lineInfo = convertSourceContext(
+		newNode.sourceContext
+	) || {
 		content: StrSlice.from(""),
 		indent: 0,
-		row: 0
+		row: 0,
 	};
 
 	if (newNode instanceof TypedFieldNode) {

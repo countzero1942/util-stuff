@@ -2,29 +2,35 @@ import { ParserErrBase } from "@/parser/types/err-types";
 import { TypeValuePair } from "@/parser/types/parse-types";
 import { Str, TypeBase } from "@/parser/types/type-types";
 import { StrSlice } from "@/utils/slice";
-import { Key } from "node:readline";
 
 export class LineInfo {
 	constructor(
-		readonly content: StrSlice,
-		readonly indent: number,
-		readonly row: number
+		public readonly content: StrSlice,
+		public readonly indent: number,
+		public readonly row: number
 	) {}
 }
 
-export abstract class KeyHead {
-	constructor(readonly lineInfo: LineInfo) {}
+export abstract class KeyValueBase {
+	constructor(
+		readonly lineInfo: LineInfo,
+		readonly isNode: boolean = false
+	) {}
 }
+
+///////////////////////////////
+// Key Value Sources
+///////////////////////////////
 
 /**
  * Key Value-Defined Head.
  *
  * E.g.: "key: value"
  */
-export class KeyValueDefinedHead extends KeyHead {
+export class KeyValueDefinedSource extends KeyValueBase {
 	constructor(
-		readonly keyHead: StrSlice,
-		readonly valueHead: StrSlice,
+		public readonly keyHead: StrSlice,
+		public readonly valueHead: StrSlice,
 		lineInfo: LineInfo
 	) {
 		super(lineInfo);
@@ -48,9 +54,9 @@ export class KeyValueDefinedHead extends KeyHead {
  *
  * E.g.: "key"
  */
-export class KeyValueRequiredHead extends KeyHead {
+export class KeyValueRequiredSource extends KeyValueBase {
 	constructor(
-		readonly keyHead: StrSlice,
+		public readonly keyHead: StrSlice,
 		lineInfo: LineInfo
 	) {
 		super(lineInfo);
@@ -66,14 +72,14 @@ export class KeyValueRequiredHead extends KeyHead {
 
 	public static fromString(
 		str: string
-	): KeyValueRequiredHead {
+	): KeyValueRequiredSource {
 		const lineInfo = new LineInfo(
 			new StrSlice(str),
 			0,
 			1
 		);
 		const keyHead = new StrSlice(str);
-		return new KeyValueRequiredHead(keyHead, lineInfo);
+		return new KeyValueRequiredSource(keyHead, lineInfo);
 	}
 }
 
@@ -84,9 +90,9 @@ export class KeyValueRequiredHead extends KeyHead {
  *
  * E.g.: "key:"
  */
-export class KeyBodyRequiredHead extends KeyHead {
+export class KeyBodyRequiredSource extends KeyValueBase {
 	constructor(
-		readonly keyHead: StrSlice,
+		public readonly keyHead: StrSlice,
 		lineInfo: LineInfo
 	) {
 		super(lineInfo);
@@ -101,9 +107,9 @@ export class KeyBodyRequiredHead extends KeyHead {
 	}
 }
 
-export class KeyInvalidHead extends KeyHead {
+export class KeyInvalidSource extends KeyValueBase {
 	constructor(
-		readonly keyHead: StrSlice,
+		public readonly keyHead: StrSlice,
 		lineInfo: LineInfo
 	) {
 		super(lineInfo);
@@ -118,7 +124,26 @@ export class KeyInvalidHead extends KeyHead {
 	}
 }
 
-export class EmptyLine extends KeyHead {
+///////////////////////////////
+// Key Value Nodes
+///////////////////////////////
+
+export abstract class KeyValueNodeBase extends KeyValueBase {
+	constructor(readonly lineInfo: LineInfo) {
+		super(lineInfo, true);
+	}
+}
+
+export class ParserErrNode extends KeyValueNodeBase {
+	constructor(
+		readonly err: ParserErrBase,
+		lineInfo: LineInfo
+	) {
+		super(lineInfo);
+	}
+}
+
+export class EmptyLineNode extends KeyValueBase {
 	readonly isColon: boolean;
 	constructor(lineInfo: LineInfo) {
 		super(lineInfo);
@@ -126,10 +151,10 @@ export class EmptyLine extends KeyHead {
 	}
 }
 
-export class KeyTrait extends KeyHead {
+export class KeyTraitNode extends KeyValueNodeBase {
 	constructor(
-		readonly key: StrSlice,
-		readonly children: KeyHead[],
+		public readonly key: StrSlice,
+		public readonly children: KeyValueBase[],
 		lineInfo: LineInfo
 	) {
 		super(lineInfo);
@@ -144,16 +169,7 @@ export class KeyTrait extends KeyHead {
 	}
 }
 
-/**
- * Key Value Defined Pair
- *
- * This is the finalized version of KeyValHead.
- *
- * The head is parsed into string key and contrained type
- *
- * The value is parsed into a TypeValuePair: actual value and type
- */
-export class KeyValueDefinedField extends KeyHead {
+export class KeyValueDefinedNode extends KeyValueNodeBase {
 	constructor(
 		readonly key: StrSlice,
 		readonly value: TypeValuePair,
@@ -175,14 +191,5 @@ export class KeyValueDefinedField extends KeyHead {
 
 	public toString(): string {
 		return `<KeyValueDefinedPair> ${this.key}: ${this.value.value}`;
-	}
-}
-
-export class ParserErrHead extends KeyHead {
-	constructor(
-		readonly err: ParserErrBase,
-		lineInfo: LineInfo
-	) {
-		super(lineInfo);
 	}
 }

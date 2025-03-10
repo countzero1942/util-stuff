@@ -1,8 +1,8 @@
 import { ArraySlice, StrSlice } from "@/utils/slice";
 import {
-	KeyHead,
-	KeyInvalidHead,
-} from "@/parser/types/heads";
+	KeyValueBase,
+	KeyInvalidSource,
+} from "@/parser/types/key-value";
 import { TypeBase } from "@/parser/types/type-types";
 import { Range } from "@/utils/seq";
 import { formatTabsToSymbols } from "@/utils/string";
@@ -66,7 +66,7 @@ export abstract class ParserErrBase {
 
 export abstract class ParserLineErrBase extends ParserErrBase {
 	constructor(
-		public readonly head: KeyHead,
+		public readonly head: KeyValueBase,
 		public readonly lineErrorSlice: StrSlice
 	) {
 		super();
@@ -94,7 +94,7 @@ export abstract class ParserLineErrBase extends ParserErrBase {
 
 export abstract class ParserBlockErrBase extends ParserErrBase {
 	constructor(
-		public readonly children: readonly KeyHead[],
+		public readonly children: readonly KeyValueBase[],
 		public readonly rowErrorRange: Range
 	) {
 		super();
@@ -106,7 +106,7 @@ export abstract class ParserBlockErrBase extends ParserErrBase {
 
 export class ParserNumberErr extends ParserLineErrBase {
 	constructor(
-		head: KeyHead,
+		head: KeyValueBase,
 		lineErrorSlice: StrSlice,
 		public readonly numberErr: NumberErr
 	) {
@@ -120,7 +120,10 @@ export class ParserNumberErr extends ParserLineErrBase {
 }
 
 export class ParserParamValidatorErr extends ParserLineErrBase {
-	constructor(head: KeyHead, lineErrorSlice: StrSlice) {
+	constructor(
+		head: KeyValueBase,
+		lineErrorSlice: StrSlice
+	) {
 		super(head, lineErrorSlice);
 	}
 
@@ -135,15 +138,15 @@ export type StructureErrKind =
 
 export class ParserStructureErr extends ParserLineErrBase {
 	constructor(
-		head: KeyInvalidHead,
+		head: KeyInvalidSource,
 		lineErrorSlice: StrSlice,
 		public readonly kind: StructureErrKind
 	) {
 		super(head, lineErrorSlice);
 	}
 
-	public getHead(): KeyInvalidHead {
-		return this.head as KeyInvalidHead;
+	public getHead(): KeyInvalidSource {
+		return this.head as KeyInvalidSource;
 	}
 
 	public toMessage(): string {
@@ -159,7 +162,7 @@ export type IndentErrKind =
 
 export class ParserIndentErr extends ParserBlockErrBase {
 	constructor(
-		children: readonly KeyHead[],
+		children: readonly KeyValueBase[],
 		rowErrorRange: Range,
 		public readonly indent: number,
 		public readonly kind: IndentErrKind

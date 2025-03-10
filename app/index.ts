@@ -89,10 +89,6 @@ import {
 	parseTrait,
 	createRootHead,
 } from "@/parser/utils/parse-trait";
-import {
-	KeyTrait,
-	KeyValueDefinedField,
-} from "@/parser/types/heads";
 import { parseKeyHeadErrorTestTextA1 } from "@/tests/data/test-data";
 
 logGeneratePassword();
@@ -140,7 +136,7 @@ logGeneratePassword();
 
 // await logParseTraits();
 
-// await logTraitReport("01-err-trait-tree.txt");
+await logTraitReport("01-err-trait-tree.txt");
 // await logTraitReport("01b-err-num-trait-tree.txt");
 
 /**
@@ -204,14 +200,3 @@ logGeneratePassword();
 
 // const thing = stuff2.b;
 // log(thing);
-
-const slice = StrSlice.from("hello world");
-const i1 = slice.indexOf("world", 5);
-const i2 = slice.indexOf("world", 6);
-
-const slice2 = StrSlice.from("abc hello world abc", 4, 15);
-const str = slice2.value;
-const i3 = slice2.lastIndexOf("world");
-const i4 = slice2.lastIndexOf("world", 11);
-
-div();

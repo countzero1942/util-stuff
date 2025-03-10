@@ -6,8 +6,8 @@ import {
 import { StrSlice } from "@/utils/slice";
 import {
 	LineInfo,
-	ParserErrHead,
-} from "@/parser/types/heads";
+	ParserErrNode,
+} from "@/parser/types/key-value";
 import {
 	ParserStructureErr,
 	StructureErrKind,
@@ -25,9 +25,9 @@ describe("splitHead - Error Cases", () => {
 		const result = splitHead(
 			createLineInfo("person:name:John")
 		);
-		expect(result).toBeInstanceOf(ParserErrHead);
+		expect(result).toBeInstanceOf(ParserErrNode);
 
-		const error = (result as ParserErrHead)
+		const error = (result as ParserErrNode)
 			.err as ParserStructureErr;
 		expect(error.kind).toBe(
 			"Invalid key colon" as StructureErrKind
@@ -36,9 +36,9 @@ describe("splitHead - Error Cases", () => {
 
 	it("parses invalid key with colon and no space (key:value)", () => {
 		const result = splitHead(createLineInfo("name:John"));
-		expect(result).toBeInstanceOf(ParserErrHead);
+		expect(result).toBeInstanceOf(ParserErrNode);
 
-		const error = (result as ParserErrHead)
+		const error = (result as ParserErrNode)
 			.err as ParserStructureErr;
 		expect(error.kind).toBe(
 			"Invalid key colon" as StructureErrKind

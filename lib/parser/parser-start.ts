@@ -18,15 +18,14 @@ import { ErrorType, getError } from "@/utils/error";
 import { ArraySeq, NumSeq } from "@/utils/seq";
 import { parseDefaultValue } from "@/parser/utils/parse-value";
 import {
-	KeyHead,
-	KeyBodyRequiredHead,
-	KeyTrait,
+	KeyValueBase,
+	KeyBodyRequiredSource,
 	LineInfo,
-	ParserErrHead,
-	KeyValueDefinedHead,
-	KeyValueRequiredHead,
-	EmptyLine,
-} from "@/parser/types/heads";
+	ParserErrNode,
+	KeyValueDefinedSource,
+	KeyValueRequiredSource,
+	EmptyLineNode,
+} from "@/parser/types/key-value";
 import {
 	IndentErrKind,
 	NumberErr,
@@ -134,27 +133,27 @@ export const logSplitHeads = async () => {
 		allHeads
 	).partArrays(
 		// h => h.type !== "ParserErr"
-		h => !(h instanceof ParserErrHead)
+		h => !(h instanceof ParserErrNode)
 	);
 
 	logh(`Heads: ${heads.length}`);
 	// logobj(heads);
 	for (const head of heads) {
 		switch (true) {
-			case head instanceof KeyValueDefinedHead:
+			case head instanceof KeyValueDefinedSource:
 				log("<KeyValDefHead>");
 				log(`   keyHead: '${head.keyHead}'`);
 				log(`   valueHead: '${head.valueHead}'`);
 				break;
-			case head instanceof KeyBodyRequiredHead:
+			case head instanceof KeyBodyRequiredSource:
 				log("<KeyBodyReqHead>");
 				log(`   keyHead: '${head.keyHead}'`);
 				break;
-			case head instanceof KeyValueRequiredHead:
+			case head instanceof KeyValueRequiredSource:
 				log("<KeyValReqHead>");
 				log(`   keyHead: '${head.keyHead}'`);
 				break;
-			case head instanceof EmptyLine:
+			case head instanceof EmptyLineNode:
 				log("<EmptyLine>");
 				log(`   isColon: '${head.isColon}'`);
 				break;
@@ -169,7 +168,7 @@ export const logSplitHeads = async () => {
 	log();
 
 	logh(`Errors: ${errorHeads.length}`);
-	for (const err of errorHeads as ParserErrHead[]) {
+	for (const err of errorHeads as ParserErrNode[]) {
 		log(err.err.toMessage());
 		const report = err.err.toReport();
 		log(report[0]?.content);
@@ -199,14 +198,14 @@ export const logParseDefaultValues = async () => {
 
 	for (const head of allHeads) {
 		switch (true) {
-			case head instanceof KeyValueDefinedHead:
+			case head instanceof KeyValueDefinedSource:
 				const { keyHead, valueHead } = head;
 				const typeValuePairOrErr = parseDefaultValue(
 					head,
 					valueHead
 				);
 				if (
-					typeValuePairOrErr instanceof ParserErrHead
+					typeValuePairOrErr instanceof ParserErrNode
 				) {
 					if (
 						typeValuePairOrErr.err instanceof
@@ -278,7 +277,7 @@ export const logTraitReport = async (
 
 	const trait = res.trait;
 
-	if (trait instanceof ParserErrHead) {
+	if (trait instanceof ParserErrNode) {
 		log("ERROR:");
 		log(trait);
 		return;
@@ -328,7 +327,7 @@ export const logTraitReportFromString = async (
 
 	const trait = res.trait;
 
-	if (trait instanceof ParserErrHead) {
+	if (trait instanceof ParserErrNode) {
 		log("ERROR:");
 		log(trait);
 		return;
@@ -347,12 +346,12 @@ export const logTraitReportFromString = async (
 };
 
 export const logParseKeyHeadReport = () => {
-	const head = KeyValueRequiredHead.fromString(
+	const head = KeyValueRequiredSource.fromString(
 		parseKeyHeadTestText
 	);
 
 	const keyParamsOrErr = parseKeyHead(head, head.keyHead);
-	if (keyParamsOrErr instanceof ParserErrHead) {
+	if (keyParamsOrErr instanceof ParserErrNode) {
 		log("ERROR:");
 		log(keyParamsOrErr);
 		return;
@@ -367,12 +366,12 @@ export const logParseKeyHeadReport = () => {
 };
 
 export const compareParseKeyHeadReport = () => {
-	const head = KeyValueRequiredHead.fromString(
+	const head = KeyValueRequiredSource.fromString(
 		parseKeyHeadTestText
 	);
 
 	const keyParamsOrErr = parseKeyHead(head, head.keyHead);
-	if (keyParamsOrErr instanceof ParserErrHead) {
+	if (keyParamsOrErr instanceof ParserErrNode) {
 		log("ERROR:");
 		log(keyParamsOrErr);
 		return;

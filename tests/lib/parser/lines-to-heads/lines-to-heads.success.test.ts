@@ -1,19 +1,19 @@
 import { describe, it, expect } from "@jest/globals";
 import { parseLinesToHeads } from "@/parser/utils/lines-to-heads";
 import {
-	KeyValueDefinedHead,
-	KeyValueRequiredHead,
-	KeyBodyRequiredHead,
-	EmptyLine,
-	ParserErrHead,
-} from "@/parser/types/heads";
+	KeyValueDefinedSource,
+	KeyValueRequiredSource,
+	KeyBodyRequiredSource,
+	EmptyLineNode,
+	ParserErrNode,
+} from "@/parser/types/key-value";
 
 describe("parseLinesToHeads - Success Cases", () => {
 	it("handles empty lines", async () => {
 		const lines = [""];
 		const result = await parseLinesToHeads(lines);
 		expect(result).toHaveLength(1);
-		expect(result[0]).toBeInstanceOf(EmptyLine);
+		expect(result[0]).toBeInstanceOf(EmptyLineNode);
 	});
 
 	it("parses key-value definitions", async () => {
@@ -25,22 +25,22 @@ describe("parseLinesToHeads - Success Cases", () => {
 		const result = await parseLinesToHeads(lines);
 		expect(result).toHaveLength(3);
 		result.forEach(head => {
-			expect(head).toBeInstanceOf(KeyValueDefinedHead);
+			expect(head).toBeInstanceOf(KeyValueDefinedSource);
 		});
 
 		expect(
 			(
-				result[0] as KeyValueDefinedHead
+				result[0] as KeyValueDefinedSource
 			).keyHead.toString()
 		).toBe("name");
 		expect(
 			(
-				result[0] as KeyValueDefinedHead
+				result[0] as KeyValueDefinedSource
 			).valueHead.toString()
 		).toBe("John");
 		expect(
 			(
-				result[2] as KeyValueDefinedHead
+				result[2] as KeyValueDefinedSource
 			).keyHead.toString()
 		).toBe("value .in .R:6:9");
 	});
@@ -50,17 +50,19 @@ describe("parseLinesToHeads - Success Cases", () => {
 		const result = await parseLinesToHeads(lines);
 		expect(result).toHaveLength(2);
 		result.forEach(head => {
-			expect(head).toBeInstanceOf(KeyValueRequiredHead);
+			expect(head).toBeInstanceOf(
+				KeyValueRequiredSource
+			);
 		});
 
 		expect(
 			(
-				result[0] as KeyValueRequiredHead
+				result[0] as KeyValueRequiredSource
 			).keyHead.toString()
 		).toBe("age");
 		expect(
 			(
-				result[1] as KeyValueRequiredHead
+				result[1] as KeyValueRequiredSource
 			).keyHead.toString()
 		).toBe("a4 in .Z");
 	});
@@ -74,17 +76,17 @@ describe("parseLinesToHeads - Success Cases", () => {
 		const result = await parseLinesToHeads(lines);
 		expect(result).toHaveLength(3);
 		result.forEach(head => {
-			expect(head).toBeInstanceOf(KeyBodyRequiredHead);
+			expect(head).toBeInstanceOf(KeyBodyRequiredSource);
 		});
 
 		expect(
 			(
-				result[0] as KeyBodyRequiredHead
+				result[0] as KeyBodyRequiredSource
 			).keyHead.toString()
 		).toBe("person");
 		expect(
 			(
-				result[1] as KeyBodyRequiredHead
+				result[1] as KeyBodyRequiredSource
 			).keyHead.toString()
 		).toBe("x R:6:9");
 	});
@@ -99,12 +101,18 @@ describe("parseLinesToHeads - Success Cases", () => {
 		];
 		const result = await parseLinesToHeads(lines);
 		expect(result).toHaveLength(5);
-		expect(result[0]).toBeInstanceOf(EmptyLine);
-		expect(result[1]).toBeInstanceOf(KeyValueDefinedHead);
-		expect(result[2]).toBeInstanceOf(
-			KeyValueRequiredHead
+		expect(result[0]).toBeInstanceOf(EmptyLineNode);
+		expect(result[1]).toBeInstanceOf(
+			KeyValueDefinedSource
 		);
-		expect(result[3]).toBeInstanceOf(KeyBodyRequiredHead);
-		expect(result[4]).toBeInstanceOf(KeyValueDefinedHead);
+		expect(result[2]).toBeInstanceOf(
+			KeyValueRequiredSource
+		);
+		expect(result[3]).toBeInstanceOf(
+			KeyBodyRequiredSource
+		);
+		expect(result[4]).toBeInstanceOf(
+			KeyValueDefinedSource
+		);
 	});
 });

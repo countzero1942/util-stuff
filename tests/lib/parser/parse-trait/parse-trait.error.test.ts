@@ -1,12 +1,13 @@
 import { describe, expect, test } from "@jest/globals";
 import {
-	KeyBodyRequiredHead,
-	KeyValueDefinedHead,
+	KeyBodyRequiredSource,
+	KeyValueDefinedSource,
 	LineInfo,
-	KeyTrait,
-	KeyValueDefinedField,
-	ParserErrHead,
-} from "@/parser/types/heads";
+	ParserErrNode,
+	KeyTraitNode,
+	KeyValueDefinedNode,
+} from "@/parser/types/key-value";
+
 import {
 	IndentErrKind,
 	ParserIndentErr,
@@ -43,17 +44,17 @@ describe("parseTrait - Error Cases", () => {
 		const heads = await parseLinesToHeads(lines);
 		const result = parseTrait(createRootHead(), heads, 0);
 
-		expect(result.trait).toBeInstanceOf(KeyTrait);
-		const rootTrait = result.trait as KeyTrait;
+		expect(result.trait).toBeInstanceOf(KeyTraitNode);
+		const rootTrait = result.trait as KeyTraitNode;
 		expect(rootTrait.checkKey(":root")).toBe(true);
 		expect(rootTrait.lineInfo.indent).toBe(-1);
 		expect(rootTrait.children).toHaveLength(2);
 
 		expect(rootTrait.children[0]).toBeInstanceOf(
-			KeyValueDefinedField
+			KeyValueDefinedNode
 		);
 		const childA = rootTrait
-			.children[0] as KeyValueDefinedField;
+			.children[0] as KeyValueDefinedNode;
 		expect(childA.checkKey("a")).toBe(true);
 		expect(childA.value.value).toBe(42);
 		expect(childA.value.type).toBeInstanceOf(ZNum);
@@ -61,9 +62,9 @@ describe("parseTrait - Error Cases", () => {
 		expect(childA.lineInfo.indent).toBe(0);
 
 		expect(rootTrait.children[1]).toBeInstanceOf(
-			ParserErrHead
+			ParserErrNode
 		);
-		const err = rootTrait.children[1] as ParserErrHead;
+		const err = rootTrait.children[1] as ParserErrNode;
 		expect(err.err).toBeInstanceOf(ParserIndentErr);
 
 		const indentErr = err.err as ParserIndentErr;
@@ -71,10 +72,10 @@ describe("parseTrait - Error Cases", () => {
 		expect(indentErr.children).toHaveLength(2);
 
 		expect(indentErr.children[0]).toBeInstanceOf(
-			KeyValueDefinedHead
+			KeyValueDefinedSource
 		);
 		const invalidA = indentErr
-			.children[0] as KeyValueDefinedHead;
+			.children[0] as KeyValueDefinedSource;
 		expect(invalidA.checkKeyHead("invalid-a")).toBe(true);
 		expect(
 			invalidA.checkValueHead("misplaced children")
@@ -82,10 +83,10 @@ describe("parseTrait - Error Cases", () => {
 		expect(invalidA.lineInfo.indent).toBe(1);
 
 		expect(indentErr.children[1]).toBeInstanceOf(
-			KeyValueDefinedHead
+			KeyValueDefinedSource
 		);
 		const invalidB = indentErr
-			.children[1] as KeyValueDefinedHead;
+			.children[1] as KeyValueDefinedSource;
 		expect(invalidB.checkKeyHead("invalid-b")).toBe(true);
 		expect(invalidB.checkValueHead("indent error")).toBe(
 			true
@@ -115,21 +116,22 @@ describe("parseTrait - Error Cases", () => {
 		const heads = await parseLinesToHeads(lines);
 		const result = parseTrait(createRootHead(), heads, 0);
 
-		expect(result.trait).toBeInstanceOf(KeyTrait);
-		const rootTrait = result.trait as KeyTrait;
+		expect(result.trait).toBeInstanceOf(KeyTraitNode);
+		const rootTrait = result.trait as KeyTraitNode;
 		expect(rootTrait.checkKey(":root")).toBe(true);
 		expect(rootTrait.lineInfo.indent).toBe(-1);
 		expect(rootTrait.children).toHaveLength(2);
 
 		expect(rootTrait.children[0]).toBeInstanceOf(
-			KeyTrait
+			KeyTraitNode
 		);
-		const emptyHead = rootTrait.children[0] as KeyTrait;
+		const emptyHead = rootTrait
+			.children[0] as KeyTraitNode;
 		expect(emptyHead.checkKey("empty-head")).toBe(true);
 		expect(emptyHead.lineInfo.indent).toBe(0);
 
 		expect(emptyHead.children).toHaveLength(1);
-		const err = emptyHead.children[0] as ParserErrHead;
+		const err = emptyHead.children[0] as ParserErrNode;
 		expect(err.err).toBeInstanceOf(ParserIndentErr);
 
 		const indentErr = err.err as ParserIndentErr;
@@ -140,10 +142,10 @@ describe("parseTrait - Error Cases", () => {
 		);
 
 		expect(rootTrait.children[1]).toBeInstanceOf(
-			KeyValueDefinedField
+			KeyValueDefinedNode
 		);
 		const c = rootTrait
-			.children[1] as KeyValueDefinedField;
+			.children[1] as KeyValueDefinedNode;
 		expect(c.checkKey("c")).toBe(true);
 		expect(c.checkValue(6.28, new RPrec(3))).toBe(true);
 
@@ -169,18 +171,18 @@ describe("parseTrait - Error Cases", () => {
 		const heads = await parseLinesToHeads(lines);
 		const result = parseTrait(createRootHead(), heads, 0);
 
-		expect(result.trait).toBeInstanceOf(KeyTrait);
-		const rootTrait = result.trait as KeyTrait;
+		expect(result.trait).toBeInstanceOf(KeyTraitNode);
+		const rootTrait = result.trait as KeyTraitNode;
 		expect(rootTrait.checkKey(":root")).toBe(true);
 		expect(rootTrait.lineInfo.indent).toBe(-1);
 		expect(rootTrait.children).toHaveLength(1);
 
-		const oTrait = rootTrait.children[0] as KeyTrait;
+		const oTrait = rootTrait.children[0] as KeyTraitNode;
 		expect(oTrait.checkKey("o")).toBe(true);
 		expect(oTrait.lineInfo.indent).toBe(0);
 		expect(oTrait.children).toHaveLength(1);
 
-		const err = oTrait.children[0] as ParserErrHead;
+		const err = oTrait.children[0] as ParserErrNode;
 		expect(err.err).toBeInstanceOf(ParserIndentErr);
 
 		const indentErr = err.err as ParserIndentErr;
@@ -191,18 +193,18 @@ describe("parseTrait - Error Cases", () => {
 		);
 
 		expect(indentErr.children[0]).toBeInstanceOf(
-			KeyValueDefinedHead
+			KeyValueDefinedSource
 		);
 		const overA = indentErr
-			.children[0] as KeyValueDefinedHead;
+			.children[0] as KeyValueDefinedSource;
 		expect(overA.checkKeyHead("over-a")).toBe(true);
 		expect(overA.checkValueHead("over")).toBe(true);
 
 		expect(indentErr.children[1]).toBeInstanceOf(
-			KeyValueDefinedHead
+			KeyValueDefinedSource
 		);
 		const overB = indentErr
-			.children[1] as KeyValueDefinedHead;
+			.children[1] as KeyValueDefinedSource;
 		expect(overB.checkKeyHead("over-b")).toBe(true);
 		expect(
 			overB.checkValueHead("indented children")
@@ -231,23 +233,23 @@ describe("parseTrait - Error Cases", () => {
 		const heads = await parseLinesToHeads(lines);
 		const result = parseTrait(createRootHead(), heads, 0);
 
-		expect(result.trait).toBeInstanceOf(KeyTrait);
-		const rootTrait = result.trait as KeyTrait;
+		expect(result.trait).toBeInstanceOf(KeyTraitNode);
+		const rootTrait = result.trait as KeyTraitNode;
 		expect(rootTrait.checkKey(":root")).toBe(true);
 		expect(rootTrait.children).toHaveLength(1);
 
 		expect(rootTrait.children[0]).toBeInstanceOf(
-			KeyTrait
+			KeyTraitNode
 		);
-		const dTrait = rootTrait.children[0] as KeyTrait;
+		const dTrait = rootTrait.children[0] as KeyTraitNode;
 		expect(dTrait.checkKey("d")).toBe(true);
 		expect(dTrait.children).toHaveLength(1);
 
 		expect(dTrait.children[0]).toBeInstanceOf(
-			ParserErrHead
+			ParserErrNode
 		);
 
-		const err = dTrait.children[0] as ParserErrHead;
+		const err = dTrait.children[0] as ParserErrNode;
 		expect(err.err).toBeInstanceOf(ParserStructureErr);
 		const structureErr = err.err as ParserStructureErr;
 		expect(structureErr.kind).toBe(
@@ -280,12 +282,12 @@ describe("parseTrait - Error Cases", () => {
 		const heads = await parseLinesToHeads(lines);
 		const result = parseTrait(createRootHead(), heads, 0);
 
-		expect(result.trait).toBeInstanceOf(KeyTrait);
-		const rootTrait = result.trait as KeyTrait;
+		expect(result.trait).toBeInstanceOf(KeyTraitNode);
+		const rootTrait = result.trait as KeyTraitNode;
 		expect(rootTrait.checkKey(":root")).toBe(true);
 		expect(rootTrait.children).toHaveLength(1);
 
-		const err = rootTrait.children[0] as ParserErrHead;
+		const err = rootTrait.children[0] as ParserErrNode;
 		expect(err.err).toBeInstanceOf(ParserStructureErr);
 		const structureErr = err.err as ParserStructureErr;
 		expect(structureErr.kind).toBe(

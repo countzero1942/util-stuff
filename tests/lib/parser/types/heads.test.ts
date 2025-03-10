@@ -1,16 +1,16 @@
 import { describe, it, expect } from "@jest/globals";
 import {
 	LineInfo,
-	KeyHead,
-	KeyValueDefinedHead,
-	KeyValueRequiredHead,
-	KeyBodyRequiredHead,
-	KeyInvalidHead,
-	EmptyLine,
-	KeyTrait,
-	KeyValueDefinedField,
-	ParserErrHead,
-} from "@/parser/types/heads";
+	KeyValueBase,
+	KeyValueDefinedSource,
+	KeyValueRequiredSource,
+	KeyBodyRequiredSource,
+	KeyInvalidSource,
+	EmptyLineNode,
+	ParserErrNode,
+	KeyTraitNode,
+	KeyValueDefinedNode,
+} from "@/parser/types/key-value";
 import { StrSlice } from "@/utils/slice";
 import { TypeValuePair } from "@/parser/types/parse-types";
 import { RPrec, Str } from "@/parser/types/type-types";
@@ -40,7 +40,7 @@ describe("KeyValDefHead", () => {
 	const valueHead = new StrSlice("value");
 
 	it("creates KeyValDefHead instance with correct properties", () => {
-		const head = new KeyValueDefinedHead(
+		const head = new KeyValueDefinedSource(
 			keyHead,
 			valueHead,
 			lineInfo
@@ -52,7 +52,7 @@ describe("KeyValDefHead", () => {
 	});
 
 	it("correctly checks key head", () => {
-		const head = new KeyValueDefinedHead(
+		const head = new KeyValueDefinedSource(
 			keyHead,
 			valueHead,
 			lineInfo
@@ -63,7 +63,7 @@ describe("KeyValDefHead", () => {
 	});
 
 	it("correctly checks value head", () => {
-		const head = new KeyValueDefinedHead(
+		const head = new KeyValueDefinedSource(
 			keyHead,
 			valueHead,
 			lineInfo
@@ -74,7 +74,7 @@ describe("KeyValDefHead", () => {
 	});
 
 	it("provides correct string representation", () => {
-		const head = new KeyValueDefinedHead(
+		const head = new KeyValueDefinedSource(
 			keyHead,
 			valueHead,
 			lineInfo
@@ -90,7 +90,7 @@ describe("KeyValueRequiredHead", () => {
 	const keyHead = new StrSlice("key");
 
 	it("creates KeyValueRequiredHead instance with correct properties", () => {
-		const head = new KeyValueRequiredHead(
+		const head = new KeyValueRequiredSource(
 			keyHead,
 			lineInfo
 		);
@@ -100,7 +100,7 @@ describe("KeyValueRequiredHead", () => {
 	});
 
 	it("correctly checks key head", () => {
-		const head = new KeyValueRequiredHead(
+		const head = new KeyValueRequiredSource(
 			keyHead,
 			lineInfo
 		);
@@ -110,7 +110,7 @@ describe("KeyValueRequiredHead", () => {
 	});
 
 	it("provides correct string representation", () => {
-		const head = new KeyValueRequiredHead(
+		const head = new KeyValueRequiredSource(
 			keyHead,
 			lineInfo
 		);
@@ -129,7 +129,7 @@ describe("KeyBodyRequiredHead", () => {
 	const keyHead = new StrSlice("key");
 
 	it("creates KeyBodyRequiredHead instance with correct properties", () => {
-		const head = new KeyBodyRequiredHead(
+		const head = new KeyBodyRequiredSource(
 			keyHead,
 			lineInfo
 		);
@@ -139,7 +139,7 @@ describe("KeyBodyRequiredHead", () => {
 	});
 
 	it("correctly checks key head", () => {
-		const head = new KeyBodyRequiredHead(
+		const head = new KeyBodyRequiredSource(
 			keyHead,
 			lineInfo
 		);
@@ -149,7 +149,7 @@ describe("KeyBodyRequiredHead", () => {
 	});
 
 	it("provides correct string representation", () => {
-		const head = new KeyBodyRequiredHead(
+		const head = new KeyBodyRequiredSource(
 			keyHead,
 			lineInfo
 		);
@@ -168,14 +168,14 @@ describe("KeyInvalidHead", () => {
 	const keyHead = new StrSlice("invalid:key");
 
 	it("creates KeyInvalidHead instance with correct properties", () => {
-		const head = new KeyInvalidHead(keyHead, lineInfo);
+		const head = new KeyInvalidSource(keyHead, lineInfo);
 
 		expect(head.keyHead).toBe(keyHead);
 		expect(head.lineInfo).toBe(lineInfo);
 	});
 
 	it("correctly checks key head", () => {
-		const head = new KeyInvalidHead(keyHead, lineInfo);
+		const head = new KeyInvalidSource(keyHead, lineInfo);
 
 		expect(head.checkKeyHead("invalid:key")).toBe(true);
 		expect(head.checkKeyHead("other")).toBe(false);
@@ -185,7 +185,7 @@ describe("KeyInvalidHead", () => {
 describe("EmptyLine", () => {
 	it("creates EmptyLine instance for empty content", () => {
 		const lineInfo = new LineInfo(new StrSlice(""), 0, 1);
-		const emptyLine = new EmptyLine(lineInfo);
+		const emptyLine = new EmptyLineNode(lineInfo);
 
 		expect(emptyLine.lineInfo).toBe(lineInfo);
 		expect(emptyLine.isColon).toBe(false);
@@ -197,7 +197,7 @@ describe("EmptyLine", () => {
 			0,
 			1
 		);
-		const emptyLine = new EmptyLine(lineInfo);
+		const emptyLine = new EmptyLineNode(lineInfo);
 
 		expect(emptyLine.lineInfo).toBe(lineInfo);
 		expect(emptyLine.isColon).toBe(true);
@@ -216,14 +216,14 @@ describe("KeyTrait", () => {
 		1,
 		2
 	);
-	const childHead = new KeyValueDefinedHead(
+	const childHead = new KeyValueDefinedSource(
 		new StrSlice("child"),
 		new StrSlice("value"),
 		childLineInfo
 	);
 
 	it("creates KeyTrait instance with correct properties", () => {
-		const trait = new KeyTrait(
+		const trait = new KeyTraitNode(
 			key,
 			[childHead],
 			lineInfo
@@ -235,7 +235,7 @@ describe("KeyTrait", () => {
 	});
 
 	it("correctly checks key", () => {
-		const trait = new KeyTrait(
+		const trait = new KeyTraitNode(
 			key,
 			[childHead],
 			lineInfo
@@ -246,7 +246,7 @@ describe("KeyTrait", () => {
 	});
 
 	it("provides correct string representation", () => {
-		const trait = new KeyTrait(
+		const trait = new KeyTraitNode(
 			key,
 			[childHead],
 			lineInfo
@@ -266,7 +266,7 @@ describe("KeyValueDefinedPair with string value", () => {
 	const value = new TypeValuePair(strType, "value");
 
 	it("creates KeyValueDefinedPair instance with correct properties", () => {
-		const def = new KeyValueDefinedField(
+		const def = new KeyValueDefinedNode(
 			key,
 			value,
 			lineInfo
@@ -278,7 +278,7 @@ describe("KeyValueDefinedPair with string value", () => {
 	});
 
 	it("correctly checks key", () => {
-		const def = new KeyValueDefinedField(
+		const def = new KeyValueDefinedNode(
 			key,
 			value,
 			lineInfo
@@ -289,7 +289,7 @@ describe("KeyValueDefinedPair with string value", () => {
 	});
 
 	it("correctly checks value", () => {
-		const def = new KeyValueDefinedField(
+		const def = new KeyValueDefinedNode(
 			key,
 			value,
 			lineInfo
@@ -300,7 +300,7 @@ describe("KeyValueDefinedPair with string value", () => {
 	});
 
 	it("provides correct string representation", () => {
-		const def = new KeyValueDefinedField(
+		const def = new KeyValueDefinedNode(
 			key,
 			value,
 			lineInfo
@@ -322,7 +322,7 @@ describe("KeyValueDefinedPair with RPrec value", () => {
 	const value = new TypeValuePair(valueType, 123.4);
 
 	it("creates KeyValueDefinedPair instance with correct properties", () => {
-		const def = new KeyValueDefinedField(
+		const def = new KeyValueDefinedNode(
 			key,
 			value,
 			lineInfo
@@ -334,7 +334,7 @@ describe("KeyValueDefinedPair with RPrec value", () => {
 	});
 
 	it("correctly checks key", () => {
-		const def = new KeyValueDefinedField(
+		const def = new KeyValueDefinedNode(
 			key,
 			value,
 			lineInfo
@@ -345,7 +345,7 @@ describe("KeyValueDefinedPair with RPrec value", () => {
 	});
 
 	it("correctly checks value", () => {
-		const def = new KeyValueDefinedField(
+		const def = new KeyValueDefinedNode(
 			key,
 			value,
 			lineInfo
@@ -359,7 +359,7 @@ describe("KeyValueDefinedPair with RPrec value", () => {
 	});
 
 	it("provides correct string representation", () => {
-		const def = new KeyValueDefinedField(
+		const def = new KeyValueDefinedNode(
 			key,
 			value,
 			lineInfo
@@ -397,7 +397,7 @@ describe("ParserErrHead", () => {
 	const err = new TestParserError("Test error");
 
 	it("creates ParserErrHead instance with correct properties", () => {
-		const parserErr = new ParserErrHead(err, lineInfo);
+		const parserErr = new ParserErrNode(err, lineInfo);
 
 		expect(parserErr.err).toBe(err);
 		expect(parserErr.lineInfo).toBe(lineInfo);

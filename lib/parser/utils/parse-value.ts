@@ -7,17 +7,17 @@ import { Str } from "@/parser/types/type-types";
 import { parseDefNumber } from "@/parser/utils/parse-num";
 import { StrSlice } from "@/utils/slice";
 import {
-	KeyHead,
-	ParserErrHead,
-} from "@/parser/types/heads";
+	KeyValueBase,
+	ParserErrNode,
+} from "@/parser/types/key-value";
 
 export const convertParseNumberToHeadVersion = (
 	typeValuePairOrErr: TypeValuePair | NumberErr,
-	head: KeyHead,
+	head: KeyValueBase,
 	value: StrSlice
 ) => {
 	if (typeValuePairOrErr instanceof NumberErr) {
-		return new ParserErrHead(
+		return new ParserErrNode(
 			new ParserNumberErr(
 				head,
 				value,
@@ -30,9 +30,9 @@ export const convertParseNumberToHeadVersion = (
 };
 
 export const parseDefaultValue = (
-	head: KeyHead,
+	head: KeyValueBase,
 	value: StrSlice
-): TypeValuePair | ParserErrHead => {
+): TypeValuePair | ParserErrNode => {
 	const startsWithDigit = /^[+-_ ]*\d/.test(value.value);
 
 	if (startsWithDigit) {

@@ -8,15 +8,15 @@ import {
 	parseKeyHeadTestText,
 } from "@/tests/data/test-data";
 import {
-	KeyHead,
-	KeyValueRequiredHead,
-	ParserErrHead,
-} from "@/parser/types/heads";
+	KeyValueBase,
+	KeyValueRequiredSource,
+	ParserErrNode,
+} from "@/parser/types/key-value";
 import { KeyParams } from "@/parser/types/key-head";
 
 describe("parseKeyHead - Success Cases", () => {
 	it("handles complete example: test against Report", () => {
-		const head = KeyValueRequiredHead.fromString(
+		const head = KeyValueRequiredSource.fromString(
 			parseKeyHeadTestText
 		);
 		const keyParamsOrErr = parseKeyHead(
@@ -24,7 +24,7 @@ describe("parseKeyHead - Success Cases", () => {
 			head.keyHead
 		);
 
-		if (keyParamsOrErr instanceof ParserErrHead) {
+		if (keyParamsOrErr instanceof ParserErrNode) {
 			fail(
 				"keyParamsOrErr is an instance of ParserErrHead"
 			);

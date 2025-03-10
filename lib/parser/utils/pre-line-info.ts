@@ -1,11 +1,11 @@
 import { ParserStructureErr } from "@/parser/types/err-types";
 import { StrSlice } from "@/utils/slice";
 import {
-	KeyHead,
-	ParserErrHead,
+	KeyValueBase,
+	ParserErrNode,
 	LineInfo,
-	KeyInvalidHead,
-} from "@/parser/types/heads";
+	KeyInvalidSource,
+} from "@/parser/types/key-value";
 import { div, logag } from "@/utils/log";
 import { formatTabsToSymbols } from "@/utils/string";
 import { log } from "console";
@@ -50,7 +50,7 @@ const getTabsAndContent = (
 const getSpaceError = (
 	line: string,
 	lineNumber: number
-): ParserErrHead => {
+): ParserErrNode => {
 	const keyHead = formatTabsToSymbols(line);
 	const getSlice = () => {
 		const match = keyHead.match(/^(?:(?:\\t)|(?:[ ]))+/);
@@ -74,7 +74,7 @@ const getSpaceError = (
 		lineNumber
 	);
 
-	const head = new KeyInvalidHead(
+	const head = new KeyInvalidSource(
 		StrSlice.all(keyHead),
 		lineInfo
 	);
@@ -85,13 +85,13 @@ const getSpaceError = (
 		"Invalid space tabs"
 	);
 
-	return new ParserErrHead(err, lineInfo);
+	return new ParserErrNode(err, lineInfo);
 };
 
 export const getPreLineInfo = (
 	line: string,
 	lineNumber: number
-): PreLineInfo | ParserErrHead => {
+): PreLineInfo | ParserErrNode => {
 	if (line.startsWith(" ")) {
 		return getSpaceError(line, lineNumber);
 	}
