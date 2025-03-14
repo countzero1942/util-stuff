@@ -136,7 +136,7 @@ logGeneratePassword();
 
 // await logParseTraits();
 
-await logTraitReport("01-err-trait-tree.txt");
+// await logTraitReport("01-err-trait-tree.txt");
 // await logTraitReport("01b-err-num-trait-tree.txt");
 
 /**
@@ -173,30 +173,16 @@ await logTraitReport("01-err-trait-tree.txt");
 
 // await logTraitReportFromString(parseKeyHeadErrorTestTextA1);
 
-// const input = StrSlice.all("0");
-// const result = parseWNum(input);
-// logobj(result);
-// div();
+const s1 = "a😀";
+log(`0x${s1.charCodeAt(0).toString(16)}`);
+log(`0x${s1.charCodeAt(1).toString(16)}`);
+log(`0x${s1.charCodeAt(2).toString(16)}`);
 
-// type Stuff = {
-// 	a: number;
-// 	b?: string;
-// 	c: boolean | null;
-// };
+div();
 
-// const stuff1: Stuff = {
-// 	a: 42,
-// 	b: "hello",
-// 	c: null,
-// };
+const s2 = "a😀";
+log(`0x${s2.codePointAt(0)?.toString(16)}`);
+log(`0x${s2.codePointAt(1)?.toString(16)}`);
+log(`0x${s2.codePointAt(2)?.toString(16)}`);
 
-// logobj(stuff1);
-// const stuff2: Stuff = {
-// 	a: 42,
-// 	c: null,
-// };
-
-// logobj(stuff2);
-
-// const thing = stuff2.b;
-// log(thing);
+div();

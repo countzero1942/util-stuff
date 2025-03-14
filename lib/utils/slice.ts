@@ -123,6 +123,16 @@ export class StrSlice {
 		return this.sliceCache;
 	}
 
+	public charCodeAt(index: number): number {
+		return this.source.charCodeAt(this.startIncl + index);
+	}
+
+	public codePointAt(index: number): number | undefined {
+		return this.source.codePointAt(
+			this.startIncl + index
+		);
+	}
+
 	public trimStart(): StrSlice {
 		let start = this.startIncl;
 		while (
