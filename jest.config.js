@@ -3,11 +3,15 @@ export default {
 	testEnvironment: "node",
 	preset: "ts-jest",
 	transform: {
-		"^.+\\.tsx?$": ["ts-jest", {
-			useESM: true,
-		}]
+		"^.+\\.tsx?$": [
+			"ts-jest",
+			{
+				useESM: true,
+			},
+		],
 	},
 	extensionsToTreatAsEsm: [".ts", ".tsx"],
+	collectCoverage: false,
 	coveragePathIgnorePatterns: ["/node_modules/"],
 	coverageReporters: ["json", "html"],
 	coverageDirectory: "coverage",

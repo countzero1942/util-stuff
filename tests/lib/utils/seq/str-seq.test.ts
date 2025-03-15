@@ -1,4 +1,8 @@
-import { StrSeq, StrGraphemeSeq } from "@/utils/seq";
+import {
+	StrSeq,
+	StrGraphemeSeq,
+	CodePointSeq,
+} from "@/utils/seq";
 
 describe("String Sequences", () => {
 	describe("StrSeq", () => {
@@ -29,7 +33,10 @@ describe("String Sequences", () => {
 				},
 			];
 
-			expect(result.map(x => x.element)).toEqual(["👋", "🌍"]);
+			expect(result.map(x => x.element)).toEqual([
+				"👋",
+				"🌍",
+			]);
 			expect(result).toStrictEqual(expectFull);
 		});
 
@@ -105,7 +112,9 @@ describe("String Sequences", () => {
 		it("handles complex grapheme clusters", () => {
 			// Family emoji (multiple codepoints that form one grapheme)
 			const seq = new StrGraphemeSeq("👨‍👩‍👧");
-			expect(seq.toArray().map(x => x.element)).toEqual(["👨‍👩‍👧"]);
+			expect(seq.toArray().map(x => x.element)).toEqual([
+				"👨‍👩‍👧",
+			]);
 		});
 
 		it("handles combining characters", () => {
@@ -127,6 +136,53 @@ describe("String Sequences", () => {
 			expect(seq.toArray().map(x => x.element)).toEqual([
 				"e\u0301",
 			]);
+		});
+	});
+
+	describe("CodePointSeq", () => {
+		it("iterates over code points correctly", () => {
+			const seq = new CodePointSeq("👨‍👩‍👧");
+			const expected = [
+				"👨",
+				"\u200D",
+				"👩",
+				"\u200D",
+				"👧",
+			].map(x => x.codePointAt(0));
+			expect(seq.toArray().map(x => x.element)).toEqual(
+				expected
+			);
+		});
+
+		it("handles mixed chars and surrogate pairs", () => {
+			const seq = new CodePointSeq("🚀hello🌟");
+			const expected = [
+				"🚀",
+				"h",
+				"e",
+				"l",
+				"l",
+				"o",
+				"🌟",
+			].map(x => x.codePointAt(0));
+			expect(seq.toArray().map(x => x.element)).toEqual(
+				expected
+			);
+		});
+
+		it("handles surrogate pairs", () => {
+			const seq = new CodePointSeq("🚀🌟");
+			const expected = ["🚀", "🌟"].map(x =>
+				x.codePointAt(0)
+			);
+			expect(seq.toArray().map(x => x.element)).toEqual(
+				expected
+			);
+		});
+
+		it("calculates element count correctly", () => {
+			const seq = new CodePointSeq("hi👨‍👩‍👧");
+			expect(seq.count()).toBe(7); // 'h', 'i', '👨', '‍', '👩', '‍', '👧'
 		});
 	});
 });

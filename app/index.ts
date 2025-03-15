@@ -61,6 +61,8 @@ import {
 	getPiThingSumSeq,
 } from "@/app/math-series";
 import {
+	CodePointElement,
+	CodePointSeq,
 	NumSeq,
 	StrGraphemeSeq,
 	StrSeq,
@@ -90,8 +92,9 @@ import {
 	createRootHead,
 } from "@/parser/utils/parse-trait";
 import { parseKeyHeadErrorTestTextA1 } from "@/tests/data/test-data";
+import { CodePointRange } from "@/utils/matcher";
 
-logGeneratePassword();
+// logGeneratePassword();
 
 /**
  * Test TypeMap
@@ -173,16 +176,48 @@ logGeneratePassword();
 
 // await logTraitReportFromString(parseKeyHeadErrorTestTextA1);
 
-const s1 = "a😀";
-log(`0x${s1.charCodeAt(0).toString(16)}`);
-log(`0x${s1.charCodeAt(1).toString(16)}`);
-log(`0x${s1.charCodeAt(2).toString(16)}`);
+// const s1 = "a😀";
+// log(`0x${s1.charCodeAt(0).toString(16)}`);
+// log(`0x${s1.charCodeAt(1).toString(16)}`);
+// log(`0x${s1.charCodeAt(2).toString(16)}`);
 
+// div();
+
+// const s2 = "a😀";
+// log(`0x${s2.codePointAt(0)?.toString(16)}`);
+// log(`0x${s2.codePointAt(1)?.toString(16)}`);
+// log(`0x${s2.codePointAt(2)?.toString(16)}`);
+
+// div();
+
+// const seq = new StrSeq("hello");
+// // seq.foreach(x => log(x));
+// // div();
+// // seq.foreach(x => log(x));
+
+// const arr1 = Array.from(seq.gen());
+// logobj(arr1);
+// // div();
+// // const arr2 = seq.toArray();
+// // logobj(arr2);
+
+const seq = new CodePointSeq("😀hello");
+seq.foreach(x => log(x));
+div();
+seq.foreach(x => log(x));
 div();
 
-const s2 = "a😀";
-log(`0x${s2.codePointAt(0)?.toString(16)}`);
-log(`0x${s2.codePointAt(1)?.toString(16)}`);
-log(`0x${s2.codePointAt(2)?.toString(16)}`);
-
+const arr1 = seq.toArray();
+logobj(arr1);
 div();
+log("should fail");
+const arr2: CodePointElement[] = [];
+for (const x of seq) {
+	log(x);
+	arr2.push(x);
+}
+logobj(arr2);
+div();
+log("should fail");
+const arr3 = Array.from(seq);
+logobj(arr3);

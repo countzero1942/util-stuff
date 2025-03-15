@@ -30,7 +30,10 @@ export class Range {
 		return new Range(startIncl, endExcl);
 	}
 
-	public static fromLength(startIncl: number, length: number) {
+	public static fromLength(
+		startIncl: number,
+		length: number
+	) {
 		return new Range(startIncl, startIncl + length);
 	}
 
@@ -136,7 +139,10 @@ export abstract class Seq<T> {
 	public part(
 		fn: (x: T) => boolean
 	): [FilterSeq<T>, NegFilterSeq<T>] {
-		return [new FilterSeq(this, fn), new NegFilterSeq(this, fn)];
+		return [
+			new FilterSeq(this, fn),
+			new NegFilterSeq(this, fn),
+		];
 	}
 
 	/**
@@ -255,8 +261,23 @@ export abstract class Seq<T> {
 	 * @returns ZipSeq
 	 */
 	public zip<T2, T3, T4, T5, T6, T7, TOut>(
-		seqs: [Seq<T2>, Seq<T3>, Seq<T4>, Seq<T5>, Seq<T6>, Seq<T7>],
-		fn: (a: T, b: T2, c: T3, d: T4, e: T5, f: T6, g: T7) => TOut
+		seqs: [
+			Seq<T2>,
+			Seq<T3>,
+			Seq<T4>,
+			Seq<T5>,
+			Seq<T6>,
+			Seq<T7>,
+		],
+		fn: (
+			a: T,
+			b: T2,
+			c: T3,
+			d: T4,
+			e: T5,
+			f: T6,
+			g: T7
+		) => TOut
 	): ZipSeq<TOut>;
 	/**
 	 * Zips 'this' Seq with up to 5 other Seqs using a function.
@@ -461,7 +482,10 @@ export abstract class Seq<T> {
 	 * @param fn A function of two arguments: the accumulator and the next value
 	 * @returns The reduced value
 	 */
-	public reduce(accStart: T, fn: (acc: T, current: T) => T) {
+	public reduce(
+		accStart: T,
+		fn: (acc: T, current: T) => T
+	) {
 		let v = accStart;
 		for (const x of this) {
 			v = fn(v, x);
@@ -668,7 +692,9 @@ export class ArraySeq<T> extends Seq<T> {
 		}
 	}
 
-	public static from<TElement>(array: readonly TElement[]) {
+	public static from<TElement>(
+		array: readonly TElement[]
+	) {
 		return new ArraySeq(array);
 	}
 }
@@ -718,7 +744,11 @@ export class NumSeq extends Seq<number> {
 	 * @param inc Increment value
 	 * @returns NumberSeq
 	 */
-	public static from(min: number, max: number, inc: number = 1) {
+	public static from(
+		min: number,
+		max: number,
+		inc: number = 1
+	) {
 		return new NumSeq(min, max, inc);
 	}
 
@@ -849,7 +879,10 @@ export class MathSumSeq extends Seq<number> {
 		return new MathSumSeq(kStart, kEnd, fn);
 	}
 
-	public static count(kEndInc: number, fn: (k: number) => number) {
+	public static count(
+		kEndInc: number,
+		fn: (k: number) => number
+	) {
 		return new MathSumSeq(1, kEndInc, fn);
 	}
 }
@@ -890,7 +923,10 @@ export class MathProdSeq extends Seq<number> {
 		return new MathProdSeq(kStart, kEnd, fn);
 	}
 
-	public static count(kEndIncl: number, fn: (n: number) => number) {
+	public static count(
+		kEndIncl: number,
+		fn: (n: number) => number
+	) {
 		return new MathProdSeq(1, kEndIncl, fn);
 	}
 }
@@ -951,7 +987,6 @@ export class ZipSeq<TOut> extends Seq<TOut> {
 }
 
 export class AccumSeq<TIn, TValue> extends Seq<TValue> {
-	/*************  ✨ Codeium Command ⭐  *************/
 	/**
 	 * AccumSeq constructor.
 	 *
@@ -961,11 +996,13 @@ export class AccumSeq<TIn, TValue> extends Seq<TValue> {
 	 * accumulator and the next value. The value returned by this function
 	 * becomes the new accumulator value.
 	 */
-	/******  e27671fb-5a20-42f9-9b5d-1a621b1c6706  *******/
 	constructor(
 		public readonly seq: Seq<TIn>,
 		public readonly start: TValue,
-		public readonly fn: (acc: TValue, value: TIn) => TValue
+		public readonly fn: (
+			acc: TValue,
+			value: TIn
+		) => TValue
 	) {
 		super();
 	}
@@ -1016,7 +1053,9 @@ export class RecordValueSeq<
 	 * @returns An iterator over the constrained values.
 	 */
 	public override *gen() {
-		for (const [key, value] of Object.entries(this.object)) {
+		for (const [key, value] of Object.entries(
+			this.object
+		)) {
 			switch (this.constraintKind) {
 				case "none":
 					break;
@@ -1032,7 +1071,9 @@ export class RecordValueSeq<
 					// log(
 					// 	`===><ObjValueSeq.gen>: has className: '${this.fullType.className}'`
 					// );
-					if (!hasClassName(value, this.fullType.name)) {
+					if (
+						!hasClassName(value, this.fullType.name)
+					) {
 						// div();
 						continue;
 					}
@@ -1050,9 +1091,10 @@ export class RecordValueSeq<
 	 * @param obj The input object
 	 * @returns RecordValueSeq
 	 */
-	public static fromGeneric<TValue, TKey extends KeyType = string>(
-		obj: Record<TKey, TValue>
-	) {
+	public static fromGeneric<
+		TValue,
+		TKey extends KeyType = string,
+	>(obj: Record<TKey, TValue>) {
 		return new RecordValueSeq<TValue, TKey>(
 			obj,
 			{ type: "Null", name: "" },
@@ -1071,10 +1113,10 @@ export class RecordValueSeq<
 	 * @param type The full type to check the values against
 	 * @returns RecordValueSeq
 	 */
-	public static fromType<TValue, TKey extends KeyType = string>(
-		obj: Record<TKey, TValue>,
-		type: FullType["type"]
-	) {
+	public static fromType<
+		TValue,
+		TKey extends KeyType = string,
+	>(obj: Record<TKey, TValue>, type: FullType["type"]) {
 		return new RecordValueSeq<TValue, TKey>(
 			obj,
 			{ type, name: "" },
@@ -1094,10 +1136,10 @@ export class RecordValueSeq<
 	 * @param className The class name to check the values against
 	 * @returns RecordValueSeq
 	 */
-	public static fromClass<TValue, TKey extends KeyType = string>(
-		obj: Record<TKey, TValue>,
-		className: string
-	) {
+	public static fromClass<
+		TValue,
+		TKey extends KeyType = string,
+	>(obj: Record<TKey, TValue>, className: string) {
 		return new RecordValueSeq<TValue, TKey>(
 			obj,
 			{ type: "Class", name: className },
@@ -1118,10 +1160,10 @@ export class RecordValueSeq<
 	 * @param className The class name to check the values against
 	 * @returns RecordValueSeq
 	 */
-	public static fromHasClass<TValue, TKey extends KeyType = string>(
-		obj: Record<TKey, TValue>,
-		className: string
-	) {
+	public static fromHasClass<
+		TValue,
+		TKey extends KeyType = string,
+	>(obj: Record<TKey, TValue>, className: string) {
 		return new RecordValueSeq<TValue, TKey>(
 			obj,
 			{ type: "Class", name: className },
@@ -1137,7 +1179,6 @@ export class RecordSeq<
 	key: TKey;
 	value: TValue;
 }> {
-	/*************  ✨ Codeium Command ⭐  *************/
 	/**
 	 * RecordSeq constructor.
 	 *
@@ -1170,7 +1211,9 @@ export class RecordSeq<
 	 * @returns An iterator over the constrained key-value pairs.
 	 */
 	public override *gen() {
-		for (const [key, value] of Object.entries(this.object)) {
+		for (const [key, value] of Object.entries(
+			this.object
+		)) {
 			switch (this.constraintKind) {
 				case "none":
 					break;
@@ -1184,7 +1227,9 @@ export class RecordSeq<
 					// log(value);
 					// log("===========");
 
-					if (!hasClassName(value, this.fullType.name)) {
+					if (
+						!hasClassName(value, this.fullType.name)
+					) {
 						// log("===> className fail: don't yield");
 						// div();
 						continue;
@@ -1202,9 +1247,10 @@ export class RecordSeq<
 	 * @param obj The input object
 	 * @returns RecordSeq
 	 */
-	public static fromGeneric<TValue, TKey extends KeyType = string>(
-		obj: Record<TKey, TValue>
-	) {
+	public static fromGeneric<
+		TValue,
+		TKey extends KeyType = string,
+	>(obj: Record<TKey, TValue>) {
 		return new RecordSeq<TValue, TKey>(
 			obj,
 			{ type: "Null", name: "" },
@@ -1223,10 +1269,10 @@ export class RecordSeq<
 	 * @param type The basic type to check the values against
 	 * @returns RecordValueSeq
 	 */
-	public static fromType<TValue, TKey extends KeyType = string>(
-		obj: Record<TKey, TValue>,
-		type: FullType["type"]
-	) {
+	public static fromType<
+		TValue,
+		TKey extends KeyType = string,
+	>(obj: Record<TKey, TValue>, type: FullType["type"]) {
 		return new RecordSeq<TValue, TKey>(
 			obj,
 			{ type, name: "" },
@@ -1247,10 +1293,10 @@ export class RecordSeq<
 	 * @param className The class name to check the values against
 	 * @returns RecordSeq
 	 */
-	public static fromClass<TValue, TKey extends KeyType = string>(
-		obj: Record<TKey, TValue>,
-		className: string
-	) {
+	public static fromClass<
+		TValue,
+		TKey extends KeyType = string,
+	>(obj: Record<TKey, TValue>, className: string) {
 		return new RecordSeq<TValue, TKey>(
 			obj,
 			{ type: "Class", name: className },
@@ -1271,10 +1317,10 @@ export class RecordSeq<
 	 * @param className The class name to check the values against
 	 * @returns RecordSeq
 	 */
-	public static fromHasClass<TValue, TKey extends KeyType = string>(
-		obj: Record<TKey, TValue>,
-		className: string
-	) {
+	public static fromHasClass<
+		TValue,
+		TKey extends KeyType = string,
+	>(obj: Record<TKey, TValue>, className: string) {
 		return new RecordSeq<TValue, TKey>(
 			obj,
 			{ type: "Class", name: className },
@@ -1285,6 +1331,12 @@ export class RecordSeq<
 
 export type StrSeqElement = {
 	element: string;
+	elementIndex: number;
+	charIndex: number;
+};
+
+export type CodePointElement = {
+	element: number;
 	elementIndex: number;
 	charIndex: number;
 };
@@ -1331,15 +1383,22 @@ export abstract class StrSeqBase extends Seq<StrSeqElement> {
 	 * @param endExcl The exclusive end index
 	 * @returns A string iterator
 	 */
-	public getRange(startIncl?: number, endExcl?: number): Range {
+	public getRange(
+		startIncl?: number,
+		endExcl?: number
+	): Range {
 		const getStart = () => {
 			let start = startIncl ?? 0;
-			start = start < 0 ? this.elementCount + start : start;
+			start =
+				start < 0 ? this.elementCount + start : start;
 			return Math.max(0, start);
 		};
 
 		const getEnd = () => {
-			let end = endExcl === undefined ? this.str.length : endExcl;
+			let end =
+				endExcl === undefined
+					? this.str.length
+					: endExcl;
 			end = end < 0 ? this.elementCount + end : end;
 			return Math.max(0, end);
 		};
@@ -1360,7 +1419,11 @@ export abstract class StrSeqBase extends Seq<StrSeqElement> {
 		// 012345678
 		// 0 1 2
 
-		for (const { element, elementIndex, charIndex } of this.gen()) {
+		for (const {
+			element,
+			elementIndex,
+			charIndex,
+		} of this.gen()) {
 			if (elementIndexes.i === elementIndexes.start) {
 				charIndexes.start = charIndexes.i;
 			}
@@ -1432,9 +1495,14 @@ export class StrSeq extends StrSeqBase {
 	public override *gen() {
 		let elementIndex = 0;
 		let charIndex = 0;
-		for (const codePoint of this.str) {
-			yield { element: codePoint, elementIndex, charIndex };
-			charIndex += codePoint.length;
+		for (const codePointStr of this.str) {
+			yield {
+				element: codePointStr,
+				elementIndex,
+				charIndex,
+			};
+
+			charIndex += codePointStr.length;
 			elementIndex++;
 		}
 	}
@@ -1450,6 +1518,35 @@ export class StrSeq extends StrSeqBase {
 	 */
 	public static from(str: string) {
 		return new StrSeq(str);
+	}
+}
+
+export class CodePointSeq extends Seq<CodePointElement> {
+	constructor(public readonly str: string) {
+		super();
+	}
+	public override *gen() {
+		const length = this.str.length;
+		let elementIndex = 0;
+		let charIndex = 0;
+
+		while (charIndex < length) {
+			const codePoint = this.str.codePointAt(charIndex);
+			if (codePoint === undefined) {
+				break;
+			}
+			const codePointLength =
+				codePoint >= 0x10000 ? 2 : 1;
+
+			yield {
+				element: codePoint,
+				elementIndex,
+				charIndex,
+			};
+
+			elementIndex += 1;
+			charIndex += codePointLength;
+		}
 	}
 }
 
@@ -1481,8 +1578,14 @@ export class StrGraphemeSeq extends StrSeqBase {
 
 		let elementIndex = 0;
 		let charIndex = 0;
+
 		for (const grapheme of itr) {
-			yield { element: grapheme.segment, elementIndex, charIndex };
+			yield {
+				element: grapheme.segment,
+				elementIndex,
+				charIndex,
+			};
+
 			charIndex += grapheme.segment.length;
 			elementIndex++;
 		}
