@@ -1,18 +1,27 @@
 import { StrSlice } from "@/utils/slice";
 import { CodePointSeq } from "./seq";
+import unicode from "unicode-properties";
 
 export class MutMatchNav {
 	private _startIndex: number;
 	private _navIndex: number;
+	private _captureIndex: number;
 	private _lastNavIndex: number;
+	private _isInvalidated: boolean = false;
 	constructor(public readonly source: StrSlice) {
 		this._startIndex = 0;
 		this._navIndex = 0;
+		this._captureIndex = 0;
 		this._lastNavIndex = 0;
 	}
 
-	public moveForward(length: number = 1) {
+	public moveCaptureForward(length: number = 1) {
 		this._lastNavIndex = this._navIndex;
+		this._navIndex += length;
+		this._captureIndex += length;
+	}
+
+	public moveGhostCaptureForward(length: number = 1) {
 		this._navIndex += length;
 	}
 
@@ -21,7 +30,25 @@ export class MutMatchNav {
 		nav._startIndex = this._startIndex;
 		nav._navIndex = this._navIndex;
 		nav._lastNavIndex = this._lastNavIndex;
+		nav._captureIndex = this._captureIndex;
+		nav._isInvalidated = this._isInvalidated;
 		return nav;
+	}
+
+	public invalidate(): null {
+		this._isInvalidated = true;
+		return null;
+	}
+
+	public assertValid(): void {
+		if (this._isInvalidated) {
+			throw new Error("Illegal use of invalidated nav");
+		}
+		if (this._navIndex < this._captureIndex) {
+			throw new Error(
+				"Nav has ghost capture at end: cannot match further"
+			);
+		}
 	}
 
 	public get startIndex() {
@@ -36,14 +63,29 @@ export class MutMatchNav {
 		return this._lastNavIndex;
 	}
 
-	public get accumulated() {
+	public get isInvalidated() {
+		return this._isInvalidated;
+	}
+
+	public get captureIndex() {
+		return this._captureIndex;
+	}
+
+	public get accumulatedMatch(): StrSlice {
 		return this.source.slice(
 			this._startIndex,
-			this._navIndex
+			this._captureIndex
 		);
 	}
 
-	public get matched() {
+	public get lastMatch(): StrSlice {
+		return this.source.slice(
+			this._lastNavIndex,
+			this._captureIndex
+		);
+	}
+
+	public get ghostMatch(): StrSlice {
 		return this.source.slice(
 			this._lastNavIndex,
 			this._navIndex
@@ -57,38 +99,136 @@ export abstract class MatchBase {
 	): MutMatchNav | null;
 }
 
-export class MatchStart extends MatchBase {
+export class MatchStartSlice extends MatchBase {
+	constructor() {
+		super();
+	}
+
 	public match(nav: MutMatchNav): MutMatchNav | null {
-		return nav.navIndex === 0 ? nav : null;
+		nav.assertValid();
+		return nav.navIndex === 0 ? nav : nav.invalidate();
 	}
 }
 
-export const matchStart = new MatchStart();
+export const matchStartSlice = new MatchStartSlice();
 
-export class MatchEnd extends MatchBase {
+export class MatchEndSlice extends MatchBase {
+	constructor() {
+		super();
+	}
+
 	public match(nav: MutMatchNav): MutMatchNav | null {
+		nav.assertValid();
 		return nav.navIndex === nav.source.length
 			? nav
-			: null;
+			: nav.invalidate();
 	}
 }
 
-export const matchEnd = new MatchEnd();
+export const matchEndSlice = new MatchEndSlice();
 
 export class MatchCodePoint extends MatchBase {
 	public constructor(public readonly matchValue: number) {
 		super();
 	}
 	public match(nav: MutMatchNav): MutMatchNav | null {
+		nav.assertValid();
 		const codePoint = nav.source.codePointAt(
 			nav.navIndex
 		);
 		if (codePoint === this.matchValue) {
 			const length = codePoint >= 0x10000 ? 2 : 1;
-			nav.moveForward(length);
+			nav.moveCaptureForward(length);
 			return nav;
 		}
-		return null;
+		return nav.invalidate();
+	}
+}
+
+export class MatchCodePointLambda extends MatchBase {
+	public constructor(
+		public readonly lambda: (codePoint: number) => boolean
+	) {
+		super();
+	}
+
+	public match(nav: MutMatchNav): MutMatchNav | null {
+		nav.assertValid();
+		const codePoint = nav.source.codePointAt(
+			nav.navIndex
+		);
+		if (
+			codePoint !== undefined &&
+			this.lambda(codePoint)
+		) {
+			const length = codePoint >= 0x10000 ? 2 : 1;
+			nav.moveCaptureForward(length);
+			return nav;
+		}
+		return nav.invalidate();
+	}
+}
+
+export const matchUnicodeAlphanumeric =
+	new MatchCodePointLambda(
+		codePoint =>
+			unicode.isAlphabetic(codePoint) ||
+			unicode.isDigit(codePoint)
+	);
+
+export const matchUnicodeWhitespace =
+	new MatchCodePointLambda(codePoint =>
+		unicode.isWhiteSpace(codePoint)
+	);
+
+export const matchUnicodeAlphabetic =
+	new MatchCodePointLambda(codePoint =>
+		unicode.isAlphabetic(codePoint)
+	);
+
+export const matchUnicodeNumeric = new MatchCodePointLambda(
+	codePoint => unicode.isDigit(codePoint)
+);
+
+export const matchUnicodeLowerCase =
+	new MatchCodePointLambda(codePoint =>
+		unicode.isLowerCase(codePoint)
+	);
+
+export const matchUnicodeUpperCase =
+	new MatchCodePointLambda(codePoint =>
+		unicode.isUpperCase(codePoint)
+	);
+
+export const matchUnicodeTitleCase =
+	new MatchCodePointLambda(codePoint =>
+		unicode.isTitleCase(codePoint)
+	);
+
+export class MatchCodePointCategories extends MatchBase {
+	public constructor(
+		public readonly categories: string[]
+	) {
+		super();
+	}
+
+	public match(nav: MutMatchNav): MutMatchNav | null {
+		nav.assertValid();
+		const codePoint = nav.source.codePointAt(
+			nav.navIndex
+		);
+		if (
+			codePoint !== undefined &&
+			this.categories.some(
+				category =>
+					unicode.getCategory(codePoint) === category
+			)
+		) {
+			const length = codePoint >= 0x10000 ? 2 : 1;
+			nav.moveCaptureForward(length);
+			return nav;
+		}
+		return nav.invalidate();
 	}
 }
 
@@ -96,7 +236,13 @@ export class CodePointRange {
 	public constructor(
 		public readonly start: number,
 		public readonly end: number
-	) {}
+	) {
+		if (start > end) {
+			throw new Error(
+				"Invalid code point range: start > end"
+			);
+		}
+	}
 
 	public contains(codePoint: number): boolean {
 		return (
@@ -122,13 +268,14 @@ export class CodePointRange {
 	}
 }
 
-export class MatchRange extends MatchBase {
+export class MatchCodePointRange extends MatchBase {
 	public constructor(
 		public readonly range: CodePointRange
 	) {
 		super();
 	}
 	public match(nav: MutMatchNav): MutMatchNav | null {
+		nav.assertValid();
 		const codePoint = nav.source.codePointAt(
 			nav.navIndex
 		);
@@ -137,26 +284,33 @@ export class MatchRange extends MatchBase {
 			this.range.contains(codePoint)
 		) {
 			const length = codePoint >= 0x10000 ? 2 : 1;
-			nav.moveForward(length);
+			nav.moveCaptureForward(length);
 			return nav;
 		}
-		return null;
+		return nav.invalidate();
 	}
 
-	public static fromString(range: string): MatchRange {
-		return new MatchRange(
+	public static fromString(
+		range: string
+	): MatchCodePointRange {
+		return new MatchCodePointRange(
 			CodePointRange.fromString(range)
 		);
 	}
 }
 
-export class MatchRanges extends MatchBase {
+export const matchAnyCodePoint = new MatchCodePointRange(
+	new CodePointRange(0, 0x10ffff)
+);
+
+export class MatchCodePointRanges extends MatchBase {
 	public constructor(
 		public readonly ranges: CodePointRange[]
 	) {
 		super();
 	}
 	public match(nav: MutMatchNav): MutMatchNav | null {
+		nav.assertValid();
 		const codePoint = nav.source.codePointAt(
 			nav.navIndex
 		);
@@ -167,20 +321,69 @@ export class MatchRanges extends MatchBase {
 			)
 		) {
 			const length = codePoint >= 0x10000 ? 2 : 1;
-			nav.moveForward(length);
+			nav.moveCaptureForward(length);
 			return nav;
 		}
-		return null;
+		return nav.invalidate();
 	}
 
 	public static fromStrings(
 		ranges: string[]
-	): MatchRanges {
-		return new MatchRanges(
+	): MatchCodePointRanges {
+		return new MatchCodePointRanges(
 			ranges.map(range =>
 				CodePointRange.fromString(range)
 			)
 		);
+	}
+}
+
+export const matchLatinLowerCase = new MatchCodePointRange(
+	new CodePointRange(0x0061, 0x007a)
+);
+
+export const matchLatinUpperCase = new MatchCodePointRange(
+	new CodePointRange(0x0041, 0x005a)
+);
+
+export const matchLatinLetter = new MatchCodePointRange(
+	new CodePointRange(0x0041, 0x005a)
+);
+
+export const matchLatinLetterOrDigit =
+	new MatchCodePointRange(
+		new CodePointRange(0x0041, 0x005a)
+	);
+
+export const matchLatinDigit = new MatchCodePointRange(
+	new CodePointRange(0x0030, 0x0039)
+);
+
+export class MatchNotCodePoint extends MatchBase {
+	public constructor(
+		public readonly matcher:
+			| MatchCodePoint
+			| MatchCodePointRange
+			| MatchCodePointRanges
+			| MatchStartSlice
+			| MatchEndSlice
+	) {
+		super();
+	}
+	public match(nav: MutMatchNav): MutMatchNav | null {
+		nav.assertValid();
+		const savedNav = nav.save();
+		const result = this.matcher.match(nav);
+		if (result) {
+			return nav.invalidate();
+		}
+		switch (true) {
+			case this.matcher instanceof MatchStartSlice:
+			case this.matcher instanceof MatchEndSlice:
+				return savedNav;
+			default:
+				return matchAnyCodePoint.match(savedNav);
+		}
 	}
 }
 
@@ -191,16 +394,17 @@ export class MatchString extends MatchBase {
 		super();
 	}
 	public match(nav: MutMatchNav): MutMatchNav | null {
+		nav.assertValid();
 		if (
 			nav.source.startsWith(
 				this.matchValue,
 				nav.navIndex
 			)
 		) {
-			nav.moveForward(this.matchValue.length);
+			nav.moveCaptureForward(this.matchValue.length);
 			return nav;
 		}
-		return null;
+		return nav.invalidate();
 	}
 }
 
@@ -211,46 +415,49 @@ export class MatchAnyString extends MatchBase {
 		super();
 	}
 	public match(nav: MutMatchNav): MutMatchNav | null {
+		nav.assertValid();
 		for (const matchValue of this.matchValues) {
 			if (
 				nav.source.startsWith(matchValue, nav.navIndex)
 			) {
-				nav.moveForward(matchValue.length);
+				nav.moveCaptureForward(matchValue.length);
 				return nav;
 			}
 		}
-		return null;
+		return nav.invalidate();
 	}
 }
 
-export class MatchAny extends MatchBase {
+export class MatchAnyMatch extends MatchBase {
 	public constructor(
 		public readonly matchers: MatchBase[]
 	) {
 		super();
 	}
 	public match(nav: MutMatchNav): MutMatchNav | null {
+		nav.assertValid();
 		for (const matcher of this.matchers) {
-			const result = matcher.match(nav);
+			const result = matcher.match(nav.save());
 			if (result) {
 				return result;
 			}
 		}
-		return null;
+		return nav.invalidate();
 	}
 }
 
-export class MatchAll extends MatchBase {
+export class MatchAllMatches extends MatchBase {
 	public constructor(
 		public readonly matchers: MatchBase[]
 	) {
 		super();
 	}
 	public match(nav: MutMatchNav): MutMatchNav | null {
+		nav.assertValid();
 		for (const matcher of this.matchers) {
 			const result = matcher.match(nav);
 			if (!result) {
-				return null;
+				return nav.invalidate();
 			}
 			nav = result;
 		}
@@ -258,11 +465,12 @@ export class MatchAll extends MatchBase {
 	}
 }
 
-export class MatchOpt extends MatchBase {
+export class MatchOptMatch extends MatchBase {
 	public constructor(public readonly matcher: MatchBase) {
 		super();
 	}
 	public match(nav: MutMatchNav): MutMatchNav | null {
+		nav.assertValid();
 		const savedNav = nav.save();
 		const result = this.matcher.match(nav);
 		if (result) {
@@ -272,66 +480,55 @@ export class MatchOpt extends MatchBase {
 	}
 }
 
-export class MatchNot extends MatchBase {
-	public constructor(
-		public readonly matcher:
-			| MatchCodePoint
-			| MatchRange
-			| MatchRanges
-	) {
-		super();
-	}
-	public match(nav: MutMatchNav): MutMatchNav | null {
-		const savedNav = nav.save();
-		const result = this.matcher.match(nav);
-		if (result) {
-			return null;
-		}
-		return savedNav;
-	}
-}
-
-export class MatchRepeat extends MatchBase {
+export class MatchRepeatMatch extends MatchBase {
 	public constructor(
 		public readonly matcher: MatchBase,
-		public readonly min: number = 1,
-		public readonly max: number = Number.MAX_SAFE_INTEGER
+		public readonly minNumberMatches: number = 1,
+		public readonly maxNumberMatches: number = Number.MAX_SAFE_INTEGER
 	) {
 		super();
 	}
 
 	public match(nav: MutMatchNav): MutMatchNav | null {
-		// Save initial state in case we need to backtrack
-		const initialNav = nav.save();
-
-		// Try to match as many times as possible up to max
+		nav.assertValid();
 		let count = 0;
 		let currentNav = nav;
 
-		while (count < this.max) {
-			const savedNav = currentNav.save(); // Save before each attempt
-			const result = this.matcher.match(savedNav);
+		while (count < this.maxNumberMatches) {
+			const result = this.matcher.match(currentNav);
 
 			if (!result) {
-				break; // No more matches possible
+				break;
 			}
 
-			// Match succeeded, update count and nav
 			count++;
 			currentNav = result;
 		}
 
-		// Check if we've matched at least min times
-		if (count >= this.min) {
-			// Success - return the nav after all successful matches
-			// Update the original nav to the final position
-			nav.moveForward(
-				currentNav.navIndex - nav.navIndex
+		if (
+			count >= this.minNumberMatches &&
+			count <= this.maxNumberMatches
+		) {
+			return currentNav;
+		} else {
+			return nav.invalidate();
+		}
+	}
+}
+
+export class GhostMatch extends MatchBase {
+	public constructor(public readonly matcher: MatchBase) {
+		super();
+	}
+	public match(nav: MutMatchNav): MutMatchNav | null {
+		nav.assertValid();
+		const result = this.matcher.match(nav.save());
+		if (result) {
+			nav.moveGhostCaptureForward(
+				result.captureIndex - nav.captureIndex
 			);
 			return nav;
-		} else {
-			// Failed to match minimum required times
-			return null;
 		}
+		return nav.invalidate();
 	}
 }

@@ -124,13 +124,19 @@ export class StrSlice {
 	}
 
 	public charCodeAt(index: number): number {
-		return this.source.charCodeAt(this.startIncl + index);
+		const charIndex = this.startIncl + index;
+		if (charIndex >= this.endExcl) {
+			return -1;
+		}
+		return this.source.charCodeAt(charIndex);
 	}
 
 	public codePointAt(index: number): number | undefined {
-		return this.source.codePointAt(
-			this.startIncl + index
-		);
+		const codePointIndex = this.startIncl + index;
+		if (codePointIndex >= this.endExcl) {
+			return undefined;
+		}
+		return this.source.codePointAt(codePointIndex);
 	}
 
 	public trimStart(): StrSlice {

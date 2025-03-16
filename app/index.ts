@@ -200,24 +200,3 @@ import { CodePointRange } from "@/utils/matcher";
 // // div();
 // // const arr2 = seq.toArray();
 // // logobj(arr2);
-
-const seq = new CodePointSeq("😀hello");
-seq.foreach(x => log(x));
-div();
-seq.foreach(x => log(x));
-div();
-
-const arr1 = seq.toArray();
-logobj(arr1);
-div();
-log("should fail");
-const arr2: CodePointElement[] = [];
-for (const x of seq) {
-	log(x);
-	arr2.push(x);
-}
-logobj(arr2);
-div();
-log("should fail");
-const arr3 = Array.from(seq);
-logobj(arr3);
