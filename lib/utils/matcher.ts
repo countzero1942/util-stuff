@@ -99,7 +99,19 @@ export abstract class MatchBase {
 	): MutMatchNav | null;
 }
 
-export class MatchStartSlice extends MatchBase {
+export abstract class MatchCodePointBase extends MatchBase {
+	constructor() {
+		super();
+	}
+}
+
+export abstract class MatchPositionBase extends MatchBase {
+	constructor() {
+		super();
+	}
+}
+
+export class MatchStartSlice extends MatchPositionBase {
 	constructor() {
 		super();
 	}
@@ -112,7 +124,7 @@ export class MatchStartSlice extends MatchBase {
 
 export const matchStartSlice = new MatchStartSlice();
 
-export class MatchEndSlice extends MatchBase {
+export class MatchEndSlice extends MatchPositionBase {
 	constructor() {
 		super();
 	}
@@ -127,7 +139,7 @@ export class MatchEndSlice extends MatchBase {
 
 export const matchEndSlice = new MatchEndSlice();
 
-export class MatchCodePoint extends MatchBase {
+export class MatchCodePoint extends MatchCodePointBase {
 	public constructor(public readonly matchValue: number) {
 		super();
 	}
@@ -145,7 +157,7 @@ export class MatchCodePoint extends MatchBase {
 	}
 }
 
-export class MatchCodePointLambda extends MatchBase {
+export class MatchCodePointLambda extends MatchCodePointBase {
 	public constructor(
 		public readonly lambda: (codePoint: number) => boolean
 	) {
@@ -169,45 +181,9 @@ export class MatchCodePointLambda extends MatchBase {
 	}
 }
 
-export const matchUnicodeAlphanumeric =
-	new MatchCodePointLambda(
-		codePoint =>
-			unicode.isAlphabetic(codePoint) ||
-			unicode.isDigit(codePoint)
-	);
-
-export const matchUnicodeWhitespace =
-	new MatchCodePointLambda(codePoint =>
-		unicode.isWhiteSpace(codePoint)
-	);
-
-export const matchUnicodeAlphabetic =
-	new MatchCodePointLambda(codePoint =>
-		unicode.isAlphabetic(codePoint)
-	);
-
-export const matchUnicodeNumeric = new MatchCodePointLambda(
-	codePoint => unicode.isDigit(codePoint)
-);
-
-export const matchUnicodeLowerCase =
-	new MatchCodePointLambda(codePoint =>
-		unicode.isLowerCase(codePoint)
-	);
-
-export const matchUnicodeUpperCase =
-	new MatchCodePointLambda(codePoint =>
-		unicode.isUpperCase(codePoint)
-	);
-
-export const matchUnicodeTitleCase =
-	new MatchCodePointLambda(codePoint =>
-		unicode.isTitleCase(codePoint)
-	);
-
-export class MatchCodePointCategories extends MatchBase {
+export class MatchCodePointSet extends MatchCodePointBase {
 	public constructor(
-		public readonly categories: string[]
+		public readonly codePointSet: Record<number, boolean>
 	) {
 		super();
 	}
@@ -219,10 +195,7 @@ export class MatchCodePointCategories extends MatchBase {
 		);
 		if (
 			codePoint !== undefined &&
-			this.categories.some(
-				category =>
-					unicode.getCategory(codePoint) === category
-			)
+			this.codePointSet[codePoint]
 		) {
 			const length = codePoint >= 0x10000 ? 2 : 1;
 			nav.moveCaptureForward(length);
@@ -230,7 +203,116 @@ export class MatchCodePointCategories extends MatchBase {
 		}
 		return nav.invalidate();
 	}
+
+	public static fromString(
+		codePoints: string
+	): MatchCodePointSet {
+		const codePointSet: Record<number, boolean> = {};
+
+		const codePointSeq = new CodePointSeq(codePoints);
+
+		codePointSeq.foreach(codePoint => {
+			codePointSet[codePoint.element] = true;
+		});
+
+		return new MatchCodePointSet(codePointSet);
+	}
+
+	public static fromArray(
+		codePoints: number[]
+	): MatchCodePointSet {
+		const codePointSet: Record<number, boolean> = {};
+		for (const codePoint of codePoints) {
+			codePointSet[codePoint] = true;
+		}
+		return new MatchCodePointSet(codePointSet);
+	}
 }
+
+const initializeAllUnicodeCategories = (): Record<
+	string,
+	boolean
+> => {
+	const categoriesSet: Record<string, boolean> = {};
+	const categoriesString =
+		"Cc Cf Co Cs Ll Lm Lo Lt Lu Mc Me Mn Nd " +
+		"Nl No Pc Pd Pe Pf Pi Po Ps Sc Sk Sm So Zl Zp Zs";
+	for (const category of categoriesString.split(" ")) {
+		categoriesSet[category] = true;
+	}
+	return categoriesSet;
+};
+
+export const allUnicodeCategories =
+	initializeAllUnicodeCategories();
+
+export class MatchCodePointCategories extends MatchCodePointBase {
+	public constructor(
+		public readonly categories: Record<string, boolean>
+	) {
+		super();
+	}
+
+	public match(nav: MutMatchNav): MutMatchNav | null {
+		nav.assertValid();
+		const codePoint = nav.source.codePointAt(
+			nav.navIndex
+		);
+		if (
+			codePoint !== undefined &&
+			this.categories[unicode.getCategory(codePoint)]
+		) {
+			const length = codePoint >= 0x10000 ? 2 : 1;
+			nav.moveCaptureForward(length);
+			return nav;
+		}
+		return nav.invalidate();
+	}
+
+	public static fromString(
+		categories: string
+	): MatchCodePointCategories {
+		const categoriesSet: Record<string, boolean> = {};
+		for (const category of categories.split(" ")) {
+			if (allUnicodeCategories[category] === undefined) {
+				throw new Error(
+					`Invalid Unicode category: ${category}`
+				);
+			}
+			categoriesSet[category] = true;
+		}
+		return new MatchCodePointCategories(categoriesSet);
+	}
+}
+
+export const matchUnicodeLetter =
+	MatchCodePointCategories.fromString("Lu Lo Ll");
+
+export const matchUnicodeDigit =
+	MatchCodePointCategories.fromString("Nd");
+
+export const matchUnicodeLetterOrDigit =
+	MatchCodePointCategories.fromString("Lu Lo Ll Nd");
+
+export const matchUnicodeLowerCase =
+	MatchCodePointCategories.fromString("Ll");
+
+export const matchUnicodeUpperCase =
+	MatchCodePointCategories.fromString("Lu");
+
+export const matchUnicodeTitleCase =
+	MatchCodePointCategories.fromString("Lt");
+
+export const matchUnicodeSpace =
+	MatchCodePointCategories.fromString("Zs");
+
+export const matchUnicodeWhiteSpace =
+	MatchCodePointSet.fromArray([
+		0x20, 0x0d, 0x0a, 0x09, 0x0c, 0x0b, 0xa0, 0x1680,
+		0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005,
+		0x2006, 0x2007, 0x2008, 0x2009, 0x200a, 0x2028,
+		0x2029, 0x202f, 0x205f, 0x3000, 0xfeff,
+	]);
 
 export class CodePointRange {
 	public constructor(
@@ -268,7 +350,7 @@ export class CodePointRange {
 	}
 }
 
-export class MatchCodePointRange extends MatchBase {
+export class MatchCodePointRange extends MatchCodePointBase {
 	public constructor(
 		public readonly range: CodePointRange
 	) {
@@ -303,7 +385,7 @@ export const matchAnyCodePoint = new MatchCodePointRange(
 	new CodePointRange(0, 0x10ffff)
 );
 
-export class MatchCodePointRanges extends MatchBase {
+export class MatchCodePointRanges extends MatchCodePointBase {
 	public constructor(
 		public readonly ranges: CodePointRange[]
 	) {
@@ -338,6 +420,19 @@ export class MatchCodePointRanges extends MatchBase {
 	}
 }
 
+export const matchLatinLetter = new MatchCodePointRange(
+	new CodePointRange(0x0041, 0x005a)
+);
+
+export const matchLatinDigit = new MatchCodePointRange(
+	new CodePointRange(0x0030, 0x0039)
+);
+
+export const matchLatinLetterOrDigit =
+	new MatchCodePointRange(
+		new CodePointRange(0x0041, 0x005a)
+	);
+
 export const matchLatinLowerCase = new MatchCodePointRange(
 	new CodePointRange(0x0061, 0x007a)
 );
@@ -346,27 +441,11 @@ export const matchLatinUpperCase = new MatchCodePointRange(
 	new CodePointRange(0x0041, 0x005a)
 );
 
-export const matchLatinLetter = new MatchCodePointRange(
-	new CodePointRange(0x0041, 0x005a)
-);
-
-export const matchLatinLetterOrDigit =
-	new MatchCodePointRange(
-		new CodePointRange(0x0041, 0x005a)
-	);
-
-export const matchLatinDigit = new MatchCodePointRange(
-	new CodePointRange(0x0030, 0x0039)
-);
-
-export class MatchNotCodePoint extends MatchBase {
+export class MatchNotCodePoint extends MatchCodePointBase {
 	public constructor(
 		public readonly matcher:
-			| MatchCodePoint
-			| MatchCodePointRange
-			| MatchCodePointRanges
-			| MatchStartSlice
-			| MatchEndSlice
+			| MatchCodePointBase
+			| MatchPositionBase
 	) {
 		super();
 	}
@@ -378,11 +457,12 @@ export class MatchNotCodePoint extends MatchBase {
 			return nav.invalidate();
 		}
 		switch (true) {
-			case this.matcher instanceof MatchStartSlice:
-			case this.matcher instanceof MatchEndSlice:
+			case this.matcher instanceof MatchPositionBase:
 				return savedNav;
-			default:
+			case this.matcher instanceof MatchCodePointBase:
 				return matchAnyCodePoint.match(savedNav);
+			default:
+				throw new Error("Invalid matcher type");
 		}
 	}
 }
