@@ -17,6 +17,10 @@ export const getTabIndentString = memoizee(
 	{ maxAge: 5000 }
 );
 
+export const isLoneSurrogate = (codePoint: number) => {
+	return codePoint >= 0xd800 && codePoint <= 0xdfff;
+};
+
 export const isCodePointWhiteSpace = (
 	codePoint: number
 ) => {
@@ -54,6 +58,12 @@ export const isCodePointWhiteSpace = (
 				return false;
 		}
 	}
+};
+
+export const getCodePointCharLength = (
+	codePoint: number
+) => {
+	return codePoint >= 0x10000 ? 2 : 1;
 };
 
 /**

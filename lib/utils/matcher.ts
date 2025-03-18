@@ -1,97 +1,8 @@
-import { StrSlice } from "@/utils/slice";
-import { CodePointSeq } from "./seq";
 import unicode from "unicode-properties";
-
-export class MutMatchNav {
-	private _startIndex: number;
-	private _navIndex: number;
-	private _captureIndex: number;
-	private _lastNavIndex: number;
-	private _isInvalidated: boolean = false;
-	constructor(public readonly source: StrSlice) {
-		this._startIndex = 0;
-		this._navIndex = 0;
-		this._captureIndex = 0;
-		this._lastNavIndex = 0;
-	}
-
-	public moveCaptureForward(length: number = 1) {
-		this._lastNavIndex = this._navIndex;
-		this._navIndex += length;
-		this._captureIndex += length;
-	}
-
-	public moveGhostCaptureForward(length: number = 1) {
-		this._navIndex += length;
-	}
-
-	public save(): MutMatchNav {
-		const nav = new MutMatchNav(this.source);
-		nav._startIndex = this._startIndex;
-		nav._navIndex = this._navIndex;
-		nav._lastNavIndex = this._lastNavIndex;
-		nav._captureIndex = this._captureIndex;
-		nav._isInvalidated = this._isInvalidated;
-		return nav;
-	}
-
-	public invalidate(): null {
-		this._isInvalidated = true;
-		return null;
-	}
-
-	public assertValid(): void {
-		if (this._isInvalidated) {
-			throw new Error("Illegal use of invalidated nav");
-		}
-		if (this._navIndex < this._captureIndex) {
-			throw new Error(
-				"Nav has ghost capture at end: cannot match further"
-			);
-		}
-	}
-
-	public get startIndex() {
-		return this._startIndex;
-	}
-
-	public get navIndex() {
-		return this._navIndex;
-	}
-
-	public get lastNavIndex() {
-		return this._lastNavIndex;
-	}
-
-	public get isInvalidated() {
-		return this._isInvalidated;
-	}
-
-	public get captureIndex() {
-		return this._captureIndex;
-	}
-
-	public get accumulatedMatch(): StrSlice {
-		return this.source.slice(
-			this._startIndex,
-			this._captureIndex
-		);
-	}
-
-	public get lastMatch(): StrSlice {
-		return this.source.slice(
-			this._lastNavIndex,
-			this._captureIndex
-		);
-	}
-
-	public get ghostMatch(): StrSlice {
-		return this.source.slice(
-			this._lastNavIndex,
-			this._navIndex
-		);
-	}
-}
+import { StrSlice } from "@/utils/slice";
+import { CodePointSeq } from "@/utils/seq";
+import { FindResult, MutMatchNav } from "@/utils/match-nav";
+import { getCodePointCharLength } from "@/utils/string";
 
 export abstract class MatchBase {
 	public abstract match(
@@ -122,8 +33,6 @@ export class MatchStartSlice extends MatchPositionBase {
 	}
 }
 
-export const matchStartSlice = new MatchStartSlice();
-
 export class MatchEndSlice extends MatchPositionBase {
 	constructor() {
 		super();
@@ -137,20 +46,25 @@ export class MatchEndSlice extends MatchPositionBase {
 	}
 }
 
+export const matchStartSlice = new MatchStartSlice();
+
 export const matchEndSlice = new MatchEndSlice();
 
 export class MatchCodePoint extends MatchCodePointBase {
 	public constructor(public readonly matchValue: number) {
 		super();
 	}
+
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
-		const codePoint = nav.source.codePointAt(
-			nav.navIndex
-		);
-		if (codePoint === this.matchValue) {
-			const length = codePoint >= 0x10000 ? 2 : 1;
-			nav.moveCaptureForward(length);
+		const codePoint = nav.getCodePoint();
+		if (
+			codePoint !== undefined &&
+			codePoint === this.matchValue
+		) {
+			nav.moveCaptureForward(
+				getCodePointCharLength(codePoint)
+			);
 			return nav;
 		}
 		return nav.invalidate();
@@ -166,15 +80,14 @@ export class MatchCodePointLambda extends MatchCodePointBase {
 
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
-		const codePoint = nav.source.codePointAt(
-			nav.navIndex
-		);
+		const codePoint = nav.getCodePoint();
 		if (
 			codePoint !== undefined &&
 			this.lambda(codePoint)
 		) {
-			const length = codePoint >= 0x10000 ? 2 : 1;
-			nav.moveCaptureForward(length);
+			nav.moveCaptureForward(
+				getCodePointCharLength(codePoint)
+			);
 			return nav;
 		}
 		return nav.invalidate();
@@ -190,15 +103,14 @@ export class MatchCodePointSet extends MatchCodePointBase {
 
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
-		const codePoint = nav.source.codePointAt(
-			nav.navIndex
-		);
+		const codePoint = nav.getCodePoint();
 		if (
 			codePoint !== undefined &&
 			this.codePointSet[codePoint]
 		) {
-			const length = codePoint >= 0x10000 ? 2 : 1;
-			nav.moveCaptureForward(length);
+			nav.moveCaptureForward(
+				getCodePointCharLength(codePoint)
+			);
 			return nav;
 		}
 		return nav.invalidate();
@@ -255,15 +167,14 @@ export class MatchCodePointCategories extends MatchCodePointBase {
 
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
-		const codePoint = nav.source.codePointAt(
-			nav.navIndex
-		);
+		const codePoint = nav.getCodePoint();
 		if (
 			codePoint !== undefined &&
 			this.categories[unicode.getCategory(codePoint)]
 		) {
-			const length = codePoint >= 0x10000 ? 2 : 1;
-			nav.moveCaptureForward(length);
+			nav.moveCaptureForward(
+				getCodePointCharLength(codePoint)
+			);
 			return nav;
 		}
 		return nav.invalidate();
@@ -333,7 +244,7 @@ export class CodePointRange {
 	}
 
 	public static fromString(range: string): CodePointRange {
-		const dashCodePoint = "-".codePointAt(0);
+		const dashCodePoint = 0x2d; // "-"
 
 		const codepoints = new CodePointSeq(range).toArray();
 		if (
@@ -365,8 +276,9 @@ export class MatchCodePointRange extends MatchCodePointBase {
 			codePoint !== undefined &&
 			this.range.contains(codePoint)
 		) {
-			const length = codePoint >= 0x10000 ? 2 : 1;
-			nav.moveCaptureForward(length);
+			nav.moveCaptureForward(
+				getCodePointCharLength(codePoint)
+			);
 			return nav;
 		}
 		return nav.invalidate();
@@ -402,8 +314,9 @@ export class MatchCodePointRanges extends MatchCodePointBase {
 				range.contains(codePoint)
 			)
 		) {
-			const length = codePoint >= 0x10000 ? 2 : 1;
-			nav.moveCaptureForward(length);
+			nav.moveCaptureForward(
+				getCodePointCharLength(codePoint)
+			);
 			return nav;
 		}
 		return nav.invalidate();
@@ -451,7 +364,7 @@ export class MatchNotCodePoint extends MatchCodePointBase {
 	}
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
-		const savedNav = nav.save();
+		const savedNav = nav.copy();
 		const result = this.matcher.match(nav);
 		if (result) {
 			return nav.invalidate();
@@ -464,27 +377,6 @@ export class MatchNotCodePoint extends MatchCodePointBase {
 			default:
 				throw new Error("Invalid matcher type");
 		}
-	}
-}
-
-export class MatchString extends MatchBase {
-	public constructor(
-		public readonly matchValue: string | StrSlice
-	) {
-		super();
-	}
-	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertValid();
-		if (
-			nav.source.startsWith(
-				this.matchValue,
-				nav.navIndex
-			)
-		) {
-			nav.moveCaptureForward(this.matchValue.length);
-			return nav;
-		}
-		return nav.invalidate();
 	}
 }
 
@@ -517,7 +409,7 @@ export class MatchAnyMatch extends MatchBase {
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
 		for (const matcher of this.matchers) {
-			const result = matcher.match(nav.save());
+			const result = matcher.match(nav.copy());
 			if (result) {
 				return result;
 			}
@@ -534,7 +426,10 @@ export class MatchAllMatches extends MatchBase {
 	}
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
-		for (const matcher of this.matchers) {
+		const matchersLength = this.matchers.length;
+		const lastMatcherIndex = matchersLength - 1;
+		for (let i = 0; i < matchersLength; i++) {
+			const matcher = this.matchers[i];
 			const result = matcher.match(nav);
 			if (!result) {
 				return nav.invalidate();
@@ -551,7 +446,7 @@ export class MatchOptMatch extends MatchBase {
 	}
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
-		const savedNav = nav.save();
+		const savedNav = nav.copy();
 		const result = this.matcher.match(nav);
 		if (result) {
 			return result;
@@ -602,13 +497,80 @@ export class GhostMatch extends MatchBase {
 	}
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
-		const result = this.matcher.match(nav.save());
+		const result = this.matcher.match(nav.copy());
 		if (result) {
-			nav.moveGhostCaptureForward(
-				result.captureIndex - nav.captureIndex
-			);
+			nav.moveGhostCaptureForward(result.captureLength);
 			return nav;
 		}
 		return nav.invalidate();
+	}
+}
+
+export abstract class FindMatchBase {
+	constructor() {}
+	public abstract match(nav: MutMatchNav): FindResult;
+}
+
+export class FindAnyString extends FindMatchBase {
+	public constructor(
+		public readonly matchValues: (string | StrSlice)[]
+	) {
+		super();
+	}
+
+	public match(nav: MutMatchNav): FindResult {
+		nav.assertValid();
+		nav.assertFresh();
+		const [matchIndex, stringIndex] =
+			nav.source.indexOfMany(
+				this.matchValues,
+				nav.startIndex
+			);
+		if (matchIndex >= 0) {
+			const matchLength =
+				this.matchValues[stringIndex].length;
+			return nav.splitFragmentAndMatch(
+				matchIndex,
+				matchLength
+			);
+		}
+
+		const fragmentNav = nav.copy().moveCaptureToEnd();
+		const matchNav = nav.invalidate();
+		return {
+			matchNav,
+			fragmentNav,
+		};
+	}
+}
+
+export class FindMatch extends FindMatchBase {
+	public constructor(public readonly matcher: MatchBase) {
+		super();
+	}
+	public match(nav: MutMatchNav): FindResult {
+		nav.assertValid();
+		nav.assertFresh();
+		let currentNav = nav.copy();
+		const originalNav = nav.copy();
+
+		while (!currentNav.isEndSlice) {
+			const result = this.matcher.match(
+				currentNav.copyAndMoveStartToNavIndex()
+			);
+			if (result) {
+				return originalNav.splitFragmentAndMatch(
+					result.startIndex,
+					result.captureLength
+				);
+			}
+			currentNav =
+				currentNav.moveCaptureForwardOneCodePoint();
+		}
+
+		return {
+			matchNav: nav.invalidate(),
+			fragmentNav: currentNav,
+		};
 	}
 }

@@ -408,7 +408,7 @@ export class StrSlice {
 	}
 
 	public indexOfMany(
-		values: readonly string[],
+		values: readonly (string | StrSlice)[],
 		childStartIncl?: number
 	): [number, number] {
 		if (values.length === 0) {
@@ -422,7 +422,7 @@ export class StrSlice {
 
 		for (let i = range.startIncl; i < this.length; i++) {
 			for (let j = 0; j < values.length; j++) {
-				const value = values[j] as string;
+				const value = values[j];
 				if (this.startsWith(value, i)) {
 					return [i, j];
 				}
@@ -433,7 +433,7 @@ export class StrSlice {
 	}
 
 	public lastIndexOfMany(
-		values: readonly string[],
+		values: readonly (string | StrSlice)[],
 		childEndExcl?: number
 	): [number, number] {
 		if (values.length === 0) {
@@ -455,7 +455,7 @@ export class StrSlice {
 			i--
 		) {
 			for (let j = 0; j < values.length; j++) {
-				const value = values[j] as string;
+				const value = values[j];
 				if (this.startsWith(value, i)) {
 					return [i, j];
 				}
