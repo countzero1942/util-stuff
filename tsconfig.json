@@ -20,8 +20,9 @@
 		"baseUrl": ".",
 		"paths": {
 			"@/app/*": ["app/*"],
+			"@/trex": ["lib/trex"],
+			"@/trex/*": ["lib/trex/*"],
 			"@/parser/*": ["lib/parser/*"],
-			"@/new-parser/*": ["z_old_code/new-parser/*"],
 			"@/utils/*": ["lib/utils/*"],
 			"@/types/*": ["lib/types/*"],
 			"@/tests/*": ["tests/*"],

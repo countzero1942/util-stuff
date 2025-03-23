@@ -5,6 +5,7 @@ import {
 	isObject,
 	KeyType,
 } from "@/utils/types";
+import { getCodePointCharLength } from "./string";
 
 export type AnySeq = Seq<any>;
 
@@ -1546,6 +1547,21 @@ export class CodePointSeq extends Seq<CodePointElement> {
 
 			elementIndex += 1;
 			charIndex += codePointLength;
+		}
+	}
+
+	public *codePoints() {
+		const length = this.str.length;
+		let charIndex = 0;
+
+		while (charIndex < length) {
+			const codePoint = this.str.codePointAt(charIndex);
+			if (codePoint === undefined) {
+				break;
+			}
+			yield codePoint;
+
+			charIndex += getCodePointCharLength(codePoint);
 		}
 	}
 }

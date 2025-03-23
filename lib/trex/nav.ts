@@ -2,7 +2,7 @@ import { StrSlice } from "@/utils/slice";
 import {
 	isLoneSurrogate,
 	getCodePointCharLength,
-} from "./string";
+} from "../utils/string";
 
 export type FindResult = {
 	matchNav: MutMatchNav | null;
@@ -72,12 +72,8 @@ export class MutMatchNav {
 		return nav;
 	}
 
-	public copyAndMoveStartToNavIndex(): MutMatchNav {
-		const nav = new MutMatchNav(
-			this.source,
-			this._navIndex
-		);
-		return nav;
+	public copyAndMoveStartToNav(): MutMatchNav {
+		return new MutMatchNav(this.source, this._navIndex);
 	}
 
 	public splitFragmentAndMatch(

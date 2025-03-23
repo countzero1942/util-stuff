@@ -76,6 +76,7 @@ import {
 	cleanMultiLineString,
 	cleanMultiLineStringToArray,
 	formatNum,
+	getCodePointCharLength,
 	getMinTabCharsCount,
 } from "@/utils/string";
 import { normalizeStartEnd, StrSlice } from "@/utils/slice";
@@ -92,7 +93,7 @@ import {
 	createRootHead,
 } from "@/parser/utils/parse-trait";
 import { parseKeyHeadErrorTestTextA1 } from "@/tests/data/test-data";
-import { CodePointRange } from "@/utils/matcher";
+import { CodePointRange } from "@/trex";
 
 // logGeneratePassword();
 
@@ -200,3 +201,5 @@ import { CodePointRange } from "@/utils/matcher";
 // // div();
 // // const arr2 = seq.toArray();
 // // logobj(arr2);
+
+const cpr = new CodePointRange(0x0000, 0x00ff);
