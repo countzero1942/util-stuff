@@ -15,7 +15,7 @@ export class MatchCodePoint extends MatchCodePointBase {
 
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
-		const codePoint = nav.getCodePoint();
+		const codePoint = nav.peekCodePoint();
 		if (
 			codePoint !== undefined &&
 			codePoint === this.matchValue
@@ -26,6 +26,16 @@ export class MatchCodePoint extends MatchCodePointBase {
 			return nav;
 		}
 		return nav.invalidate();
+	}
+
+	public matchCodePoint(codePoint: number): boolean {
+		if (
+			codePoint !== undefined &&
+			codePoint === this.matchValue
+		) {
+			return true;
+		}
+		return false;
 	}
 }
 
@@ -38,7 +48,7 @@ export class MatchCodePointLambda extends MatchCodePointBase {
 
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
-		const codePoint = nav.getCodePoint();
+		const codePoint = nav.peekCodePoint();
 		if (
 			codePoint !== undefined &&
 			this.lambda(codePoint)
@@ -49,6 +59,10 @@ export class MatchCodePointLambda extends MatchCodePointBase {
 			return nav;
 		}
 		return nav.invalidate();
+	}
+
+	public matchCodePoint(codePoint: number): boolean {
+		return this.lambda(codePoint);
 	}
 }
 
@@ -61,7 +75,7 @@ export class MatchCodePointSet extends MatchCodePointBase {
 
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
-		const codePoint = nav.getCodePoint();
+		const codePoint = nav.peekCodePoint();
 		if (
 			codePoint !== undefined &&
 			this.codePointSet[codePoint]
@@ -72,6 +86,10 @@ export class MatchCodePointSet extends MatchCodePointBase {
 			return nav;
 		}
 		return nav.invalidate();
+	}
+
+	public matchCodePoint(codePoint: number): boolean {
+		return this.codePointSet[codePoint] ?? false;
 	}
 
 	public static fromString(
@@ -125,7 +143,7 @@ export class MatchCodePointCategories extends MatchCodePointBase {
 
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
-		const codePoint = nav.getCodePoint();
+		const codePoint = nav.peekCodePoint();
 		if (
 			codePoint !== undefined &&
 			this.categories[unicode.getCategory(codePoint)]
@@ -136,6 +154,13 @@ export class MatchCodePointCategories extends MatchCodePointBase {
 			return nav;
 		}
 		return nav.invalidate();
+	}
+
+	public matchCodePoint(codePoint: number): boolean {
+		return (
+			this.categories[unicode.getCategory(codePoint)] ??
+			false
+		);
 	}
 
 	public static fromString(
@@ -213,6 +238,10 @@ export class MatchCodePointRange extends MatchCodePointBase {
 		return nav.invalidate();
 	}
 
+	public matchCodePoint(codePoint: number): boolean {
+		return this.range.contains(codePoint);
+	}
+
 	public static fromString(
 		range: string
 	): MatchCodePointRange {
@@ -245,6 +274,12 @@ export class MatchCodePointRanges extends MatchCodePointBase {
 			return nav;
 		}
 		return nav.invalidate();
+	}
+
+	public matchCodePoint(codePoint: number): boolean {
+		return this.ranges.some(range =>
+			range.contains(codePoint)
+		);
 	}
 
 	public static fromStrings(
@@ -282,6 +317,17 @@ export class MatchNotCodePoint extends MatchCodePointBase {
 				return savedNav;
 			case this.matcher instanceof MatchCodePointBase:
 				return matchAnyCodePoint.match(savedNav);
+			default:
+				throw new Error("Invalid matcher type");
+		}
+	}
+
+	public matchCodePoint(codePoint: number): boolean {
+		switch (true) {
+			case this.matcher instanceof MatchPositionBase:
+				return false;
+			case this.matcher instanceof MatchCodePointBase:
+				return !this.matcher.matchCodePoint(codePoint);
 			default:
 				throw new Error("Invalid matcher type");
 		}

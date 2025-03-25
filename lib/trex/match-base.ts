@@ -10,6 +10,18 @@ export abstract class MatchCodePointBase extends MatchBase {
 	constructor() {
 		super();
 	}
+
+	public abstract matchCodePoint(
+		codePoint: number
+	): boolean;
+}
+
+export abstract class MatchStringBase extends MatchBase {
+	constructor() {
+		super();
+	}
+
+	public abstract matchString(string: string): boolean;
 }
 
 export abstract class MatchPositionBase extends MatchBase {

@@ -2,26 +2,6 @@ import { StrSlice } from "@/utils/slice";
 import { MutMatchNav } from "@/trex/nav";
 import { MatchBase } from "@/trex/match-base";
 
-export class MatchAnyString extends MatchBase {
-	public constructor(
-		public readonly matchValues: (string | StrSlice)[]
-	) {
-		super();
-	}
-	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertValid();
-		for (const matchValue of this.matchValues) {
-			if (
-				nav.source.startsWith(matchValue, nav.navIndex)
-			) {
-				nav.moveCaptureForward(matchValue.length);
-				return nav;
-			}
-		}
-		return nav.invalidate();
-	}
-}
-
 export class MatchAnyMatch extends MatchBase {
 	public constructor(
 		public readonly matchers: MatchBase[]
@@ -81,7 +61,9 @@ export class MatchRepeatMatch extends MatchBase {
 	public constructor(
 		public readonly matcher: MatchBase,
 		public readonly minNumberMatches: number = 1,
-		public readonly maxNumberMatches: number = Number.MAX_SAFE_INTEGER
+		public readonly maxNumberMatches: number = -1,
+		public readonly altFirstMatch: MatchBase | null = null,
+		public readonly altLastMatch: MatchBase | null = null
 	) {
 		super();
 	}
@@ -90,9 +72,30 @@ export class MatchRepeatMatch extends MatchBase {
 		nav.assertValid();
 		let count = 0;
 		let currentNav = nav;
+		const max =
+			this.maxNumberMatches < 0
+				? Number.MAX_SAFE_INTEGER
+				: this.maxNumberMatches;
 
-		while (count < this.maxNumberMatches) {
-			const result = this.matcher.match(currentNav);
+		const firstMatch = this.altFirstMatch
+			? new MatchAnyMatch([
+					this.altFirstMatch,
+					this.matcher,
+				])
+			: this.matcher;
+
+		const nextMatch = this.altLastMatch
+			? new MatchAnyMatch([
+					this.matcher,
+					this.altLastMatch,
+				])
+			: this.matcher;
+
+		while (count < max) {
+			const result =
+				count === 0
+					? firstMatch.match(currentNav.copy())
+					: nextMatch.match(currentNav.copy());
 
 			if (!result) {
 				break;
@@ -102,10 +105,7 @@ export class MatchRepeatMatch extends MatchBase {
 			currentNav = result;
 		}
 
-		if (
-			count >= this.minNumberMatches &&
-			count <= this.maxNumberMatches
-		) {
+		if (count >= this.minNumberMatches && count <= max) {
 			return currentNav;
 		} else {
 			return nav.invalidate();

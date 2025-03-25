@@ -202,4 +202,61 @@ import { CodePointRange } from "@/trex";
 // // const arr2 = seq.toArray();
 // // logobj(arr2);
 
-const cpr = new CodePointRange(0x0000, 0x00ff);
+const repeats = 1_000_000;
+
+function* noCommas(str: string): Generator<number> {
+	const length = str.length;
+	let i = 0;
+	while (i < length) {
+		const codePoint = str.codePointAt(i);
+		if (codePoint === undefined) break;
+		if (codePoint !== 44) {
+			yield codePoint;
+		}
+		i += getCodePointCharLength(codePoint);
+	}
+}
+
+const doGenRemove = (str: string) => {
+	logh("doGenRemove");
+	log(`str before: ${str}`);
+	log(
+		`str after: ${String.fromCodePoint(...noCommas(str))}`
+	);
+	div();
+
+	const start = performance.now();
+
+	for (let i = 0; i < repeats; i++) {
+		let s = String.fromCodePoint(...noCommas(str));
+	}
+
+	const end = performance.now();
+	const time = end - start;
+	log(`Time: ${time.toFixed(3)} ms`);
+	div();
+};
+
+const doStringRemove = (str: string) => {
+	logh("doStringRemove");
+	log(`str before: ${str}`);
+	log(`str after: ${str.replace(/,/g, "")}`);
+	div();
+
+	const start = performance.now();
+	for (let i = 0; i < repeats; i++) {
+		let s = str.replace(/,/g, "");
+	}
+
+	const end = performance.now();
+	const time = end - start;
+	log(`Time: ${time.toFixed(3)} ms`);
+	div();
+};
+
+const numString1 = "1,234,567,890,123,456,789,012,345,678";
+const numString2 = "1,234,567";
+
+doGenRemove(numString1);
+
+doStringRemove(numString1);
