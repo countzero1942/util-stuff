@@ -30,6 +30,7 @@ export class CodePointPrefixIndex<TElement> {
 		for (const element of elements) {
 			this.add(element);
 		}
+		this.clearElementCaches();
 	}
 
 	/**
@@ -45,6 +46,7 @@ export class CodePointPrefixIndex<TElement> {
 			this.dict[codePoint] = [];
 		}
 		this.dict[codePoint].push(element);
+		this.clearElementCaches();
 	}
 
 	/**
@@ -70,6 +72,7 @@ export class CodePointPrefixIndex<TElement> {
 		array.splice(index, 1);
 		if (array.length === 0) {
 			delete this.dict[codePoint];
+			this.clearElementCaches();
 		}
 		return true;
 	}
@@ -80,7 +83,7 @@ export class CodePointPrefixIndex<TElement> {
 	public getElementsByCodePoint(
 		codePoint: number
 	): TElement[] {
-		return this.dict[codePoint] || [];
+		return this.dict[codePoint] ?? [];
 	}
 
 	/**
@@ -104,6 +107,11 @@ export class CodePointPrefixIndex<TElement> {
 		return Object.keys(this.dict).map(key =>
 			parseInt(key, 10)
 		);
+	}
+
+	private clearElementCaches(): void {
+		this.allElements = undefined;
+		this.allKeyLengths = undefined;
 	}
 
 	private allElements: TElement[] | undefined;
@@ -176,8 +184,7 @@ export class CodePointPrefixIndex<TElement> {
 		for (const key in this.dict) {
 			delete this.dict[key];
 		}
-		this.allElements = undefined;
-		this.allKeyLengths = undefined;
+		this.clearElementCaches();
 	}
 
 	/**
