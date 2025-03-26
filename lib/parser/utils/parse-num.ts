@@ -713,7 +713,7 @@ export const parseWNum = (
 
 	return new TypeValuePair(
 		new WNum(),
-		typeValuePair.value
+		typeValuePair.typeValue
 	);
 };
 
@@ -725,7 +725,7 @@ export const parseNNum = (
 		return typeValuePairOrErr;
 	}
 	const typeValuePair = typeValuePairOrErr;
-	const value = typeValuePair.value as number;
+	const value = typeValuePair.typeValue as number;
 	if (value < 1) {
 		return getNumberError(
 			"Not a Natural number",
@@ -734,7 +734,7 @@ export const parseNNum = (
 	}
 	return new TypeValuePair(
 		new NNum(),
-		typeValuePair.value
+		typeValuePair.typeValue
 	);
 };
 
@@ -841,6 +841,6 @@ export const parseRFixedNum = (
 
 	return new TypeValuePair(
 		new RFixed(decimalPlaces),
-		typeValuePair.value
+		typeValuePair.typeValue
 	);
 };

@@ -59,7 +59,7 @@ describe("StrSlice Properties", () => {
 		const slice = StrSlice.from("hello", 0, 3);
 		// @ts-ignore
 		expect(slice.sliceCache).toBe(undefined);
-		const str = slice.toString();
+		const str = slice.value;
 		// @ts-ignore
 		expect(slice.sliceCache).toBe("hel");
 	});

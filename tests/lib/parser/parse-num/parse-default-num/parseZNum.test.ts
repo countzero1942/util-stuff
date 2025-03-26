@@ -15,7 +15,7 @@ describe("parseDefNumber: ZNum successful examples", () => {
 			const expectedValue = 123;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -27,7 +27,7 @@ describe("parseDefNumber: ZNum successful examples", () => {
 			const expectedValue = 0;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -41,7 +41,7 @@ describe("parseDefNumber: ZNum successful examples", () => {
 			const expectedValue = 9007199254740991;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -57,7 +57,7 @@ describe("parseDefNumber: ZNum successful examples", () => {
 			const expectedValue = -123;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -71,7 +71,7 @@ describe("parseDefNumber: ZNum successful examples", () => {
 			const expectedValue = -9007199254740991;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -87,7 +87,7 @@ describe("parseDefNumber: ZNum successful examples", () => {
 			const expectedValue = 1234;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -101,7 +101,7 @@ describe("parseDefNumber: ZNum successful examples", () => {
 			const expectedValue = 1000000;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -115,7 +115,7 @@ describe("parseDefNumber: ZNum successful examples", () => {
 			const expectedValue = -1234567;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}

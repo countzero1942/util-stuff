@@ -235,7 +235,7 @@ describe("MutMatchNav", () => {
 			// peekBeforeSliceByLength returns a slice of the specified length before the current position
 			// So for position 4 ("test string") and length 3, we should get "est"
 			const slice = nav.peekBeforeSliceByLength(3);
-			expect(slice?.toString()).toBe("est");
+			expect(slice?.value).toBe("est");
 		});
 
 		test("peekBeforeSliceByLength should return undefined if not enough characters", () => {
@@ -250,7 +250,7 @@ describe("MutMatchNav", () => {
 			const nav = createNav("test string");
 			nav.moveCaptureForward(4);
 			const match = nav.captureMatch;
-			expect(match.toString()).toBe("test");
+			expect(match.value).toBe("test");
 		});
 
 		test("ghostMatch should return the lookahead portion", () => {
@@ -258,7 +258,7 @@ describe("MutMatchNav", () => {
 			nav.moveCaptureForward(4);
 			nav.moveGhostCaptureForward(2);
 			const ghost = nav.ghostMatch;
-			expect(ghost.toString()).toBe(" s");
+			expect(ghost.value).toBe(" s");
 		});
 	});
 

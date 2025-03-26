@@ -31,17 +31,17 @@ describe("parseLinesToHeads - Success Cases", () => {
 		expect(
 			(
 				result[0] as KeyValueDefinedSource
-			).keyHead.toString()
+			).keyHead.value
 		).toBe("name");
 		expect(
 			(
 				result[0] as KeyValueDefinedSource
-			).valueHead.toString()
+			).valueHead.value
 		).toBe("John");
 		expect(
 			(
 				result[2] as KeyValueDefinedSource
-			).keyHead.toString()
+			).keyHead.value
 		).toBe("value .in .R:6:9");
 	});
 
@@ -58,12 +58,12 @@ describe("parseLinesToHeads - Success Cases", () => {
 		expect(
 			(
 				result[0] as KeyValueRequiredSource
-			).keyHead.toString()
+			).keyHead.value
 		).toBe("age");
 		expect(
 			(
 				result[1] as KeyValueRequiredSource
-			).keyHead.toString()
+			).keyHead.value
 		).toBe("a4 in .Z");
 	});
 
@@ -82,12 +82,12 @@ describe("parseLinesToHeads - Success Cases", () => {
 		expect(
 			(
 				result[0] as KeyBodyRequiredSource
-			).keyHead.toString()
+			).keyHead.value
 		).toBe("person");
 		expect(
 			(
 				result[1] as KeyBodyRequiredSource
-			).keyHead.toString()
+			).keyHead.value
 		).toBe("x R:6:9");
 	});
 

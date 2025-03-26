@@ -45,7 +45,7 @@ export class KeyValueDefinedSource extends KeyValueBase {
 	}
 
 	public toString(): string {
-		return `<KeyValueDefinedHead> ${this.keyHead}: ${this.valueHead}`;
+		return `<KeyValueDefinedHead> ${this.keyHead.value}: ${this.valueHead.value}`;
 	}
 }
 
@@ -67,7 +67,7 @@ export class KeyValueRequiredSource extends KeyValueBase {
 	}
 
 	public toString(): string {
-		return `<KeyValueRequiredHead> ${this.keyHead}`;
+		return `<KeyValueRequiredHead> ${this.keyHead.value}`;
 	}
 
 	public static fromString(
@@ -103,7 +103,7 @@ export class KeyBodyRequiredSource extends KeyValueBase {
 	}
 
 	public toString(): string {
-		return `<KeyBodyRequiredHead> ${this.keyHead}:`;
+		return `<KeyBodyRequiredHead> ${this.keyHead.value}:`;
 	}
 }
 
@@ -120,7 +120,7 @@ export class KeyInvalidSource extends KeyValueBase {
 	}
 
 	public toString(): string {
-		return `<KeyInvalidHead> ${this.keyHead}`;
+		return `<KeyInvalidHead> ${this.keyHead.value}`;
 	}
 }
 
@@ -165,31 +165,31 @@ export class KeyTraitNode extends KeyValueNodeBase {
 	}
 
 	public toString(): string {
-		return `<KeyTrait> ${this.key}:`;
+		return `<KeyTrait> ${this.key.value}:`;
 	}
 }
 
 export class KeyValueDefinedNode extends KeyValueNodeBase {
 	constructor(
-		readonly key: StrSlice,
-		readonly value: TypeValuePair,
+		readonly keyNode: StrSlice,
+		readonly valueNode: TypeValuePair,
 		lineInfo: LineInfo
 	) {
 		super(lineInfo);
 	}
 
 	public checkKey(testKey: string): boolean {
-		return this.key.equals(testKey);
+		return this.keyNode.equals(testKey);
 	}
 
 	public checkValue(value: any, type: TypeBase): boolean {
 		return (
-			this.value.value === value &&
-			this.value.type.equals(type)
+			this.valueNode.typeValue === value &&
+			this.valueNode.type.equals(type)
 		);
 	}
 
 	public toString(): string {
-		return `<KeyValueDefinedPair> ${this.key}: ${this.value.value}`;
+		return `<KeyValueDefinedPair> ${this.keyNode.value}: ${this.valueNode.typeValue}`;
 	}
 }

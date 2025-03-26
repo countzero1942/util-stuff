@@ -147,7 +147,7 @@ describe("typeValuePair", () => {
 				parseDefNumber(valueSlice);
 			if (typeValuePairOrErr instanceof TypeValuePair) {
 				const typeValuePair = typeValuePairOrErr;
-				expect(typeValuePair.value).toBe(123);
+				expect(typeValuePair.typeValue).toBe(123);
 				expect(typeValuePair.type).toBeInstanceOf(ZNum);
 				expect(typeValuePair.valueSlice).toEqual(
 					valueSlice
@@ -165,7 +165,7 @@ describe("typeValuePair", () => {
 				parseDefNumber(valueSlice);
 			if (typeValuePairOrErr instanceof TypeValuePair) {
 				const typeValuePair = typeValuePairOrErr;
-				expect(typeValuePair.value).toBe(-1234e100);
+				expect(typeValuePair.typeValue).toBe(-1234e100);
 				expect(typeValuePair.type).toBeInstanceOf(
 					RPrec
 				);
@@ -190,7 +190,7 @@ describe("typeValuePair", () => {
 				parseDefNumber(valueSlice);
 			if (typeValuePairOrErr instanceof TypeValuePair) {
 				const typeValuePair = typeValuePairOrErr;
-				expect(typeValuePair.value).toBe(-1234e100);
+				expect(typeValuePair.typeValue).toBe(-1234e100);
 				expect(typeValuePair.type).toBeInstanceOf(
 					RPrec
 				);
@@ -224,7 +224,7 @@ describe("typeValuePair", () => {
 				) {
 					const typeValuePair =
 						typeValuePairOrErr.trim();
-					expect(typeValuePair.value).toBe(123);
+					expect(typeValuePair.typeValue).toBe(123);
 					expect(typeValuePair.type).toBeInstanceOf(
 						ZNum
 					);
@@ -247,7 +247,9 @@ describe("typeValuePair", () => {
 				) {
 					const typeValuePair =
 						typeValuePairOrErr.trim();
-					expect(typeValuePair.value).toBe(-1234e100);
+					expect(typeValuePair.typeValue).toBe(
+						-1234e100
+					);
 					expect(typeValuePair.type).toBeInstanceOf(
 						RPrec
 					);
@@ -270,7 +272,9 @@ describe("typeValuePair", () => {
 				) {
 					const typeValuePair =
 						typeValuePairOrErr.trim();
-					expect(typeValuePair.value).toBe(-1234e100);
+					expect(typeValuePair.typeValue).toBe(
+						-1234e100
+					);
 					expect(typeValuePair.type).toBeInstanceOf(
 						RPrec
 					);

@@ -219,7 +219,7 @@ export const logParseDefaultValues = async () => {
 						throw "Never";
 					}
 				}
-				const { type: valueType, value } =
+				const { type: valueType, typeValue: value } =
 					typeValuePairOrErr;
 				loggn(
 					`${keyHead}: ${valueHead} -> ${value}`,

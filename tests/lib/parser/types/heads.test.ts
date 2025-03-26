@@ -272,8 +272,8 @@ describe("KeyValueDefinedPair with string value", () => {
 			lineInfo
 		);
 
-		expect(def.key).toBe(key);
-		expect(def.value).toBe(value);
+		expect(def.keyNode).toBe(key);
+		expect(def.valueNode).toBe(value);
 		expect(def.lineInfo).toBe(lineInfo);
 	});
 
@@ -328,8 +328,8 @@ describe("KeyValueDefinedPair with RPrec value", () => {
 			lineInfo
 		);
 
-		expect(def.key).toBe(key);
-		expect(def.value).toBe(value);
+		expect(def.keyNode).toBe(key);
+		expect(def.valueNode).toBe(value);
 		expect(def.lineInfo).toBe(lineInfo);
 	});
 

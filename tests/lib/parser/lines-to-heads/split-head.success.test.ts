@@ -40,12 +40,12 @@ describe("splitHead - Success Cases", () => {
 			expect(
 				(
 					result as KeyValueDefinedSource
-				).keyHead.toString()
+				).keyHead.value
 			).toBe("name");
 			expect(
 				(
 					result as KeyValueDefinedSource
-				).valueHead.toString()
+				).valueHead.value
 			).toBe("John");
 		}
 		{
@@ -58,12 +58,12 @@ describe("splitHead - Success Cases", () => {
 			expect(
 				(
 					result as KeyValueDefinedSource
-				).keyHead.toString()
+				).keyHead.value
 			).toBe("value .in .R:6:9");
 			expect(
 				(
 					result as KeyValueDefinedSource
-				).valueHead.toString()
+				).valueHead.value
 			).toBe("1.23456");
 		}
 	});
@@ -82,12 +82,12 @@ describe("splitHead - Success Cases", () => {
 				expect(
 					(
 						result as KeyValueDefinedSource
-					).keyHead.toString()
+					).keyHead.value
 				).toBe("value");
 				expect(
 					(
 						result as KeyValueDefinedSource
-					).valueHead.toString()
+					).valueHead.value
 				).toBe("thing: stuff");
 			}
 		}
@@ -102,7 +102,7 @@ describe("splitHead - Success Cases", () => {
 			expect(
 				(
 					result as KeyValueRequiredSource
-				).keyHead.toString()
+				).keyHead.value
 			).toBe("age");
 		}
 		{
@@ -115,7 +115,7 @@ describe("splitHead - Success Cases", () => {
 			expect(
 				(
 					result as KeyValueRequiredSource
-				).keyHead.toString()
+				).keyHead.value
 			).toBe("a4 in .Z");
 		}
 	});
@@ -131,7 +131,7 @@ describe("splitHead - Success Cases", () => {
 			expect(
 				(
 					result as KeyBodyRequiredSource
-				).keyHead.toString()
+				).keyHead.value
 			).toBe("person");
 		}
 	});
@@ -150,7 +150,7 @@ describe("splitHead - Success Cases", () => {
 				expect(
 					(
 						result as KeyBodyRequiredSource
-					).keyHead.toString()
+					).keyHead.value
 				).toBe("x R:6:9");
 			}
 			{
@@ -163,7 +163,7 @@ describe("splitHead - Success Cases", () => {
 				expect(
 					(
 						result as KeyBodyRequiredSource
-					).keyHead.toString()
+					).keyHead.value
 				).toBe("a2 .in .trait");
 			}
 		}

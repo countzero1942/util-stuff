@@ -73,6 +73,7 @@ import { parseDefaultValue } from "@/parser/utils/parse-value";
 import { parse } from "node:path";
 import { parseKeyHead } from "@/parser/utils/parse-key-head";
 import {
+	cleanMultiLineArray,
 	cleanMultiLineString,
 	cleanMultiLineStringToArray,
 	formatNum,
@@ -92,7 +93,11 @@ import {
 	parseTrait,
 	createRootHead,
 } from "@/parser/utils/parse-trait";
-import { parseKeyHeadErrorTestTextA1 } from "@/tests/data/test-data";
+import {
+	expectedParseKeyHeadTestTextReport,
+	parseKeyHeadErrorTestTextA1,
+	parseKeyHeadTestText,
+} from "@/tests/data/test-data";
 import {
 	CodePointRange,
 	GhostMatch,
@@ -100,6 +105,11 @@ import {
 	MutMatchNav,
 	MatchCodePoint,
 } from "@/trex";
+import { KeyParams } from "@/parser/types/key-head";
+import {
+	KeyValueRequiredSource,
+	ParserErrNode,
+} from "@/parser/types/key-value";
 
 // logGeneratePassword();
 
@@ -208,34 +218,57 @@ import {
 // // const arr2 = seq.toArray();
 // // logobj(arr2);
 
-const createLetterMatcher = (
-	letter: string
-): MatchCodePoint => {
-	return new MatchCodePoint(letter.codePointAt(0)!);
-};
+// const createLetterMatcher = (
+// 	letter: string
+// ): MatchCodePoint => {
+// 	return new MatchCodePoint(letter.codePointAt(0)!);
+// };
 
-const matcherA = createLetterMatcher("A");
-const matcherB = createLetterMatcher("B");
-const matcherComma = createLetterMatcher(",");
-const ghostComma = new GhostMatch(matcherComma);
+// const matcherA = createLetterMatcher("A");
+// const matcherB = createLetterMatcher("B");
+// const matcherComma = createLetterMatcher(",");
+// const ghostComma = new GhostMatch(matcherComma);
 
-// First match A and B normally, then match comma as ghost at the end
-const sequence = new MatchAllMatches([
-	matcherA,
-	matcherB,
-	ghostComma,
-]);
+// // First match A and B normally, then match comma as ghost at the end
+// const sequence = new MatchAllMatches([
+// 	matcherA,
+// 	matcherB,
+// 	ghostComma,
+// ]);
 
-const nav = new MutMatchNav(new StrSlice("AB,C"));
-const result = sequence.match(nav);
-if (result) {
-	div();
-	log(`source: ${nav.source.value}`);
-	log(`start: ${result.startIndex}`);
-	log(`navIndex: ${result.navIndex}`);
-	log(`captureIndex: ${result.captureIndex}`);
-	log(`capture: '${result.captureMatch.value}'`);
-	log(`ghost capture: '${result.ghostMatch.value}'`);
-} else {
-	log("No match");
+// const nav = new MutMatchNav(new StrSlice("AB,C"));
+// const result = sequence.match(nav);
+// if (result) {
+// 	div();
+// 	log(`source: ${nav.source.value}`);
+// 	log(`start: ${result.startIndex}`);
+// 	log(`navIndex: ${result.navIndex}`);
+// 	log(`captureIndex: ${result.captureIndex}`);
+// 	log(`capture: '${result.captureMatch.value}'`);
+// 	log(`ghost capture: '${result.ghostMatch.value}'`);
+// } else {
+// 	log("No match");
+// }
+
+const head = KeyValueRequiredSource.fromString(
+	parseKeyHeadTestText
+);
+const keyParamsOrErr = parseKeyHead(head, head.keyHead);
+
+if (keyParamsOrErr instanceof ParserErrNode) {
+	fail("keyParamsOrErr is an instance of ParserErrHead");
 }
+
+const keyParams = keyParamsOrErr as KeyParams;
+
+const reportLines = cleanMultiLineArray(
+	keyParams.toReport(0, "\t")
+);
+
+const expectedReportLines = cleanMultiLineStringToArray(
+	expectedParseKeyHeadTestTextReport
+);
+
+log(expectedReportLines);
+div();
+log(reportLines);

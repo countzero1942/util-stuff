@@ -45,12 +45,12 @@ describe("MatchAnyMatch", () => {
 			const navA = new MutMatchNav(new StrSlice("ABC"));
 			const resultA = anyMatcher.match(navA);
 			expect(resultA).not.toBeNull();
-			expect(resultA?.captureMatch.toString()).toBe("A");
+			expect(resultA?.captureMatch.value).toBe("A");
 
 			const navB = new MutMatchNav(new StrSlice("BCD"));
 			const resultB = anyMatcher.match(navB);
 			expect(resultB).not.toBeNull();
-			expect(resultB?.captureMatch.toString()).toBe("B");
+			expect(resultB?.captureMatch.value).toBe("B");
 		});
 
 		it("should return null if none of the matchers match", () => {
@@ -80,7 +80,7 @@ describe("MatchAnyMatch", () => {
 			const result = anyMatcher.match(nav);
 
 			expect(result).not.toBeNull();
-			expect(result?.captureMatch.toString()).toBe("A");
+			expect(result?.captureMatch.value).toBe("A");
 		});
 	});
 });
@@ -114,7 +114,7 @@ describe("MatchAllMatches", () => {
 			const result = allMatcher.match(nav);
 
 			expect(result).not.toBeNull();
-			expect(result?.captureMatch.toString()).toBe("AB");
+			expect(result?.captureMatch.value).toBe("AB");
 		});
 
 		it("should return null if any matcher in the sequence fails", () => {
@@ -148,9 +148,7 @@ describe("MatchAllMatches", () => {
 			const result = allMatcher.match(nav);
 
 			expect(result).not.toBeNull();
-			expect(result?.captureMatch.toString()).toBe(
-				"ABC"
-			);
+			expect(result?.captureMatch.value).toBe("ABC");
 			expect(result?.captureIndex).toBe(3);
 		});
 
@@ -161,7 +159,7 @@ describe("MatchAllMatches", () => {
 			const result = allMatcher.match(nav);
 
 			expect(result).not.toBeNull();
-			expect(result?.captureMatch.toString()).toBe("");
+			expect(result?.captureMatch.value).toBe("");
 		});
 	});
 });
@@ -185,7 +183,7 @@ describe("MatchOptMatch", () => {
 			const result = optMatcher.match(nav);
 
 			expect(result).not.toBeNull();
-			expect(result?.captureMatch.toString()).toBe("A");
+			expect(result?.captureMatch.value).toBe("A");
 		});
 
 		it("should return the original navigator without advancing if the inner matcher doesn't match", () => {
@@ -198,7 +196,7 @@ describe("MatchOptMatch", () => {
 
 			expect(result).not.toBeNull();
 			expect(result?.navIndex).toBe(originalNavIndex);
-			expect(result?.captureMatch.toString()).toBe("");
+			expect(result?.captureMatch.value).toBe("");
 		});
 
 		it("should not invalidate the navigator if the inner matcher doesn't match", () => {
@@ -277,7 +275,7 @@ describe("MatchRepeatMatch", () => {
 			const result = repeatMatcher.match(nav);
 
 			expect(result).not.toBeNull();
-			expect(result?.captureMatch.toString()).toBe("AA");
+			expect(result?.captureMatch.value).toBe("AA");
 		});
 
 		it("should match up to the maximum allowed occurrences", () => {
@@ -292,7 +290,7 @@ describe("MatchRepeatMatch", () => {
 			const result = repeatMatcher.match(nav);
 
 			expect(result).not.toBeNull();
-			expect(result?.captureMatch.toString()).toBe(
+			expect(result?.captureMatch.value).toBe(
 				"AAA"
 			);
 		});
@@ -325,7 +323,7 @@ describe("MatchRepeatMatch", () => {
 			const result = repeatMatcher.match(nav);
 
 			expect(result).not.toBeNull();
-			expect(result?.captureMatch.toString()).toBe(
+			expect(result?.captureMatch.value).toBe(
 				"AAAAA"
 			);
 		});
@@ -344,7 +342,7 @@ describe("MatchRepeatMatch", () => {
 			const result = repeatMatcher.match(nav);
 
 			expect(result).not.toBeNull();
-			expect(result?.captureMatch.toString()).toBe(
+			expect(result?.captureMatch.value).toBe(
 				"BAA"
 			);
 		});
@@ -364,7 +362,7 @@ describe("MatchRepeatMatch", () => {
 			const result = repeatMatcher.match(nav);
 
 			expect(result).not.toBeNull();
-			expect(result?.captureMatch.toString()).toBe(
+			expect(result?.captureMatch.value).toBe(
 				"AAB"
 			);
 		});
@@ -381,7 +379,7 @@ describe("MatchRepeatMatch", () => {
 			const result = repeatMatcher.match(nav);
 
 			expect(result).not.toBeNull();
-			expect(result?.captureMatch.toString()).toBe("");
+			expect(result?.captureMatch.value).toBe("");
 		});
 	});
 });
@@ -405,8 +403,8 @@ describe("GhostMatch", () => {
 			const result = ghostMatcher.match(nav);
 
 			expect(result).not.toBeNull();
-			expect(result?.captureMatch.toString()).toBe("");
-			expect(result?.ghostMatch.toString()).toBe("A");
+			expect(result?.captureMatch.value).toBe("");
+			expect(result?.ghostMatch.value).toBe("A");
 		});
 
 		it("should return null if the inner matcher doesn't match", () => {
@@ -437,10 +435,10 @@ describe("GhostMatch", () => {
 			const result = sequence.match(nav);
 
 			expect(result).not.toBeNull();
-			expect(result?.captureMatch.toString()).toBe("AB");
+			expect(result?.captureMatch.value).toBe("AB");
 			// The ghost match includes everything from capture index to nav index
 			// The comma matcher advances nav index by 1, but the ghost capture includes all text
-			expect(result?.ghostMatch.toString()).toBe(",");
+			expect(result?.ghostMatch.value).toBe(",");
 			expect(result?.captureIndex).toBe(2);
 			expect(result?.navIndex).toBe(3);
 		});
@@ -479,18 +477,18 @@ describe("GhostMatch", () => {
 			// First match A normally
 			const resultA = matcherA.match(nav);
 			expect(resultA).not.toBeNull();
-			expect(resultA?.captureMatch.toString()).toBe("A");
-			expect(resultA?.ghostMatch.toString()).toBe("");
+			expect(resultA?.captureMatch.value).toBe("A");
+			expect(resultA?.ghostMatch.value).toBe("");
 
 			// Then match comma as ghost at the end of this sequence
 			const resultComma = ghostComma.match(resultA!);
 			expect(resultComma).not.toBeNull();
-			expect(resultComma?.captureMatch.toString()).toBe(
+			expect(resultComma?.captureMatch.value).toBe(
 				"A"
 			);
 			// The ghost match includes everything from capture index to nav index
 			// Even though only the comma is matched, the ghost capture includes all remaining text
-			expect(resultComma?.ghostMatch.toString()).toBe(
+			expect(resultComma?.ghostMatch.value).toBe(
 				","
 			);
 

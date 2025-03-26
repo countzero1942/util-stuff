@@ -34,7 +34,7 @@ describe("RNumBase parseNum", () => {
 			const result = type.parseNum(new StrSlice(value));
 			expect(result).toBeInstanceOf(TypeValuePair);
 			if (result instanceof TypeValuePair) {
-				expect(result.value).toBe(
+				expect(result.typeValue).toBe(
 					expectedValues[index]
 				);
 				expect(result.type).toStrictEqual(new RPrec(4));
@@ -99,7 +99,7 @@ describe("RPrec parseNum", () => {
 			const result = type.parseNum(new StrSlice(value));
 			expect(result).toBeInstanceOf(TypeValuePair);
 			if (result instanceof TypeValuePair) {
-				expect(result.value).toBe(
+				expect(result.typeValue).toBe(
 					expectedValues[index]
 				);
 				expect(result.type).toStrictEqual(new RPrec(4));
@@ -162,7 +162,7 @@ describe("RFixed parseNum", () => {
 			const result = type.parseNum(new StrSlice(value));
 			expect(result).toBeInstanceOf(TypeValuePair);
 			if (result instanceof TypeValuePair) {
-				expect(result.value).toBe(
+				expect(result.typeValue).toBe(
 					expectedValues[index]
 				);
 				expect(result.type).toStrictEqual(
@@ -227,7 +227,7 @@ describe("ZNum parseNum", () => {
 			const result = type.parseNum(new StrSlice(value));
 			expect(result).toBeInstanceOf(TypeValuePair);
 			if (result instanceof TypeValuePair) {
-				expect(result.value).toBe(
+				expect(result.typeValue).toBe(
 					expectedValues[index]
 				);
 				expect(result.type).toStrictEqual(type);
@@ -289,7 +289,7 @@ describe("WNum parseNum", () => {
 			const result = type.parseNum(new StrSlice(value));
 			expect(result).toBeInstanceOf(TypeValuePair);
 			if (result instanceof TypeValuePair) {
-				expect(result.value).toBe(
+				expect(result.typeValue).toBe(
 					expectedValues[index]
 				);
 				expect(result.type).toStrictEqual(type);
@@ -352,7 +352,7 @@ describe("NNum parseNum", () => {
 			const result = type.parseNum(new StrSlice(value));
 			expect(result).toBeInstanceOf(TypeValuePair);
 			if (result instanceof TypeValuePair) {
-				expect(result.value).toBe(
+				expect(result.typeValue).toBe(
 					expectedValues[index]
 				);
 				expect(result.type).toStrictEqual(type);

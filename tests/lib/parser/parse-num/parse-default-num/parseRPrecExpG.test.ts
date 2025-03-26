@@ -15,7 +15,7 @@ describe("parseDefNumber: RPrec g Exponent successful examples", () => {
 			const expectedValue = 1.2345e103;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -28,7 +28,7 @@ describe("parseDefNumber: RPrec g Exponent successful examples", () => {
 			const expectedValue = 1.234e103;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -42,7 +42,7 @@ describe("parseDefNumber: RPrec g Exponent successful examples", () => {
 			const expectedValue = 1.234e99;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -58,7 +58,7 @@ describe("parseDefNumber: RPrec g Exponent successful examples", () => {
 			const expectedValue = 1.2345e103;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -71,7 +71,7 @@ describe("parseDefNumber: RPrec g Exponent successful examples", () => {
 			const expectedValue = 1.234e103;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -85,7 +85,7 @@ describe("parseDefNumber: RPrec g Exponent successful examples", () => {
 			const expectedValue = 1.234e99;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -101,7 +101,7 @@ describe("parseDefNumber: RPrec g Exponent successful examples", () => {
 			const expectedValue = -1234.5e-100;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -114,7 +114,7 @@ describe("parseDefNumber: RPrec g Exponent successful examples", () => {
 			const expectedValue = -1234.0e-100;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -128,7 +128,7 @@ describe("parseDefNumber: RPrec g Exponent successful examples", () => {
 			const expectedValue = -0.1234e-100;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -141,7 +141,7 @@ describe("parseDefNumber: RPrec g Exponent successful examples", () => {
 			const expectedValue = -0.1234e100;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -157,7 +157,7 @@ describe("parseDefNumber: RPrec g Exponent successful examples", () => {
 			const expectedValue = 0.001234e100;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -171,7 +171,7 @@ describe("parseDefNumber: RPrec g Exponent successful examples", () => {
 			const expectedValue = 0.0123e-100;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -185,7 +185,7 @@ describe("parseDefNumber: RPrec g Exponent successful examples", () => {
 			const expectedValue = 0.0123e100;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -199,7 +199,7 @@ describe("parseDefNumber: RPrec g Exponent successful examples", () => {
 			const expectedValue = -0.0123e100;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -213,7 +213,7 @@ describe("parseDefNumber: RPrec g Exponent successful examples", () => {
 			const expectedValue = 0.0123e-100;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -227,7 +227,7 @@ describe("parseDefNumber: RPrec g Exponent successful examples", () => {
 			const expectedValue = -0.0123e100;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -243,7 +243,7 @@ describe("parseDefNumber: RPrec g Exponent successful examples", () => {
 			const expectedValue = 1234.0e100;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -256,7 +256,7 @@ describe("parseDefNumber: RPrec g Exponent successful examples", () => {
 			const expectedValue = 1234.0e-100;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -269,7 +269,7 @@ describe("parseDefNumber: RPrec g Exponent successful examples", () => {
 			const expectedValue = -1_234_567.0e100;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -282,7 +282,7 @@ describe("parseDefNumber: RPrec g Exponent successful examples", () => {
 			const expectedValue = 1_234_567.0e100;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -295,7 +295,7 @@ describe("parseDefNumber: RPrec g Exponent successful examples", () => {
 			const expectedValue = -0.001234567e100;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -308,7 +308,7 @@ describe("parseDefNumber: RPrec g Exponent successful examples", () => {
 			const expectedValue = -0.001234567e-100;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -322,7 +322,7 @@ describe("parseDefNumber: RPrec g Exponent successful examples", () => {
 			const expectedValue = 0.001234567e-100;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -335,7 +335,7 @@ describe("parseDefNumber: RPrec g Exponent successful examples", () => {
 			const expectedValue = -0.001234567e100;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}

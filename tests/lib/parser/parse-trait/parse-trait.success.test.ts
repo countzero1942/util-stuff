@@ -98,8 +98,10 @@ describe("parseTrait - Success Cases", () => {
 		const nValue = yTrait
 			.children[1] as KeyValueDefinedNode;
 		expect(nValue.checkKey("n")).toBe(true);
-		expect(nValue.value.value).toBe(-1_000_000);
-		expect(nValue.value.type).toStrictEqual(new ZNum());
+		expect(nValue.valueNode.typeValue).toBe(-1_000_000);
+		expect(nValue.valueNode.type).toStrictEqual(
+			new ZNum()
+		);
 	});
 
 	test("should parse trait with kebab-case keys", async () => {
@@ -141,15 +143,19 @@ describe("parseTrait - Success Cases", () => {
 			.children[0] as KeyValueDefinedNode;
 		expect(kebab1.lineInfo.indent).toBe(1);
 		expect(kebab1.checkKey("ke-bab-1")).toBe(true);
-		expect(kebab1.value.value).toBe(22);
-		expect(kebab1.value.type).toStrictEqual(new ZNum());
+		expect(kebab1.valueNode.typeValue).toBe(22);
+		expect(kebab1.valueNode.type).toStrictEqual(
+			new ZNum()
+		);
 
 		const kebab2 = oTrait
 			.children[1] as KeyValueDefinedNode;
 		expect(kebab2.lineInfo.indent).toBe(1);
 		expect(kebab2.checkKey("ke-bab-2")).toBe(true);
-		expect(kebab2.value.value).toBe(4.4);
-		expect(kebab2.value.type).toStrictEqual(new RPrec(2));
+		expect(kebab2.valueNode.typeValue).toBe(4.4);
+		expect(kebab2.valueNode.type).toStrictEqual(
+			new RPrec(2)
+		);
 
 		const kebab3 = oTrait.children[2] as KeyTraitNode;
 		expect(kebab3.lineInfo.indent).toBe(1);
@@ -160,8 +166,10 @@ describe("parseTrait - Success Cases", () => {
 			.children[0] as KeyValueDefinedNode;
 		expect(snakeA.lineInfo.indent).toBe(2);
 		expect(snakeA.checkKey("snake_a")).toBe(true);
-		expect(snakeA.value.value.toString()).toBe("sss");
-		expect(snakeA.value.type).toStrictEqual(new Str());
+		expect(snakeA.valueNode.typeValue.value).toBe("sss");
+		expect(snakeA.valueNode.type).toStrictEqual(
+			new Str()
+		);
 	});
 
 	test("should parse trait with multi-word string values", async () => {
@@ -182,9 +190,11 @@ describe("parseTrait - Success Cases", () => {
 			.children[0] as KeyValueDefinedNode;
 		expect(snakeD.lineInfo.indent).toBe(0);
 		expect(snakeD.checkKey("snake_d")).toBe(true);
-		expect(snakeD.value.value.toString()).toBe(
+		expect(snakeD.valueNode.typeValue.value).toBe(
 			"hiss boom bah"
 		);
-		expect(snakeD.value.type).toStrictEqual(new Str());
+		expect(snakeD.valueNode.type).toStrictEqual(
+			new Str()
+		);
 	});
 });

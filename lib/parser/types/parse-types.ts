@@ -17,7 +17,7 @@ export type AnalyzeNumberStringReport = {
 export class TypeValuePair {
 	constructor(
 		public readonly type: TypeBase,
-		public readonly value: any,
+		public readonly typeValue: any,
 		public readonly valueSlice:
 			| StrSlice
 			| undefined = undefined,
@@ -27,11 +27,15 @@ export class TypeValuePair {
 	) {}
 
 	toString(): string {
-		return `${this.value} in ${this.type.toParsableString()}`;
+		const valueStr =
+			this.typeValue instanceof StrSlice
+				? this.typeValue.value
+				: this.typeValue;
+		return `${valueStr} in ${this.type.toParsableString()}`;
 	}
 
 	public trim(): TypeValuePair {
-		return new TypeValuePair(this.type, this.value);
+		return new TypeValuePair(this.type, this.typeValue);
 	}
 }
 

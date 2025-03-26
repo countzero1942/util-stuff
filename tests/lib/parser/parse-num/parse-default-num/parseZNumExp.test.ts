@@ -15,7 +15,7 @@ describe("parseDefNumber: ZNum with exponent successful examples", () => {
 			const expectedValue = 12300;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -29,7 +29,7 @@ describe("parseDefNumber: ZNum with exponent successful examples", () => {
 			const expectedValue = 1000;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -43,7 +43,7 @@ describe("parseDefNumber: ZNum with exponent successful examples", () => {
 			const expectedValue = 5;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -59,7 +59,7 @@ describe("parseDefNumber: ZNum with exponent successful examples", () => {
 			const expectedValue = -12300;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -73,7 +73,7 @@ describe("parseDefNumber: ZNum with exponent successful examples", () => {
 			const expectedValue = -1000;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -89,7 +89,7 @@ describe("parseDefNumber: ZNum with exponent successful examples", () => {
 			const expectedValue = 123400;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}
@@ -103,7 +103,7 @@ describe("parseDefNumber: ZNum with exponent successful examples", () => {
 			const expectedValue = -1000000;
 			if (result instanceof TypeValuePair) {
 				expect(result.type).toStrictEqual(expectedType);
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 			} else {
 				expect(true).toBe(false);
 			}

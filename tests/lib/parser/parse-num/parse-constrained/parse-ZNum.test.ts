@@ -42,7 +42,7 @@ describe("parseZNum", () => {
 				expectedValues[index]!;
 
 			if (result instanceof TypeValuePair) {
-				expect(result.value).toBe(expectedValue);
+				expect(result.typeValue).toBe(expectedValue);
 				expect(result.type).toStrictEqual(expectedType);
 			} else {
 				expect(true).toBe(false);

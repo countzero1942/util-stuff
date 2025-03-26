@@ -133,7 +133,7 @@ export class TypeParams extends ParamBase {
 		const indentStr3 = indentStr.repeat(indents + 2);
 
 		strs.push(
-			`${indentStr1}Type: ${this.fullName.toString()}`
+			`${indentStr1}Type: ${this.fullName.value}`
 		);
 		strs.push(`${indentStr1}Name param: `);
 		strs.push(
@@ -182,9 +182,7 @@ export class KeyParams extends ParamBase {
 		const indentStr2 = indentStr.repeat(indents + 1);
 		const indentStr3 = indentStr.repeat(indents + 2);
 
-		strs.push(
-			`${indentStr1}Key: ${this.fullName.toString()}`
-		);
+		strs.push(`${indentStr1}Key: ${this.fullName.value}`);
 		if (this.typeParams) {
 			strs.push(`${indentStr1}Types: `);
 			this.typeParams.forEach(typeParam => {

@@ -6,6 +6,7 @@ import {
 	KeyTraitNode,
 	KeyValueDefinedNode,
 } from "@/parser/types/key-value";
+import { StrSlice } from "@/utils/slice";
 
 export const getTraitReport = async (
 	trait: KeyTraitNode,
@@ -34,18 +35,23 @@ export const getTraitReport = async (
 		switch (true) {
 			case child instanceof KeyValueDefinedSource:
 				addLine(
-					`${child.keyHead}: ${child.valueHead}`,
+					`${child.keyHead.value}: ${child.valueHead.value}`,
 					indent,
 					row
 				);
 				break;
 			case child instanceof KeyValueDefinedNode:
 				{
-					const { key } = child;
-					const { value, type } = child.value;
+					const { keyNode, valueNode } = child;
+					const { typeValue, type } = valueNode;
+
+					// const typeStr =
+					// 	typeValue instanceof StrSlice
+					// 		? typeValue.value
+					// 		: typeValue.toString();
 
 					addLine(
-						`${key} .in ${type.toParsableString()}: ${value}`,
+						`${keyNode.value} .in ${type.toParsableString()}: ${typeValue.toString()}`,
 						indent,
 						row
 					);
@@ -54,7 +60,7 @@ export const getTraitReport = async (
 			case child instanceof KeyTraitNode:
 				{
 					lines.push({
-						content: `${child.key}:`,
+						content: `${child.key.value}:`,
 						indent,
 						row,
 					});

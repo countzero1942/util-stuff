@@ -56,8 +56,8 @@ describe("parseTrait - Error Cases", () => {
 		const childA = rootTrait
 			.children[0] as KeyValueDefinedNode;
 		expect(childA.checkKey("a")).toBe(true);
-		expect(childA.value.value).toBe(42);
-		expect(childA.value.type).toBeInstanceOf(ZNum);
+		expect(childA.valueNode.typeValue).toBe(42);
+		expect(childA.valueNode.type).toBeInstanceOf(ZNum);
 		// expect(childA.checkValue(42, new ZNum())).toBe(true);
 		expect(childA.lineInfo.indent).toBe(0);
 
@@ -257,9 +257,7 @@ describe("parseTrait - Error Cases", () => {
 		);
 
 		const spaces = structureErr.getHead();
-		expect(spaces.keyHead.toString()).toBe(
-			"   spaces: 23"
-		);
+		expect(spaces.keyHead.value).toBe("   spaces: 23");
 
 		const expectedReportLines: string[] = [
 			"   1  d:",
@@ -295,7 +293,7 @@ describe("parseTrait - Error Cases", () => {
 		);
 
 		const keyColon = structureErr.getHead();
-		expect(keyColon.keyHead.toString()).toBe(
+		expect(keyColon.keyHead.value).toBe(
 			"key:value:value"
 		);
 
