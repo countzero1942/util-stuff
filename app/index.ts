@@ -93,7 +93,13 @@ import {
 	createRootHead,
 } from "@/parser/utils/parse-trait";
 import { parseKeyHeadErrorTestTextA1 } from "@/tests/data/test-data";
-import { CodePointRange } from "@/trex";
+import {
+	CodePointRange,
+	GhostMatch,
+	MatchAllMatches,
+	MutMatchNav,
+	MatchCodePoint,
+} from "@/trex";
 
 // logGeneratePassword();
 
@@ -202,61 +208,34 @@ import { CodePointRange } from "@/trex";
 // // const arr2 = seq.toArray();
 // // logobj(arr2);
 
-const repeats = 1_000_000;
+const createLetterMatcher = (
+	letter: string
+): MatchCodePoint => {
+	return new MatchCodePoint(letter.codePointAt(0)!);
+};
 
-function* noCommas(str: string): Generator<number> {
-	const length = str.length;
-	let i = 0;
-	while (i < length) {
-		const codePoint = str.codePointAt(i);
-		if (codePoint === undefined) break;
-		if (codePoint !== 44) {
-			yield codePoint;
-		}
-		i += getCodePointCharLength(codePoint);
-	}
+const matcherA = createLetterMatcher("A");
+const matcherB = createLetterMatcher("B");
+const matcherComma = createLetterMatcher(",");
+const ghostComma = new GhostMatch(matcherComma);
+
+// First match A and B normally, then match comma as ghost at the end
+const sequence = new MatchAllMatches([
+	matcherA,
+	matcherB,
+	ghostComma,
+]);
+
+const nav = new MutMatchNav(new StrSlice("AB,C"));
+const result = sequence.match(nav);
+if (result) {
+	div();
+	log(`source: ${nav.source.value}`);
+	log(`start: ${result.startIndex}`);
+	log(`navIndex: ${result.navIndex}`);
+	log(`captureIndex: ${result.captureIndex}`);
+	log(`capture: '${result.captureMatch.value}'`);
+	log(`ghost capture: '${result.ghostMatch.value}'`);
+} else {
+	log("No match");
 }
-
-const doGenRemove = (str: string) => {
-	logh("doGenRemove");
-	log(`str before: ${str}`);
-	log(
-		`str after: ${String.fromCodePoint(...noCommas(str))}`
-	);
-	div();
-
-	const start = performance.now();
-
-	for (let i = 0; i < repeats; i++) {
-		let s = String.fromCodePoint(...noCommas(str));
-	}
-
-	const end = performance.now();
-	const time = end - start;
-	log(`Time: ${time.toFixed(3)} ms`);
-	div();
-};
-
-const doStringRemove = (str: string) => {
-	logh("doStringRemove");
-	log(`str before: ${str}`);
-	log(`str after: ${str.replace(/,/g, "")}`);
-	div();
-
-	const start = performance.now();
-	for (let i = 0; i < repeats; i++) {
-		let s = str.replace(/,/g, "");
-	}
-
-	const end = performance.now();
-	const time = end - start;
-	log(`Time: ${time.toFixed(3)} ms`);
-	div();
-};
-
-const numString1 = "1,234,567,890,123,456,789,012,345,678";
-const numString2 = "1,234,567";
-
-doGenRemove(numString1);
-
-doStringRemove(numString1);

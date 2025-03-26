@@ -29,7 +29,6 @@ export class MatchAllMatches extends MatchBase {
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
 		const matchersLength = this.matchers.length;
-		const lastMatcherIndex = matchersLength - 1;
 		for (let i = 0; i < matchersLength; i++) {
 			const matcher = this.matchers[i];
 			const result = matcher.match(nav);
@@ -119,7 +118,9 @@ export class GhostMatch extends MatchBase {
 	}
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
-		const result = this.matcher.match(nav.copy());
+		const result = this.matcher.match(
+			nav.copyAndMoveStartToNav()
+		);
 		if (result) {
 			nav.moveGhostCaptureForward(result.captureLength);
 			return nav;

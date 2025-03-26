@@ -1,5 +1,5 @@
-import { MutMatchNav } from "../../../lib/trex/nav";
-import { StrSlice } from "../../../lib/utils/slice";
+import { MutMatchNav } from "@/trex/nav";
+import { StrSlice } from "@/utils/slice";
 
 describe("MutMatchNav", () => {
 	// Helper function to create a nav with a given source text
@@ -249,7 +249,7 @@ describe("MutMatchNav", () => {
 		test("accumulatedMatch should return the captured portion", () => {
 			const nav = createNav("test string");
 			nav.moveCaptureForward(4);
-			const match = nav.accumulatedMatch;
+			const match = nav.captureMatch;
 			expect(match.toString()).toBe("test");
 		});
 

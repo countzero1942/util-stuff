@@ -365,7 +365,7 @@ export class MutMatchNav {
 	/**
 	 * Gets the successfully matched portion of the source text
 	 */
-	public get accumulatedMatch(): StrSlice {
+	public get captureMatch(): StrSlice {
 		return this.source.slice(
 			this._startIndex,
 			this._captureIndex
@@ -373,7 +373,9 @@ export class MutMatchNav {
 	}
 
 	/**
-	 * Gets the lookahead portion of the source text (ghost capture)
+	 * Gets the ghost capture portion of the source text.
+	 * This is the portion between _captureIndex and _navIndex,
+	 * representing text that has been navigated but not yet committed to the capture.
 	 */
 	public get ghostMatch(): StrSlice {
 		return this.source.slice(

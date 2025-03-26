@@ -539,7 +539,7 @@ describe("CodePointPrefixIndex", () => {
 	});
 
 	describe("Caching Behavior", () => {
-		test("getAllElements should return cached results until modified", () => {
+		test("getAllElements should return cached results and invalidate cache on modification", () => {
 			const items = [
 				{ key: "apple", value: 1 },
 				{ key: "banana", value: 2 },
@@ -553,23 +553,15 @@ describe("CodePointPrefixIndex", () => {
 			const result1 = index.getAllElements();
 			expect(result1).toHaveLength(2);
 
-			// Add a new element - this won't update the cache
+			// Add a new element - this will clear the cache
 			index.add({ key: "cherry", value: 3 });
 
-			// Second call should still return cached result
+			// Second call should return new results
 			const result2 = index.getAllElements();
-			expect(result2).toHaveLength(2);
+			expect(result2).toHaveLength(3);
 
-			// Clear invalidates the cache
-			index.clear();
-			index.addAll([
-				...items,
-				{ key: "cherry", value: 3 },
-			]);
-
-			// Now we should get fresh results
-			const result3 = index.getAllElements();
-			expect(result3).toHaveLength(3);
+			// Results should be different objects
+			expect(result2).not.toBe(result1);
 		});
 
 		test("getAllKeyLengths should return cached results until modified", () => {
@@ -586,23 +578,15 @@ describe("CodePointPrefixIndex", () => {
 			const result1 = index.getAllKeyLengths();
 			expect(result1).toEqual([1, 3]);
 
-			// Add a new element - this won't update the cache
+			// Add a new element - this will clear the cache
 			index.add({ key: "abcde", value: 3 });
 
-			// Second call should still return cached result
+			// Second call should return new results
 			const result2 = index.getAllKeyLengths();
-			expect(result2).toEqual([1, 3]);
+			expect(result2).toEqual([1, 3, 5]);
 
-			// Clear invalidates the cache
-			index.clear();
-			index.addAll([
-				...items,
-				{ key: "abcde", value: 3 },
-			]);
-
-			// Now we should get fresh results
-			const result3 = index.getAllKeyLengths();
-			expect(result3).toEqual([1, 3, 5]);
+			// Results should be different objects
+			expect(result2).not.toBe(result1);
 		});
 	});
 });

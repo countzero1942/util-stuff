@@ -123,7 +123,7 @@ const initializeAllUnicodeCategories = (): Record<
 > => {
 	const categoriesSet: Record<string, boolean> = {};
 	const categoriesString =
-		"Cc Cf Co Cs Ll Lm Lo Lt Lu Mc Me Mn Nd " +
+		"Cc Cf Cn Co Cs Ll Lm Lo Lt Lu Mc Me Mn Nd " +
 		"Nl No Pc Pd Pe Pf Pi Po Ps Sc Sk Sm So Zl Zp Zs";
 	for (const category of categoriesString.split(" ")) {
 		categoriesSet[category] = true;
@@ -297,7 +297,7 @@ export const matchAnyCodePoint = new MatchCodePointRange(
 	new CodePointRange(0, 0x10ffff)
 );
 
-export class MatchNotCodePoint extends MatchCodePointBase {
+export class MatchNotCodePointOrPosition extends MatchCodePointBase {
 	public constructor(
 		public readonly matcher:
 			| MatchCodePointBase
