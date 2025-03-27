@@ -250,25 +250,8 @@ import {
 // 	log("No match");
 // }
 
-const head = KeyValueRequiredSource.fromString(
-	parseKeyHeadTestText
-);
-const keyParamsOrErr = parseKeyHead(head, head.keyHead);
-
-if (keyParamsOrErr instanceof ParserErrNode) {
-	fail("keyParamsOrErr is an instance of ParserErrHead");
-}
-
-const keyParams = keyParamsOrErr as KeyParams;
-
-const reportLines = cleanMultiLineArray(
-	keyParams.toReport(0, "\t")
-);
-
-const expectedReportLines = cleanMultiLineStringToArray(
-	expectedParseKeyHeadTestTextReport
-);
-
-log(expectedReportLines);
-div();
-log(reportLines);
+const nav = new MutMatchNav(new StrSlice("test string"));
+nav.moveCaptureForward(4); // Move to position 4 first
+logobj(nav);
+nav.moveStartForward(2); // Move start forward by 2
+logobj(nav);

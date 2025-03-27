@@ -5,21 +5,6 @@ import {
 } from "../utils/string";
 
 /**
- * Result of a split operation containing both the matched portion
- * and the fragment before the match
- */
-export type FindResult = {
-	/**
-	 * Navigator for the matched portion, or null if no match
-	 */
-	matchNav: MutMatchNav | null;
-	/**
-	 * Navigator for the fragment before the match
-	 */
-	fragmentNav: MutMatchNav;
-};
-
-/**
  * MutMatchNav (Mutable Match Navigator)
  *
  * A core component of the trait-tree parser system that implements a mutable
@@ -117,10 +102,26 @@ export class MutMatchNav {
 	 * @param length Number of characters to advance the start position
 	 * @returns This navigator instance for method chaining
 	 */
-	public moveStartForward(length: number): MutMatchNav {
-		this._startIndex += length;
+	public moveStartForward(
+		length: number = 0
+	): MutMatchNav {
+		this._startIndex = this._navIndex + length;
 		this._captureIndex = this._startIndex;
 		this._navIndex = this._startIndex;
+		return this;
+	}
+
+	public moveStartForwardOneCodePoint(): MutMatchNav {
+		const currentCodePoint = this.peekCodePoint();
+		if (currentCodePoint === undefined) {
+			return this;
+		}
+		const length = getCodePointCharLength(
+			currentCodePoint
+		);
+		this._startIndex += length;
+		this._navIndex = this._startIndex;
+		this._captureIndex = this._startIndex;
 		return this;
 	}
 
@@ -164,24 +165,10 @@ export class MutMatchNav {
 		return new MutMatchNav(this.source, this._navIndex);
 	}
 
-	/**
-	 * Splits the current match into a fragment and a match portion
-	 * Used for complex parsing operations that need to track both
-	 *
-	 * @param matchStart Offset from start index where the match begins
-	 * @param matchLength Length of the actual match
-	 * @returns Object containing both the match and fragment navigators
-	 */
-	public splitFragmentAndMatch(
-		matchStart: number,
-		matchLength: number
-	): FindResult {
-		const matchNav = this.copy()
-			.moveStartForward(matchStart)
-			.moveCaptureForward(matchLength);
-		const fragmentNav =
-			this.copy().moveCaptureForward(matchStart);
-		return { matchNav, fragmentNav };
+	public copyAndMoveStartToIndex(
+		index: number
+	): MutMatchNav {
+		return new MutMatchNav(this.source, index);
 	}
 
 	/**

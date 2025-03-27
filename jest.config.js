@@ -18,6 +18,7 @@ export default {
 	moduleNameMapper: {
 		"^@/utils/(.*)$": "<rootDir>/lib/utils/$1",
 		"^@/parser/(.*)$": "<rootDir>/lib/parser/$1",
+		"^@/trex": "<rootDir>/lib/trex",
 		"^@/trex/(.*)$": "<rootDir>/lib/trex/$1",
 		"^@/tests/(.*)$": "<rootDir>/tests/$1",
 		"^@/app/(.*)$": "<rootDir>/app/$1",
@@ -25,12 +26,11 @@ export default {
 		"^@/types/(.*)$": "<rootDir>/lib/types/$1",
 	},
 };
-// "paths": {
-// 	"@/app/*": ["app/*"],
-// 	"@/trex/*": ["lib/trex/*"],
-// 	"@/parser/*": ["lib/parser/*"],
-// 	"@/utils/*": ["lib/utils/*"],
-// 	"@/types/*": ["lib/types/*"],
-// 	"@/tests/*": ["tests/*"],
-// 	"@/my-tests/*": ["my-test-stuff/*"]
-// }
+// "@/app/*": ["app/*"],
+// "@/trex": ["lib/trex"],
+// "@/trex/*": ["lib/trex/*"],
+// "@/parser/*": ["lib/parser/*"],
+// "@/utils/*": ["lib/utils/*"],
+// "@/types/*": ["lib/types/*"],
+// "@/tests/*": ["tests/*"],
+// "@/my-tests/*": ["my-test-stuff/*"]

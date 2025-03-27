@@ -1,6 +1,9 @@
 import { StrSlice } from "@/utils/slice";
 import { MutMatchNav } from "@/trex/nav";
 import {
+	MatchPositionBase,
+	MatchStartSlice,
+	MatchEndSlice,
 	MatchCodePoint,
 	MatchCodePointLambda,
 	MatchCodePointSet,
@@ -11,8 +14,7 @@ import {
 	MatchCodePointRanges,
 	matchAnyCodePoint,
 	MatchNotCodePointOrPosition,
-} from "@/trex/match-code-point";
-import { MatchPositionBase } from "@/trex/match-base";
+} from "@/trex";
 
 describe("MatchCodePoint", () => {
 	describe("constructor", () => {
@@ -33,6 +35,7 @@ describe("MatchCodePoint", () => {
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(1);
 			expect(result?.navIndex).toBe(1);
+			expect(result?.captureMatch.value).toBe("A");
 		});
 
 		it("should return null if the code point doesn't match", () => {
@@ -55,6 +58,7 @@ describe("MatchCodePoint", () => {
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(2); // Surrogate pair takes 2 chars
 			expect(result?.navIndex).toBe(2);
+			expect(result?.captureMatch.value).toBe("😀");
 		});
 	});
 
@@ -92,6 +96,8 @@ describe("MatchCodePointLambda", () => {
 
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(1);
+			expect(result?.navIndex).toBe(1);
+			expect(result?.captureMatch.value).toBe("A");
 		});
 
 		it("should return null if the code point doesn't satisfy the lambda", () => {
@@ -151,6 +157,23 @@ describe("MatchCodePointSet", () => {
 
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(1);
+			expect(result?.navIndex).toBe(1);
+			expect(result?.captureMatch.value).toBe("A");
+		});
+
+		it("should handle surrogate pairs correctly", () => {
+			// Emoji '😀' (U+1F600) is represented as surrogate pair '\uD83D\uDE00'
+			const matcher =
+				MatchCodePointSet.fromString("A😀C");
+
+			const nav = new MutMatchNav(new StrSlice("😀BC"));
+
+			const result = matcher.match(nav);
+
+			expect(result).not.toBeNull();
+			expect(result?.captureIndex).toBe(2);
+			expect(result?.navIndex).toBe(2);
+			expect(result?.captureMatch.value).toBe("😀");
 		});
 
 		it("should return null if the code point is not in the set", () => {
@@ -263,6 +286,8 @@ describe("MatchCodePointCategories", () => {
 
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(1);
+			expect(result?.navIndex).toBe(1);
+			expect(result?.captureMatch.value).toBe("A");
 		});
 
 		it("should return null if the code point is not in the specified categories", () => {
@@ -391,6 +416,8 @@ describe("MatchCodePointRange", () => {
 
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(1);
+			expect(result?.navIndex).toBe(1);
+			expect(result?.captureMatch.value).toBe("A");
 		});
 
 		it("should return null if the code point is not in the range", () => {
@@ -464,12 +491,16 @@ describe("MatchCodePointRanges", () => {
 			let result = matcher.match(nav);
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(1);
+			expect(result?.navIndex).toBe(1);
+			expect(result?.captureMatch.value).toBe("A");
 
 			// Test lowercase
 			nav = new MutMatchNav(new StrSlice("abc"));
 			result = matcher.match(nav);
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(1);
+			expect(result?.navIndex).toBe(1);
+			expect(result?.captureMatch.value).toBe("a");
 		});
 
 		it("should return null if the code point is not in any range", () => {
@@ -527,12 +558,16 @@ describe("matchAnyCodePoint", () => {
 		let result = matchAnyCodePoint.match(nav);
 		expect(result).not.toBeNull();
 		expect(result?.captureIndex).toBe(1);
+		expect(result?.navIndex).toBe(1);
+		expect(result?.captureMatch.value).toBe("A");
 
 		// Test emoji (surrogate pair)
 		nav = new MutMatchNav(new StrSlice("😀BC"));
 		result = matchAnyCodePoint.match(nav);
 		expect(result).not.toBeNull();
 		expect(result?.captureIndex).toBe(2); // Surrogate pair takes 2 chars
+		expect(result?.navIndex).toBe(2);
+		expect(result?.captureMatch.value).toBe("😀");
 
 		// Test various Unicode ranges
 		expect(matchAnyCodePoint.matchCodePoint(0x0000)).toBe(
@@ -577,6 +612,8 @@ describe("MatchNotCodePointOrPosition", () => {
 
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(1);
+			expect(result?.navIndex).toBe(1);
+			expect(result?.captureMatch.value).toBe("X");
 		});
 
 		it("should return null when inner matcher matches", () => {
@@ -611,6 +648,8 @@ describe("MatchNotCodePointOrPosition", () => {
 
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(0); // Position matchers don't advance
+			expect(result?.navIndex).toBe(0);
+			expect(result?.captureMatch.value).toBe("");
 		});
 
 		it("should return null when inner position matcher matches", () => {
@@ -626,6 +665,68 @@ describe("MatchNotCodePointOrPosition", () => {
 				innerMatcher
 			);
 			const nav = new MutMatchNav(new StrSlice("ABC"));
+
+			const result = matcher.match(nav);
+
+			expect(result).toBeNull();
+		});
+	});
+
+	describe("match with MatchPositionBase classes: MatchStartSlice and MatchEndSlice", () => {
+		it("should match when start position doesn't match", () => {
+			const innerMatcher = new MatchStartSlice();
+			const matcher = new MatchNotCodePointOrPosition(
+				innerMatcher
+			);
+			const nav = new MutMatchNav(new StrSlice("ABC"));
+			nav.moveCaptureForwardOneCodePoint();
+
+			const result = matcher.match(nav);
+
+			expect(result).not.toBeNull();
+			expect(result?.captureIndex).toBe(1); // Position matchers don't advance
+			expect(result?.navIndex).toBe(1);
+			expect(result?.captureMatch.value).toBe("A");
+		});
+
+		it("should return null when start position matcher matches", () => {
+			// Create a mock MatchPositionBase that always returns the nav (matches)
+			const innerMatcher = new MatchStartSlice();
+			const matcher = new MatchNotCodePointOrPosition(
+				innerMatcher
+			);
+			const nav = new MutMatchNav(new StrSlice("ABC"));
+
+			const result = matcher.match(nav);
+
+			expect(result).toBeNull();
+		});
+
+		it("should match when end position doesn't match", () => {
+			// Create a mock MatchPositionBase that always returns null (doesn't match)
+			const innerMatcher = new MatchEndSlice();
+			const matcher = new MatchNotCodePointOrPosition(
+				innerMatcher
+			);
+			const nav = new MutMatchNav(new StrSlice("ABC"));
+			nav.moveCaptureForward(2);
+
+			const result = matcher.match(nav);
+
+			expect(result).not.toBeNull();
+			expect(result?.captureIndex).toBe(2); // Position matchers don't advance
+			expect(result?.navIndex).toBe(2);
+			expect(result?.captureMatch.value).toBe("AB");
+		});
+
+		it("should return null when end position matcher matches", () => {
+			// Create a mock MatchPositionBase that always returns the nav (matches)
+			const innerMatcher = new MatchEndSlice();
+			const matcher = new MatchNotCodePointOrPosition(
+				innerMatcher
+			);
+			const nav = new MutMatchNav(new StrSlice("ABC"));
+			nav.moveCaptureForward(3);
 
 			const result = matcher.match(nav);
 
@@ -650,6 +751,22 @@ describe("MatchNotCodePointOrPosition", () => {
 			);
 
 			expect(matcher.matchCodePoint(65)).toBe(false); // A
+		});
+
+		it("should return false for MatchPositionBase: MatchStartSlice", () => {
+			const matcher = new MatchNotCodePointOrPosition(
+				new MatchStartSlice()
+			);
+
+			expect(matcher.matchCodePoint(65)).toBe(false);
+		});
+
+		it("should return false for MatchPositionBase: MatchEndSlice", () => {
+			const matcher = new MatchNotCodePointOrPosition(
+				new MatchEndSlice()
+			);
+
+			expect(matcher.matchCodePoint(65)).toBe(false);
 		});
 
 		it("should throw an error for invalid matcher type", () => {

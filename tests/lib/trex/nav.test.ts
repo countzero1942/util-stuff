@@ -1,4 +1,4 @@
-import { MutMatchNav } from "@/trex/nav";
+import { MutMatchNav } from "@/trex";
 import { StrSlice } from "@/utils/slice";
 
 describe("MutMatchNav", () => {
@@ -39,12 +39,18 @@ describe("MutMatchNav", () => {
 			nav.moveCaptureForwardOneCodePoint();
 			expect(nav.navIndex).toBe(1);
 			expect(nav.captureIndex).toBe(1);
+			expect(nav.captureLength).toBe(1);
+			expect(nav.ghostCaptureLength).toBe(0);
+			expect(nav.captureMatch.value).toBe("t");
 
 			// Test with emoji (surrogate pair)
 			const emojiNav = createNav("😊test");
 			emojiNav.moveCaptureForwardOneCodePoint();
 			expect(emojiNav.navIndex).toBe(2); // Emoji takes 2 UTF-16 code units
 			expect(emojiNav.captureIndex).toBe(2);
+			expect(emojiNav.captureLength).toBe(2);
+			expect(emojiNav.ghostCaptureLength).toBe(0);
+			expect(emojiNav.captureMatch.value).toBe("😊");
 		});
 
 		test("moveCaptureForward should advance by specified length", () => {
@@ -53,6 +59,8 @@ describe("MutMatchNav", () => {
 			expect(nav.navIndex).toBe(4);
 			expect(nav.captureIndex).toBe(4);
 			expect(nav.captureLength).toBe(4);
+			expect(nav.ghostCaptureLength).toBe(0);
+			expect(nav.captureMatch.value).toBe("test");
 		});
 
 		test("moveCaptureToEnd should move to the end of source", () => {
@@ -61,42 +69,105 @@ describe("MutMatchNav", () => {
 			expect(nav.navIndex).toBe(11);
 			expect(nav.captureIndex).toBe(11);
 			expect(nav.isEndSlice).toBe(true);
+			expect(nav.captureLength).toBe(11);
+			expect(nav.ghostCaptureLength).toBe(0);
+			expect(nav.captureMatch.value).toBe("test string");
 		});
 
 		test("moveStartForward should advance start and reset other indices", () => {
 			const nav = createNav("test string");
 			nav.moveCaptureForward(4); // Move to position 4 first
 			expect(nav.navIndex).toBe(4);
+			expect(nav.captureIndex).toBe(4);
+			expect(nav.captureLength).toBe(4);
+			expect(nav.ghostCaptureLength).toBe(0);
+			expect(nav.captureMatch.value).toBe("test");
 
 			nav.moveStartForward(2); // Move start forward by 2
-			expect(nav.startIndex).toBe(2);
-			expect(nav.navIndex).toBe(2);
-			expect(nav.captureIndex).toBe(2);
+			expect(nav.startIndex).toBe(6);
+			expect(nav.navIndex).toBe(6);
+			expect(nav.captureIndex).toBe(6);
+			expect(nav.captureLength).toBe(0);
+			expect(nav.ghostCaptureLength).toBe(0);
+			expect(nav.captureMatch.value).toBe("");
+		});
+	});
+
+	describe("Ghost Capture", () => {
+		test("moveGhostCaptureForward should only advance nav index", () => {
+			const nav = createNav("abc, def, hij");
+			nav.moveCaptureForward(3);
+			nav.moveGhostCaptureForward(2);
+			expect(nav.navIndex).toBe(5);
+			expect(nav.captureIndex).toBe(3);
+			expect(nav.ghostCaptureLength).toBe(2);
+			expect(nav.captureMatch.value).toBe("abc");
+			expect(nav.ghostMatch.trim().value).toBe(",");
 		});
 
-		test("moveGhostCaptureForward should only advance nav index", () => {
-			const nav = createNav("test string");
-			nav.moveGhostCaptureForward(3);
-			expect(nav.navIndex).toBe(3);
-			expect(nav.captureIndex).toBe(0);
-			expect(nav.ghostCaptureLength).toBe(3);
+		test("moveGhostCaptureForward in action ghost capturing delimiters", () => {
+			const nav = createNav("abc, def, hij");
+			//                     012345678901234567890
+			expect(() => nav.assertFresh()).not.toThrow();
+			nav.moveCaptureForward(3);
+			nav.moveGhostCaptureForward(2);
+			expect(nav.navIndex).toBe(5);
+			expect(nav.captureIndex).toBe(3);
+			expect(nav.ghostCaptureLength).toBe(2);
+			expect(nav.captureMatch.value).toBe("abc");
+			expect(nav.ghostMatch.trim().value).toBe(",");
+			expect(() => nav.assertFresh()).toThrow();
+
+			nav.moveStartForward(0);
+			expect(() => nav.assertFresh()).not.toThrow();
+			nav.moveCaptureForward(3);
+			nav.moveGhostCaptureForward(2);
+			expect(nav.navIndex).toBe(10);
+			expect(nav.captureIndex).toBe(8);
+			expect(nav.ghostCaptureLength).toBe(2);
+			expect(nav.captureMatch.value).toBe("def");
+			expect(nav.ghostMatch.trim().value).toBe(",");
+			expect(() => nav.assertFresh()).toThrow();
 		});
 	});
 
 	describe("Copy and State Management", () => {
 		test("copy should create a deep copy with same state", () => {
-			const nav = createNav("test string");
-			nav.moveCaptureForward(4);
+			const nav = createNav("abc, def; hij");
+			//                     012345678901234567890
+			nav.moveCaptureForward(3);
+			nav.moveGhostCaptureForward(2);
 
 			const copy = nav.copy();
 			expect(copy.startIndex).toBe(nav.startIndex);
 			expect(copy.navIndex).toBe(nav.navIndex);
 			expect(copy.captureIndex).toBe(nav.captureIndex);
+			expect(copy.ghostCaptureLength).toBe(
+				nav.ghostCaptureLength
+			);
+			expect(copy.captureMatch.value).toBe(
+				nav.captureMatch.value
+			);
+			expect(copy.ghostMatch.value).toBe(
+				nav.ghostMatch.value
+			);
 
 			// Modifying copy should not affect original
-			copy.moveCaptureForward(2);
-			expect(copy.navIndex).toBe(6);
-			expect(nav.navIndex).toBe(4);
+			copy.moveStartForward();
+			copy.moveCaptureForward(3);
+			copy.moveGhostCaptureForward(2);
+			expect(nav.startIndex).toBe(0);
+			expect(nav.captureIndex).toBe(3);
+			expect(nav.navIndex).toBe(5);
+			expect(nav.ghostCaptureLength).toBe(2);
+			expect(copy.startIndex).toBe(5);
+			expect(copy.captureIndex).toBe(8);
+			expect(copy.navIndex).toBe(10);
+			expect(copy.ghostCaptureLength).toBe(2);
+			expect(nav.captureMatch.value).toBe("abc");
+			expect(nav.ghostMatch.value).toBe(", ");
+			expect(copy.captureMatch.value).toBe("def");
+			expect(copy.ghostMatch.value).toBe("; ");
 		});
 
 		test("copyAndMoveStartToNav should create a fresh nav at current position", () => {
@@ -138,7 +209,7 @@ describe("MutMatchNav", () => {
 			);
 		});
 
-		test("assertFresh should throw if nav has been moved", () => {
+		test("assertFresh should throw if nav has been moved producing a capture", () => {
 			const nav = createNav("test");
 			nav.moveCaptureForward(1);
 
@@ -146,30 +217,14 @@ describe("MutMatchNav", () => {
 				"Nav is not fresh"
 			);
 		});
-	});
 
-	describe("Split Operations", () => {
-		test("splitFragmentAndMatch should correctly split the match", () => {
-			const nav = createNav("test string");
-			const result = nav.splitFragmentAndMatch(2, 3);
+		test("assertFresh should throw if nav has been moved producing a ghost capture", () => {
+			const nav = createNav("test");
+			nav.moveGhostCaptureForward(1);
 
-			if (result === null || result === undefined) {
-				fail(
-					"splitFragmentAndMatch returned null or undefined"
-				);
-				return;
-			}
-
-			const { matchNav, fragmentNav } = result;
-
-			expect(fragmentNav?.startIndex).toBe(0);
-			expect(fragmentNav?.navIndex).toBe(2);
-			expect(fragmentNav?.captureIndex).toBe(2);
-
-			expect(matchNav?.startIndex).toBe(2);
-			expect(matchNav?.navIndex).toBe(5);
-			expect(matchNav?.captureIndex).toBe(5);
-			expect(matchNav?.captureLength).toBe(3);
+			expect(() => nav.assertFresh()).toThrow(
+				"Nav is not fresh"
+			);
 		});
 	});
 

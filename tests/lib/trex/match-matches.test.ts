@@ -1,14 +1,13 @@
 import { StrSlice } from "@/utils/slice";
-import { MutMatchNav } from "@/trex/nav";
-import { MatchBase } from "@/trex/match-base";
 import {
+	MutMatchNav,
 	MatchAnyMatch,
 	MatchAllMatches,
 	MatchOptMatch,
 	MatchRepeatMatch,
 	GhostMatch,
-} from "@/trex/match-matches";
-import { MatchCodePoint } from "@/trex/match-code-point";
+	MatchCodePoint,
+} from "@/trex";
 
 // Helper function to create simple matchers for testing
 const createLetterMatcher = (
@@ -290,9 +289,7 @@ describe("MatchRepeatMatch", () => {
 			const result = repeatMatcher.match(nav);
 
 			expect(result).not.toBeNull();
-			expect(result?.captureMatch.value).toBe(
-				"AAA"
-			);
+			expect(result?.captureMatch.value).toBe("AAA");
 		});
 
 		it("should return null if fewer than minimum occurrences match", () => {
@@ -323,9 +320,7 @@ describe("MatchRepeatMatch", () => {
 			const result = repeatMatcher.match(nav);
 
 			expect(result).not.toBeNull();
-			expect(result?.captureMatch.value).toBe(
-				"AAAAA"
-			);
+			expect(result?.captureMatch.value).toBe("AAAAA");
 		});
 
 		it("should use altFirstMatch for the first match if provided", () => {
@@ -342,9 +337,7 @@ describe("MatchRepeatMatch", () => {
 			const result = repeatMatcher.match(nav);
 
 			expect(result).not.toBeNull();
-			expect(result?.captureMatch.value).toBe(
-				"BAA"
-			);
+			expect(result?.captureMatch.value).toBe("BAA");
 		});
 
 		it("should use altLastMatch for the last match if provided", () => {
@@ -362,9 +355,7 @@ describe("MatchRepeatMatch", () => {
 			const result = repeatMatcher.match(nav);
 
 			expect(result).not.toBeNull();
-			expect(result?.captureMatch.value).toBe(
-				"AAB"
-			);
+			expect(result?.captureMatch.value).toBe("AAB");
 		});
 
 		it("should match zero occurrences when min is 0", () => {
@@ -483,14 +474,10 @@ describe("GhostMatch", () => {
 			// Then match comma as ghost at the end of this sequence
 			const resultComma = ghostComma.match(resultA!);
 			expect(resultComma).not.toBeNull();
-			expect(resultComma?.captureMatch.value).toBe(
-				"A"
-			);
+			expect(resultComma?.captureMatch.value).toBe("A");
 			// The ghost match includes everything from capture index to nav index
 			// Even though only the comma is matched, the ghost capture includes all remaining text
-			expect(resultComma?.ghostMatch.value).toBe(
-				","
-			);
+			expect(resultComma?.ghostMatch.value).toBe(",");
 
 			// At this point, we would need to start a new match sequence
 			// by creating a new navigator or resetting the current one
