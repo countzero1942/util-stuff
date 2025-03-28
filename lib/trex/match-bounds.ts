@@ -1,8 +1,19 @@
 import {
+	matchEndSlice,
+	matchStartSlice,
+	matchUnicodeSpace,
+} from "./consts";
+import {
 	MatchBase,
 	MatchCodePointBase,
 	MatchStringBase,
 } from "./match-base";
+import {
+	GhostMatch,
+	MatchAllMatches,
+	MatchAnyMatch,
+	MatchRepeatMatch,
+} from "./match-matches";
 import { MatchAnyString } from "./match-string";
 import { MutMatchNav } from "./nav";
 
@@ -55,5 +66,36 @@ export class LookBehindAnyString extends MatchBase {
 		}
 
 		return nav.invalidate();
+	}
+}
+
+export const matchManyUnicodeSpaces = new MatchRepeatMatch(
+	matchUnicodeSpace
+);
+
+export const matchWordStart = new MatchAnyMatch([
+	matchStartSlice,
+	new LookBehindCodePoint(matchUnicodeSpace),
+]);
+
+export const matchWordEnd = new MatchAnyMatch([
+	matchEndSlice,
+	new GhostMatch(matchManyUnicodeSpaces),
+]);
+
+export class MatchWord extends MatchBase {
+	private readonly wrapMatcher: MatchBase;
+	public constructor(public readonly matcher: MatchBase) {
+		super();
+		this.wrapMatcher = new MatchAllMatches([
+			matchWordStart,
+			this.matcher,
+			matchWordEnd,
+		]);
+	}
+
+	public match(nav: MutMatchNav): MutMatchNav | null {
+		nav.assertValid();
+		return this.wrapMatcher.match(nav);
 	}
 }

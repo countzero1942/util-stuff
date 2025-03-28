@@ -18,6 +18,7 @@ import {
 	NNum,
 	RFixed,
 	RPrec,
+	Str,
 	TypeBase,
 	WNum,
 	ZNum,
@@ -104,6 +105,9 @@ import {
 	MatchAllMatches,
 	MutMatchNav,
 	MatchCodePoint,
+	MatchAnyString,
+	TRex,
+	MatchWord,
 } from "@/trex";
 import { KeyParams } from "@/parser/types/key-head";
 import {
@@ -250,8 +254,36 @@ import {
 // 	log("No match");
 // }
 
-const nav = new MutMatchNav(new StrSlice("test string"));
-nav.moveCaptureForward(4); // Move to position 4 first
-logobj(nav);
-nav.moveStartForward(2); // Move start forward by 2
-logobj(nav);
+const str =
+	"abc def xxx hij yyy lmn opq xxx yyz xxx yyy mmm cba xxxyyy yyyxxx yyy";
+//  01234567890123456789012345678901234567890123456789012345678901234567890
+
+const matcher = MatchAnyString.fromStrings(["xxx", "yyy"]);
+
+const wordMatcher = new MatchWord(matcher);
+
+const trex = new TRex(wordMatcher);
+
+const result = trex.findAll(StrSlice.from(str));
+
+logobj(result);
+
+div();
+
+log(str);
+log(
+	"01234567890123456789012345678901234567890123456789012345678901234567890"
+);
+
+div();
+result.getNavTokens().forEach(token => {
+	log(token.toString());
+});
+
+div();
+
+result.getTokens().forEach(token => {
+	log(token.toString());
+});
+
+div();

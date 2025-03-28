@@ -370,4 +370,12 @@ export class MutMatchNav {
 			this._navIndex
 		);
 	}
+
+	public get isEmptyMatch(): boolean {
+		return this._startIndex === this._captureIndex;
+	}
+
+	public toString(): string {
+		return `Nav: [${this._startIndex}..${this._captureIndex}..${this._navIndex}], length: ${this.source.length}`;
+	}
 }
