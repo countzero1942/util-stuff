@@ -2,6 +2,7 @@ import {
 	matchEndSlice,
 	matchStartSlice,
 	matchUnicodeSpace,
+	matchUnicodeWhiteSpace,
 } from "./consts";
 import {
 	MatchBase,
@@ -72,6 +73,9 @@ export class LookBehindAnyString extends MatchBase {
 export const matchManyUnicodeSpaces = new MatchRepeatMatch(
 	matchUnicodeSpace
 );
+
+export const matchManyUnicodeWhiteSpace =
+	new MatchRepeatMatch(matchUnicodeWhiteSpace);
 
 export const matchWordStart = new MatchAnyMatch([
 	matchStartSlice,

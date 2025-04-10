@@ -1,0 +1,16 @@
+1. My testing system is jest
+2. The parser system I am writing is:
+   1. like the one described in
+      text/parser/01-trait-tree.txt
+   2. This is a recursive tree with nodes that use tab
+      indentation to describe their children.
+   3. Only tab characters are allowed as indentation
+      characters.
+   4. The parser is based on traits, which are a special
+      kind of javascript Object
+   5. Traits can have a key-value pair; or a key-body pair;
+      or a key alone which indicates a required value
+   6. A key-body pair indicates by default a child trait
+   7. But a key-body pair be constrained by a type
+      definition to allow for an array, a set, a typed
+      trait, or a body of text

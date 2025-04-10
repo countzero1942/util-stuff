@@ -9,11 +9,11 @@ export class Token<
 	constructor(
 		public readonly category: TCategory,
 		public readonly kind: TKind,
-		public readonly value: StrSlice
+		public readonly matchValue: StrSlice
 	) {}
 
 	public toString(): string {
-		return `${this.category}:${this.kind} '${this.value}'`;
+		return `${this.category}:${this.kind} '${this.matchValue}'`;
 	}
 }
 

@@ -115,7 +115,7 @@ import {
 	ParserErrNode,
 } from "@/parser/types/key-value";
 
-// logGeneratePassword();
+logGeneratePassword();
 
 /**
  * Test TypeMap
@@ -254,36 +254,36 @@ import {
 // 	log("No match");
 // }
 
-const str =
-	"abc def xxx hij yyy lmn opq xxx yyz xxx yyy mmm cba xxxyyy yyyxxx yyy";
-//  01234567890123456789012345678901234567890123456789012345678901234567890
+// const str =
+// 	"abc def xxx hij yyy lmn opq xxx yyz xxx yyy mmm cba xxxyyy yyyxxx yyy";
+// //  01234567890123456789012345678901234567890123456789012345678901234567890
 
-const matcher = MatchAnyString.fromStrings(["xxx", "yyy"]);
+// const matcher = MatchAnyString.fromStrings(["xxx", "yyy"]);
 
-const wordMatcher = new MatchWord(matcher);
+// const wordMatcher = new MatchWord(matcher);
 
-const trex = new TRex(wordMatcher);
+// const trex = new TRex(wordMatcher);
 
-const result = trex.findAll(StrSlice.from(str));
+// const result = trex.findAll(StrSlice.from(str));
 
-logobj(result);
+// logobj(result);
 
-div();
+// div();
 
-log(str);
-log(
-	"01234567890123456789012345678901234567890123456789012345678901234567890"
-);
+// log(str);
+// log(
+// 	"01234567890123456789012345678901234567890123456789012345678901234567890"
+// );
 
-div();
-result.getNavTokens().forEach(token => {
-	log(token.toString());
-});
+// div();
+// result.getNavTokens().forEach(token => {
+// 	log(token.toString());
+// });
 
-div();
+// div();
 
-result.getTokens().forEach(token => {
-	log(token.toString());
-});
+// result.getTokens().forEach(token => {
+// 	log(token.toString());
+// });
 
-div();
+// div();
