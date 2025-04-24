@@ -49,7 +49,6 @@ export class LookBehindAnyString extends MatchBase {
 
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
-		nav.assertFresh();
 
 		const prefixIndex = this.matcher.index;
 
@@ -70,36 +69,41 @@ export class LookBehindAnyString extends MatchBase {
 	}
 }
 
-export const matchManyUnicodeSpaces = new MatchRepeatMatch(
-	matchUnicodeSpace
-);
-
-export const matchManyUnicodeWhiteSpace =
-	new MatchRepeatMatch(matchUnicodeWhiteSpace);
-
-export const matchWordStart = new MatchAnyMatch([
-	matchStartSlice,
-	new LookBehindCodePoint(matchUnicodeSpace),
-]);
-
-export const matchWordEnd = new MatchAnyMatch([
-	matchEndSlice,
-	new GhostMatch(matchManyUnicodeSpaces),
-]);
-
-export class MatchWord extends MatchBase {
-	private readonly wrapMatcher: MatchBase;
-	public constructor(public readonly matcher: MatchBase) {
+export class LookAheadCodePoint extends MatchBase {
+	public constructor(
+		public readonly matcher: MatchCodePointBase
+	) {
 		super();
-		this.wrapMatcher = new MatchAllMatches([
-			matchWordStart,
-			this.matcher,
-			matchWordEnd,
-		]);
 	}
 
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
-		return this.wrapMatcher.match(nav);
+
+		const aheadCodePoint = nav.peekAfterCodePoint();
+		if (
+			aheadCodePoint !== undefined &&
+			this.matcher.matchCodePoint(aheadCodePoint)
+		) {
+			return nav;
+		}
+
+		return nav.invalidate();
+	}
+}
+
+export class LookAheadAnyString extends MatchBase {
+	public constructor(
+		public readonly matcher: MatchAnyString
+	) {
+		super();
+	}
+
+	public match(nav: MutMatchNav): MutMatchNav | null {
+		nav.assertValid();
+
+		const aheadNav = nav.copyAndMoveStartToNav();
+		const result = this.matcher.match(aheadNav);
+
+		return result ? nav : nav.invalidate();
 	}
 }

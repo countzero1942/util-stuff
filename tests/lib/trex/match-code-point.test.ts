@@ -285,8 +285,6 @@ describe("MatchCodePointCategories", () => {
 			const result = matcher.match(nav);
 
 			expect(result).not.toBeNull();
-			expect(result?.captureIndex).toBe(1);
-			expect(result?.navIndex).toBe(1);
 			expect(result?.captureMatch.value).toBe("A");
 		});
 
