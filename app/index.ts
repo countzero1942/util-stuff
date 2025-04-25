@@ -16,8 +16,20 @@ import {
 } from "@/utils/log";
 import { getFullType } from "@/utils/types";
 import { logGeneratePassword } from "@/utils/password";
-import { doTRexStuff } from "./trex-stuff";
+import {
+	doTRexStuff,
+	testLookAheadAnyString,
+	wordMatchTestWithGhostMatch,
+	wordMatchTestWithLookAhead,
+} from "./trex-stuff";
+import { matchWordsTest } from "@/examples/trex/word-matching";
 
 // logGeneratePassword();
 
-doTRexStuff();
+// doTRexStuff();
+
+// matchWordsTest();
+
+// wordMatchTestWithLookAhead();
+
+testLookAheadAnyString();

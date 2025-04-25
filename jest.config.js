@@ -24,6 +24,7 @@ export default {
 		"^@/app/(.*)$": "<rootDir>/app/$1",
 		"^@/my-tests/(.*)$": "<rootDir>/my-test-stuff/$1",
 		"^@/types/(.*)$": "<rootDir>/lib/types/$1",
+		"^@/examples/(.*)$": "<rootDir>/examples/$1",
 	},
 };
 // "@/app/*": ["app/*"],
@@ -34,3 +35,4 @@ export default {
 // "@/types/*": ["lib/types/*"],
 // "@/tests/*": ["tests/*"],
 // "@/my-tests/*": ["my-test-stuff/*"]
+// "@/examples/*": ["examples/*"]

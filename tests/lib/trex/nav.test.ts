@@ -8,7 +8,7 @@ describe("MutMatchNav", () => {
 	};
 
 	describe("Constructor and Basic Properties", () => {
-		test("should initialize with correct indices", () => {
+		it("initializes with correct indices", () => {
 			const nav = createNav("test string", 2);
 			expect(nav.startIndex).toBe(2);
 			expect(nav.navIndex).toBe(2);
@@ -16,13 +16,13 @@ describe("MutMatchNav", () => {
 			expect(nav.isInvalidated).toBe(false);
 		});
 
-		test("should have zero capture length initially", () => {
+		it("has zero capture length initially", () => {
 			const nav = createNav("test string");
 			expect(nav.captureLength).toBe(0);
 			expect(nav.ghostCaptureLength).toBe(0);
 		});
 
-		test("should correctly identify start and end positions", () => {
+		it("correctly identifies start and end positions", () => {
 			const nav = createNav("test");
 			expect(nav.isStartSlice).toBe(true);
 			expect(nav.isEndSlice).toBe(false);
@@ -34,7 +34,7 @@ describe("MutMatchNav", () => {
 	});
 
 	describe("Movement Operations", () => {
-		test("moveCaptureForwardOneCodePoint should advance by one code point", () => {
+		it("moveCaptureForwardOneCodePoint advances by one code point", () => {
 			const nav = createNav("test");
 			nav.moveCaptureForwardOneCodePoint();
 			expect(nav.navIndex).toBe(1);
@@ -53,7 +53,7 @@ describe("MutMatchNav", () => {
 			expect(emojiNav.captureMatch.value).toBe("😊");
 		});
 
-		test("moveCaptureForward should advance by specified length", () => {
+		it("moveCaptureForward advances by specified length", () => {
 			const nav = createNav("test string");
 			nav.moveCaptureForward(4);
 			expect(nav.navIndex).toBe(4);
@@ -63,7 +63,7 @@ describe("MutMatchNav", () => {
 			expect(nav.captureMatch.value).toBe("test");
 		});
 
-		test("moveCaptureToEnd should move to the end of source", () => {
+		it("moveCaptureToEnd moves to the end of source", () => {
 			const nav = createNav("test string");
 			nav.moveCaptureToEnd();
 			expect(nav.navIndex).toBe(11);
@@ -74,7 +74,7 @@ describe("MutMatchNav", () => {
 			expect(nav.captureMatch.value).toBe("test string");
 		});
 
-		test("moveStartForward should advance start and reset other indices", () => {
+		it("moveStartForward advances start and resets other indices", () => {
 			const nav = createNav("test string");
 			nav.moveCaptureForward(4); // Move to position 4 first
 			expect(nav.navIndex).toBe(4);
@@ -94,7 +94,7 @@ describe("MutMatchNav", () => {
 	});
 
 	describe("Ghost Capture", () => {
-		test("moveGhostCaptureForward should only advance nav index", () => {
+		it("moveGhostCaptureForward only advances nav index", () => {
 			const nav = createNav("abc, def, hij");
 			nav.moveCaptureForward(3);
 			nav.moveGhostCaptureForward(2);
@@ -132,7 +132,7 @@ describe("MutMatchNav", () => {
 	});
 
 	describe("Copy and State Management", () => {
-		test("copy should create a deep copy with same state", () => {
+		it("copy creates a deep copy with same state", () => {
 			const nav = createNav("abc, def; hij");
 			//                     012345678901234567890
 			nav.moveCaptureForward(3);
@@ -170,7 +170,7 @@ describe("MutMatchNav", () => {
 			expect(copy.ghostMatch.value).toBe("; ");
 		});
 
-		test("copyAndMoveStartToNav should create a fresh nav at current position", () => {
+		it("copyAndMoveStartToNav creates a fresh nav at current position", () => {
 			const nav = createNav("test string");
 			nav.moveCaptureForward(4);
 
@@ -181,7 +181,7 @@ describe("MutMatchNav", () => {
 			expect(newNav.captureLength).toBe(0);
 		});
 
-		test("invalidate should mark nav as invalid and return null", () => {
+		it("invalidate marks nav as invalid and returns null", () => {
 			const nav = createNav("test string");
 			const result = nav.invalidate();
 
@@ -191,7 +191,7 @@ describe("MutMatchNav", () => {
 	});
 
 	describe("Validation Methods", () => {
-		test("assertValid should throw on invalidated nav", () => {
+		it("assertValid throws on invalidated nav", () => {
 			const nav = createNav("test");
 			nav.invalidate();
 
@@ -200,7 +200,7 @@ describe("MutMatchNav", () => {
 			);
 		});
 
-		test("assertValid should throw on ghost capture at end", () => {
+		it("assertValid throws on ghost capture at end", () => {
 			const nav = createNav("test");
 			nav.moveGhostCaptureForward(2);
 
@@ -209,7 +209,7 @@ describe("MutMatchNav", () => {
 			);
 		});
 
-		test("assertFresh should throw if nav has been moved producing a capture", () => {
+		it("assertFresh throws if nav has been moved producing a capture", () => {
 			const nav = createNav("test");
 			nav.moveCaptureForward(1);
 
@@ -218,7 +218,7 @@ describe("MutMatchNav", () => {
 			);
 		});
 
-		test("assertFresh should throw if nav has been moved producing a ghost capture", () => {
+		it("assertFresh throws if nav has been moved producing a ghost capture", () => {
 			const nav = createNav("test");
 			nav.moveGhostCaptureForward(1);
 
@@ -229,7 +229,7 @@ describe("MutMatchNav", () => {
 	});
 
 	describe("Peek Methods", () => {
-		test("peekCodePoint should return the current code point", () => {
+		it("peekCodePoint returns the current code point", () => {
 			const nav = createNav("test");
 			const tCodePoint = "t".codePointAt(0);
 			expect(nav.peekCodePoint()).toBe(tCodePoint);
@@ -239,19 +239,19 @@ describe("MutMatchNav", () => {
 			expect(nav.peekCodePoint()).toBe(eCodePoint);
 		});
 
-		test("peekCodePoint should handle surrogate pairs", () => {
+		it("peekCodePoint handles surrogate pairs", () => {
 			const nav = createNav("😊test");
 			const emojiCodePoint = "😊".codePointAt(0);
 			expect(nav.peekCodePoint()).toBe(emojiCodePoint);
 		});
 
-		test("peekBeforeCodePoint should return the previous code point", () => {
+		it("peekBeforeCodePoint returns the previous code point", () => {
 			const nav = createNav("test", 2);
 			const eCodePoint = "e".codePointAt(0);
 			expect(nav.peekBeforeCodePoint()).toBe(eCodePoint);
 		});
 
-		test("peekBeforeCodePoint should handle surrogate pairs", () => {
+		it("peekBeforeCodePoint handles surrogate pairs", () => {
 			const nav = createNav("😊test", 2);
 			const emojiCodePoint = "😊".codePointAt(0);
 			expect(nav.peekBeforeCodePoint()).toBe(
@@ -259,94 +259,124 @@ describe("MutMatchNav", () => {
 			);
 		});
 
-		test("peekBeforeCodePoint should return undefined at start", () => {
+		it("peekBeforeCodePoint returns undefined at start", () => {
 			const nav = createNav("test");
 			expect(nav.peekBeforeCodePoint()).toBeUndefined();
 		});
 
-		test("peekAfterCodePoint should return the next code point", () => {
-			const nav = createNav("test");
-			const eCodePoint = "e".codePointAt(0);
-			expect(nav.peekAfterCodePoint()).toBe(eCodePoint);
+		describe("peekAfterCodePoint", () => {
+			it("returns the next code point", () => {
+				const nav = createNav("test");
+				nav.moveCaptureForward(1);
+				const eCodePoint = "e".codePointAt(0);
+				expect(nav.peekAheadCodePoint()).toBe(
+					eCodePoint
+				);
+			});
+
+			it("handles surrogate pairs", () => {
+				const nav = createNav("t😊est");
+				// peekAfterCodePoint returns the code point after the current code point
+				// So we need to check what's after 't', which should be the emoji
+				nav.moveCaptureForward(1);
+				const emojiCodePoint = "😊".codePointAt(0);
+				expect(nav.peekAheadCodePoint()).toBe(
+					emojiCodePoint
+				);
+			});
+
+			it("handles surrogate pairs", () => {
+				const nav = createNav("😊xxx");
+				// peekAfterCodePoint returns the code point after the current code point
+				// So we need to check what's after 't', which should be the emoji
+				const emojiCodePoint = "😊".codePointAt(0);
+				expect(nav.peekAheadCodePoint()).toBe(
+					emojiCodePoint
+				);
+			});
+
+			it("returns undefined at end", () => {
+				const nav = createNav("test", 4);
+				expect(
+					nav.peekAheadCodePoint()
+				).toBeUndefined();
+			});
 		});
 
-		test("peekAfterCodePoint should handle surrogate pairs", () => {
-			const nav = createNav("t😊est");
-			// peekAfterCodePoint returns the code point after the current code point
-			// So we need to check what's after 't', which should be the emoji
-			const emojiCodePoint = "😊".codePointAt(0);
-			expect(nav.peekAfterCodePoint()).toBe(
-				emojiCodePoint
-			);
+		describe("peekBeforeSliceByLength", () => {
+			it("returns the correct slice", () => {
+				const nav = createNav("test string", 4);
+				// peekBeforeSliceByLength returns a slice of the specified length before the current position
+				// So for position 4 ("test string") and length 3, we should get "est"
+				const slice = nav.peekBeforeSliceByLength(3);
+				expect(slice?.value).toBe("est");
+			});
+
+			it("returns undefined if not enough characters", () => {
+				const nav = createNav("test", 2);
+				const slice = nav.peekBeforeSliceByLength(3);
+				expect(slice).toBeUndefined();
+			});
 		});
 
-		test("peekAfterCodePoint should return undefined at end", () => {
-			const nav = createNav("test", 4);
-			expect(nav.peekAfterCodePoint()).toBeUndefined();
+		describe("Result Extraction", () => {
+			describe("accumulatedMatch", () => {
+				it("returns the captured portion", () => {
+					const nav = createNav("test string");
+					nav.moveCaptureForward(4);
+					const match = nav.captureMatch;
+					expect(match.value).toBe("test");
+				});
+			});
+
+			describe("ghostMatch", () => {
+				it("returns the lookahead portion", () => {
+					const nav = createNav("test string");
+					nav.moveCaptureForward(4);
+					nav.moveGhostCaptureForward(2);
+					const ghost = nav.ghostMatch;
+					expect(ghost.value).toBe(" s");
+				});
+			});
 		});
 
-		test("peekBeforeSliceByLength should return the correct slice", () => {
-			const nav = createNav("test string", 4);
-			// peekBeforeSliceByLength returns a slice of the specified length before the current position
-			// So for position 4 ("test string") and length 3, we should get "est"
-			const slice = nav.peekBeforeSliceByLength(3);
-			expect(slice?.value).toBe("est");
-		});
+		describe("Edge Cases", () => {
+			it("handles empty string", () => {
+				const nav = createNav("");
+				expect(nav.isStartSlice).toBe(true);
+				expect(nav.isEndSlice).toBe(true);
+				expect(nav.peekCodePoint()).toBeUndefined();
+			});
 
-		test("peekBeforeSliceByLength should return undefined if not enough characters", () => {
-			const nav = createNav("test", 2);
-			const slice = nav.peekBeforeSliceByLength(3);
-			expect(slice).toBeUndefined();
-		});
-	});
+			it("handles moving beyond source bounds", () => {
+				const nav = createNav("test");
+				nav.moveCaptureForward(100);
+				expect(nav.navIndex).toBe(100); // 0 + 100
+				expect(nav.isEndSlice).toBe(false); // Since we moved beyond the end
+			});
 
-	describe("Result Extraction", () => {
-		test("accumulatedMatch should return the captured portion", () => {
-			const nav = createNav("test string");
-			nav.moveCaptureForward(4);
-			const match = nav.captureMatch;
-			expect(match.value).toBe("test");
-		});
+			it("handles Unicode surrogate pairs correctly", () => {
+				// Surrogate pairs are characters that require two UTF-16 code units
+				const nav = createNav("😊😎🚀");
+				const emoji1CodePoint = "😊".codePointAt(0);
+				expect(nav.peekCodePoint()).toBe(
+					emoji1CodePoint
+				);
 
-		test("ghostMatch should return the lookahead portion", () => {
-			const nav = createNav("test string");
-			nav.moveCaptureForward(4);
-			nav.moveGhostCaptureForward(2);
-			const ghost = nav.ghostMatch;
-			expect(ghost.value).toBe(" s");
-		});
-	});
+				nav.moveCaptureForwardOneCodePoint();
+				expect(nav.navIndex).toBe(2);
+				const emoji2CodePoint = "😎".codePointAt(0);
+				expect(nav.peekCodePoint()).toBe(
+					emoji2CodePoint
+				);
 
-	describe("Edge Cases", () => {
-		test("should handle empty string", () => {
-			const nav = createNav("");
-			expect(nav.isStartSlice).toBe(true);
-			expect(nav.isEndSlice).toBe(true);
-			expect(nav.peekCodePoint()).toBeUndefined();
-		});
-
-		test("should handle moving beyond source bounds", () => {
-			const nav = createNav("test");
-			nav.moveCaptureForward(100);
-			expect(nav.navIndex).toBe(100); // 0 + 100
-			expect(nav.isEndSlice).toBe(false); // Since we moved beyond the end
-		});
-
-		test("should handle Unicode surrogate pairs correctly", () => {
-			// Surrogate pairs are characters that require two UTF-16 code units
-			const nav = createNav("😊😎🚀");
-			const emoji1CodePoint = "😊".codePointAt(0);
-			expect(nav.peekCodePoint()).toBe(emoji1CodePoint);
-
-			nav.moveCaptureForwardOneCodePoint();
-			expect(nav.navIndex).toBe(2);
-			const emoji2CodePoint = "😎".codePointAt(0);
-			expect(nav.peekCodePoint()).toBe(emoji2CodePoint);
-
-			nav.moveCaptureForwardOneCodePoint();
-			expect(nav.navIndex).toBe(4);
-			const emoji3CodePoint = "🚀".codePointAt(0);
-			expect(nav.peekCodePoint()).toBe(emoji3CodePoint);
+				nav.moveCaptureForwardOneCodePoint();
+				expect(nav.navIndex).toBe(4);
+				const emoji3CodePoint = "🚀".codePointAt(0);
+				expect(nav.peekCodePoint()).toBe(
+					emoji3CodePoint
+				);
+			});
 		});
 	});
 });

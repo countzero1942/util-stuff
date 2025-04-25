@@ -13,7 +13,7 @@ export class Token<
 	) {}
 
 	public toString(): string {
-		return `${this.category}:${this.kind} '${this.matchValue}'`;
+		return `${this.category}:${this.kind} '${this.matchValue.value}'`;
 	}
 }
 
@@ -28,7 +28,7 @@ export class NavToken<
 	) {}
 
 	public toString(): string {
-		return `${this.category}:${this.kind} '${this.matchNav.captureMatch}'`;
+		return `${this.category}:${this.kind} '${this.matchNav.captureMatch.value}'`;
 	}
 }
 

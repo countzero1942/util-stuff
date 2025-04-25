@@ -26,6 +26,12 @@ import {
 	MatchAnyString,
 	LookAheadAnyString,
 	TRex,
+	MatchAnyMatch,
+	LookAheadCodePoint,
+	LookBehindCodePoint,
+	matchEndSlice,
+	matchStartSlice,
+	matchUnicodeSpace,
 } from "@/trex";
 
 // const s1 = "a😀";
@@ -147,4 +153,110 @@ export const doTRexStuff = () => {
 		}
 		div();
 	}
+};
+
+export const wordMatchTestWithGhostMatch = () => {
+	const str =
+		"xxx abc def xxx hij yyy lmn opq xxx yyz xxx yyy mmm cba xxxyyy yyyxxx yyy";
+	const source = StrSlice.from(str);
+
+	const matcher = MatchAnyString.fromStrings([
+		"xxx",
+		"yyy",
+	]);
+	const wordMatcher = new MatchAllMatches([
+		new MatchAnyMatch([
+			matchStartSlice,
+			new LookBehindCodePoint(matchUnicodeSpace),
+		]),
+		matcher,
+		new MatchAnyMatch([
+			new GhostMatch(matchUnicodeSpace),
+			matchEndSlice,
+		]),
+	]);
+	const trex = new TRex(wordMatcher);
+
+	const result = trex.findAll(source);
+	const tokens = result.getTokens();
+
+	logh("Word Match Test With Ghost Match");
+
+	tokens.forEach(token => {
+		log(token.toString());
+	});
+
+	div();
+};
+
+export const wordMatchTestWithLookAhead = () => {
+	let str =
+		"xxx abc def xxx hij yyy lmn opq xxx yyz xxx yyy mmm cba xxxyyy yyyxxx yyy";
+
+	str = " abc yyy def ";
+
+	const source = StrSlice.from(str);
+
+	const matcher = MatchAnyString.fromStrings([
+		"xxx",
+		"yyy",
+	]);
+	// const wordMatcher = new MatchAllMatches([
+	// 	new MatchAnyMatch([
+	// 		matchStartSlice,
+	// 		new LookBehindCodePoint(matchUnicodeSpace),
+	// 	]),
+	// 	matcher,
+	// 	new MatchAnyMatch([
+	// 		new LookAheadCodePoint(matchUnicodeSpace),
+	// 		matchEndSlice,
+	// 	]),
+	// ]);
+
+	const wordMatcher = new MatchAllMatches([
+		new LookBehindCodePoint(matchUnicodeSpace),
+		matcher,
+		new LookAheadCodePoint(matchUnicodeSpace),
+	]);
+
+	const trex = new TRex(wordMatcher);
+
+	const result = trex.findAll(source);
+	const tokens = result.getTokens();
+
+	logh("Word Match Test With Look Ahead");
+
+	tokens.forEach(token => {
+		log(token.toString());
+	});
+
+	div();
+};
+
+export const testLookAheadAnyString = () => {
+	const source = StrSlice.from("xxx ");
+	const nav = new MutMatchNav(source, 0);
+	const anyStringMatcher = MatchAnyString.fromStrings([
+		"xxx",
+		"yyy",
+	]);
+
+	const lookAheadMatcher = new LookAheadCodePoint(
+		matchUnicodeSpace
+	);
+	const result1 = anyStringMatcher.match(nav);
+	if (!result1) {
+		log("No match: anyStringMatcher");
+		return;
+	}
+
+	log(`anyStringMatcher: '${result1.captureMatch.value}'`);
+
+	const result2 = lookAheadMatcher.match(result1);
+	if (!result2) {
+		log("No look ahead match: lookAheadMatcher");
+		return;
+	}
+
+	log(`lookAheadMatcher: '${result2.captureMatch.value}'`);
 };

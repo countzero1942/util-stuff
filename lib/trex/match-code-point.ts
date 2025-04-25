@@ -7,6 +7,7 @@ import {
 	MatchPositionBase,
 } from "@/trex/match-base";
 import { MutMatchNav } from "@/trex/nav";
+import { getClassName } from "@/utils/types";
 
 export class MatchCodePoint extends MatchCodePointBase {
 	public constructor(public readonly matchValue: number) {
@@ -329,7 +330,10 @@ export class MatchNotCodePointOrPosition extends MatchCodePointBase {
 			case this.matcher instanceof MatchCodePointBase:
 				return !this.matcher.matchCodePoint(codePoint);
 			default:
-				throw new Error("Invalid matcher type");
+				const className = getClassName(this.matcher);
+				throw new Error(
+					`Invalid matcher type: ${className}`
+				);
 		}
 	}
 }

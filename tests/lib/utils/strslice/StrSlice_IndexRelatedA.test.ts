@@ -332,7 +332,7 @@ describe("StrSlice Index related methods A", () => {
 	});
 
 	describe("StrSlice.countOccurencesOf", () => {
-		it("counts occurences of value in slice", () => {
+		it("counts occurrences of value in slice", () => {
 			const slice1 = StrSlice.from("hello world");
 			expect(slice1.countOccurencesOf("world")).toBe(1);
 			expect(slice1.countOccurencesOf("o")).toBe(2);

@@ -5,7 +5,10 @@ import {
 	Seq,
 	Range,
 } from "@/utils/seq";
-import { isCodePointWhiteSpace } from "@/utils/string";
+import {
+	getCodePointCharLength,
+	isCodePointWhiteSpace,
+} from "@/utils/string";
 
 export const normalizeStartEnd = (
 	length: number,
@@ -136,7 +139,19 @@ export class StrSlice {
 		if (codePointIndex >= this.endExcl) {
 			return undefined;
 		}
-		return this.source.codePointAt(codePointIndex);
+
+		const codePoint =
+			this.source.codePointAt(codePointIndex);
+		if (codePoint === undefined) {
+			return undefined;
+		}
+
+		const codePointLength =
+			getCodePointCharLength(codePoint);
+		if (codePointIndex + codePointLength > this.endExcl) {
+			return undefined;
+		}
+		return codePoint;
 	}
 
 	public trimStart(): StrSlice {

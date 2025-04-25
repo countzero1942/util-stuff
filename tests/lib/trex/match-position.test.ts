@@ -9,7 +9,7 @@ describe("MatchStartSlice", () => {
     matchStartSlice = new MatchStartSlice();
   });
 
-  test("should match at the beginning of the slice", () => {
+  it("matches at the beginning of the slice", () => {
     const source = StrSlice.from("test string");
     const nav = new MutMatchNav(source, 0);
     
@@ -19,7 +19,7 @@ describe("MatchStartSlice", () => {
     expect(result?.navIndex).toBe(0);
   });
 
-  test("should not match when not at the beginning of the slice", () => {
+  it("does not match when not at the beginning of the slice", () => {
     const source = StrSlice.from("test string");
     const nav = new MutMatchNav(source, 3);
     
@@ -28,7 +28,7 @@ describe("MatchStartSlice", () => {
     expect(result).toBeNull();
   });
 
-  test("should work with empty string", () => {
+  it("works with empty string", () => {
     const source = StrSlice.from("");
     const nav = new MutMatchNav(source, 0);
     
@@ -38,7 +38,7 @@ describe("MatchStartSlice", () => {
     expect(result?.navIndex).toBe(0);
   });
 
-  test("should not mutate the navigation state on success", () => {
+  it("does not mutate the navigation state on success", () => {
     const source = StrSlice.from("test string");
     const nav = new MutMatchNav(source, 0);
     const originalNavIndex = nav.navIndex;
@@ -57,7 +57,7 @@ describe("MatchEndSlice", () => {
     matchEndSlice = new MatchEndSlice();
   });
 
-  test("should match at the end of the slice", () => {
+  it("matches at the end of the slice", () => {
     const source = StrSlice.from("test string");
     const nav = new MutMatchNav(source, source.length);
     
@@ -67,7 +67,7 @@ describe("MatchEndSlice", () => {
     expect(result?.navIndex).toBe(source.length);
   });
 
-  test("should not match when not at the end of the slice", () => {
+  it("does not match when not at the end of the slice", () => {
     const source = StrSlice.from("test string");
     const nav = new MutMatchNav(source, 3);
     
@@ -76,7 +76,7 @@ describe("MatchEndSlice", () => {
     expect(result).toBeNull();
   });
 
-  test("should work with empty string", () => {
+  it("works with empty string", () => {
     const source = StrSlice.from("");
     const nav = new MutMatchNav(source, 0);
     
@@ -86,7 +86,7 @@ describe("MatchEndSlice", () => {
     expect(result?.navIndex).toBe(0);
   });
 
-  test("should not mutate the navigation state on success", () => {
+  it("does not mutate the navigation state on success", () => {
     const source = StrSlice.from("test string");
     const nav = new MutMatchNav(source, source.length);
     const originalNavIndex = nav.navIndex;

@@ -26,7 +26,8 @@
 			"@/utils/*": ["lib/utils/*"],
 			"@/types/*": ["lib/types/*"],
 			"@/tests/*": ["tests/*"],
-			"@/my-tests/*": ["my-test-stuff/*"]
+			"@/my-tests/*": ["my-test-stuff/*"],
+			"@/examples/*": ["examples/*"]
 		}
 	},
 	"include": ["**/*.ts"],

@@ -234,7 +234,7 @@ export class MutMatchNav {
 	 * @returns The code point before the current position, or undefined if at start
 	 */
 	public peekBeforeCodePoint(): number | undefined {
-		// this navigates backwards to extract the code point
+		// this looks backwards to extract the code point
 		// before the current position; navigating back at most 2 times
 		let index = this._navIndex - 1;
 		let minIndex = this._navIndex - 2;
@@ -273,24 +273,8 @@ export class MutMatchNav {
 	 *
 	 * @returns The code point after the current position, or undefined if at end
 	 */
-	public peekAfterCodePoint(): number | undefined {
-		// this navigates forwards to extract the code point
-		// after the current position; navigating forward at most 2 times
-
-		const codePoint = this.source.codePointAt(
-			this._navIndex
-		);
-		if (codePoint === undefined) {
-			return undefined;
-		}
-		const codePointLength =
-			getCodePointCharLength(codePoint);
-
-		let index = this._navIndex + codePointLength;
-		if (index < this.source.length) {
-			return this.source.codePointAt(index);
-		}
-		return undefined;
+	public peekAheadCodePoint(): number | undefined {
+		return this.source.codePointAt(this._navIndex);
 	}
 
 	/**

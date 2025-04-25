@@ -18,7 +18,7 @@ const createLetterMatcher = (
 
 describe("MatchAnyMatch", () => {
 	describe("constructor", () => {
-		it("should create a matcher with the specified matchers array", () => {
+		it("creates a matcher with the specified matchers array", () => {
 			const matcher1 = createLetterMatcher("A");
 			const matcher2 = createLetterMatcher("B");
 			const anyMatcher = new MatchAnyMatch([
@@ -33,7 +33,7 @@ describe("MatchAnyMatch", () => {
 	});
 
 	describe("match", () => {
-		it("should match if any of the matchers match and return the first successful match", () => {
+		it("matches if any of the matchers match and returns the first successful match", () => {
 			const matcherA = createLetterMatcher("A");
 			const matcherB = createLetterMatcher("B");
 			const anyMatcher = new MatchAnyMatch([
@@ -52,7 +52,7 @@ describe("MatchAnyMatch", () => {
 			expect(resultB?.captureMatch.value).toBe("B");
 		});
 
-		it("should return null if none of the matchers match", () => {
+		it("returns null if none of the matchers match", () => {
 			const matcherA = createLetterMatcher("A");
 			const matcherB = createLetterMatcher("B");
 			const anyMatcher = new MatchAnyMatch([
@@ -66,7 +66,7 @@ describe("MatchAnyMatch", () => {
 			expect(result).toBeNull();
 		});
 
-		it("should try matchers in order and return the first match", () => {
+		it("tries matchers in order and returns the first match", () => {
 			const matcherA = createLetterMatcher("A");
 			const matcherB = createLetterMatcher("B");
 			const anyMatcher = new MatchAnyMatch([
@@ -86,7 +86,7 @@ describe("MatchAnyMatch", () => {
 
 describe("MatchAllMatches", () => {
 	describe("constructor", () => {
-		it("should create a matcher with the specified matchers array", () => {
+		it("creates a matcher with the specified matchers array", () => {
 			const matcher1 = createLetterMatcher("A");
 			const matcher2 = createLetterMatcher("B");
 			const allMatcher = new MatchAllMatches([
@@ -101,7 +101,7 @@ describe("MatchAllMatches", () => {
 	});
 
 	describe("match", () => {
-		it("should match if all matchers match in sequence", () => {
+		it("matches if all matchers match in sequence", () => {
 			const matcherA = createLetterMatcher("A");
 			const matcherB = createLetterMatcher("B");
 			const allMatcher = new MatchAllMatches([
@@ -116,7 +116,7 @@ describe("MatchAllMatches", () => {
 			expect(result?.captureMatch.value).toBe("AB");
 		});
 
-		it("should return null if any matcher in the sequence fails", () => {
+		it("returns null if any matcher in the sequence fails", () => {
 			const matcherA = createLetterMatcher("A");
 			const matcherB = createLetterMatcher("B");
 			const matcherC = createLetterMatcher("C");
@@ -133,7 +133,7 @@ describe("MatchAllMatches", () => {
 			expect(result).toBeNull();
 		});
 
-		it("should pass the updated navigator to each subsequent matcher", () => {
+		it("passes the updated navigator to each subsequent matcher", () => {
 			const matcherA = createLetterMatcher("A");
 			const matcherB = createLetterMatcher("B");
 			const matcherC = createLetterMatcher("C");
@@ -151,7 +151,7 @@ describe("MatchAllMatches", () => {
 			expect(result?.captureIndex).toBe(3);
 		});
 
-		it("should work with an empty matchers array", () => {
+		it("works with an empty matchers array", () => {
 			const allMatcher = new MatchAllMatches([]);
 
 			const nav = new MutMatchNav(new StrSlice("ABC"));
@@ -165,7 +165,7 @@ describe("MatchAllMatches", () => {
 
 describe("MatchOptMatch", () => {
 	describe("constructor", () => {
-		it("should create a matcher with the specified matcher", () => {
+		it("creates a matcher with the specified matcher", () => {
 			const innerMatcher = createLetterMatcher("A");
 			const optMatcher = new MatchOptMatch(innerMatcher);
 
@@ -174,7 +174,7 @@ describe("MatchOptMatch", () => {
 	});
 
 	describe("match", () => {
-		it("should match and advance the navigator if the inner matcher matches", () => {
+		it("matches and advances the navigator if the inner matcher matches", () => {
 			const innerMatcher = createLetterMatcher("A");
 			const optMatcher = new MatchOptMatch(innerMatcher);
 
@@ -185,7 +185,7 @@ describe("MatchOptMatch", () => {
 			expect(result?.captureMatch.value).toBe("A");
 		});
 
-		it("should return the original navigator without advancing if the inner matcher doesn't match", () => {
+		it("returns the original navigator without advancing if the inner matcher does not match", () => {
 			const innerMatcher = createLetterMatcher("X");
 			const optMatcher = new MatchOptMatch(innerMatcher);
 
@@ -198,7 +198,7 @@ describe("MatchOptMatch", () => {
 			expect(result?.captureMatch.value).toBe("");
 		});
 
-		it("should not invalidate the navigator if the inner matcher doesn't match", () => {
+		it("does not invalidate the navigator if the inner matcher does not match", () => {
 			const innerMatcher = createLetterMatcher("X");
 			const optMatcher = new MatchOptMatch(innerMatcher);
 
@@ -213,7 +213,7 @@ describe("MatchOptMatch", () => {
 
 describe("MatchRepeatMatch", () => {
 	describe("constructor", () => {
-		it("should create a matcher with default parameters", () => {
+		it("creates a matcher with default parameters", () => {
 			const innerMatcher = createLetterMatcher("A");
 			const repeatMatcher = new MatchRepeatMatch(
 				innerMatcher
@@ -226,7 +226,7 @@ describe("MatchRepeatMatch", () => {
 			expect(repeatMatcher.altLastMatch).toBeNull();
 		});
 
-		it("should create a matcher with custom min and max values", () => {
+		it("creates a matcher with custom min and max values", () => {
 			const innerMatcher = createLetterMatcher("A");
 			const repeatMatcher = new MatchRepeatMatch(
 				innerMatcher,
@@ -239,7 +239,7 @@ describe("MatchRepeatMatch", () => {
 			expect(repeatMatcher.maxNumberMatches).toBe(5);
 		});
 
-		it("should create a matcher with alternative first and last matchers", () => {
+		it("creates a matcher with alternative first and last matchers", () => {
 			const innerMatcher = createLetterMatcher("A");
 			const altFirstMatcher = createLetterMatcher("B");
 			const altLastMatcher = createLetterMatcher("C");
@@ -262,7 +262,7 @@ describe("MatchRepeatMatch", () => {
 	});
 
 	describe("match", () => {
-		it("should match the minimum required occurrences", () => {
+		it("matches the minimum required occurrences", () => {
 			const innerMatcher = createLetterMatcher("A");
 			const repeatMatcher = new MatchRepeatMatch(
 				innerMatcher,
@@ -277,7 +277,7 @@ describe("MatchRepeatMatch", () => {
 			expect(result?.captureMatch.value).toBe("AA");
 		});
 
-		it("should match up to the maximum allowed occurrences", () => {
+		it("matches up to the maximum allowed occurrences", () => {
 			const innerMatcher = createLetterMatcher("A");
 			const repeatMatcher = new MatchRepeatMatch(
 				innerMatcher,
@@ -292,7 +292,7 @@ describe("MatchRepeatMatch", () => {
 			expect(result?.captureMatch.value).toBe("AAA");
 		});
 
-		it("should return null if fewer than minimum occurrences match", () => {
+		it("returns null if fewer than minimum occurrences match", () => {
 			const innerMatcher = createLetterMatcher("A");
 			const repeatMatcher = new MatchRepeatMatch(
 				innerMatcher,
@@ -306,7 +306,7 @@ describe("MatchRepeatMatch", () => {
 			expect(result).toBeNull();
 		});
 
-		it("should match unlimited occurrences when max is -1", () => {
+		it("matches unlimited occurrences when max is -1", () => {
 			const innerMatcher = createLetterMatcher("A");
 			const repeatMatcher = new MatchRepeatMatch(
 				innerMatcher,
@@ -323,7 +323,7 @@ describe("MatchRepeatMatch", () => {
 			expect(result?.captureMatch.value).toBe("AAAAA");
 		});
 
-		it("should use altFirstMatch for the first match if provided", () => {
+		it("uses altFirstMatch for the first match if provided", () => {
 			const innerMatcher = createLetterMatcher("A");
 			const altFirstMatcher = createLetterMatcher("B");
 			const repeatMatcher = new MatchRepeatMatch(
@@ -340,7 +340,7 @@ describe("MatchRepeatMatch", () => {
 			expect(result?.captureMatch.value).toBe("BAA");
 		});
 
-		it("should use altLastMatch for the last match if provided", () => {
+		it("uses altLastMatch for the last match if provided", () => {
 			const innerMatcher = createLetterMatcher("A");
 			const altLastMatcher = createLetterMatcher("B");
 			const repeatMatcher = new MatchRepeatMatch(
@@ -377,7 +377,7 @@ describe("MatchRepeatMatch", () => {
 
 describe("GhostMatch", () => {
 	describe("constructor", () => {
-		it("should create a matcher with the specified matcher", () => {
+		it("creates a matcher with the specified matcher", () => {
 			const innerMatcher = createLetterMatcher("A");
 			const ghostMatcher = new GhostMatch(innerMatcher);
 
@@ -409,7 +409,7 @@ describe("GhostMatch", () => {
 		});
 
 		// Updated test case - ghost match should only be used at the end of a sequence
-		it("should be used at the end of a match sequence to handle delimiters", () => {
+		it("is used at the end of a match sequence to handle delimiters", () => {
 			const matcherA = createLetterMatcher("A");
 			const matcherB = createLetterMatcher("B");
 			const matcherComma = createLetterMatcher(",");
@@ -435,7 +435,7 @@ describe("GhostMatch", () => {
 		});
 
 		// New test case to demonstrate the error when ghost capture is in the middle
-		it("should throw an error if a ghost match is followed by another match", () => {
+		it("throws an error if a ghost match is followed by another match", () => {
 			const matcherA = createLetterMatcher("A");
 			const matcherComma = createLetterMatcher(",");
 			const ghostComma = new GhostMatch(matcherComma);
@@ -458,7 +458,7 @@ describe("GhostMatch", () => {
 			);
 		});
 
-		it("should demonstrate proper use of ghost match in a sequence", () => {
+		it("demonstrates proper use of ghost match in a sequence", () => {
 			const matcherA = createLetterMatcher("A");
 			const matcherComma = createLetterMatcher(",");
 			const ghostComma = new GhostMatch(matcherComma);

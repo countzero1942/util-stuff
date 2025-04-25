@@ -79,7 +79,7 @@ export class LookAheadCodePoint extends MatchBase {
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
 
-		const aheadCodePoint = nav.peekAfterCodePoint();
+		const aheadCodePoint = nav.peekAheadCodePoint();
 		if (
 			aheadCodePoint !== undefined &&
 			this.matcher.matchCodePoint(aheadCodePoint)

@@ -13,7 +13,7 @@ describe("CodePointPrefixIndex", () => {
 	const stringKeyExtractor = (str: string) => str;
 
 	describe("Constructor and Basic Properties", () => {
-		test("should initialize empty with no elements", () => {
+		it("initializes empty with no elements", () => {
 			const index = new CodePointPrefixIndex<TestItem>(
 				[],
 				keyExtractor
@@ -23,7 +23,7 @@ describe("CodePointPrefixIndex", () => {
 			expect(index.getAllCodePoints()).toEqual([]);
 		});
 
-		test("should initialize with provided elements", () => {
+		it("initializes with provided elements", () => {
 			const items = [
 				{ key: "apple", value: 1 },
 				{ key: "banana", value: 2 },
@@ -41,7 +41,7 @@ describe("CodePointPrefixIndex", () => {
 			);
 		});
 
-		test("should handle empty strings in constructor", () => {
+		it("handles empty strings in constructor", () => {
 			const items = [
 				{ key: "", value: 1 },
 				{ key: "valid", value: 2 },
@@ -57,7 +57,7 @@ describe("CodePointPrefixIndex", () => {
 	});
 
 	describe("Element Management", () => {
-		test("add should add a single element", () => {
+		it("add adds a single element", () => {
 			const index = new CodePointPrefixIndex<TestItem>(
 				[],
 				keyExtractor
@@ -69,7 +69,7 @@ describe("CodePointPrefixIndex", () => {
 			expect(index.getAllElements()).toEqual([item]);
 		});
 
-		test("add should handle empty keys", () => {
+		it("add handles empty keys", () => {
 			const index = new CodePointPrefixIndex<TestItem>(
 				[],
 				keyExtractor
@@ -80,7 +80,7 @@ describe("CodePointPrefixIndex", () => {
 			expect(index.size).toBe(0);
 		});
 
-		test("addAll should add multiple elements", () => {
+		it("addAll adds multiple elements", () => {
 			const index = new CodePointPrefixIndex<TestItem>(
 				[],
 				keyExtractor
@@ -97,7 +97,7 @@ describe("CodePointPrefixIndex", () => {
 			);
 		});
 
-		test("remove should remove an element and return true", () => {
+		it("remove removes an element and returns true", () => {
 			const items = [
 				{ key: "apple", value: 1 },
 				{ key: "banana", value: 2 },
@@ -134,7 +134,7 @@ describe("CodePointPrefixIndex", () => {
 			).toHaveLength(1);
 		});
 
-		test("remove should return false for non-existent element", () => {
+		it("remove returns false for non-existent element", () => {
 			const index = new CodePointPrefixIndex<TestItem>(
 				[{ key: "apple", value: 1 }],
 				keyExtractor
@@ -153,7 +153,7 @@ describe("CodePointPrefixIndex", () => {
 			).toHaveLength(1);
 		});
 
-		test("remove should handle empty keys", () => {
+		it("remove handles empty keys", () => {
 			const index = new CodePointPrefixIndex<TestItem>(
 				[{ key: "apple", value: 1 }],
 				keyExtractor
@@ -169,7 +169,7 @@ describe("CodePointPrefixIndex", () => {
 			).toHaveLength(1);
 		});
 
-		test("clear should remove all elements", () => {
+		it("clear removes all elements", () => {
 			const items = [
 				{ key: "apple", value: 1 },
 				{ key: "banana", value: 2 },
@@ -185,7 +185,7 @@ describe("CodePointPrefixIndex", () => {
 			expect(index.getAllCodePoints()).toEqual([]);
 		});
 
-		test("should clean up empty arrays when removing last element", () => {
+		it("cleans up empty arrays when removing last element", () => {
 			const item = { key: "test", value: 1 };
 			const index = new CodePointPrefixIndex<TestItem>(
 				[item],
@@ -201,7 +201,7 @@ describe("CodePointPrefixIndex", () => {
 	});
 
 	describe("Query Methods", () => {
-		test("getElementsByCodePoint should return elements with matching first code point", () => {
+		it("getElementsByCodePoint returns elements with matching first code point", () => {
 			const items = [
 				{ key: "apple", value: 1 },
 				{ key: "avocado", value: 2 },
@@ -222,7 +222,7 @@ describe("CodePointPrefixIndex", () => {
 			);
 		});
 
-		test("getElementsByCodePoint should return empty array for non-existent code point", () => {
+		it("getElementsByCodePoint returns empty array for non-existent code point", () => {
 			const index = new CodePointPrefixIndex<TestItem>(
 				[{ key: "apple", value: 1 }],
 				keyExtractor
@@ -235,7 +235,7 @@ describe("CodePointPrefixIndex", () => {
 			expect(results).toEqual([]);
 		});
 
-		test("getElementsByString should return elements with matching first code point", () => {
+		it("getElementsByString returns elements with matching first code point", () => {
 			const items = [
 				{ key: "apple", value: 1 },
 				{ key: "avocado", value: 2 },
@@ -254,7 +254,7 @@ describe("CodePointPrefixIndex", () => {
 			);
 		});
 
-		test("getElementsByString should handle empty strings", () => {
+		it("getElementsByString handles empty strings", () => {
 			const index = new CodePointPrefixIndex<TestItem>(
 				[{ key: "apple", value: 1 }],
 				keyExtractor
@@ -265,7 +265,7 @@ describe("CodePointPrefixIndex", () => {
 			expect(results).toEqual([]);
 		});
 
-		test("getElementsBySlice should return elements with matching first code point", () => {
+		it("getElementsBySlice returns elements with matching first code point", () => {
 			const items = [
 				{ key: "apple", value: 1 },
 				{ key: "avocado", value: 2 },
@@ -285,7 +285,7 @@ describe("CodePointPrefixIndex", () => {
 			);
 		});
 
-		test("getAllCodePoints should return all unique first code points", () => {
+		it("getAllCodePoints returns all unique first code points", () => {
 			const items = [
 				{ key: "apple", value: 1 },
 				{ key: "avocado", value: 2 },
@@ -305,7 +305,7 @@ describe("CodePointPrefixIndex", () => {
 			expect(codePoints).toContain("c".codePointAt(0));
 		});
 
-		test("getAllKeyLengths should return sorted unique key lengths", () => {
+		it("getAllKeyLengths returns sorted unique key lengths", () => {
 			const items = [
 				{ key: "a", value: 1 },
 				{ key: "abc", value: 2 },
@@ -322,7 +322,7 @@ describe("CodePointPrefixIndex", () => {
 			expect(lengths).toEqual([1, 3, 5]);
 		});
 
-		test("hasCodePoint should return true for existing code point", () => {
+		it("hasCodePoint returns true for existing code point", () => {
 			const index = new CodePointPrefixIndex<TestItem>(
 				[{ key: "apple", value: 1 }],
 				keyExtractor
@@ -333,7 +333,7 @@ describe("CodePointPrefixIndex", () => {
 			).toBe(true);
 		});
 
-		test("hasCodePoint should return false for non-existent code point", () => {
+		it("hasCodePoint returns false for non-existent code point", () => {
 			const index = new CodePointPrefixIndex<TestItem>(
 				[{ key: "apple", value: 1 }],
 				keyExtractor
@@ -344,7 +344,7 @@ describe("CodePointPrefixIndex", () => {
 			).toBe(false);
 		});
 
-		test("hasString should return true for exact string match", () => {
+		it("hasString returns true for exact string match", () => {
 			const index = new CodePointPrefixIndex<string>(
 				["apple", "banana"],
 				stringKeyExtractor
@@ -353,7 +353,7 @@ describe("CodePointPrefixIndex", () => {
 			expect(index.hasString("apple")).toBe(true);
 		});
 
-		test("hasString should return false for partial string match", () => {
+		it("hasString returns false for partial string match", () => {
 			const index = new CodePointPrefixIndex<string>(
 				["apple", "banana"],
 				stringKeyExtractor
@@ -362,7 +362,7 @@ describe("CodePointPrefixIndex", () => {
 			expect(index.hasString("app")).toBe(false);
 		});
 
-		test("hasSlice should return true for exact slice match", () => {
+		it("hasSlice returns true for exact slice match", () => {
 			const index = new CodePointPrefixIndex<string>(
 				["apple", "banana"],
 				stringKeyExtractor
@@ -373,7 +373,7 @@ describe("CodePointPrefixIndex", () => {
 			);
 		});
 
-		test("hasSlice should return false for partial slice match", () => {
+		it("hasSlice returns false for partial slice match", () => {
 			const index = new CodePointPrefixIndex<string>(
 				["apple", "banana"],
 				stringKeyExtractor
@@ -386,7 +386,7 @@ describe("CodePointPrefixIndex", () => {
 	});
 
 	describe("Edge Cases and Unicode Handling", () => {
-		test("should handle Unicode surrogate pairs correctly", () => {
+		it("handles Unicode surrogate pairs correctly", () => {
 			const items = [
 				{ key: "😊happy", value: 1 },
 				{ key: "😎cool", value: 2 },
@@ -405,7 +405,7 @@ describe("CodePointPrefixIndex", () => {
 			expect(results[0]).toEqual(items[0]);
 		});
 
-		test("should handle adding and removing elements with same first code point", () => {
+		it("handles adding and removing elements with same first code point", () => {
 			const index = new CodePointPrefixIndex<TestItem>(
 				[],
 				keyExtractor
@@ -445,7 +445,7 @@ describe("CodePointPrefixIndex", () => {
 			).toBe(false);
 		});
 
-		test("should handle case sensitivity", () => {
+		it("handles case sensitivity", () => {
 			const items = [
 				{ key: "Apple", value: 1 },
 				{ key: "apple", value: 2 },
@@ -467,7 +467,7 @@ describe("CodePointPrefixIndex", () => {
 			).toHaveLength(1);
 		});
 
-		test("should handle multiple operations in sequence", () => {
+		it("handles multiple operations in sequence", () => {
 			const index = new CodePointPrefixIndex<TestItem>(
 				[],
 				keyExtractor
@@ -539,7 +539,7 @@ describe("CodePointPrefixIndex", () => {
 	});
 
 	describe("Caching Behavior", () => {
-		test("getAllElements should return cached results and invalidate cache on modification", () => {
+		it("getAllElements returns cached results and invalidates cache on modification", () => {
 			const items = [
 				{ key: "apple", value: 1 },
 				{ key: "banana", value: 2 },
@@ -564,7 +564,7 @@ describe("CodePointPrefixIndex", () => {
 			expect(result2).not.toBe(result1);
 		});
 
-		test("getAllKeyLengths should return cached results until modified", () => {
+		it("getAllKeyLengths returns cached results until modified", () => {
 			const items = [
 				{ key: "a", value: 1 },
 				{ key: "abc", value: 2 },
