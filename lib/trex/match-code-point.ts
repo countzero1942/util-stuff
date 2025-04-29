@@ -67,6 +67,53 @@ export class MatchCodePointLambda extends MatchCodePointBase {
 	}
 }
 
+export class CodePointRange {
+	public constructor(
+		public readonly start: number,
+		public readonly end: number
+	) {
+		if (start > end) {
+			throw new Error(
+				"Invalid code point range: start > end"
+			);
+		}
+	}
+
+	public contains(codePoint: number): boolean {
+		return (
+			codePoint >= this.start && codePoint <= this.end
+		);
+	}
+
+	public *codePoints(): Generator<number> {
+		const end = this.end;
+		for (
+			let codePoint = this.start;
+			codePoint <= end;
+			codePoint++
+		) {
+			yield codePoint;
+		}
+	}
+
+	public static fromString(range: string): CodePointRange {
+		const dashCodePoint = 0x2d; // "-"
+
+		const codepoints = new CodePointSeq(range).toArray();
+		if (
+			codepoints.length !== 3 ||
+			codepoints[1].element !== dashCodePoint
+		) {
+			throw new Error("Invalid code point range");
+		}
+
+		return new CodePointRange(
+			codepoints[0].element,
+			codepoints[2].element
+		);
+	}
+}
+
 export class MatchCodePointSet extends MatchCodePointBase {
 	public constructor(
 		public readonly codePointSet: Record<number, boolean>
@@ -107,12 +154,48 @@ export class MatchCodePointSet extends MatchCodePointBase {
 		return new MatchCodePointSet(codePointSet);
 	}
 
-	public static fromArray(
+	public static fromArgs(
+		args: (CodePointRange | string)[]
+	) {
+		const codePointSet: Record<number, boolean> = {};
+		for (const arg of args) {
+			switch (true) {
+				case arg instanceof CodePointRange:
+					for (const codePoint of arg.codePoints()) {
+						codePointSet[codePoint] = true;
+					}
+				case typeof arg === "string":
+					const codePointSeq = new CodePointSeq(
+						arg as string
+					);
+					codePointSeq.foreach(codePoint => {
+						codePointSet[codePoint.element] = true;
+					});
+				default:
+					throw new Error("Invalid argument");
+			}
+		}
+		return new MatchCodePointSet(codePointSet);
+	}
+
+	public static fromNumbers(
 		codePoints: number[]
 	): MatchCodePointSet {
 		const codePointSet: Record<number, boolean> = {};
 		for (const codePoint of codePoints) {
 			codePointSet[codePoint] = true;
+		}
+		return new MatchCodePointSet(codePointSet);
+	}
+
+	public static fromSets(
+		sets: Record<number, boolean>[]
+	): MatchCodePointSet {
+		const codePointSet: Record<number, boolean> = {};
+		for (const set of sets) {
+			for (const key in set) {
+				codePointSet[key] = true;
+			}
 		}
 		return new MatchCodePointSet(codePointSet);
 	}
@@ -135,7 +218,7 @@ const initializeAllUnicodeCategories = (): Record<
 export const allUnicodeCategories =
 	initializeAllUnicodeCategories();
 
-export class MatchCodePointCategories extends MatchCodePointBase {
+export class MatchCodePointCat extends MatchCodePointBase {
 	public constructor(
 		public readonly categories: Record<string, boolean>
 	) {
@@ -166,7 +249,7 @@ export class MatchCodePointCategories extends MatchCodePointBase {
 
 	public static fromString(
 		categories: string
-	): MatchCodePointCategories {
+	): MatchCodePointCat {
 		const categoriesSet: Record<string, boolean> = {};
 		for (const category of categories.split(" ")) {
 			if (allUnicodeCategories[category] === undefined) {
@@ -176,43 +259,7 @@ export class MatchCodePointCategories extends MatchCodePointBase {
 			}
 			categoriesSet[category] = true;
 		}
-		return new MatchCodePointCategories(categoriesSet);
-	}
-}
-
-export class CodePointRange {
-	public constructor(
-		public readonly start: number,
-		public readonly end: number
-	) {
-		if (start > end) {
-			throw new Error(
-				"Invalid code point range: start > end"
-			);
-		}
-	}
-
-	public contains(codePoint: number): boolean {
-		return (
-			codePoint >= this.start && codePoint <= this.end
-		);
-	}
-
-	public static fromString(range: string): CodePointRange {
-		const dashCodePoint = 0x2d; // "-"
-
-		const codepoints = new CodePointSeq(range).toArray();
-		if (
-			codepoints.length !== 3 ||
-			codepoints[1].element !== dashCodePoint
-		) {
-			throw new Error("Invalid code point range");
-		}
-
-		return new CodePointRange(
-			codepoints[0].element,
-			codepoints[2].element
-		);
+		return new MatchCodePointCat(categoriesSet);
 	}
 }
 
@@ -298,13 +345,16 @@ export const matchAnyCodePoint = new MatchCodePointRange(
 	new CodePointRange(0, 0x10ffff)
 );
 
-export class MatchNotCodePointOrPosition extends MatchCodePointBase {
+export class MatchNotCodePoint extends MatchCodePointBase {
 	public constructor(
-		public readonly matcher:
-			| MatchCodePointBase
-			| MatchPositionBase
+		public readonly matcher: MatchCodePointBase
 	) {
 		super();
+		if (!(matcher instanceof MatchCodePointBase)) {
+			throw new Error(
+				"MatchNotCodePoint: Invalid matcher type. Must be instance of MatchCodePointBase"
+			);
+		}
 	}
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
@@ -313,27 +363,11 @@ export class MatchNotCodePointOrPosition extends MatchCodePointBase {
 		if (result) {
 			return nav.invalidate();
 		}
-		switch (true) {
-			case this.matcher instanceof MatchPositionBase:
-				return savedNav;
-			case this.matcher instanceof MatchCodePointBase:
-				return matchAnyCodePoint.match(savedNav);
-			default:
-				throw new Error("Invalid matcher type");
-		}
+
+		return savedNav.moveCaptureForwardOneCodePoint();
 	}
 
 	public matchCodePoint(codePoint: number): boolean {
-		switch (true) {
-			case this.matcher instanceof MatchPositionBase:
-				return false;
-			case this.matcher instanceof MatchCodePointBase:
-				return !this.matcher.matchCodePoint(codePoint);
-			default:
-				const className = getClassName(this.matcher);
-				throw new Error(
-					`Invalid matcher type: ${className}`
-				);
-		}
+		return !this.matcher.matchCodePoint(codePoint);
 	}
 }

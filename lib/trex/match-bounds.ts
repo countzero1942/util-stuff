@@ -11,9 +11,9 @@ import {
 } from "./match-base";
 import {
 	GhostMatch,
-	MatchAllMatches,
-	MatchAnyMatch,
-	MatchRepeatMatch,
+	MatchAll,
+	MatchAny,
+	MatchRepeat,
 } from "./match-matches";
 import { MatchAnyString } from "./match-string";
 import { MutMatchNav } from "./nav";

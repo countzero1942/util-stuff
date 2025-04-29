@@ -24,3 +24,27 @@ export class MatchEndSlice extends MatchPositionBase {
 			: nav.invalidate();
 	}
 }
+
+export class MatchNotStartSlice extends MatchPositionBase {
+	constructor() {
+		super();
+	}
+
+	public match(nav: MutMatchNav): MutMatchNav | null {
+		nav.assertValid();
+		return nav.navIndex !== 0 ? nav : nav.invalidate();
+	}
+}
+
+export class MatchNotEndSlice extends MatchPositionBase {
+	constructor() {
+		super();
+	}
+
+	public match(nav: MutMatchNav): MutMatchNav | null {
+		nav.assertValid();
+		return nav.navIndex !== nav.source.length
+			? nav
+			: nav.invalidate();
+	}
+}

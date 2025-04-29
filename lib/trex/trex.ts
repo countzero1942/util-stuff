@@ -30,6 +30,13 @@ export class NavToken<
 	public toString(): string {
 		return `${this.category}:${this.kind} '${this.matchNav.captureMatch.value}'`;
 	}
+
+	public toStringWithGhostMatch(): string {
+		return (
+			`${this.category}:${this.kind} '${this.matchNav.captureMatch.value}'` +
+			` + '${this.matchNav.ghostMatch.value}'`
+		);
+	}
 }
 
 export type FindCategory = ":find";

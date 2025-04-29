@@ -4,7 +4,7 @@ import {
 } from "@/trex/match-position";
 import {
 	CodePointRange,
-	MatchCodePointCategories,
+	MatchCodePointCat,
 	MatchCodePointRange,
 	MatchCodePointSet,
 } from "@/trex/match-code-point";
@@ -14,28 +14,28 @@ export const matchStartSlice = new MatchStartSlice();
 export const matchEndSlice = new MatchEndSlice();
 
 export const matchUnicodeLetter =
-	MatchCodePointCategories.fromString("Lu Lo Ll");
+	MatchCodePointCat.fromString("Lu Lo Ll");
 
 export const matchUnicodeDigit =
-	MatchCodePointCategories.fromString("Nd");
+	MatchCodePointCat.fromString("Nd");
 
 export const matchUnicodeLetterOrDigit =
-	MatchCodePointCategories.fromString("Lu Lo Ll Nd");
+	MatchCodePointCat.fromString("Lu Lo Ll Nd");
 
 export const matchUnicodeLowerCase =
-	MatchCodePointCategories.fromString("Ll");
+	MatchCodePointCat.fromString("Ll");
 
 export const matchUnicodeUpperCase =
-	MatchCodePointCategories.fromString("Lu");
+	MatchCodePointCat.fromString("Lu");
 
 export const matchUnicodeTitleCase =
-	MatchCodePointCategories.fromString("Lt");
+	MatchCodePointCat.fromString("Lt");
 
 export const matchUnicodeSpace =
-	MatchCodePointCategories.fromString("Zs");
+	MatchCodePointCat.fromString("Zs");
 
 export const matchUnicodeWhiteSpace =
-	MatchCodePointSet.fromArray([
+	MatchCodePointSet.fromNumbers([
 		0x20, 0x0d, 0x0a, 0x09, 0x0c, 0x0b, 0xa0, 0x1680,
 		0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005,
 		0x2006, 0x2007, 0x2008, 0x2009, 0x200a, 0x2028,

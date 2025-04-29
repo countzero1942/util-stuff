@@ -7,13 +7,13 @@ import {
 	MatchCodePoint,
 	MatchCodePointLambda,
 	MatchCodePointSet,
-	MatchCodePointCategories,
+	MatchCodePointCat,
 	allUnicodeCategories,
 	CodePointRange,
 	MatchCodePointRange,
 	MatchCodePointRanges,
 	matchAnyCodePoint,
-	MatchNotCodePointOrPosition,
+	MatchNotCodePoint,
 } from "@/trex";
 
 describe("MatchCodePoint", () => {
@@ -234,7 +234,7 @@ describe("MatchCodePointSet", () => {
 
 	describe("fromArray", () => {
 		it("creates a matcher from an array of code points", () => {
-			const matcher = MatchCodePointSet.fromArray([
+			const matcher = MatchCodePointSet.fromNumbers([
 				65, 66, 67,
 			]); // A, B, C
 
@@ -268,16 +268,14 @@ describe("MatchCodePointCategories", () => {
 	describe("constructor", () => {
 		it("creates a matcher with the specified categories", () => {
 			const categories = { Lu: true, Ll: true }; // Uppercase and lowercase letters
-			const matcher = new MatchCodePointCategories(
-				categories
-			);
+			const matcher = new MatchCodePointCat(categories);
 			expect(matcher.categories).toBe(categories);
 		});
 	});
 
 	describe("match", () => {
 		it("matches a code point in the specified categories and advances the navigator", () => {
-			const matcher = new MatchCodePointCategories({
+			const matcher = new MatchCodePointCat({
 				Lu: true,
 			}); // Uppercase letters
 			const nav = new MutMatchNav(new StrSlice("ABC"));
@@ -289,7 +287,7 @@ describe("MatchCodePointCategories", () => {
 		});
 
 		it("returns null if the code point is not in the specified categories", () => {
-			const matcher = new MatchCodePointCategories({
+			const matcher = new MatchCodePointCat({
 				Ll: true,
 			}); // Lowercase letters
 			const nav = new MutMatchNav(new StrSlice("ABC"));
@@ -302,14 +300,14 @@ describe("MatchCodePointCategories", () => {
 
 	describe("matchCodePoint", () => {
 		it("returns true for code point in the specified categories", () => {
-			const matcher = new MatchCodePointCategories({
+			const matcher = new MatchCodePointCat({
 				Lu: true,
 			}); // Uppercase letters
 			expect(matcher.matchCodePoint(65)).toBe(true); // 'A'
 		});
 
 		it("returns false for code point not in the specified categories", () => {
-			const matcher = new MatchCodePointCategories({
+			const matcher = new MatchCodePointCat({
 				Ll: true,
 			}); // Lowercase letters
 			expect(matcher.matchCodePoint(65)).toBe(false); // 'A'
@@ -319,7 +317,7 @@ describe("MatchCodePointCategories", () => {
 	describe("fromString", () => {
 		it("creates a matcher from a space-separated string of categories", () => {
 			const matcher =
-				MatchCodePointCategories.fromString("Lu Ll");
+				MatchCodePointCat.fromString("Lu Ll");
 
 			expect(matcher.matchCodePoint(65)).toBe(true); // 'A' (Lu)
 			expect(matcher.matchCodePoint(97)).toBe(true); // 'a' (Ll)
@@ -328,7 +326,7 @@ describe("MatchCodePointCategories", () => {
 
 		it("throws an error for invalid category", () => {
 			expect(() => {
-				MatchCodePointCategories.fromString(
+				MatchCodePointCat.fromString(
 					"Lu InvalidCategory"
 				);
 			}).toThrow(
@@ -590,7 +588,7 @@ describe("MatchNotCodePointOrPosition", () => {
 	describe("constructor", () => {
 		it("should create a matcher with the specified matcher to negate", () => {
 			const innerMatcher = new MatchCodePoint(65); // A
-			const matcher = new MatchNotCodePointOrPosition(
+			const matcher = new MatchNotCodePoint(
 				innerMatcher
 			);
 
@@ -601,7 +599,7 @@ describe("MatchNotCodePointOrPosition", () => {
 	describe("match with MatchCodePointBase", () => {
 		it("should match when inner matcher doesn't match and advance the navigator", () => {
 			const innerMatcher = new MatchCodePoint(65); // A
-			const matcher = new MatchNotCodePointOrPosition(
+			const matcher = new MatchNotCodePoint(
 				innerMatcher
 			);
 			const nav = new MutMatchNav(new StrSlice("XYZ"));
@@ -616,115 +614,10 @@ describe("MatchNotCodePointOrPosition", () => {
 
 		it("should return null when inner matcher matches", () => {
 			const innerMatcher = new MatchCodePoint(65); // A
-			const matcher = new MatchNotCodePointOrPosition(
+			const matcher = new MatchNotCodePoint(
 				innerMatcher
 			);
 			const nav = new MutMatchNav(new StrSlice("ABC"));
-
-			const result = matcher.match(nav);
-
-			expect(result).toBeNull();
-		});
-	});
-
-	describe("match with MatchPositionBase", () => {
-		it("should match when inner position matcher doesn't match", () => {
-			// Create a mock MatchPositionBase that always returns null (doesn't match)
-			class MockPositionMatcher extends MatchPositionBase {
-				match(nav: MutMatchNav): MutMatchNav | null {
-					return null;
-				}
-			}
-
-			const innerMatcher = new MockPositionMatcher();
-			const matcher = new MatchNotCodePointOrPosition(
-				innerMatcher
-			);
-			const nav = new MutMatchNav(new StrSlice("ABC"));
-
-			const result = matcher.match(nav);
-
-			expect(result).not.toBeNull();
-			expect(result?.captureIndex).toBe(0); // Position matchers don't advance
-			expect(result?.navIndex).toBe(0);
-			expect(result?.captureMatch.value).toBe("");
-		});
-
-		it("should return null when inner position matcher matches", () => {
-			// Create a mock MatchPositionBase that always returns the nav (matches)
-			class MockPositionMatcher extends MatchPositionBase {
-				match(nav: MutMatchNav): MutMatchNav | null {
-					return nav;
-				}
-			}
-
-			const innerMatcher = new MockPositionMatcher();
-			const matcher = new MatchNotCodePointOrPosition(
-				innerMatcher
-			);
-			const nav = new MutMatchNav(new StrSlice("ABC"));
-
-			const result = matcher.match(nav);
-
-			expect(result).toBeNull();
-		});
-	});
-
-	describe("match with MatchPositionBase classes: MatchStartSlice and MatchEndSlice", () => {
-		it("should match when start position doesn't match", () => {
-			const innerMatcher = new MatchStartSlice();
-			const matcher = new MatchNotCodePointOrPosition(
-				innerMatcher
-			);
-			const nav = new MutMatchNav(new StrSlice("ABC"));
-			nav.moveCaptureForwardOneCodePoint();
-
-			const result = matcher.match(nav);
-
-			expect(result).not.toBeNull();
-			expect(result?.captureIndex).toBe(1); // Position matchers don't advance
-			expect(result?.navIndex).toBe(1);
-			expect(result?.captureMatch.value).toBe("A");
-		});
-
-		it("should return null when start position matcher matches", () => {
-			// Create a mock MatchPositionBase that always returns the nav (matches)
-			const innerMatcher = new MatchStartSlice();
-			const matcher = new MatchNotCodePointOrPosition(
-				innerMatcher
-			);
-			const nav = new MutMatchNav(new StrSlice("ABC"));
-
-			const result = matcher.match(nav);
-
-			expect(result).toBeNull();
-		});
-
-		it("should match when end position doesn't match", () => {
-			// Create a mock MatchPositionBase that always returns null (doesn't match)
-			const innerMatcher = new MatchEndSlice();
-			const matcher = new MatchNotCodePointOrPosition(
-				innerMatcher
-			);
-			const nav = new MutMatchNav(new StrSlice("ABC"));
-			nav.moveCaptureForward(2);
-
-			const result = matcher.match(nav);
-
-			expect(result).not.toBeNull();
-			expect(result?.captureIndex).toBe(2); // Position matchers don't advance
-			expect(result?.navIndex).toBe(2);
-			expect(result?.captureMatch.value).toBe("AB");
-		});
-
-		it("should return null when end position matcher matches", () => {
-			// Create a mock MatchPositionBase that always returns the nav (matches)
-			const innerMatcher = new MatchEndSlice();
-			const matcher = new MatchNotCodePointOrPosition(
-				innerMatcher
-			);
-			const nav = new MutMatchNav(new StrSlice("ABC"));
-			nav.moveCaptureForward(3);
 
 			const result = matcher.match(nav);
 
@@ -735,7 +628,7 @@ describe("MatchNotCodePointOrPosition", () => {
 	describe("matchCodePoint", () => {
 		it("should return true when inner matcher returns false", () => {
 			const innerMatcher = new MatchCodePoint(65); // A
-			const matcher = new MatchNotCodePointOrPosition(
+			const matcher = new MatchNotCodePoint(
 				innerMatcher
 			);
 
@@ -744,39 +637,21 @@ describe("MatchNotCodePointOrPosition", () => {
 
 		it("should return false when inner matcher returns true", () => {
 			const innerMatcher = new MatchCodePoint(65); // A
-			const matcher = new MatchNotCodePointOrPosition(
+			const matcher = new MatchNotCodePoint(
 				innerMatcher
 			);
 
 			expect(matcher.matchCodePoint(65)).toBe(false); // A
 		});
 
-		it("should return false for MatchPositionBase: MatchStartSlice", () => {
-			const matcher = new MatchNotCodePointOrPosition(
-				new MatchStartSlice()
-			);
-
-			expect(matcher.matchCodePoint(65)).toBe(false);
-		});
-
-		it("should return false for MatchPositionBase: MatchEndSlice", () => {
-			const matcher = new MatchNotCodePointOrPosition(
-				new MatchEndSlice()
-			);
-
-			expect(matcher.matchCodePoint(65)).toBe(false);
-		});
-
 		it("should throw an error for invalid matcher type", () => {
-			// Create a matcher that's neither MatchCodePointBase nor MatchPositionBase
 			const invalidMatcher = {} as any;
-			const matcher = new MatchNotCodePointOrPosition(
-				invalidMatcher
-			);
 
 			expect(() => {
-				matcher.matchCodePoint(65);
-			}).toThrow("Invalid matcher type");
+				new MatchNotCodePoint(invalidMatcher);
+			}).toThrow(
+				"Invalid matcher type. Must be instance of MatchCodePointBase"
+			);
 		});
 	});
 });

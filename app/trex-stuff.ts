@@ -20,18 +20,23 @@ import { StrSlice } from "@/utils/slice";
 import {
 	CodePointRange,
 	GhostMatch,
-	MatchAllMatches,
+	MatchAll,
 	MutMatchNav,
 	MatchCodePoint,
 	MatchAnyString,
 	LookAheadAnyString,
 	TRex,
-	MatchAnyMatch,
+	MatchAny,
 	LookAheadCodePoint,
 	LookBehindCodePoint,
 	matchEndSlice,
 	matchStartSlice,
 	matchUnicodeSpace,
+	matchUnicodeLetter,
+	MatchCodePointCat,
+	matchUnicodeLetterOrDigit,
+	MatchNotCodePoint,
+	MatchRepeat,
 } from "@/trex";
 
 // const s1 = "a😀";
@@ -155,7 +160,7 @@ export const doTRexStuff = () => {
 	}
 };
 
-export const wordMatchTestWithGhostMatch = () => {
+export const specificWordMatchTestWithGhostMatch = () => {
 	const str =
 		"xxx abc def xxx hij yyy lmn opq xxx yyz xxx yyy mmm cba xxxyyy yyyxxx yyy";
 	const source = StrSlice.from(str);
@@ -164,13 +169,13 @@ export const wordMatchTestWithGhostMatch = () => {
 		"xxx",
 		"yyy",
 	]);
-	const wordMatcher = new MatchAllMatches([
-		new MatchAnyMatch([
+	const wordMatcher = new MatchAll([
+		new MatchAny([
 			matchStartSlice,
 			new LookBehindCodePoint(matchUnicodeSpace),
 		]),
 		matcher,
-		new MatchAnyMatch([
+		new MatchAny([
 			new GhostMatch(matchUnicodeSpace),
 			matchEndSlice,
 		]),
@@ -189,11 +194,11 @@ export const wordMatchTestWithGhostMatch = () => {
 	div();
 };
 
-export const wordMatchTestWithLookAhead = () => {
+export const specificWordMatchTestWithLookAhead = () => {
 	let str =
 		"xxx abc def xxx hij yyy lmn opq xxx yyz xxx yyy mmm cba xxxyyy yyyxxx yyy";
 
-	str = " abc yyy def ";
+	// str = " abc yyy def ";
 
 	const source = StrSlice.from(str);
 
@@ -201,22 +206,16 @@ export const wordMatchTestWithLookAhead = () => {
 		"xxx",
 		"yyy",
 	]);
-	// const wordMatcher = new MatchAllMatches([
-	// 	new MatchAnyMatch([
-	// 		matchStartSlice,
-	// 		new LookBehindCodePoint(matchUnicodeSpace),
-	// 	]),
-	// 	matcher,
-	// 	new MatchAnyMatch([
-	// 		new LookAheadCodePoint(matchUnicodeSpace),
-	// 		matchEndSlice,
-	// 	]),
-	// ]);
-
-	const wordMatcher = new MatchAllMatches([
-		new LookBehindCodePoint(matchUnicodeSpace),
+	const wordMatcher = new MatchAll([
+		new MatchAny([
+			matchStartSlice,
+			new LookBehindCodePoint(matchUnicodeSpace),
+		]),
 		matcher,
-		new LookAheadCodePoint(matchUnicodeSpace),
+		new MatchAny([
+			new LookAheadCodePoint(matchUnicodeSpace),
+			matchEndSlice,
+		]),
 	]);
 
 	const trex = new TRex(wordMatcher);
@@ -233,30 +232,47 @@ export const wordMatchTestWithLookAhead = () => {
 	div();
 };
 
-export const testLookAheadAnyString = () => {
-	const source = StrSlice.from("xxx ");
-	const nav = new MutMatchNav(source, 0);
-	const anyStringMatcher = MatchAnyString.fromStrings([
-		"xxx",
-		"yyy",
+export const extractWordsWithGhostMatch = () => {
+	let str =
+		"xxx, abc 'def xxx hij' yyy {lmn opq xxx} yyz xxx. Yyy mmm cba; xxxyyy -- yyyxxx yyy";
+
+	// str = " abc yyy def ";
+
+	const source = StrSlice.from(str);
+
+	const startCodePoint = matchUnicodeLetter;
+	const contentCodePoint = matchUnicodeLetterOrDigit;
+
+	const contentMatcher = new MatchRepeat(contentCodePoint);
+
+	const wordMatcher = new MatchAll([
+		new MatchAny([
+			matchStartSlice,
+			new LookBehindCodePoint(
+				new MatchNotCodePoint(startCodePoint)
+			),
+		]),
+		contentMatcher,
+		new MatchAny([
+			new GhostMatch(
+				new MatchRepeat(
+					new MatchNotCodePoint(contentCodePoint)
+				)
+			),
+			matchEndSlice,
+		]),
 	]);
 
-	const lookAheadMatcher = new LookAheadCodePoint(
-		matchUnicodeSpace
-	);
-	const result1 = anyStringMatcher.match(nav);
-	if (!result1) {
-		log("No match: anyStringMatcher");
-		return;
-	}
+	const trex = new TRex(wordMatcher);
 
-	log(`anyStringMatcher: '${result1.captureMatch.value}'`);
+	const result = trex.findAll(source);
+	const tokens = result.getNavTokens();
 
-	const result2 = lookAheadMatcher.match(result1);
-	if (!result2) {
-		log("No look ahead match: lookAheadMatcher");
-		return;
-	}
+	logh("Extract Words With Ghost Match");
 
-	log(`lookAheadMatcher: '${result2.captureMatch.value}'`);
+	tokens.forEach(token => {
+		log(token.toStringWithGhostMatch());
+	});
+
+	div();
 };

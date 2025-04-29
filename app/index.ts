@@ -18,18 +18,10 @@ import { getFullType } from "@/utils/types";
 import { logGeneratePassword } from "@/utils/password";
 import {
 	doTRexStuff,
-	testLookAheadAnyString,
-	wordMatchTestWithGhostMatch,
-	wordMatchTestWithLookAhead,
+	extractWordsWithGhostMatch,
+	specificWordMatchTestWithGhostMatch,
+	specificWordMatchTestWithLookAhead,
 } from "./trex-stuff";
 import { matchWordsTest } from "@/examples/trex/word-matching";
 
 // logGeneratePassword();
-
-// doTRexStuff();
-
-// matchWordsTest();
-
-// wordMatchTestWithLookAhead();
-
-testLookAheadAnyString();

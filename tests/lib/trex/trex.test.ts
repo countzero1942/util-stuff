@@ -11,14 +11,14 @@ import {
 import { MatchAnyString } from "@/trex/match-string";
 import {
 	MatchCodePoint,
-	MatchNotCodePointOrPosition,
+	MatchNotCodePoint,
 } from "@/trex/match-code-point";
 import {
 	GhostMatch,
 	LookAheadCodePoint,
 	LookBehindCodePoint,
-	MatchAllMatches,
-	MatchAnyMatch,
+	MatchAll,
+	MatchAny,
 	matchEndSlice,
 	matchStartSlice,
 	matchUnicodeSpace,
@@ -351,13 +351,13 @@ describe("TRex", () => {
 				"xxx",
 				"yyy",
 			]);
-			const wordMatcher = new MatchAllMatches([
-				new MatchAnyMatch([
+			const wordMatcher = new MatchAll([
+				new MatchAny([
 					matchStartSlice,
 					new LookBehindCodePoint(matchUnicodeSpace),
 				]),
 				matcher,
-				new MatchAnyMatch([
+				new MatchAny([
 					new GhostMatch(matchUnicodeSpace),
 					matchEndSlice,
 				]),

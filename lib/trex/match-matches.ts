@@ -1,8 +1,7 @@
-import { StrSlice } from "@/utils/slice";
 import { MutMatchNav } from "@/trex/nav";
 import { MatchBase } from "@/trex/match-base";
 
-export class MatchAnyMatch extends MatchBase {
+export class MatchAny extends MatchBase {
 	public constructor(
 		public readonly matchers: MatchBase[]
 	) {
@@ -20,7 +19,7 @@ export class MatchAnyMatch extends MatchBase {
 	}
 }
 
-export class MatchAllMatches extends MatchBase {
+export class MatchAll extends MatchBase {
 	public constructor(
 		public readonly matchers: MatchBase[]
 	) {
@@ -41,7 +40,24 @@ export class MatchAllMatches extends MatchBase {
 	}
 }
 
-export class MatchOptMatch extends MatchBase {
+export class MatchNot extends MatchBase {
+	public constructor(public readonly matcher: MatchBase) {
+		super();
+	}
+
+	public match(nav: MutMatchNav): MutMatchNav | null {
+		nav.assertValid();
+		const savedNav = nav.copy();
+		const result = this.matcher.match(nav);
+		if (result) {
+			return nav.invalidate();
+		}
+
+		return savedNav;
+	}
+}
+
+export class MatchOpt extends MatchBase {
 	public constructor(public readonly matcher: MatchBase) {
 		super();
 	}
@@ -56,7 +72,7 @@ export class MatchOptMatch extends MatchBase {
 	}
 }
 
-export class MatchRepeatMatch extends MatchBase {
+export class MatchRepeat extends MatchBase {
 	public constructor(
 		public readonly matcher: MatchBase,
 		public readonly minNumberMatches: number = 1,
@@ -77,17 +93,11 @@ export class MatchRepeatMatch extends MatchBase {
 				: this.maxNumberMatches;
 
 		const firstMatch = this.altFirstMatch
-			? new MatchAnyMatch([
-					this.altFirstMatch,
-					this.matcher,
-				])
+			? new MatchAny([this.altFirstMatch, this.matcher])
 			: this.matcher;
 
 		const nextMatch = this.altLastMatch
-			? new MatchAnyMatch([
-					this.matcher,
-					this.altLastMatch,
-				])
+			? new MatchAny([this.matcher, this.altLastMatch])
 			: this.matcher;
 
 		while (count < max) {
