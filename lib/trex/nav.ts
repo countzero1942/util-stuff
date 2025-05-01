@@ -191,11 +191,13 @@ export class MutMatchNav {
 	 */
 	public assertValid(): void {
 		if (this._isInvalidated) {
-			throw new Error("Illegal use of invalidated Nav");
+			throw new Error(
+				"Illegal use of invalidated navigator"
+			);
 		}
 		if (this._navIndex > this._captureIndex) {
 			throw new Error(
-				"Nav has ghost capture at end: cannot match further"
+				"Navigator has ghost capture at end: cannot match further"
 			);
 		}
 	}
@@ -213,7 +215,7 @@ export class MutMatchNav {
 			this._captureIndex !== this._startIndex
 		) {
 			throw new Error(
-				"Nav is not fresh: it contains some form of match"
+				"Navigator is not fresh: it contains some form of match"
 			);
 		}
 	}

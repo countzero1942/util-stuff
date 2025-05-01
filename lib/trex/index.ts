@@ -6,5 +6,8 @@ export * from "./match-string";
 export * from "./consts";
 export * from "./prefix-index";
 export * from "./match-matches";
+export * from "./match-repeat";
+export * from "./ghost-match";
+export * from "./match-not";
 export * from "./match-bounds";
 export * from "./trex";

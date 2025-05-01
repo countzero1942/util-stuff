@@ -13,7 +13,7 @@ export default {
 	extensionsToTreatAsEsm: [".ts", ".tsx"],
 	collectCoverage: false,
 	coveragePathIgnorePatterns: ["/node_modules/"],
-	coverageReporters: ["json", "html"],
+	coverageReporters: ["json", "html", "lcov"],
 	coverageDirectory: "coverage",
 	moduleNameMapper: {
 		"^@/utils/(.*)$": "<rootDir>/lib/utils/$1",

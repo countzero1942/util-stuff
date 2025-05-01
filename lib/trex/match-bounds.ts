@@ -9,12 +9,7 @@ import {
 	MatchCodePointBase,
 	MatchStringBase,
 } from "./match-base";
-import {
-	GhostMatch,
-	MatchAll,
-	MatchAny,
-	MatchRepeat,
-} from "./match-matches";
+import { MatchAll, MatchAny } from "./match-matches";
 import { MatchAnyString } from "./match-string";
 import { MutMatchNav } from "./nav";
 

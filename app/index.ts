@@ -17,6 +17,7 @@ import {
 import { getFullType } from "@/utils/types";
 import { logGeneratePassword } from "@/utils/password";
 import {
+	codePointSetArgs,
 	doTRexStuff,
 	extractWordsWithGhostMatch,
 	specificWordMatchTestWithGhostMatch,
@@ -25,3 +26,5 @@ import {
 import { matchWordsTest } from "@/examples/trex/word-matching";
 
 // logGeneratePassword();
+
+codePointSetArgs();

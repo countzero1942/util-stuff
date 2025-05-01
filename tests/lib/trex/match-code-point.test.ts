@@ -14,6 +14,7 @@ import {
 	MatchCodePointRanges,
 	matchAnyCodePoint,
 	MatchNotCodePoint,
+	MatchRepeat,
 } from "@/trex";
 
 describe("MatchCodePoint", () => {
@@ -234,14 +235,38 @@ describe("MatchCodePointSet", () => {
 
 	describe("fromArray", () => {
 		it("creates a matcher from an array of code points", () => {
-			const matcher = MatchCodePointSet.fromNumbers([
-				65, 66, 67,
-			]); // A, B, C
+			const matcher = MatchCodePointSet.fromNumbers(
+				65,
+				66,
+				67
+			); // A, B, C
 
 			expect(matcher.matchCodePoint(65)).toBe(true);
 			expect(matcher.matchCodePoint(66)).toBe(true);
 			expect(matcher.matchCodePoint(67)).toBe(true);
 			expect(matcher.matchCodePoint(68)).toBe(false);
+		});
+	});
+
+	describe("fromArgs", () => {
+		it("creates a matcher from an array of code points", () => {
+			const matchSet = MatchCodePointSet.fromArgs(
+				CodePointRange.fromString("a-z"),
+				CodePointRange.fromString("0-9"),
+				"!@#$%^&*()_+",
+				"😀"
+			);
+
+			const matcher = new MatchRepeat(matchSet);
+
+			const nav = new MutMatchNav(
+				StrSlice.from("abc123!@#😀ABC")
+			);
+			const result = matcher.match(nav);
+			expect(result).not.toBeNull();
+			expect(result?.captureMatch.value).toBe(
+				"abc123!@#😀"
+			);
 		});
 	});
 });
@@ -584,7 +609,7 @@ describe("matchAnyCodePoint", () => {
 	});
 });
 
-describe("MatchNotCodePointOrPosition", () => {
+describe("MatchNotCodePoint", () => {
 	describe("constructor", () => {
 		it("should create a matcher with the specified matcher to negate", () => {
 			const innerMatcher = new MatchCodePoint(65); // A
@@ -643,7 +668,9 @@ describe("MatchNotCodePointOrPosition", () => {
 
 			expect(matcher.matchCodePoint(65)).toBe(false); // A
 		});
+	});
 
+	describe("MatchNotCodePoint ctor errors", () => {
 		it("should throw an error for invalid matcher type", () => {
 			const invalidMatcher = {} as any;
 
@@ -651,6 +678,19 @@ describe("MatchNotCodePointOrPosition", () => {
 				new MatchNotCodePoint(invalidMatcher);
 			}).toThrow(
 				"Invalid matcher type. Must be instance of MatchCodePointBase"
+			);
+		});
+
+		it("should throw an error for recursion", () => {
+			const innerMatcher = new MatchNotCodePoint(
+				new MatchCodePoint(65) // A
+			);
+
+			expect(() => {
+				new MatchNotCodePoint(innerMatcher);
+			}).toThrow(
+				"MatchNotCodePoint: Invalid matcher type: MatchNotCodePoint. " +
+					"Recursion not supported."
 			);
 		});
 	});

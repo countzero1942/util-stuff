@@ -7,6 +7,8 @@ import {
 	MatchRepeat,
 	GhostMatch,
 	MatchCodePoint,
+	NumberOfMatches,
+	AltFirstLastMatchers,
 } from "@/trex";
 
 // Helper function to create simple matchers for testing
@@ -16,7 +18,7 @@ const createLetterMatcher = (
 	return new MatchCodePoint(letter.codePointAt(0)!);
 };
 
-describe("MatchAnyMatch", () => {
+describe("MatchAny", () => {
 	describe("constructor", () => {
 		it("creates a matcher with the specified matchers array", () => {
 			const matcher1 = createLetterMatcher("A");
@@ -81,10 +83,21 @@ describe("MatchAnyMatch", () => {
 			expect(result).not.toBeNull();
 			expect(result?.captureMatch.value).toBe("A");
 		});
+
+		it("throws on invalid navigator", () => {
+			const matcherA = createLetterMatcher("A");
+			const anyMatcher = new MatchAny([matcherA]);
+
+			const nav = new MutMatchNav(new StrSlice("XYZ"));
+			nav.invalidate();
+			expect(() => anyMatcher.match(nav)).toThrow(
+				"Illegal use of invalidated navigator"
+			);
+		});
 	});
 });
 
-describe("MatchAllMatches", () => {
+describe("MatchAll", () => {
 	describe("constructor", () => {
 		it("creates a matcher with the specified matchers array", () => {
 			const matcher1 = createLetterMatcher("A");
@@ -113,6 +126,7 @@ describe("MatchAllMatches", () => {
 			const result = allMatcher.match(nav);
 
 			expect(result).not.toBeNull();
+			expect(result).toBe(nav);
 			expect(result?.captureMatch.value).toBe("AB");
 		});
 
@@ -148,7 +162,7 @@ describe("MatchAllMatches", () => {
 
 			expect(result).not.toBeNull();
 			expect(result?.captureMatch.value).toBe("ABC");
-			expect(result?.captureIndex).toBe(3);
+			expect(result).toBe(nav);
 		});
 
 		it("works with an empty matchers array", () => {
@@ -163,7 +177,7 @@ describe("MatchAllMatches", () => {
 	});
 });
 
-describe("MatchOptMatch", () => {
+describe("MatchOpt", () => {
 	describe("constructor", () => {
 		it("creates a matcher with the specified matcher", () => {
 			const innerMatcher = createLetterMatcher("A");
@@ -207,282 +221,6 @@ describe("MatchOptMatch", () => {
 
 			expect(result).not.toBeNull();
 			expect(result?.isInvalidated).toBe(false);
-		});
-	});
-});
-
-describe("MatchRepeatMatch", () => {
-	describe("constructor", () => {
-		it("creates a matcher with default parameters", () => {
-			const innerMatcher = createLetterMatcher("A");
-			const repeatMatcher = new MatchRepeat(
-				innerMatcher
-			);
-
-			expect(repeatMatcher.matcher).toBe(innerMatcher);
-			expect(repeatMatcher.minNumberMatches).toBe(1);
-			expect(repeatMatcher.maxNumberMatches).toBe(-1);
-			expect(repeatMatcher.altFirstMatch).toBeNull();
-			expect(repeatMatcher.altLastMatch).toBeNull();
-		});
-
-		it("creates a matcher with custom min and max values", () => {
-			const innerMatcher = createLetterMatcher("A");
-			const repeatMatcher = new MatchRepeat(
-				innerMatcher,
-				2,
-				5
-			);
-
-			expect(repeatMatcher.matcher).toBe(innerMatcher);
-			expect(repeatMatcher.minNumberMatches).toBe(2);
-			expect(repeatMatcher.maxNumberMatches).toBe(5);
-		});
-
-		it("creates a matcher with alternative first and last matchers", () => {
-			const innerMatcher = createLetterMatcher("A");
-			const altFirstMatcher = createLetterMatcher("B");
-			const altLastMatcher = createLetterMatcher("C");
-			const repeatMatcher = new MatchRepeat(
-				innerMatcher,
-				1,
-				-1,
-				altFirstMatcher,
-				altLastMatcher
-			);
-
-			expect(repeatMatcher.matcher).toBe(innerMatcher);
-			expect(repeatMatcher.altFirstMatch).toBe(
-				altFirstMatcher
-			);
-			expect(repeatMatcher.altLastMatch).toBe(
-				altLastMatcher
-			);
-		});
-	});
-
-	describe("match", () => {
-		it("matches the minimum required occurrences", () => {
-			const innerMatcher = createLetterMatcher("A");
-			const repeatMatcher = new MatchRepeat(
-				innerMatcher,
-				2,
-				5
-			);
-
-			const nav = new MutMatchNav(new StrSlice("AABC"));
-			const result = repeatMatcher.match(nav);
-
-			expect(result).not.toBeNull();
-			expect(result?.captureMatch.value).toBe("AA");
-		});
-
-		it("matches up to the maximum allowed occurrences", () => {
-			const innerMatcher = createLetterMatcher("A");
-			const repeatMatcher = new MatchRepeat(
-				innerMatcher,
-				1,
-				3
-			);
-
-			const nav = new MutMatchNav(new StrSlice("AAAAA"));
-			const result = repeatMatcher.match(nav);
-
-			expect(result).not.toBeNull();
-			expect(result?.captureMatch.value).toBe("AAA");
-		});
-
-		it("returns null if fewer than minimum occurrences match", () => {
-			const innerMatcher = createLetterMatcher("A");
-			const repeatMatcher = new MatchRepeat(
-				innerMatcher,
-				3,
-				5
-			);
-
-			const nav = new MutMatchNav(new StrSlice("AAB"));
-			const result = repeatMatcher.match(nav);
-
-			expect(result).toBeNull();
-		});
-
-		it("matches unlimited occurrences when max is -1", () => {
-			const innerMatcher = createLetterMatcher("A");
-			const repeatMatcher = new MatchRepeat(
-				innerMatcher,
-				1,
-				-1
-			);
-
-			const nav = new MutMatchNav(
-				new StrSlice("AAAAAB")
-			);
-			const result = repeatMatcher.match(nav);
-
-			expect(result).not.toBeNull();
-			expect(result?.captureMatch.value).toBe("AAAAA");
-		});
-
-		it("uses altFirstMatch for the first match if provided", () => {
-			const innerMatcher = createLetterMatcher("A");
-			const altFirstMatcher = createLetterMatcher("B");
-			const repeatMatcher = new MatchRepeat(
-				innerMatcher,
-				2,
-				5,
-				altFirstMatcher
-			);
-
-			const nav = new MutMatchNav(new StrSlice("BAAC"));
-			const result = repeatMatcher.match(nav);
-
-			expect(result).not.toBeNull();
-			expect(result?.captureMatch.value).toBe("BAA");
-		});
-
-		it("uses altLastMatch for the last match if provided", () => {
-			const innerMatcher = createLetterMatcher("A");
-			const altLastMatcher = createLetterMatcher("B");
-			const repeatMatcher = new MatchRepeat(
-				innerMatcher,
-				2,
-				3,
-				null,
-				altLastMatcher
-			);
-
-			const nav = new MutMatchNav(new StrSlice("AABC"));
-			const result = repeatMatcher.match(nav);
-
-			expect(result).not.toBeNull();
-			expect(result?.captureMatch.value).toBe("AAB");
-		});
-
-		it("should match zero occurrences when min is 0", () => {
-			const innerMatcher = createLetterMatcher("A");
-			const repeatMatcher = new MatchRepeat(
-				innerMatcher,
-				0,
-				5
-			);
-
-			const nav = new MutMatchNav(new StrSlice("BCD"));
-			const result = repeatMatcher.match(nav);
-
-			expect(result).not.toBeNull();
-			expect(result?.captureMatch.value).toBe("");
-		});
-	});
-});
-
-describe("GhostMatch", () => {
-	describe("constructor", () => {
-		it("creates a matcher with the specified matcher", () => {
-			const innerMatcher = createLetterMatcher("A");
-			const ghostMatcher = new GhostMatch(innerMatcher);
-
-			expect(ghostMatcher.matcher).toBe(innerMatcher);
-		});
-	});
-
-	describe("match", () => {
-		it("should match but only advance the ghost capture, not the actual capture", () => {
-			const innerMatcher = createLetterMatcher("A");
-			const ghostMatcher = new GhostMatch(innerMatcher);
-
-			const nav = new MutMatchNav(new StrSlice("ABC"));
-			const result = ghostMatcher.match(nav);
-
-			expect(result).not.toBeNull();
-			expect(result?.captureMatch.value).toBe("");
-			expect(result?.ghostMatch.value).toBe("A");
-		});
-
-		it("should return null if the inner matcher doesn't match", () => {
-			const innerMatcher = createLetterMatcher("X");
-			const ghostMatcher = new GhostMatch(innerMatcher);
-
-			const nav = new MutMatchNav(new StrSlice("ABC"));
-			const result = ghostMatcher.match(nav);
-
-			expect(result).toBeNull();
-		});
-
-		// Updated test case - ghost match should only be used at the end of a sequence
-		it("is used at the end of a match sequence to handle delimiters", () => {
-			const matcherA = createLetterMatcher("A");
-			const matcherB = createLetterMatcher("B");
-			const matcherComma = createLetterMatcher(",");
-			const ghostComma = new GhostMatch(matcherComma);
-
-			// First match A and B normally, then match comma as ghost at the end
-			const sequence = new MatchAll([
-				matcherA,
-				matcherB,
-				ghostComma,
-			]);
-
-			const nav = new MutMatchNav(new StrSlice("AB,C"));
-			const result = sequence.match(nav);
-
-			expect(result).not.toBeNull();
-			expect(result?.captureMatch.value).toBe("AB");
-			// The ghost match includes everything from capture index to nav index
-			// The comma matcher advances nav index by 1, but the ghost capture includes all text
-			expect(result?.ghostMatch.value).toBe(",");
-			expect(result?.captureIndex).toBe(2);
-			expect(result?.navIndex).toBe(3);
-		});
-
-		// New test case to demonstrate the error when ghost capture is in the middle
-		it("throws an error if a ghost match is followed by another match", () => {
-			const matcherA = createLetterMatcher("A");
-			const matcherComma = createLetterMatcher(",");
-			const ghostComma = new GhostMatch(matcherComma);
-			const matcherB = createLetterMatcher("B");
-
-			// Incorrectly place ghost match in the middle of the sequence
-			const sequence = new MatchAll([
-				matcherA,
-				ghostComma, // This creates a ghost capture
-				matcherB, // This will try to match after a ghost capture exists
-			]);
-
-			const nav = new MutMatchNav(new StrSlice("A,B"));
-
-			// This should throw an error because we can't match after a ghost capture
-			expect(() => {
-				sequence.match(nav);
-			}).toThrow(
-				"Nav has ghost capture at end: cannot match further"
-			);
-		});
-
-		it("demonstrates proper use of ghost match in a sequence", () => {
-			const matcherA = createLetterMatcher("A");
-			const matcherComma = createLetterMatcher(",");
-			const ghostComma = new GhostMatch(matcherComma);
-
-			const nav = new MutMatchNav(new StrSlice("A,B"));
-
-			// First match A normally
-			const resultA = matcherA.match(nav);
-			expect(resultA).not.toBeNull();
-			expect(resultA?.captureMatch.value).toBe("A");
-			expect(resultA?.ghostMatch.value).toBe("");
-
-			// Then match comma as ghost at the end of this sequence
-			const resultComma = ghostComma.match(resultA!);
-			expect(resultComma).not.toBeNull();
-			expect(resultComma?.captureMatch.value).toBe("A");
-			// The ghost match includes everything from capture index to nav index
-			// Even though only the comma is matched, the ghost capture includes all remaining text
-			expect(resultComma?.ghostMatch.value).toBe(",");
-
-			// At this point, we would need to start a new match sequence
-			// by creating a new navigator or resetting the current one
-			// before attempting to match 'B'
-			const lastResult = resultComma!.copy();
 		});
 	});
 });

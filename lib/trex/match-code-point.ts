@@ -155,7 +155,7 @@ export class MatchCodePointSet extends MatchCodePointBase {
 	}
 
 	public static fromArgs(
-		args: (CodePointRange | string)[]
+		...args: (CodePointRange | string)[]
 	) {
 		const codePointSet: Record<number, boolean> = {};
 		for (const arg of args) {
@@ -164,6 +164,8 @@ export class MatchCodePointSet extends MatchCodePointBase {
 					for (const codePoint of arg.codePoints()) {
 						codePointSet[codePoint] = true;
 					}
+
+					break;
 				case typeof arg === "string":
 					const codePointSeq = new CodePointSeq(
 						arg as string
@@ -171,6 +173,7 @@ export class MatchCodePointSet extends MatchCodePointBase {
 					codePointSeq.foreach(codePoint => {
 						codePointSet[codePoint.element] = true;
 					});
+					break;
 				default:
 					throw new Error("Invalid argument");
 			}
@@ -179,7 +182,7 @@ export class MatchCodePointSet extends MatchCodePointBase {
 	}
 
 	public static fromNumbers(
-		codePoints: number[]
+		...codePoints: number[]
 	): MatchCodePointSet {
 		const codePointSet: Record<number, boolean> = {};
 		for (const codePoint of codePoints) {
@@ -189,7 +192,7 @@ export class MatchCodePointSet extends MatchCodePointBase {
 	}
 
 	public static fromSets(
-		sets: Record<number, boolean>[]
+		...sets: Record<number, boolean>[]
 	): MatchCodePointSet {
 		const codePointSet: Record<number, boolean> = {};
 		for (const set of sets) {
@@ -352,19 +355,39 @@ export class MatchNotCodePoint extends MatchCodePointBase {
 		super();
 		if (!(matcher instanceof MatchCodePointBase)) {
 			throw new Error(
-				"MatchNotCodePoint: Invalid matcher type. Must be instance of MatchCodePointBase"
+				"MatchNotCodePoint: Invalid matcher type. " +
+					"Must be instance of MatchCodePointBase"
+			);
+		}
+		if (matcher instanceof MatchNotCodePoint) {
+			throw new Error(
+				"MatchNotCodePoint: Invalid matcher type: MatchNotCodePoint. " +
+					"Recursion not supported."
 			);
 		}
 	}
+
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
-		const savedNav = nav.copy();
-		const result = this.matcher.match(nav);
-		if (result) {
-			return nav.invalidate();
+		const codePoint = nav.peekCodePoint();
+		if (
+			codePoint !== undefined &&
+			!this.matcher.matchCodePoint(codePoint)
+		) {
+			nav.moveCaptureForward(
+				getCodePointCharLength(codePoint)
+			);
+			return nav;
 		}
+		return nav.invalidate();
 
-		return savedNav.moveCaptureForwardOneCodePoint();
+		// nav.assertValid();
+		// const result = this.matcher.match(nav.copy());
+		// if (result) {
+		// 	return nav.invalidate();
+		// }
+
+		// return nav.moveCaptureForwardOneCodePoint();
 	}
 
 	public matchCodePoint(codePoint: number): boolean {

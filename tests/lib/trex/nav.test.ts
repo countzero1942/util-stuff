@@ -196,7 +196,7 @@ describe("MutMatchNav", () => {
 			nav.invalidate();
 
 			expect(() => nav.assertValid()).toThrow(
-				"Illegal use of invalidated Nav"
+				"Illegal use of invalidated navigator"
 			);
 		});
 
@@ -205,7 +205,7 @@ describe("MutMatchNav", () => {
 			nav.moveGhostCaptureForward(2);
 
 			expect(() => nav.assertValid()).toThrow(
-				"Nav has ghost capture at end"
+				"Navigator has ghost capture at end: cannot match further"
 			);
 		});
 
@@ -214,7 +214,7 @@ describe("MutMatchNav", () => {
 			nav.moveCaptureForward(1);
 
 			expect(() => nav.assertFresh()).toThrow(
-				"Nav is not fresh"
+				"Navigator is not fresh: it contains some form of match"
 			);
 		});
 
@@ -223,7 +223,7 @@ describe("MutMatchNav", () => {
 			nav.moveGhostCaptureForward(1);
 
 			expect(() => nav.assertFresh()).toThrow(
-				"Nav is not fresh"
+				"Navigator is not fresh: it contains some form of match"
 			);
 		});
 	});

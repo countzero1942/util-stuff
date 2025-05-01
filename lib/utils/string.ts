@@ -11,7 +11,6 @@ import { get } from "node:http";
  */
 export const getTabIndentString = memoizee(
 	(numOfTabs: number): string => {
-		log(`--> Get tab string of size: ${numOfTabs}`);
 		return "\t".repeat(numOfTabs);
 	},
 	{ maxAge: 5000 }

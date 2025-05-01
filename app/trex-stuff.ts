@@ -37,6 +37,7 @@ import {
 	matchUnicodeLetterOrDigit,
 	MatchNotCodePoint,
 	MatchRepeat,
+	MatchCodePointSet,
 } from "@/trex";
 
 // const s1 = "a😀";
@@ -158,6 +159,26 @@ export const doTRexStuff = () => {
 		}
 		div();
 	}
+};
+
+export const codePointSetArgs = () => {
+	const matchSet = MatchCodePointSet.fromArgs(
+		CodePointRange.fromString("a-z"),
+		CodePointRange.fromString("0-9"),
+		"!@#$%^&*()_+",
+		"😀"
+	);
+
+	const matcher = new MatchRepeat(matchSet);
+
+	const nav = new MutMatchNav(
+		StrSlice.from("abc123!@#😀ABC")
+	);
+	const result = matcher.match(nav);
+	logobj(result);
+	div();
+	log(`source: '${nav.source.value}'`);
+	log(`result: '${result?.captureMatch.value}'`);
 };
 
 export const specificWordMatchTestWithGhostMatch = () => {
