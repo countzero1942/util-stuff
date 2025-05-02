@@ -38,7 +38,9 @@ import {
 	MatchNotCodePoint,
 	MatchRepeat,
 	MatchCodePointSet,
+	matchUnicodeWhiteSpace,
 } from "@/trex";
+import { CodePointSeq } from "@/utils/seq";
 
 // const s1 = "a😀";
 // log(`0x${s1.charCodeAt(0).toString(16)}`);
@@ -133,10 +135,10 @@ import {
 
 export const doTRexStuff = () => {
 	const source = StrSlice.from("abcdef");
-	const anyStringMatcher = MatchAnyString.fromStrings([
+	const anyStringMatcher = MatchAnyString.fromStrings(
 		"abc",
-		"def",
-	]);
+		"def"
+	);
 	const matcher = new LookAheadAnyString(anyStringMatcher);
 
 	{
@@ -181,15 +183,85 @@ export const codePointSetArgs = () => {
 	log(`result: '${result?.captureMatch.value}'`);
 };
 
+export const codePointSetArgsTestExaustiveCheck = () => {
+	let checkCount = 0;
+
+	const range1: string = "a-z";
+	const range2: string = "0-9";
+	const str1: string = "!@#$%^&*()_+";
+	const str2: string = "😀";
+
+	const matchSet = MatchCodePointSet.fromArgs(
+		CodePointRange.fromString(range1),
+		CodePointRange.fromString(range2),
+		str1,
+		str2,
+		matchUnicodeWhiteSpace
+	);
+
+	const rangeToString = (range: string) => {
+		const codePointRange =
+			CodePointRange.fromString(range);
+		return codePointRange.toFullString();
+	};
+
+	const logResult = (
+		codePoint: number,
+		isMatch: boolean,
+		isInSet: boolean
+	) => {
+		const codePointStr =
+			codePoint >= 0x20
+				? String.fromCodePoint(codePoint)
+				: " ";
+		log(
+			`codePoint: '${codePointStr}' 0x${codePoint.toString(16)}, ` +
+				`isMatch: ${isMatch}, isInSet: ${isInSet}`
+		);
+	};
+
+	const checkString = (str: string, name: string) => {
+		logh(name);
+		const seq = new CodePointSeq(str);
+		seq.codePoints().forEach(codePoint => {
+			checkCount++;
+			const isMatch = matchSet.matchCodePoint(codePoint);
+			const isInSet = matchSet.codePointSet[codePoint];
+			logResult(codePoint, isMatch, isInSet);
+		});
+	};
+
+	const checkRangeStr = (range: string, name: string) => {
+		checkString(rangeToString(range), name);
+	};
+
+	checkRangeStr(range1, "range1");
+	checkRangeStr(range2, "range2");
+	checkString(str1, "str1");
+	checkString(str2, "str2");
+
+	logh("matchUnicodeWhiteSpace");
+	for (const codePointStr in matchUnicodeWhiteSpace.codePointSet) {
+		checkCount++;
+		const codePoint = Number(codePointStr);
+		const isMatch = matchSet.matchCodePoint(codePoint);
+		const isInSet = matchSet.codePointSet[codePoint];
+		logResult(codePoint, isMatch, isInSet);
+	}
+
+	logh("checkCount");
+	log(
+		`checkCount: ${checkCount}, setCount: ${matchSet.length}`
+	);
+	log();
+};
+
 export const specificWordMatchTestWithGhostMatch = () => {
 	const str =
 		"xxx abc def xxx hij yyy lmn opq xxx yyz xxx yyy mmm cba xxxyyy yyyxxx yyy";
 	const source = StrSlice.from(str);
 
-	const matcher = MatchAnyString.fromStrings([
-		"xxx",
-		"yyy",
-	]);
+	const matcher = MatchAnyString.fromStrings("xxx", "yyy");
 	const wordMatcher = new MatchAll([
 		new MatchAny([
 			matchStartSlice,
@@ -223,10 +295,7 @@ export const specificWordMatchTestWithLookAhead = () => {
 
 	const source = StrSlice.from(str);
 
-	const matcher = MatchAnyString.fromStrings([
-		"xxx",
-		"yyy",
-	]);
+	const matcher = MatchAnyString.fromStrings("xxx", "yyy");
 	const wordMatcher = new MatchAll([
 		new MatchAny([
 			matchStartSlice,

@@ -9,10 +9,6 @@ import {
 	MatchCodePointSet,
 } from "@/trex/match-code-point";
 
-export const matchStartSlice = new MatchStartSlice();
-
-export const matchEndSlice = new MatchEndSlice();
-
 export const matchUnicodeLetter =
 	MatchCodePointCat.fromString("Lu Lo Ll");
 

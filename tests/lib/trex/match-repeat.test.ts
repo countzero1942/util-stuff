@@ -211,19 +211,19 @@ describe("NumberOfMatches", () => {
 });
 
 // Helper function to create simple matchers for testing
-const createLetterMatcher = (
-	letter: string
-): MatchCodePoint => {
-	return new MatchCodePoint(letter.codePointAt(0)!);
-};
+// const createLetterMatcher = (
+// 	letter: string
+// ): MatchCodePoint => {
+// 	return new MatchCodePoint(letter.codePointAt(0)!);
+// };
 
 describe("MatchRepeat", () => {
 	describe("constructor", () => {
 		it("creates a matcher with default parameters", () => {
-			const innerMatcher = createLetterMatcher("A");
-			const repeatMatcher = new MatchRepeat(
-				innerMatcher
-			);
+			const innerMatcher =
+				MatchCodePoint.fromString("A");
+			const repeatMatcher =
+				MatchRepeat.from(innerMatcher);
 
 			expect(repeatMatcher.matcher).toBe(innerMatcher);
 			expect(
@@ -241,8 +241,9 @@ describe("MatchRepeat", () => {
 		});
 
 		it("creates a matcher with custom min and max values", () => {
-			const innerMatcher = createLetterMatcher("A");
-			const repeatMatcher = new MatchRepeat(
+			const innerMatcher =
+				MatchCodePoint.fromString("A");
+			const repeatMatcher = MatchRepeat.from(
 				innerMatcher,
 				NumberOfMatches.between(2, 5)
 			);
@@ -257,10 +258,13 @@ describe("MatchRepeat", () => {
 		});
 
 		it("creates a matcher with alternative first and last matchers", () => {
-			const innerMatcher = createLetterMatcher("A");
-			const altFirstMatcher = createLetterMatcher("B");
-			const altLastMatcher = createLetterMatcher("C");
-			const repeatMatcher = new MatchRepeat(
+			const innerMatcher =
+				MatchCodePoint.fromString("A");
+			const altFirstMatcher =
+				MatchCodePoint.fromString("B");
+			const altLastMatcher =
+				MatchCodePoint.fromString("C");
+			const repeatMatcher = MatchRepeat.from(
 				innerMatcher,
 				NumberOfMatches.oneOrMore(),
 				AltFirstLastMatchers.from(
@@ -281,8 +285,9 @@ describe("MatchRepeat", () => {
 
 	describe("match", () => {
 		it("matches the minimum required occurrences", () => {
-			const innerMatcher = createLetterMatcher("A");
-			const repeatMatcher = new MatchRepeat(
+			const innerMatcher =
+				MatchCodePoint.fromString("A");
+			const repeatMatcher = MatchRepeat.from(
 				innerMatcher,
 				NumberOfMatches.between(2, 5)
 			);
@@ -296,8 +301,9 @@ describe("MatchRepeat", () => {
 		});
 
 		it("matches up to the maximum allowed occurrences", () => {
-			const innerMatcher = createLetterMatcher("A");
-			const repeatMatcher = new MatchRepeat(
+			const innerMatcher =
+				MatchCodePoint.fromString("A");
+			const repeatMatcher = MatchRepeat.from(
 				innerMatcher,
 				NumberOfMatches.between(1, 3)
 			);
@@ -311,8 +317,9 @@ describe("MatchRepeat", () => {
 		});
 
 		it("returns null if fewer than minimum occurrences match", () => {
-			const innerMatcher = createLetterMatcher("A");
-			const repeatMatcher = new MatchRepeat(
+			const innerMatcher =
+				MatchCodePoint.fromString("A");
+			const repeatMatcher = MatchRepeat.from(
 				innerMatcher,
 				NumberOfMatches.between(3, 5)
 			);
@@ -324,8 +331,9 @@ describe("MatchRepeat", () => {
 		});
 
 		it("matches unlimited occurrences when max is -1", () => {
-			const innerMatcher = createLetterMatcher("A");
-			const repeatMatcher = new MatchRepeat(
+			const innerMatcher =
+				MatchCodePoint.fromString("A");
+			const repeatMatcher = MatchRepeat.from(
 				innerMatcher,
 				NumberOfMatches.oneOrMore()
 			);
@@ -341,9 +349,11 @@ describe("MatchRepeat", () => {
 		});
 
 		it("uses altFirstMatch for the first match if provided", () => {
-			const innerMatcher = createLetterMatcher("A");
-			const altFirstMatcher = createLetterMatcher("B");
-			const repeatMatcher = new MatchRepeat(
+			const innerMatcher =
+				MatchCodePoint.fromString("A");
+			const altFirstMatcher =
+				MatchCodePoint.fromString("B");
+			const repeatMatcher = MatchRepeat.from(
 				innerMatcher,
 				NumberOfMatches.between(2, 5),
 				AltFirstLastMatchers.fromAltFirst(
@@ -360,9 +370,11 @@ describe("MatchRepeat", () => {
 		});
 
 		it("uses altLastMatch for the last match if provided", () => {
-			const innerMatcher = createLetterMatcher("A");
-			const altLastMatcher = createLetterMatcher("B");
-			const repeatMatcher = new MatchRepeat(
+			const innerMatcher =
+				MatchCodePoint.fromString("A");
+			const altLastMatcher =
+				MatchCodePoint.fromString("B");
+			const repeatMatcher = MatchRepeat.from(
 				innerMatcher,
 				NumberOfMatches.between(2, 3),
 				AltFirstLastMatchers.fromAltLast(altLastMatcher)
@@ -377,8 +389,9 @@ describe("MatchRepeat", () => {
 		});
 
 		it("should match zero occurrences when min is 0", () => {
-			const innerMatcher = createLetterMatcher("A");
-			const repeatMatcher = new MatchRepeat(
+			const innerMatcher =
+				MatchCodePoint.fromString("A");
+			const repeatMatcher = MatchRepeat.from(
 				innerMatcher,
 				NumberOfMatches.between(0, 5)
 			);

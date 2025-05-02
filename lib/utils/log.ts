@@ -1,6 +1,9 @@
 import { getType, toReadonlyTuple } from "@/utils/types";
 
-export const getArrowLabel = (label: string, indent: number = 0) => {
+export const getArrowLabel = (
+	label: string,
+	indent: number = 0
+) => {
 	"══▶";
 };
 
@@ -57,8 +60,14 @@ export const logn = () => console.log();
  *
  * @param header The header to log.
  */
-export const logh = (header: string) => {
+export const logh = (
+	header: string,
+	newLineAbove: boolean = true
+) => {
 	const line = "═".repeat(header.length);
+	if (newLineAbove) {
+		logn();
+	}
 	log(line);
 	log(header);
 	log(line);

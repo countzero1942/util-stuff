@@ -1,5 +1,5 @@
 import { StrSlice } from "@/utils/slice";
-import { isLoneSurrogate } from "@/utils/string";
+import { isCodePointLoneSurrogate } from "@/utils/string";
 
 describe("StrSlice new/untested instance methods", () => {
 	describe("countOccurencesOf", () => {
@@ -85,9 +85,9 @@ describe("StrSlice new/untested instance methods", () => {
 				"a".charCodeAt(0)
 			);
 			expect(slice.charCodeAt(1)).toBe(0xd83d);
-			expect(isLoneSurrogate(slice.charCodeAt(1))).toBe(
-				true
-			);
+			expect(
+				isCodePointLoneSurrogate(slice.charCodeAt(1))
+			).toBe(true);
 			expect(slice.codePointAt(0)).toBe(
 				"a".codePointAt(0)
 			);

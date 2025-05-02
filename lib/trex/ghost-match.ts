@@ -16,4 +16,8 @@ export class GhostMatch extends MatchBase {
 		}
 		return nav.invalidate();
 	}
+
+	public static from(matcher: MatchBase): GhostMatch {
+		return new GhostMatch(matcher);
+	}
 }

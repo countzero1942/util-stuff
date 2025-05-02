@@ -10,14 +10,14 @@ import { StrSlice } from "@/utils/slice";
 const createLetterMatcher = (
 	letter: string
 ): MatchCodePoint => {
-	return new MatchCodePoint(letter.codePointAt(0)!);
+	return MatchCodePoint.fromNumber(letter.codePointAt(0)!);
 };
 
 describe("GhostMatch", () => {
 	describe("constructor", () => {
 		it("creates a matcher with the specified matcher", () => {
 			const innerMatcher = createLetterMatcher("A");
-			const ghostMatcher = new GhostMatch(innerMatcher);
+			const ghostMatcher = GhostMatch.from(innerMatcher);
 
 			expect(ghostMatcher.matcher).toBe(innerMatcher);
 		});
@@ -26,7 +26,7 @@ describe("GhostMatch", () => {
 	describe("match", () => {
 		it("should match but only advance the ghost capture, not the actual capture", () => {
 			const innerMatcher = createLetterMatcher("A");
-			const ghostMatcher = new GhostMatch(innerMatcher);
+			const ghostMatcher = GhostMatch.from(innerMatcher);
 
 			const nav = new MutMatchNav(new StrSlice("ABC"));
 			const result = ghostMatcher.match(nav);
@@ -39,7 +39,7 @@ describe("GhostMatch", () => {
 
 		it("should return null if the inner matcher doesn't match", () => {
 			const innerMatcher = createLetterMatcher("X");
-			const ghostMatcher = new GhostMatch(innerMatcher);
+			const ghostMatcher = GhostMatch.from(innerMatcher);
 
 			const nav = new MutMatchNav(new StrSlice("ABC"));
 			const result = ghostMatcher.match(nav);
@@ -52,7 +52,7 @@ describe("GhostMatch", () => {
 			const matcherA = createLetterMatcher("A");
 			const matcherB = createLetterMatcher("B");
 			const matcherComma = createLetterMatcher(",");
-			const ghostComma = new GhostMatch(matcherComma);
+			const ghostComma = GhostMatch.from(matcherComma);
 
 			// First match A and B normally, then match comma as ghost at the end
 			const sequence = new MatchAll([
@@ -77,7 +77,7 @@ describe("GhostMatch", () => {
 		it("throws an error if a ghost match is followed by another match", () => {
 			const matcherA = createLetterMatcher("A");
 			const matcherComma = createLetterMatcher(",");
-			const ghostComma = new GhostMatch(matcherComma);
+			const ghostComma = GhostMatch.from(matcherComma);
 			const matcherB = createLetterMatcher("B");
 
 			// Incorrectly place ghost match in the middle of the sequence
@@ -100,7 +100,7 @@ describe("GhostMatch", () => {
 		it("demonstrates proper use of ghost match in a sequence", () => {
 			const matcherA = createLetterMatcher("A");
 			const matcherComma = createLetterMatcher(",");
-			const ghostComma = new GhostMatch(matcherComma);
+			const ghostComma = GhostMatch.from(matcherComma);
 
 			const nav = new MutMatchNav(new StrSlice("A,B"));
 

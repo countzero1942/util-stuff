@@ -21,6 +21,10 @@ export class MatchAny extends MatchBase {
 		}
 		return nav.invalidate();
 	}
+
+	public static from(...matchers: MatchBase[]): MatchAny {
+		return new MatchAny(matchers);
+	}
 }
 
 export class MatchAll extends MatchBase {
@@ -42,12 +46,21 @@ export class MatchAll extends MatchBase {
 		}
 		return nav;
 	}
+
+	public static from(...matchers: MatchBase[]): MatchAll {
+		return new MatchAll(matchers);
+	}
 }
 
 export class MatchOpt extends MatchBase {
 	public constructor(public readonly matcher: MatchBase) {
 		super();
 	}
+
+	public static from(matcher: MatchBase): MatchOpt {
+		return new MatchOpt(matcher);
+	}
+
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
 		const savedNav = nav.copy();

@@ -1,6 +1,6 @@
 import { StrSlice } from "@/utils/slice";
 import {
-	isLoneSurrogate,
+	isCodePointLoneSurrogate,
 	getCodePointCharLength,
 } from "../utils/string";
 
@@ -245,7 +245,7 @@ export class MutMatchNav {
 			if (codePoint === undefined) {
 				return undefined;
 			}
-			if (isLoneSurrogate(codePoint)) {
+			if (isCodePointLoneSurrogate(codePoint)) {
 				index--;
 				continue;
 			}
@@ -359,6 +359,20 @@ export class MutMatchNav {
 
 	public get isEmptyMatch(): boolean {
 		return this._startIndex === this._captureIndex;
+	}
+
+	public static from(
+		source: StrSlice,
+		start: number = 0
+	): MutMatchNav {
+		return new MutMatchNav(source, start);
+	}
+
+	public static fromString(
+		source: string,
+		start: number = 0
+	): MutMatchNav {
+		return new MutMatchNav(StrSlice.from(source), start);
 	}
 
 	public toString(): string {

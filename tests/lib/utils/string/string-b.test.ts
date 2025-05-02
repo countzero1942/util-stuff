@@ -1,6 +1,6 @@
 import {
 	getTabIndentString,
-	isLoneSurrogate,
+	isCodePointLoneSurrogate,
 	isCodePointWhiteSpace,
 	getCodePointCharLength,
 	spacesToTabs,
@@ -13,6 +13,7 @@ import {
 	cleanJSDocDescription,
 	cleanMultiLineArray,
 	cleanMultiLineStringToArray,
+	isCodePointValid,
 } from "@/utils/string";
 
 describe("getTabIndentString", () => {
@@ -25,10 +26,23 @@ describe("getTabIndentString", () => {
 
 describe("isLoneSurrogate", () => {
 	it("detects lone surrogates", () => {
-		expect(isLoneSurrogate(0xd800)).toBe(true);
-		expect(isLoneSurrogate(0xdfff)).toBe(true);
-		expect(isLoneSurrogate(0xd7ff)).toBe(false);
-		expect(isLoneSurrogate(0xe000)).toBe(false);
+		expect(isCodePointLoneSurrogate(0xd800)).toBe(true);
+		expect(isCodePointLoneSurrogate(0xdfff)).toBe(true);
+		expect(isCodePointLoneSurrogate(0xd7ff)).toBe(false);
+		expect(isCodePointLoneSurrogate(0xe000)).toBe(false);
+	});
+});
+
+describe("isCodePointValid", () => {
+	it("detects valid code points", () => {
+		expect(isCodePointValid(0x0000)).toBe(true);
+		expect(isCodePointValid(0x10ffff)).toBe(true);
+		expect(isCodePointValid(0x110000)).toBe(false);
+		expect(isCodePointValid(-1)).toBe(false);
+		expect(isCodePointValid(0xd7ff)).toBe(true);
+		expect(isCodePointValid(0xd800)).toBe(false);
+		expect(isCodePointValid(0xdfff)).toBe(false);
+		expect(isCodePointValid(0xe000)).toBe(true);
 	});
 });
 

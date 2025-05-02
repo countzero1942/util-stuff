@@ -30,4 +30,8 @@ export class MatchNot extends MatchBase {
 
 		return nav;
 	}
+
+	public static from(matcher: MatchBase): MatchNot {
+		return new MatchNot(matcher);
+	}
 }

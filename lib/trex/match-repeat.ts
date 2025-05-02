@@ -1,5 +1,5 @@
 import { MatchBase } from "./match-base";
-import { MatchAny } from "./match-matches";
+import { MatchAny } from "./match-any-all-opt";
 import { MutMatchNav } from "./nav";
 
 export class NumberOfMatches {
@@ -131,5 +131,17 @@ export class MatchRepeat extends MatchBase {
 		} else {
 			return nav.invalidate();
 		}
+	}
+
+	public static from(
+		matcher: MatchBase,
+		numberOfMatches: NumberOfMatches = NumberOfMatches.oneOrMore(),
+		altFirstLastMatchers: AltFirstLastMatchers = new AltFirstLastMatchers()
+	): MatchRepeat {
+		return new MatchRepeat(
+			matcher,
+			numberOfMatches,
+			altFirstLastMatchers
+		);
 	}
 }

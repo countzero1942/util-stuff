@@ -47,7 +47,7 @@ export class MatchAnyString extends MatchStringBase {
 	 * Factory method to create a MatchAnyString from an array of strings
 	 */
 	public static fromStrings(
-		matchValues: string[]
+		...matchValues: string[]
 	): MatchAnyString {
 		const index = new CodePointPrefixIndex<string>(
 			matchValues,

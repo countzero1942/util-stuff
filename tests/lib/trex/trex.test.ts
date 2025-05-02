@@ -44,8 +44,7 @@ describe("Token", () => {
 
 describe("NavToken", () => {
 	it("stores category, kind, and matchNav", () => {
-		const source = StrSlice.from("test");
-		const matchNav = new MutMatchNav(source);
+		const matchNav = MutMatchNav.fromString("test");
 		matchNav.moveCaptureForward(4); // Capture the whole string
 
 		const token = new NavToken(
@@ -60,8 +59,7 @@ describe("NavToken", () => {
 	});
 
 	it("formats toString correctly", () => {
-		const source = StrSlice.from("test");
-		const matchNav = new MutMatchNav(source);
+		const matchNav = MutMatchNav.fromString("test");
 		matchNav.moveCaptureForward(4); // Capture the whole string
 
 		const token = new NavToken(
@@ -86,8 +84,7 @@ describe("FindToken and FindNavToken", () => {
 	});
 
 	it("FindNavToken extends NavToken with correct type parameters", () => {
-		const source = StrSlice.from("test");
-		const matchNav = new MutMatchNav(source);
+		const matchNav = MutMatchNav.fromString("test");
 		matchNav.moveCaptureForward(4); // Capture the whole string
 
 		const token = new FindNavToken(
@@ -108,10 +105,10 @@ describe("FindAllResult", () => {
 		// Create a sample FindResult with a fragment and a match
 		const source = StrSlice.from("abc xxx def");
 
-		const fragmentNav = new MutMatchNav(source, 0);
+		const fragmentNav = MutMatchNav.from(source, 0);
 		fragmentNav.moveCaptureForward(4); // Capture "abc "
 
-		const matchNav = new MutMatchNav(source, 4);
+		const matchNav = MutMatchNav.from(source, 4);
 		matchNav.moveCaptureForward(3); // Capture "xxx"
 
 		const findResult = {
@@ -142,10 +139,10 @@ describe("FindAllResult", () => {
 		// Create a sample FindResult with an empty fragment and a match
 		const source = StrSlice.from("xxx def");
 
-		const fragmentNav = new MutMatchNav(source, 0);
+		const fragmentNav = MutMatchNav.from(source);
 		fragmentNav.moveCaptureForward(0); // Empty capture
 
-		const matchNav = new MutMatchNav(source, 0);
+		const matchNav = MutMatchNav.from(source);
 		matchNav.moveCaptureForward(3); // Capture "xxx"
 
 		const findResult = {
@@ -164,7 +161,7 @@ describe("FindAllResult", () => {
 		// Create a sample FindResult with a fragment but no match
 		const source = StrSlice.from("abc def");
 
-		const fragmentNav = new MutMatchNav(source, 0);
+		const fragmentNav = MutMatchNav.from(source, 0);
 		fragmentNav.moveCaptureForward(7); // Capture the whole string
 
 		const findResult = {
@@ -177,16 +174,19 @@ describe("FindAllResult", () => {
 
 		expect(navTokens).toHaveLength(1);
 		expect(navTokens[0].kind).toBe(":fragment");
+		expect(navTokens[0].matchNav.captureMatch.value).toBe(
+			"abc def"
+		);
 	});
 
 	it("getTokens converts NavTokens to Tokens", () => {
 		// Create a sample FindResult with a fragment and a match
 		const source = StrSlice.from("abc xxx def");
 
-		const fragmentNav = new MutMatchNav(source, 0);
+		const fragmentNav = MutMatchNav.from(source, 0);
 		fragmentNav.moveCaptureForward(4); // Capture "abc "
 
-		const matchNav = new MutMatchNav(source, 4);
+		const matchNav = MutMatchNav.from(source, 4);
 		matchNav.moveCaptureForward(3); // Capture "xxx"
 
 		const findResult = {
@@ -214,9 +214,7 @@ describe("TRex", () => {
 	describe("find", () => {
 		it("finds a match in the source string", () => {
 			const source = StrSlice.from("abc xxx def");
-			const matcher = MatchAnyString.fromStrings([
-				"xxx",
-			]);
+			const matcher = MatchAnyString.fromStrings("xxx");
 			const trex = new TRex(matcher);
 
 			const result = trex.find(source);
@@ -232,9 +230,7 @@ describe("TRex", () => {
 
 		it("returns null matchNav when no match is found", () => {
 			const source = StrSlice.from("abc def");
-			const matcher = MatchAnyString.fromStrings([
-				"xxx",
-			]);
+			const matcher = MatchAnyString.fromStrings("xxx");
 			const trex = new TRex(matcher);
 
 			const result = trex.find(source);
@@ -247,9 +243,7 @@ describe("TRex", () => {
 
 		it("finds a match starting from a specific position", () => {
 			const source = StrSlice.from("xxx abc xxx def");
-			const matcher = MatchAnyString.fromStrings([
-				"xxx",
-			]);
+			const matcher = MatchAnyString.fromStrings("xxx");
 			const trex = new TRex(matcher);
 
 			const result = trex.find(source, 4); // Start after the first "xxx"
@@ -287,9 +281,7 @@ describe("TRex", () => {
 			const source = StrSlice.from(
 				"abc xxx def xxx ghi"
 			);
-			const matcher = MatchAnyString.fromStrings([
-				"xxx",
-			]);
+			const matcher = MatchAnyString.fromStrings("xxx");
 			const trex = new TRex(matcher);
 
 			const result = trex.findAll(source);
@@ -310,9 +302,7 @@ describe("TRex", () => {
 
 		it("handles case with no matches", () => {
 			const source = StrSlice.from("abc def ghi");
-			const matcher = MatchAnyString.fromStrings([
-				"xxx",
-			]);
+			const matcher = MatchAnyString.fromStrings("xxx");
 			const trex = new TRex(matcher);
 
 			const result = trex.findAll(source);
@@ -347,18 +337,18 @@ describe("TRex", () => {
 				"abc def xxx hij yyy lmn opq xxx yyz xxx yyy mmm cba xxxyyy yyyxxx yyy";
 			const source = StrSlice.from(str);
 
-			const matcher = MatchAnyString.fromStrings([
+			const matcher = MatchAnyString.fromStrings(
 				"xxx",
-				"yyy",
-			]);
+				"yyy"
+			);
 			const wordMatcher = new MatchAll([
 				new MatchAny([
 					matchStartSlice,
-					new LookBehindCodePoint(matchUnicodeSpace),
+					LookBehindCodePoint.from(matchUnicodeSpace),
 				]),
 				matcher,
 				new MatchAny([
-					new GhostMatch(matchUnicodeSpace),
+					GhostMatch.from(matchUnicodeSpace),
 					matchEndSlice,
 				]),
 			]);

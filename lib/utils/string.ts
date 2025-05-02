@@ -16,9 +16,19 @@ export const getTabIndentString = memoizee(
 	{ maxAge: 5000 }
 );
 
-export const isLoneSurrogate = (codePoint: number) => {
+export const isCodePointLoneSurrogate = (
+	codePoint: number
+) => {
 	return codePoint >= 0xd800 && codePoint <= 0xdfff;
 };
+
+export const isCodePointValid = (
+	codePoint: number
+): boolean =>
+	Number.isInteger(codePoint) &&
+	codePoint >= 0 &&
+	codePoint <= 0x10ffff &&
+	!(codePoint >= 0xd800 && codePoint <= 0xdfff);
 
 export const isCodePointWhiteSpace = (
 	codePoint: number

@@ -1,6 +1,4 @@
 import {
-	matchEndSlice,
-	matchStartSlice,
 	matchUnicodeSpace,
 	matchUnicodeWhiteSpace,
 } from "./consts";
@@ -9,7 +7,7 @@ import {
 	MatchCodePointBase,
 	MatchStringBase,
 } from "./match-base";
-import { MatchAll, MatchAny } from "./match-matches";
+import { MatchAll, MatchAny } from "./match-any-all-opt";
 import { MatchAnyString } from "./match-string";
 import { MutMatchNav } from "./nav";
 
@@ -32,6 +30,12 @@ export class LookBehindCodePoint extends MatchBase {
 		}
 
 		return nav.invalidate();
+	}
+
+	public static from(
+		matcher: MatchCodePointBase
+	): LookBehindCodePoint {
+		return new LookBehindCodePoint(matcher);
 	}
 }
 
@@ -62,6 +66,12 @@ export class LookBehindAnyString extends MatchBase {
 
 		return nav.invalidate();
 	}
+
+	public static from(
+		matcher: MatchAnyString
+	): LookBehindAnyString {
+		return new LookBehindAnyString(matcher);
+	}
 }
 
 export class LookAheadCodePoint extends MatchBase {
@@ -84,6 +94,12 @@ export class LookAheadCodePoint extends MatchBase {
 
 		return nav.invalidate();
 	}
+
+	public static from(
+		matcher: MatchCodePointBase
+	): LookAheadCodePoint {
+		return new LookAheadCodePoint(matcher);
+	}
 }
 
 export class LookAheadAnyString extends MatchBase {
@@ -100,5 +116,11 @@ export class LookAheadAnyString extends MatchBase {
 		const result = this.matcher.match(aheadNav);
 
 		return result ? nav : nav.invalidate();
+	}
+
+	public static from(
+		matcher: MatchAnyString
+	): LookAheadAnyString {
+		return new LookAheadAnyString(matcher);
 	}
 }
