@@ -4,10 +4,10 @@ import {
 	MatchAll,
 	MatchAny,
 	MatchCodePointCat,
-	matchEndSlice,
+	MatchEndSlice,
 	MatchNotCodePoint,
 	MatchRepeat,
-	matchStartSlice,
+	MatchStartSlice,
 	TRex,
 } from "@/trex";
 import { StrSlice } from "@/utils/slice";
@@ -17,7 +17,7 @@ const wordContent =
 	MatchCodePointCat.fromString("Lu Lo Ll Nd");
 
 const wordStartBound = new MatchAny([
-	matchStartSlice,
+	MatchStartSlice.default,
 	new LookBehindCodePoint(
 		new MatchNotCodePoint(wordStart)
 	),
@@ -26,7 +26,7 @@ const wordContentBound = new MatchAny([
 	new LookAheadCodePoint(
 		new MatchNotCodePoint(wordContent)
 	),
-	matchEndSlice,
+	MatchEndSlice.default,
 ]);
 
 const matchWord = new MatchAll([

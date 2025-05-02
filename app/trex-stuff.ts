@@ -29,8 +29,8 @@ import {
 	MatchAny,
 	LookAheadCodePoint,
 	LookBehindCodePoint,
-	matchEndSlice,
-	matchStartSlice,
+	MatchEndSlice,
+	MatchStartSlice,
 	matchUnicodeSpace,
 	matchUnicodeLetter,
 	MatchCodePointCat,
@@ -264,13 +264,13 @@ export const specificWordMatchTestWithGhostMatch = () => {
 	const matcher = MatchAnyString.fromStrings("xxx", "yyy");
 	const wordMatcher = new MatchAll([
 		new MatchAny([
-			matchStartSlice,
+			MatchStartSlice.default,
 			new LookBehindCodePoint(matchUnicodeSpace),
 		]),
 		matcher,
 		new MatchAny([
 			new GhostMatch(matchUnicodeSpace),
-			matchEndSlice,
+			MatchEndSlice.default,
 		]),
 	]);
 	const trex = new TRex(wordMatcher);
@@ -298,13 +298,13 @@ export const specificWordMatchTestWithLookAhead = () => {
 	const matcher = MatchAnyString.fromStrings("xxx", "yyy");
 	const wordMatcher = new MatchAll([
 		new MatchAny([
-			matchStartSlice,
+			MatchStartSlice.default,
 			new LookBehindCodePoint(matchUnicodeSpace),
 		]),
 		matcher,
 		new MatchAny([
 			new LookAheadCodePoint(matchUnicodeSpace),
-			matchEndSlice,
+			MatchEndSlice.default,
 		]),
 	]);
 
@@ -337,7 +337,7 @@ export const extractWordsWithGhostMatch = () => {
 
 	const wordMatcher = new MatchAll([
 		new MatchAny([
-			matchStartSlice,
+			MatchStartSlice.default,
 			new LookBehindCodePoint(
 				new MatchNotCodePoint(startCodePoint)
 			),
@@ -349,7 +349,7 @@ export const extractWordsWithGhostMatch = () => {
 					new MatchNotCodePoint(contentCodePoint)
 				)
 			),
-			matchEndSlice,
+			MatchEndSlice.default,
 		]),
 	]);
 

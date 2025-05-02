@@ -6,16 +6,16 @@ import {
 } from "@/trex/match-position";
 
 describe("MatchStartSlice", () => {
-	let matchStartSlice: MatchStartSlice;
+	
 
 	beforeEach(() => {
-		matchStartSlice = new MatchStartSlice();
+		
 	});
 
 	it("matches at the beginning of the slice", () => {
 		const nav = MutMatchNav.fromString("test string");
 
-		const result = matchStartSlice.match(nav);
+		const result = MatchStartSlice.default.match(nav);
 
 		expect(result).not.toBeNull();
 		expect(result?.navIndex).toBe(0);
@@ -24,7 +24,7 @@ describe("MatchStartSlice", () => {
 	it("does not match when not at the beginning of the slice", () => {
 		const nav = MutMatchNav.fromString("test string", 3);
 
-		const result = matchStartSlice.match(nav);
+		const result = MatchStartSlice.default.match(nav);
 
 		expect(result).toBeNull();
 	});
@@ -32,7 +32,7 @@ describe("MatchStartSlice", () => {
 	it("works with empty string", () => {
 		const nav = MutMatchNav.fromString("");
 
-		const result = matchStartSlice.match(nav);
+		const result = MatchStartSlice.default.match(nav);
 
 		expect(result).not.toBeNull();
 		expect(result?.navIndex).toBe(0);
@@ -42,7 +42,7 @@ describe("MatchStartSlice", () => {
 		const nav = MutMatchNav.fromString("test string");
 		const originalNavIndex = nav.navIndex;
 
-		const result = matchStartSlice.match(nav);
+		const result = MatchStartSlice.default.match(nav);
 
 		expect(result).not.toBeNull();
 		expect(result?.navIndex).toBe(originalNavIndex);
@@ -50,16 +50,16 @@ describe("MatchStartSlice", () => {
 });
 
 describe("MatchEndSlice", () => {
-	let matchEndSlice: MatchEndSlice;
+	
 
 	beforeEach(() => {
-		matchEndSlice = new MatchEndSlice();
+		
 	});
 
 	it("matches at the end of the slice", () => {
 		const nav = MutMatchNav.fromString("test string", 11);
 		//                                  01234567890
-		const result = matchEndSlice.match(nav);
+		const result = MatchEndSlice.default.match(nav);
 
 		expect(result).not.toBeNull();
 		expect(result?.navIndex).toBe(nav.source.length);
@@ -68,7 +68,7 @@ describe("MatchEndSlice", () => {
 	it("does not match when not at the end of the slice", () => {
 		const nav = MutMatchNav.fromString("test string", 3);
 
-		const result = matchEndSlice.match(nav);
+		const result = MatchEndSlice.default.match(nav);
 
 		expect(result).toBeNull();
 	});
@@ -76,7 +76,7 @@ describe("MatchEndSlice", () => {
 	it("works with empty string", () => {
 		const nav = MutMatchNav.fromString("");
 
-		const result = matchEndSlice.match(nav);
+		const result = MatchEndSlice.default.match(nav);
 
 		expect(result).not.toBeNull();
 		expect(result?.navIndex).toBe(0);
@@ -87,7 +87,7 @@ describe("MatchEndSlice", () => {
 		//                                  01234567890
 		const originalNavIndex = nav.navIndex;
 
-		const result = matchEndSlice.match(nav);
+		const result = MatchEndSlice.default.match(nav);
 
 		expect(result).not.toBeNull();
 		expect(result?.navIndex).toBe(nav.source.length);

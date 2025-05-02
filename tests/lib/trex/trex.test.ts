@@ -19,8 +19,8 @@ import {
 	LookBehindCodePoint,
 	MatchAll,
 	MatchAny,
-	matchEndSlice,
-	matchStartSlice,
+	MatchEndSlice,
+	MatchStartSlice,
 	matchUnicodeSpace,
 } from "@/trex";
 
@@ -343,13 +343,13 @@ describe("TRex", () => {
 			);
 			const wordMatcher = new MatchAll([
 				new MatchAny([
-					matchStartSlice,
+					MatchStartSlice.default,
 					LookBehindCodePoint.from(matchUnicodeSpace),
 				]),
 				matcher,
 				new MatchAny([
 					GhostMatch.from(matchUnicodeSpace),
-					matchEndSlice,
+					MatchEndSlice.default,
 				]),
 			]);
 			const trex = new TRex(wordMatcher);

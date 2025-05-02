@@ -2,7 +2,11 @@ import { MatchPositionBase } from "@/trex/match-base";
 import { MutMatchNav } from "@/trex/nav";
 
 export class MatchStartSlice extends MatchPositionBase {
-	constructor() {
+	private static _default = new MatchStartSlice();
+	public static get default(): MatchStartSlice {
+		return MatchStartSlice._default;
+	}
+	private constructor() {
 		super();
 	}
 
@@ -10,14 +14,14 @@ export class MatchStartSlice extends MatchPositionBase {
 		nav.assertValid();
 		return nav.navIndex === 0 ? nav : nav.invalidate();
 	}
-
-	public static get default(): MatchStartSlice {
-		return matchStartSlice;
-	}
 }
 
 export class MatchEndSlice extends MatchPositionBase {
-	constructor() {
+	private static _default = new MatchEndSlice();
+	public static get default(): MatchEndSlice {
+		return MatchEndSlice._default;
+	}
+	private constructor() {
 		super();
 	}
 
@@ -27,14 +31,14 @@ export class MatchEndSlice extends MatchPositionBase {
 			? nav
 			: nav.invalidate();
 	}
-
-	public static get default(): MatchEndSlice {
-		return matchEndSlice;
-	}
 }
 
 export class MatchNotStartSlice extends MatchPositionBase {
-	constructor() {
+	private static _default = new MatchNotStartSlice();
+	public static get default(): MatchNotStartSlice {
+		return MatchNotStartSlice._default;
+	}
+	private constructor() {
 		super();
 	}
 
@@ -42,14 +46,14 @@ export class MatchNotStartSlice extends MatchPositionBase {
 		nav.assertValid();
 		return nav.navIndex !== 0 ? nav : nav.invalidate();
 	}
-
-	public static get default(): MatchNotStartSlice {
-		return matchNotStartSlice;
-	}
 }
 
 export class MatchNotEndSlice extends MatchPositionBase {
-	constructor() {
+	private static _default = new MatchNotEndSlice();
+	public static get default(): MatchNotEndSlice {
+		return MatchNotEndSlice._default;
+	}
+	private constructor() {
 		super();
 	}
 
@@ -59,16 +63,5 @@ export class MatchNotEndSlice extends MatchPositionBase {
 			? nav
 			: nav.invalidate();
 	}
-
-	public static get default(): MatchNotEndSlice {
-		return matchNotEndSlice;
-	}
 }
 
-export const matchStartSlice = new MatchStartSlice();
-
-export const matchEndSlice = new MatchEndSlice();
-
-export const matchNotStartSlice = new MatchNotStartSlice();
-
-export const matchNotEndSlice = new MatchNotEndSlice();
