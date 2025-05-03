@@ -12,8 +12,15 @@ import {
 import { MutMatchNav } from "@/trex/nav";
 import { getClassName, getType } from "@/utils/types";
 
+const getCodePointString = (codePoint: number) =>
+	codePoint < 0
+		? codePoint.toString()
+		: `0x${codePoint.toString(16).toUpperCase()}`;
+
 export class MatchCodePoint extends MatchCodePointBase {
-	public constructor(public readonly matchValue: number) {
+	protected constructor(
+		public readonly matchValue: number
+	) {
 		super();
 	}
 
@@ -47,7 +54,7 @@ export class MatchCodePoint extends MatchCodePointBase {
 	): MatchCodePoint {
 		if (!isCodePointValid(matchValue)) {
 			throw new Error(
-				`MatchCodePoint.fromNumber: Invalid code point: ${matchValue}`
+				`MatchCodePoint.fromNumber: Invalid code point: ${getCodePointString(matchValue)}`
 			);
 		}
 		return new MatchCodePoint(matchValue);
@@ -57,7 +64,11 @@ export class MatchCodePoint extends MatchCodePointBase {
 		matchValue: string
 	): MatchCodePoint {
 		const codePoint = matchValue.codePointAt(0);
-		if (codePoint === undefined) {
+		if (
+			codePoint === undefined ||
+			getCodePointCharLength(codePoint) !==
+				matchValue.length
+		) {
 			throw new Error(
 				`MatchCodePoint.fromString: Invalid code point string: '${matchValue}'`
 			);
@@ -67,7 +78,7 @@ export class MatchCodePoint extends MatchCodePointBase {
 }
 
 export class MatchCodePointLambda extends MatchCodePointBase {
-	public constructor(
+	protected constructor(
 		public readonly lambda: (codePoint: number) => boolean
 	) {
 		super();
@@ -100,26 +111,26 @@ export class MatchCodePointLambda extends MatchCodePointBase {
 }
 
 export class CodePointRange {
-	public constructor(
+	protected constructor(
 		public readonly start: number,
 		public readonly end: number
 	) {
 		if (!isCodePointValid(start)) {
 			throw new Error(
-				`Invalid code point range: start is not a valid code point` +
-					` (${start})`
+				`Invalid code point range: start is invalid` +
+					` (${getCodePointString(start)})`
 			);
 		}
 		if (!isCodePointValid(end)) {
 			throw new Error(
-				`Invalid code point range: end is not a valid code point` +
-					` (${end})`
+				`Invalid code point range: end is invalid` +
+					` (${getCodePointString(end)})`
 			);
 		}
 		if (start > end) {
 			throw new Error(
 				`Invalid code point range: start > end` +
-					` (${start} > ${end})`
+					` (${getCodePointString(start)} > ${getCodePointString(end)})`
 			);
 		}
 	}
@@ -161,10 +172,13 @@ export class CodePointRange {
 	}
 
 	public static fromNumbers(
-		start: number,
-		end: number
+		startCodePoint: number,
+		endCodePoint: number
 	): CodePointRange {
-		return new CodePointRange(start, end);
+		return new CodePointRange(
+			startCodePoint,
+			endCodePoint
+		);
 	}
 
 	public toString(): string {
@@ -183,10 +197,16 @@ export class CodePointRange {
 }
 
 export class MatchCodePointSet extends MatchCodePointBase {
-	public constructor(
+	protected constructor(
 		public readonly codePointSet: Record<number, boolean>
 	) {
 		super();
+
+		if (this.length === 0) {
+			throw new Error(
+				"MatchCodePointSet: empty code point set"
+			);
+		}
 	}
 
 	public match(nav: MutMatchNav): MutMatchNav | null {
@@ -215,6 +235,12 @@ export class MatchCodePointSet extends MatchCodePointBase {
 	public static fromString(
 		codePoints: string
 	): MatchCodePointSet {
+		if (codePoints.length === 0) {
+			throw new Error(
+				"MatchCodePointSet.fromString: empty code points string"
+			);
+		}
+
 		const codePointSet: Record<number, boolean> = {};
 
 		const codePointSeq = new CodePointSeq(codePoints);
@@ -237,12 +263,18 @@ export class MatchCodePointSet extends MatchCodePointBase {
 		for (const arg of args) {
 			switch (true) {
 				case arg instanceof CodePointRange:
+					// note: ranges cannot be empty
 					for (const codePoint of arg.codePoints()) {
 						codePointSet[codePoint] = true;
 					}
 
 					break;
 				case typeof arg === "string":
+					if (arg.length === 0) {
+						throw new Error(
+							"MatchCodePointSet.fromArgs: empty code points string"
+						);
+					}
 					const codePointSeq = new CodePointSeq(
 						arg as string
 					);
@@ -251,6 +283,7 @@ export class MatchCodePointSet extends MatchCodePointBase {
 					});
 					break;
 				case arg instanceof MatchCodePointSet:
+					// note: MatchCodePointSet cannot be empty
 					for (const codePoint in arg.codePointSet) {
 						codePointSet[codePoint] = true;
 					}
@@ -268,6 +301,14 @@ export class MatchCodePointSet extends MatchCodePointBase {
 	public static fromNumbers(
 		...codePoints: number[]
 	): MatchCodePointSet {
+		if (
+			codePoints === undefined ||
+			codePoints.length === 0
+		) {
+			throw new Error(
+				"MatchCodePointSet.fromNumbers: empty code points array"
+			);
+		}
 		const codePointSet: Record<number, boolean> = {};
 		for (const codePoint of codePoints) {
 			if (!isCodePointValid(codePoint)) {
@@ -277,6 +318,12 @@ export class MatchCodePointSet extends MatchCodePointBase {
 			}
 			codePointSet[codePoint] = true;
 		}
+		return new MatchCodePointSet(codePointSet);
+	}
+
+	public static fromSet(
+		codePointSet: Record<number, boolean>
+	): MatchCodePointSet {
 		return new MatchCodePointSet(codePointSet);
 	}
 }
@@ -298,8 +345,8 @@ const initializeAllUnicodeCategories = (): Record<
 export const allUnicodeCategories =
 	initializeAllUnicodeCategories();
 
-export class MatchCodePointCat extends MatchCodePointBase {
-	public constructor(
+export class MatchCodePointCategories extends MatchCodePointBase {
+	protected constructor(
 		public readonly categories: Record<string, boolean>
 	) {
 		super();
@@ -329,7 +376,7 @@ export class MatchCodePointCat extends MatchCodePointBase {
 
 	public static fromString(
 		categories: string
-	): MatchCodePointCat {
+	): MatchCodePointCategories {
 		const categoriesSet: Record<string, boolean> = {};
 		for (const category of categories.split(" ")) {
 			if (allUnicodeCategories[category] === undefined) {
@@ -339,15 +386,16 @@ export class MatchCodePointCat extends MatchCodePointBase {
 			}
 			categoriesSet[category] = true;
 		}
-		return new MatchCodePointCat(categoriesSet);
+		return new MatchCodePointCategories(categoriesSet);
 	}
 }
 
 export class MatchCodePointRange extends MatchCodePointBase {
-	public constructor(
+	protected constructor(
 		public readonly range: CodePointRange
 	) {
 		super();
+		// note: ranges are validated in constructor
 	}
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
@@ -377,13 +425,25 @@ export class MatchCodePointRange extends MatchCodePointBase {
 			CodePointRange.fromString(range)
 		);
 	}
+
+	public static fromRange(
+		range: CodePointRange
+	): MatchCodePointRange {
+		return new MatchCodePointRange(range);
+	}
 }
 
 export class MatchCodePointRanges extends MatchCodePointBase {
-	public constructor(
+	protected constructor(
 		public readonly ranges: CodePointRange[]
 	) {
 		super();
+		// note: ranges are validated in constructor
+		if (this.ranges.length === 0) {
+			throw new Error(
+				"MatchCodePointRanges: empty ranges array"
+			);
+		}
 	}
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
@@ -419,10 +479,16 @@ export class MatchCodePointRanges extends MatchCodePointBase {
 			)
 		);
 	}
+
+	public static fromRanges(
+		...ranges: CodePointRange[]
+	): MatchCodePointRanges {
+		return new MatchCodePointRanges(ranges);
+	}
 }
 
 export class MatchNotCodePoint extends MatchCodePointBase {
-	public constructor(
+	protected constructor(
 		public readonly matcher: MatchCodePointBase
 	) {
 		super();

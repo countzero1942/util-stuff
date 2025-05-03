@@ -6,7 +6,7 @@ import { MutMatchNav } from "@/trex/nav";
 import { CodePointPrefixIndex } from "@/trex/prefix-index";
 
 export class MatchAnyString extends MatchStringBase {
-	public constructor(
+	protected constructor(
 		public readonly index: CodePointPrefixIndex<string>
 	) {
 		super();

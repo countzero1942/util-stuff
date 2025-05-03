@@ -3,7 +3,7 @@ import {
 	LookBehindCodePoint,
 	MatchAll,
 	MatchAny,
-	MatchCodePointCat,
+	MatchCodePointCategories,
 	MatchEndSlice,
 	MatchNotCodePoint,
 	MatchRepeat,
@@ -12,28 +12,29 @@ import {
 } from "@/trex";
 import { StrSlice } from "@/utils/slice";
 
-const wordStart = MatchCodePointCat.fromString("Lu Lo Ll");
+const wordStart =
+	MatchCodePointCategories.fromString("Lu Lo Ll");
 const wordContent =
-	MatchCodePointCat.fromString("Lu Lo Ll Nd");
+	MatchCodePointCategories.fromString("Lu Lo Ll Nd");
 
-const wordStartBound = new MatchAny([
+const wordStartBound = MatchAny.from(
 	MatchStartSlice.default,
-	new LookBehindCodePoint(
-		new MatchNotCodePoint(wordStart)
+	LookBehindCodePoint.from(
+		MatchNotCodePoint.from(wordStart)
+	)
+);
+const wordContentBound = MatchAny.from(
+	LookAheadCodePoint.from(
+		MatchNotCodePoint.from(wordContent)
 	),
-]);
-const wordContentBound = new MatchAny([
-	new LookAheadCodePoint(
-		new MatchNotCodePoint(wordContent)
-	),
-	MatchEndSlice.default,
-]);
+	MatchEndSlice.default
+);
 
-const matchWord = new MatchAll([
+const matchWord = MatchAll.from(
 	wordStartBound,
-	new MatchRepeat(wordContent),
-	wordContentBound,
-]);
+	MatchRepeat.from(wordContent),
+	wordContentBound
+);
 
 export const matchWords = (str: string) => {
 	const tr = new TRex(matchWord);

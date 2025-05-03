@@ -1,34 +1,30 @@
 import {
-	MatchStartSlice,
-	MatchEndSlice,
-} from "@/trex/match-position";
-import {
-	CodePointRange,
-	MatchCodePointCat,
+	MatchCodePointRanges,
+	MatchCodePointCategories,
 	MatchCodePointRange,
 	MatchCodePointSet,
-} from "@/trex/match-code-point";
+} from "@/trex";
 
 export const matchUnicodeLetter =
-	MatchCodePointCat.fromString("Lu Lo Ll");
+	MatchCodePointCategories.fromString("Lu Lo Ll");
 
 export const matchUnicodeDigit =
-	MatchCodePointCat.fromString("Nd");
+	MatchCodePointCategories.fromString("Nd");
 
 export const matchUnicodeLetterOrDigit =
-	MatchCodePointCat.fromString("Lu Lo Ll Nd");
+	MatchCodePointCategories.fromString("Lu Lo Ll Nd");
 
 export const matchUnicodeLowerCase =
-	MatchCodePointCat.fromString("Ll");
+	MatchCodePointCategories.fromString("Ll");
 
 export const matchUnicodeUpperCase =
-	MatchCodePointCat.fromString("Lu");
+	MatchCodePointCategories.fromString("Lu");
 
 export const matchUnicodeTitleCase =
-	MatchCodePointCat.fromString("Lt");
+	MatchCodePointCategories.fromString("Lt");
 
 export const matchUnicodeSpace =
-	MatchCodePointCat.fromString("Zs");
+	MatchCodePointCategories.fromString("Zs");
 
 export const matchUnicodeWhiteSpace =
 	MatchCodePointSet.fromNumbers(
@@ -59,23 +55,17 @@ export const matchUnicodeWhiteSpace =
 		0xfeff
 	);
 
-export const matchLatinLetter = new MatchCodePointRange(
-	new CodePointRange(0x0041, 0x005a)
-);
+export const matchLatinLetter =
+	MatchCodePointRanges.fromStrings("a-z", "A-Z");
 
-export const matchLatinDigit = new MatchCodePointRange(
-	new CodePointRange(0x0030, 0x0039)
-);
+export const matchLatinDigit =
+	MatchCodePointRange.fromString("0-9");
 
 export const matchLatinLetterOrDigit =
-	new MatchCodePointRange(
-		new CodePointRange(0x0041, 0x005a)
-	);
+	MatchCodePointRanges.fromStrings("a-z", "A-Z", "0-9");
 
-export const matchLatinLowerCase = new MatchCodePointRange(
-	new CodePointRange(0x0061, 0x007a)
-);
+export const matchLatinLowerCase =
+	MatchCodePointRange.fromString("a-z");
 
-export const matchLatinUpperCase = new MatchCodePointRange(
-	new CodePointRange(0x0041, 0x005a)
-);
+export const matchLatinUpperCase =
+	MatchCodePointRange.fromString("A-Z");

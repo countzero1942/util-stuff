@@ -25,8 +25,16 @@ import {
 	specificWordMatchTestWithLookAhead,
 } from "./trex-stuff";
 import { matchWordsTest } from "@/examples/trex/word-matching";
+import { MatchCodePoint } from "@/trex";
+import { getError, getErrorMessage } from "@/utils/error";
 
 // logGeneratePassword();
 
 // codePointSetArgs();
-codePointSetArgsTestExaustiveCheck();
+// codePointSetArgsTestExaustiveCheck();
+
+try {
+	MatchCodePoint.fromNumber(-1);
+} catch (error) {
+	log(getError(error).message);
+}

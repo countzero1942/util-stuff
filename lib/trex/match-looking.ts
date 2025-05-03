@@ -1,18 +1,12 @@
 import {
-	matchUnicodeSpace,
-	matchUnicodeWhiteSpace,
-} from "./consts";
-import {
 	MatchBase,
 	MatchCodePointBase,
-	MatchStringBase,
 } from "./match-base";
-import { MatchAll, MatchAny } from "./match-any-all-opt";
 import { MatchAnyString } from "./match-string";
 import { MutMatchNav } from "./nav";
 
 export class LookBehindCodePoint extends MatchBase {
-	public constructor(
+	protected constructor(
 		public readonly matcher: MatchCodePointBase
 	) {
 		super();
@@ -40,7 +34,7 @@ export class LookBehindCodePoint extends MatchBase {
 }
 
 export class LookBehindAnyString extends MatchBase {
-	public constructor(
+	protected constructor(
 		public readonly matcher: MatchAnyString
 	) {
 		super();
@@ -75,7 +69,7 @@ export class LookBehindAnyString extends MatchBase {
 }
 
 export class LookAheadCodePoint extends MatchBase {
-	public constructor(
+	protected constructor(
 		public readonly matcher: MatchCodePointBase
 	) {
 		super();
@@ -103,7 +97,7 @@ export class LookAheadCodePoint extends MatchBase {
 }
 
 export class LookAheadAnyString extends MatchBase {
-	public constructor(
+	protected constructor(
 		public readonly matcher: MatchAnyString
 	) {
 		super();

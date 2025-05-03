@@ -55,11 +55,11 @@ describe("GhostMatch", () => {
 			const ghostComma = GhostMatch.from(matcherComma);
 
 			// First match A and B normally, then match comma as ghost at the end
-			const sequence = new MatchAll([
+			const sequence = MatchAll.from(
 				matcherA,
 				matcherB,
-				ghostComma,
-			]);
+				ghostComma
+			);
 
 			const nav = new MutMatchNav(new StrSlice("AB,C"));
 			const result = sequence.match(nav);
@@ -81,11 +81,11 @@ describe("GhostMatch", () => {
 			const matcherB = createLetterMatcher("B");
 
 			// Incorrectly place ghost match in the middle of the sequence
-			const sequence = new MatchAll([
+			const sequence = MatchAll.from(
 				matcherA,
 				ghostComma, // This creates a ghost capture
-				matcherB, // This will try to match after a ghost capture exists
-			]);
+				matcherB // This will try to match after a ghost capture exists
+			);
 
 			const nav = new MutMatchNav(new StrSlice("A,B"));
 

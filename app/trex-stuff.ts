@@ -33,7 +33,7 @@ import {
 	MatchStartSlice,
 	matchUnicodeSpace,
 	matchUnicodeLetter,
-	MatchCodePointCat,
+	MatchCodePointCategories,
 	matchUnicodeLetterOrDigit,
 	MatchNotCodePoint,
 	MatchRepeat,
@@ -139,7 +139,9 @@ export const doTRexStuff = () => {
 		"abc",
 		"def"
 	);
-	const matcher = new LookAheadAnyString(anyStringMatcher);
+	const matcher = LookAheadAnyString.from(
+		anyStringMatcher
+	);
 
 	{
 		const nav = new MutMatchNav(source, 0);
@@ -262,17 +264,17 @@ export const specificWordMatchTestWithGhostMatch = () => {
 	const source = StrSlice.from(str);
 
 	const matcher = MatchAnyString.fromStrings("xxx", "yyy");
-	const wordMatcher = new MatchAll([
-		new MatchAny([
+	const wordMatcher = MatchAll.from(
+		MatchAny.from(
 			MatchStartSlice.default,
-			new LookBehindCodePoint(matchUnicodeSpace),
-		]),
+			LookBehindCodePoint.from(matchUnicodeSpace)
+		),
 		matcher,
-		new MatchAny([
-			new GhostMatch(matchUnicodeSpace),
-			MatchEndSlice.default,
-		]),
-	]);
+		MatchAny.from(
+			GhostMatch.from(matchUnicodeSpace),
+			MatchEndSlice.default
+		)
+	);
 	const trex = new TRex(wordMatcher);
 
 	const result = trex.findAll(source);
@@ -296,18 +298,17 @@ export const specificWordMatchTestWithLookAhead = () => {
 	const source = StrSlice.from(str);
 
 	const matcher = MatchAnyString.fromStrings("xxx", "yyy");
-	const wordMatcher = new MatchAll([
-		new MatchAny([
+	const wordMatcher = MatchAll.from(
+		MatchAny.from(
 			MatchStartSlice.default,
-			new LookBehindCodePoint(matchUnicodeSpace),
-		]),
+			LookBehindCodePoint.from(matchUnicodeSpace)
+		),
 		matcher,
-		new MatchAny([
-			new LookAheadCodePoint(matchUnicodeSpace),
-			MatchEndSlice.default,
-		]),
-	]);
-
+		MatchAny.from(
+			LookAheadCodePoint.from(matchUnicodeSpace),
+			MatchEndSlice.default
+		)
+	);
 	const trex = new TRex(wordMatcher);
 
 	const result = trex.findAll(source);
@@ -335,23 +336,23 @@ export const extractWordsWithGhostMatch = () => {
 
 	const contentMatcher = new MatchRepeat(contentCodePoint);
 
-	const wordMatcher = new MatchAll([
-		new MatchAny([
+	const wordMatcher = MatchAll.from(
+		MatchAny.from(
 			MatchStartSlice.default,
-			new LookBehindCodePoint(
-				new MatchNotCodePoint(startCodePoint)
-			),
-		]),
+			LookBehindCodePoint.from(
+				MatchNotCodePoint.from(startCodePoint)
+			)
+		),
 		contentMatcher,
-		new MatchAny([
-			new GhostMatch(
-				new MatchRepeat(
-					new MatchNotCodePoint(contentCodePoint)
+		MatchAny.from(
+			GhostMatch.from(
+				MatchRepeat.from(
+					MatchNotCodePoint.from(contentCodePoint)
 				)
 			),
-			MatchEndSlice.default,
-		]),
-	]);
+			MatchEndSlice.default
+		)
+	);
 
 	const trex = new TRex(wordMatcher);
 

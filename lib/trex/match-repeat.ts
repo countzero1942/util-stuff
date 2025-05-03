@@ -6,7 +6,10 @@ export class NumberOfMatches {
 	public readonly minNumber: number;
 	public readonly maxNumber: number;
 
-	constructor(minNumber: number, maxNumber: number = -1) {
+	protected constructor(
+		minNumber: number,
+		maxNumber: number = -1
+	) {
 		this.minNumber = minNumber;
 		this.maxNumber =
 			maxNumber === -1
@@ -15,13 +18,15 @@ export class NumberOfMatches {
 
 		if (this.minNumber < 0) {
 			throw new Error(
-				"NumberOfMatches: minNumber must be >= 0"
+				"NumberOfMatches: minNumber must be >= 0" +
+					` (${this.minNumber})`
 			);
 		}
 
 		if (this.maxNumber < this.minNumber) {
 			throw new Error(
-				"NumberOfMatches: maxNumber must be >= minNumber"
+				"NumberOfMatches: minNumber must be <= maxNumber" +
+					` (${this.minNumber} > ${this.maxNumber})`
 			);
 		}
 	}
@@ -44,10 +49,14 @@ export class NumberOfMatches {
 	): NumberOfMatches {
 		return new NumberOfMatches(minNumber, maxNumber);
 	}
+
+	public static atLeast(number: number): NumberOfMatches {
+		return new NumberOfMatches(number);
+	}
 }
 
 export class AltFirstLastMatchers {
-	constructor(
+	protected constructor(
 		public readonly altFirstMatch: MatchBase | null = null,
 		public readonly altLastMatch: MatchBase | null = null
 	) {}
@@ -57,12 +66,12 @@ export class AltFirstLastMatchers {
 	): [MatchBase, MatchBase] {
 		const firstMatch =
 			this.altFirstMatch !== null
-				? new MatchAny([this.altFirstMatch, matcher])
+				? MatchAny.from(this.altFirstMatch, matcher)
 				: matcher;
 
 		const nextMatch =
 			this.altLastMatch !== null
-				? new MatchAny([matcher, this.altLastMatch])
+				? MatchAny.from(matcher, this.altLastMatch)
 				: matcher;
 
 		return [firstMatch, nextMatch];
@@ -89,13 +98,19 @@ export class AltFirstLastMatchers {
 	): AltFirstLastMatchers {
 		return new AltFirstLastMatchers(null, altLastMatch);
 	}
+
+	public static get default(): AltFirstLastMatchers {
+		return AltFirstLastMatchers._default;
+	}
+
+	private static _default = new AltFirstLastMatchers();
 }
 
 export class MatchRepeat extends MatchBase {
 	public constructor(
 		public readonly matcher: MatchBase,
 		public readonly numberOfMatches: NumberOfMatches = NumberOfMatches.oneOrMore(),
-		public readonly altFirstLastMatchers: AltFirstLastMatchers = new AltFirstLastMatchers()
+		public readonly altFirstLastMatchers: AltFirstLastMatchers = AltFirstLastMatchers.default
 	) {
 		super();
 	}
@@ -136,7 +151,7 @@ export class MatchRepeat extends MatchBase {
 	public static from(
 		matcher: MatchBase,
 		numberOfMatches: NumberOfMatches = NumberOfMatches.oneOrMore(),
-		altFirstLastMatchers: AltFirstLastMatchers = new AltFirstLastMatchers()
+		altFirstLastMatchers: AltFirstLastMatchers = AltFirstLastMatchers.default
 	): MatchRepeat {
 		return new MatchRepeat(
 			matcher,

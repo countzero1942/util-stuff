@@ -49,9 +49,9 @@ describe("MatchNot", () => {
 
 	describe("with MatchAny", () => {
 		it("returns null when MatchAny matches", () => {
-			const matcher = new MatchAny([
-				MatchStartSlice.default,
-			]);
+			const matcher = MatchAny.from(
+				MatchStartSlice.default
+			);
 			const not = MatchNot.from(matcher);
 			const nav = MutMatchNav.fromString("");
 			const result = not.match(nav);
@@ -59,9 +59,9 @@ describe("MatchNot", () => {
 			expect(nav.isInvalidated).toBe(true);
 		});
 		it("returns nav (same instance, unmutated) when MatchAny does not match", () => {
-			const matcher = new MatchAny([
-				MatchEndSlice.default,
-			]);
+			const matcher = MatchAny.from(
+				MatchEndSlice.default
+			);
 			const not = MatchNot.from(matcher);
 			const nav = MutMatchNav.fromString("abc");
 			const result = not.match(nav);
@@ -72,7 +72,7 @@ describe("MatchNot", () => {
 
 	describe("with MatchOpt", () => {
 		it("returns null when MatchOpt matches", () => {
-			const matcher = new MatchOpt(
+			const matcher = MatchOpt.from(
 				MatchStartSlice.default
 			);
 			const not = MatchNot.from(matcher);
@@ -82,7 +82,7 @@ describe("MatchNot", () => {
 			expect(nav.isInvalidated).toBe(true);
 		});
 		it("returns null always on MatchOpt, because MatchOpt always returns true", () => {
-			const matcher = new MatchOpt(
+			const matcher = MatchOpt.from(
 				MatchEndSlice.default
 			);
 			const not = MatchNot.from(matcher);
@@ -95,7 +95,7 @@ describe("MatchNot", () => {
 
 	describe("with MatchRepeat", () => {
 		it("returns null when MatchRepeat matches", () => {
-			const matcher = new MatchRepeat(
+			const matcher = MatchRepeat.from(
 				MatchStartSlice.default,
 				NumberOfMatches.exactly(1)
 			);
@@ -106,7 +106,7 @@ describe("MatchNot", () => {
 			expect(nav.isInvalidated).toBe(true);
 		});
 		it("returns nav (same instance, unmutated) when MatchRepeat does not match", () => {
-			const matcher = new MatchRepeat(
+			const matcher = MatchRepeat.from(
 				MatchEndSlice.default,
 				NumberOfMatches.exactly(1)
 			);
@@ -122,7 +122,7 @@ describe("MatchNot", () => {
 
 	describe("with GhostMatch", () => {
 		it("returns null when GhostMatch matches", () => {
-			const matcher = new GhostMatch(
+			const matcher = GhostMatch.from(
 				MatchStartSlice.default
 			);
 			const not = MatchNot.from(matcher);
@@ -132,7 +132,7 @@ describe("MatchNot", () => {
 			expect(nav.isInvalidated).toBe(true);
 		});
 		it("returns nav (same instance, unmutated) when GhostMatch does not match", () => {
-			const matcher = new GhostMatch(
+			const matcher = GhostMatch.from(
 				MatchEndSlice.default
 			);
 			const not = MatchNot.from(matcher);

@@ -5,7 +5,9 @@ import {
 import { MutMatchNav } from "./nav";
 
 export class MatchNot extends MatchBase {
-	public constructor(public readonly matcher: MatchBase) {
+	protected constructor(
+		public readonly matcher: MatchBase
+	) {
 		super();
 		if (matcher instanceof MatchCodePointBase) {
 			throw new Error(

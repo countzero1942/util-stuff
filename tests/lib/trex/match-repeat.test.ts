@@ -4,8 +4,6 @@ import {
 	MatchCodePoint,
 	AltFirstLastMatchers,
 	NumberOfMatches,
-	MatchNot,
-	MatchCodePointCat,
 	matchUnicodeLetter,
 	MatchRepeat,
 	MatchAny,
@@ -13,32 +11,32 @@ import {
 
 describe("AltFirstLastMatchers", () => {
 	it("constructs with default nulls", () => {
-		const alt = new AltFirstLastMatchers();
+		const alt = AltFirstLastMatchers.default;
 		expect(alt.altFirstMatch).toBeNull();
 		expect(alt.altLastMatch).toBeNull();
 	});
 	it("constructs with provided matchers", () => {
-		const m1 = new MatchCodePoint("A".codePointAt(0)!);
-		const m2 = new MatchCodePoint("B".codePointAt(0)!);
-		const alt = new AltFirstLastMatchers(m1, m2);
+		const m1 = MatchCodePoint.fromString("A");
+		const m2 = MatchCodePoint.fromString("B");
+		const alt = AltFirstLastMatchers.from(m1, m2);
 		expect(alt.altFirstMatch).toBe(m1);
 		expect(alt.altLastMatch).toBe(m2);
 	});
 	it("from() creates instance with both matchers", () => {
-		const m1 = new MatchCodePoint("A".codePointAt(0)!);
-		const m2 = new MatchCodePoint("B".codePointAt(0)!);
+		const m1 = MatchCodePoint.fromString("A");
+		const m2 = MatchCodePoint.fromString("B");
 		const alt = AltFirstLastMatchers.from(m1, m2);
 		expect(alt.altFirstMatch).toBe(m1);
 		expect(alt.altLastMatch).toBe(m2);
 	});
 	it("fromAltFirst() creates instance with only altFirstMatch", () => {
-		const m1 = new MatchCodePoint("A".codePointAt(0)!);
+		const m1 = MatchCodePoint.fromString("A");
 		const alt = AltFirstLastMatchers.fromAltFirst(m1);
 		expect(alt.altFirstMatch).toBe(m1);
 		expect(alt.altLastMatch).toBeNull();
 	});
 	it("fromAltLast() creates instance with only altLastMatch", () => {
-		const m2 = new MatchCodePoint("B".codePointAt(0)!);
+		const m2 = MatchCodePoint.fromString("B");
 		const alt = AltFirstLastMatchers.fromAltLast(m2);
 		expect(alt.altFirstMatch).toBeNull();
 		expect(alt.altLastMatch).toBe(m2);
@@ -47,7 +45,7 @@ describe("AltFirstLastMatchers", () => {
 		// Use dummy matcher objects for clarity
 		const m1 = { match: () => null } as any;
 		const m2 = { match: () => null } as any;
-		const alt = new AltFirstLastMatchers(m1, null);
+		const alt = AltFirstLastMatchers.fromAltFirst(m1);
 		const [start, next] = alt.getStartAndNextMatcher(m2);
 		// start should be a MatchAny containing m1 and m2
 		expect(start.constructor.name).toBe("MatchAny");
@@ -64,18 +62,21 @@ describe("AltFirstLastMatchers", () => {
 describe("NumberOfMatches", () => {
 	describe("constructor", () => {
 		it("constructs with min and default max", () => {
-			const n = new NumberOfMatches(2);
+			const n = NumberOfMatches.atLeast(2);
 			expect(n.minNumber).toBe(2);
 			expect(n.maxNumber).toBe(Number.MAX_SAFE_INTEGER);
 		});
 		it("constructs with min and explicit default max", () => {
-			const n = new NumberOfMatches(2, -1);
+			const n = NumberOfMatches.between(
+				2,
+				Number.MAX_SAFE_INTEGER
+			);
 			expect(n.minNumber).toBe(2);
 			expect(n.maxNumber).toBe(Number.MAX_SAFE_INTEGER);
 		});
 
 		it("constructs with min and max", () => {
-			const n = new NumberOfMatches(2, 5);
+			const n = NumberOfMatches.between(2, 5);
 			expect(n.minNumber).toBe(2);
 			expect(n.maxNumber).toBe(5);
 		});
@@ -105,29 +106,44 @@ describe("NumberOfMatches", () => {
 			expect(between.minNumber).toBe(2);
 			expect(between.maxNumber).toBe(4);
 		});
+		it("return correct values with atLeast method", () => {
+			const atLeast = NumberOfMatches.atLeast(2);
+			expect(atLeast.minNumber).toBe(2);
+			expect(atLeast.maxNumber).toBe(
+				Number.MAX_SAFE_INTEGER
+			);
+		});
 	});
 	describe("throws on errors", () => {
 		it("throws on invalid minNumber", () => {
-			expect(() => new NumberOfMatches(-1)).toThrow(
-				"NumberOfMatches: minNumber must be >= 0"
+			expect(() => NumberOfMatches.exactly(-1)).toThrow(
+				"NumberOfMatches: minNumber must be >= 0" +
+					` (-1)`
 			);
 		});
-		it("throws on invalid maxNumber", () => {
-			expect(() => new NumberOfMatches(1, 0)).toThrow(
-				"NumberOfMatches: maxNumber must be >= minNumber"
+		it("throws on invalid order of minNumber and maxNumber", () => {
+			expect(() =>
+				NumberOfMatches.between(1, 0)
+			).toThrow(
+				"NumberOfMatches: minNumber must be <= maxNumber" +
+					` (1 > 0)`
+			);
+		});
+		it("throws on invalid minNumber", () => {
+			expect(() => NumberOfMatches.atLeast(-1)).toThrow(
+				"NumberOfMatches: minNumber must be >= 0" +
+					` (-1)`
 			);
 		});
 	});
 
 	describe("handles getStartAndNextMatcher correctly", () => {
 		it("returns correct matchers for altFirstMatch and altLastMatch", () => {
-			const altFirstMatch = new MatchCodePoint(
-				"{".codePointAt(0)!
-			);
-			const altLastMatch = new MatchCodePoint(
-				"}".codePointAt(0)!
-			);
-			const alt = new AltFirstLastMatchers(
+			const altFirstMatch =
+				MatchCodePoint.fromString("{");
+			const altLastMatch =
+				MatchCodePoint.fromString("}");
+			const alt = AltFirstLastMatchers.from(
 				altFirstMatch,
 				altLastMatch
 			);
@@ -150,14 +166,12 @@ describe("NumberOfMatches", () => {
 		});
 
 		it("returns correct matchers for altFirstMatch only", () => {
-			const altFirstMatch = new MatchCodePoint(
-				"{".codePointAt(0)!
-			);
-			const altLastMatch = null;
-			const alt = new AltFirstLastMatchers(
-				altFirstMatch,
-				altLastMatch
-			);
+			const altFirstMatch =
+				MatchCodePoint.fromString("{");
+			const alt =
+				AltFirstLastMatchers.fromAltFirst(
+					altFirstMatch
+				);
 			const matcher = matchUnicodeLetter;
 
 			const [start, next] =
@@ -172,14 +186,10 @@ describe("NumberOfMatches", () => {
 		});
 
 		it("returns correct matchers for altLastMatch only", () => {
-			const altFirstMatch = null;
-			const altLastMatch = new MatchCodePoint(
-				"}".codePointAt(0)!
-			);
-			const alt = new AltFirstLastMatchers(
-				altFirstMatch,
-				altLastMatch
-			);
+			const altLastMatch =
+				MatchCodePoint.fromString("}");
+			const alt =
+				AltFirstLastMatchers.fromAltLast(altLastMatch);
 			const matcher = matchUnicodeLetter;
 
 			const [start, next] =
@@ -194,12 +204,7 @@ describe("NumberOfMatches", () => {
 		});
 
 		it("returns correct matchers for altFirstMatch and altLastMatch both null", () => {
-			const altFirstMatch = null;
-			const altLastMatch = null;
-			const alt = new AltFirstLastMatchers(
-				altFirstMatch,
-				altLastMatch
-			);
+			const alt = AltFirstLastMatchers.default;
 			const matcher = matchUnicodeLetter;
 
 			const [start, next] =

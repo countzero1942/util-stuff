@@ -259,9 +259,7 @@ describe("TRex", () => {
 
 		it("handles surrogate pairs correctly", () => {
 			const source = StrSlice.from("abc 😀 def");
-			const matcher = new MatchCodePoint(
-				"😀".codePointAt(0)!
-			);
+			const matcher = MatchCodePoint.fromString("😀");
 			const trex = new TRex(matcher);
 
 			const result = trex.find(source);
@@ -341,17 +339,17 @@ describe("TRex", () => {
 				"xxx",
 				"yyy"
 			);
-			const wordMatcher = new MatchAll([
-				new MatchAny([
+			const wordMatcher = MatchAll.from(
+				MatchAny.from(
 					MatchStartSlice.default,
-					LookBehindCodePoint.from(matchUnicodeSpace),
-				]),
+					LookBehindCodePoint.from(matchUnicodeSpace)
+				),
 				matcher,
-				new MatchAny([
+				MatchAny.from(
 					GhostMatch.from(matchUnicodeSpace),
-					MatchEndSlice.default,
-				]),
-			]);
+					MatchEndSlice.default
+				)
+			);
 			const trex = new TRex(wordMatcher);
 
 			const result = trex.findAll(source);

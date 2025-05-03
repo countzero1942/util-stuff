@@ -2,7 +2,9 @@ import { MatchBase } from "./match-base";
 import { MutMatchNav } from "./nav";
 
 export class GhostMatch extends MatchBase {
-	public constructor(public readonly matcher: MatchBase) {
+	protected constructor(
+		public readonly matcher: MatchBase
+	) {
 		super();
 	}
 	public match(nav: MutMatchNav): MutMatchNav | null {

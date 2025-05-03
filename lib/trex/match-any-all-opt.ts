@@ -6,7 +6,7 @@ import {
 import { isBaseForm } from "unicode-properties";
 
 export class MatchAny extends MatchBase {
-	public constructor(
+	protected constructor(
 		public readonly matchers: MatchBase[]
 	) {
 		super();
@@ -28,7 +28,7 @@ export class MatchAny extends MatchBase {
 }
 
 export class MatchAll extends MatchBase {
-	public constructor(
+	protected constructor(
 		public readonly matchers: MatchBase[]
 	) {
 		super();
@@ -53,7 +53,9 @@ export class MatchAll extends MatchBase {
 }
 
 export class MatchOpt extends MatchBase {
-	public constructor(public readonly matcher: MatchBase) {
+	protected constructor(
+		public readonly matcher: MatchBase
+	) {
 		super();
 	}
 
