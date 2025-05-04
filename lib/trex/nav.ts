@@ -36,7 +36,7 @@ export class MutMatchNav {
 	 * @param source The source text to navigate through
 	 * @param start Starting position in the source (default: 0)
 	 */
-	constructor(
+	private constructor(
 		/**
 		 * The source text being navigated
 		 */
@@ -49,6 +49,20 @@ export class MutMatchNav {
 		this._startIndex = start;
 		this._navIndex = start;
 		this._captureIndex = start;
+	}
+
+	public static from(
+		source: StrSlice,
+		start: number = 0
+	): MutMatchNav {
+		return new MutMatchNav(source, start);
+	}
+
+	public static fromString(
+		source: string,
+		start: number = 0
+	): MutMatchNav {
+		return new MutMatchNav(StrSlice.from(source), start);
 	}
 
 	/**
@@ -235,7 +249,7 @@ export class MutMatchNav {
 	 *
 	 * @returns The code point before the current position, or undefined if at start
 	 */
-	public peekBeforeCodePoint(): number | undefined {
+	public peekBehindCodePoint(): number | undefined {
 		// this looks backwards to extract the code point
 		// before the current position; navigating back at most 2 times
 		let index = this._navIndex - 1;
@@ -261,7 +275,7 @@ export class MutMatchNav {
 	 * @param length Number of characters to look behind
 	 * @returns A StrSlice containing the characters before the current position, or undefined if at start
 	 */
-	public peekBeforeSliceByLength(
+	public peekBehindSliceByLength(
 		length: number
 	): StrSlice | undefined {
 		const index = this._navIndex - length;
@@ -359,20 +373,6 @@ export class MutMatchNav {
 
 	public get isEmptyMatch(): boolean {
 		return this._startIndex === this._captureIndex;
-	}
-
-	public static from(
-		source: StrSlice,
-		start: number = 0
-	): MutMatchNav {
-		return new MutMatchNav(source, start);
-	}
-
-	public static fromString(
-		source: string,
-		start: number = 0
-	): MutMatchNav {
-		return new MutMatchNav(StrSlice.from(source), start);
 	}
 
 	public toString(): string {

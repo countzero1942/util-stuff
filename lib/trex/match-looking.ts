@@ -2,7 +2,7 @@ import {
 	MatchBase,
 	MatchCodePointBase,
 } from "./match-base";
-import { MatchAnyString } from "./match-string";
+import { MatchAnyString } from "./match-any-string";
 import { MutMatchNav } from "./nav";
 
 export class LookBehindCodePoint extends MatchBase {
@@ -15,7 +15,7 @@ export class LookBehindCodePoint extends MatchBase {
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
 
-		const behindCodePoint = nav.peekBeforeCodePoint();
+		const behindCodePoint = nav.peekBehindCodePoint();
 		if (
 			behindCodePoint !== undefined &&
 			this.matcher.matchCodePoint(behindCodePoint)
@@ -49,7 +49,7 @@ export class LookBehindAnyString extends MatchBase {
 
 		for (const keyLength of keyLengths) {
 			const behindSlice =
-				nav.peekBeforeSliceByLength(keyLength);
+				nav.peekBehindSliceByLength(keyLength);
 			if (
 				behindSlice !== undefined &&
 				prefixIndex.hasSlice(behindSlice)

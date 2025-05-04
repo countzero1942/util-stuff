@@ -120,7 +120,7 @@ export class TRex {
 		source: StrSlice,
 		start: number = 0
 	): FindResult {
-		let nav = new MutMatchNav(source, start);
+		let nav = MutMatchNav.from(source, start);
 		const originalNav = nav.copy();
 
 		// const str =

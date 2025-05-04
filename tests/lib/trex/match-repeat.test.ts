@@ -297,7 +297,7 @@ describe("MatchRepeat", () => {
 				NumberOfMatches.between(2, 5)
 			);
 
-			const nav = new MutMatchNav(new StrSlice("AABC"));
+			const nav = MutMatchNav.fromString("AABC");
 			const result = repeatMatcher.match(nav);
 
 			expect(result).not.toBeNull();
@@ -313,7 +313,7 @@ describe("MatchRepeat", () => {
 				NumberOfMatches.between(1, 3)
 			);
 
-			const nav = new MutMatchNav(new StrSlice("AAAAA"));
+			const nav = MutMatchNav.fromString("AAAAA");
 			const result = repeatMatcher.match(nav);
 
 			expect(result).not.toBeNull();
@@ -329,7 +329,7 @@ describe("MatchRepeat", () => {
 				NumberOfMatches.between(3, 5)
 			);
 
-			const nav = new MutMatchNav(new StrSlice("AAB"));
+			const nav = MutMatchNav.fromString("AAB");
 			const result = repeatMatcher.match(nav);
 
 			expect(result).toBeNull();
@@ -343,9 +343,7 @@ describe("MatchRepeat", () => {
 				NumberOfMatches.oneOrMore()
 			);
 
-			const nav = new MutMatchNav(
-				new StrSlice("AAAAAB")
-			);
+			const nav = MutMatchNav.fromString("AAAAAB");
 			const result = repeatMatcher.match(nav);
 
 			expect(result).not.toBeNull();
@@ -366,7 +364,7 @@ describe("MatchRepeat", () => {
 				)
 			);
 
-			const nav = new MutMatchNav(new StrSlice("BAAC"));
+			const nav = MutMatchNav.fromString("BAAC");
 			const result = repeatMatcher.match(nav);
 
 			expect(result).not.toBeNull();
@@ -385,7 +383,7 @@ describe("MatchRepeat", () => {
 				AltFirstLastMatchers.fromAltLast(altLastMatcher)
 			);
 
-			const nav = new MutMatchNav(new StrSlice("AABC"));
+			const nav = MutMatchNav.fromString("AABC");
 			const result = repeatMatcher.match(nav);
 
 			expect(result).not.toBeNull();
@@ -401,7 +399,7 @@ describe("MatchRepeat", () => {
 				NumberOfMatches.between(0, 5)
 			);
 
-			const nav = new MutMatchNav(new StrSlice("BCD"));
+			const nav = MutMatchNav.fromString("BCD");
 			const result = repeatMatcher.match(nav);
 
 			expect(result).not.toBeNull();

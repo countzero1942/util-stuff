@@ -8,7 +8,7 @@ import {
 	FindAllResult,
 	TRex,
 } from "@/trex/trex";
-import { MatchAnyString } from "@/trex/match-string";
+import { MatchAnyString } from "@/trex/match-any-string";
 import {
 	MatchCodePoint,
 	MatchNotCodePoint,

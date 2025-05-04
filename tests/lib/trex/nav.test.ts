@@ -254,20 +254,20 @@ describe("MutMatchNav", () => {
 		it("peekBeforeCodePoint returns the previous code point", () => {
 			const nav = MutMatchNav.fromString("test", 2);
 			const eCodePoint = "e".codePointAt(0);
-			expect(nav.peekBeforeCodePoint()).toBe(eCodePoint);
+			expect(nav.peekBehindCodePoint()).toBe(eCodePoint);
 		});
 
 		it("peekBeforeCodePoint handles surrogate pairs", () => {
 			const nav = MutMatchNav.fromString("😊test", 2);
 			const emojiCodePoint = "😊".codePointAt(0);
-			expect(nav.peekBeforeCodePoint()).toBe(
+			expect(nav.peekBehindCodePoint()).toBe(
 				emojiCodePoint
 			);
 		});
 
 		it("peekBeforeCodePoint returns undefined at start", () => {
 			const nav = MutMatchNav.fromString("test");
-			expect(nav.peekBeforeCodePoint()).toBeUndefined();
+			expect(nav.peekBehindCodePoint()).toBeUndefined();
 		});
 
 		describe("peekAfterCodePoint", () => {
@@ -317,13 +317,13 @@ describe("MutMatchNav", () => {
 				);
 				// peekBeforeSliceByLength returns a slice of the specified length before the current position
 				// So for position 4 ("test string") and length 3, we should get "est"
-				const slice = nav.peekBeforeSliceByLength(3);
+				const slice = nav.peekBehindSliceByLength(3);
 				expect(slice?.value).toBe("est");
 			});
 
 			it("returns undefined if not enough characters", () => {
 				const nav = MutMatchNav.fromString("test", 2);
-				const slice = nav.peekBeforeSliceByLength(3);
+				const slice = nav.peekBehindSliceByLength(3);
 				expect(slice).toBeUndefined();
 			});
 		});

@@ -6,37 +6,13 @@ export class CodePointPrefixIndex<TElement> {
 		element: TElement
 	) => string;
 
-	/**
-	 * Creates an index that groups elements by their first code point
-	 * for efficient prefix-based lookups.
-	 *
-	 * @param elements Array of elements to index
-	 * @param keyExtractor Function to extract the first code point from each element
-	 */
-	constructor(
-		elements: TElement[] = [],
-		keyExtractor: (element: TElement) => string
-	) {
-		this.keyExtractor = keyExtractor;
-		if (elements.length > 0) {
-			this.addAll(elements);
-		}
-	}
-
-	/**
-	 * Add all elements to the index
-	 */
-	public addAll(elements: TElement[]): void {
+	private addAll(elements: TElement[]): void {
 		for (const element of elements) {
 			this.add(element);
 		}
-		this.clearElementCaches();
 	}
 
-	/**
-	 * Add a single element to the index
-	 */
-	public add(element: TElement): void {
+	private add(element: TElement): void {
 		const key = this.keyExtractor(element);
 		if (key === undefined || key.length === 0) return;
 
@@ -46,35 +22,41 @@ export class CodePointPrefixIndex<TElement> {
 			this.dict[codePoint] = [];
 		}
 		this.dict[codePoint].push(element);
-		this.clearElementCaches();
 	}
 
 	/**
-	 * Remove an element from the index
-	 * @returns true if the element was found and removed, false otherwise
+	 * Creates an index that groups elements by their first code point
+	 * for efficient prefix-based lookups.
+	 *
+	 * This object is immutable and its state is cached for performance.
+	 *
+	 * @param elements Array of elements to index
+	 * @param keyExtractor Function to extract the first code point from each element
 	 */
-	public remove(element: TElement): boolean {
-		const key = this.keyExtractor(element);
-		if (key === undefined || key.length === 0)
-			return false;
-
-		const codePoint = key.codePointAt(0) as number;
-		if (!this.dict[codePoint]) {
-			return false;
+	private constructor(
+		elements: TElement[],
+		keyExtractor: (element: TElement) => string
+	) {
+		this.keyExtractor = keyExtractor;
+		if (elements.length > 0) {
+			this.addAll(elements);
 		}
+	}
 
-		const array = this.dict[codePoint];
-		const index = array.indexOf(element);
-		if (index === -1) {
-			return false;
-		}
+	public static from<TElement>(
+		elements: TElement[],
+		keyExtractor: (element: TElement) => string
+	): CodePointPrefixIndex<TElement> {
+		return new CodePointPrefixIndex(
+			elements,
+			keyExtractor
+		);
+	}
 
-		array.splice(index, 1);
-		if (array.length === 0) {
-			delete this.dict[codePoint];
-			this.clearElementCaches();
-		}
-		return true;
+	public static fromStrings(
+		strings: string[]
+	): CodePointPrefixIndex<string> {
+		return CodePointPrefixIndex.from(strings, str => str);
 	}
 
 	/**
@@ -95,6 +77,9 @@ export class CodePointPrefixIndex<TElement> {
 		return this.getElementsByCodePoint(codePoint);
 	}
 
+	/**
+	 * Get all elements that start with the first code point of the given slice
+	 */
 	public getElementsBySlice(slice: StrSlice): TElement[] {
 		const codePoint = slice.codePointAt(0) as number;
 		return this.getElementsByCodePoint(codePoint);
@@ -102,6 +87,8 @@ export class CodePointPrefixIndex<TElement> {
 
 	/**
 	 * Get all code points that have at least one element
+	 *
+	 * This method is not cached
 	 */
 	public getAllCodePoints(): number[] {
 		return Object.keys(this.dict).map(key =>
@@ -109,42 +96,40 @@ export class CodePointPrefixIndex<TElement> {
 		);
 	}
 
-	private clearElementCaches(): void {
-		this.allElements = undefined;
-		this.allKeyLengths = undefined;
-	}
-
-	private allElements: TElement[] | undefined;
 	/**
 	 * Get all elements in the index
+	 *
+	 * This method is not cached
 	 */
 	public getAllElements(): TElement[] {
-		if (this.allElements) return this.allElements;
-		this.allElements = Object.values(this.dict).flat();
-		return this.allElements;
+		return Object.values(this.dict).flat();
 	}
 
-	private allKeyLengths: number[] | undefined;
+	private _allKeyLengths: number[] | undefined;
 
 	/**
 	 * Get all unique key lengths sorted from lowest to highest
+	 *
 	 * Useful for lookbehind operations to determine how far back to check
+	 *
+	 * This method is cached
 	 */
 	public getAllKeyLengths(): number[] {
-		if (this.allKeyLengths) return this.allKeyLengths;
+		if (this._allKeyLengths) return this._allKeyLengths;
+
 		const lengths = new Set<number>();
 
 		for (const element of this.getAllElements()) {
 			const key = this.keyExtractor(element);
-			if (key && key.length > 0) {
+			if (key !== undefined && key.length > 0) {
 				lengths.add(key.length);
 			}
 		}
 
-		this.allKeyLengths = Array.from(lengths).sort(
+		this._allKeyLengths = Array.from(lengths).sort(
 			(a, b) => a - b
 		);
-		return this.allKeyLengths;
+		return this._allKeyLengths;
 	}
 
 	/**
@@ -177,20 +162,16 @@ export class CodePointPrefixIndex<TElement> {
 		);
 	}
 
-	/**
-	 * Clear the index
-	 */
-	public clear(): void {
-		for (const key in this.dict) {
-			delete this.dict[key];
-		}
-		this.clearElementCaches();
-	}
-
+	private _size: number | undefined;
 	/**
 	 * Get the total number of elements in the index
+	 *
+	 * This method is cached
 	 */
 	public get size(): number {
-		return this.getAllElements().length;
+		if (this._size === undefined) {
+			this._size = this.getAllElements().length;
+		}
+		return this._size;
 	}
 }

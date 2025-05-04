@@ -144,17 +144,15 @@ export const doTRexStuff = () => {
 	);
 
 	{
-		const nav = new MutMatchNav(source, 0);
+		const nav = MutMatchNav.from(source);
 		const result = matcher.match(nav);
 		log(`'${result?.captureMatch.value}'`);
 		div();
 	}
 
 	{
-		let nav: MutMatchNav | null = new MutMatchNav(
-			source,
-			0
-		);
+		let nav: MutMatchNav | null =
+			MutMatchNav.from(source);
 		nav = anyStringMatcher.match(nav);
 		logobj(`'${nav?.captureMatch.value}'`);
 		if (nav) {
@@ -175,9 +173,7 @@ export const codePointSetArgs = () => {
 
 	const matcher = new MatchRepeat(matchSet);
 
-	const nav = new MutMatchNav(
-		StrSlice.from("abc123!@#😀ABC")
-	);
+	const nav = MutMatchNav.fromString("abc123!@#😀ABC");
 	const result = matcher.match(nav);
 	logobj(result);
 	div();

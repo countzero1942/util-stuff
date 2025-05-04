@@ -328,8 +328,8 @@ describe("MatchCodePointSet", () => {
 
 			const matcher = new MatchRepeat(matchSet);
 
-			const nav = new MutMatchNav(
-				StrSlice.from("abz 129\t!@#\r\n😀ABC")
+			const nav = MutMatchNav.fromString(
+				"abz 129\t!@#\r\n😀ABC"
 			);
 			const result = matcher.match(nav);
 			expect(result).not.toBeNull();
@@ -446,7 +446,7 @@ describe("MatchCodePointCategories", () => {
 		it("matches a code point in the specified categories and advances the navigator", () => {
 			const matcher =
 				MatchCodePointCategories.fromString("Lu"); // Uppercase letters
-			const nav = new MutMatchNav(new StrSlice("ABC"));
+			const nav = MutMatchNav.fromString("ABC");
 
 			const result = matcher.match(nav);
 
@@ -457,7 +457,7 @@ describe("MatchCodePointCategories", () => {
 		it("returns null if the code point is not in the specified categories", () => {
 			const matcher =
 				MatchCodePointCategories.fromString("Ll"); // Lowercase letters
-			const nav = new MutMatchNav(new StrSlice("ABC"));
+			const nav = MutMatchNav.fromString("ABC");
 
 			const result = matcher.match(nav);
 
@@ -624,7 +624,7 @@ describe("MatchCodePointRange", () => {
 			const matcher = MatchCodePointRange.fromRange(
 				CodePointRange.fromNumbers(65, 90)
 			); // A-Z
-			const nav = new MutMatchNav(new StrSlice("ABC"));
+			const nav = MutMatchNav.fromString("ABC");
 
 			const result = matcher.match(nav);
 
@@ -638,7 +638,7 @@ describe("MatchCodePointRange", () => {
 			const matcher = MatchCodePointRange.fromRange(
 				CodePointRange.fromNumbers(65, 90)
 			); // A-Z
-			const nav = new MutMatchNav(new StrSlice("abc"));
+			const nav = MutMatchNav.fromString("abc");
 
 			const result = matcher.match(nav);
 
@@ -711,7 +711,7 @@ describe("MatchCodePointRanges", () => {
 			);
 
 			// Test uppercase
-			let nav = new MutMatchNav(new StrSlice("ABC"));
+			let nav = MutMatchNav.fromString("ABC");
 			let result = matcher.match(nav);
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(1);
@@ -719,7 +719,7 @@ describe("MatchCodePointRanges", () => {
 			expect(result?.captureMatch.value).toBe("A");
 
 			// Test lowercase
-			nav = new MutMatchNav(new StrSlice("abc"));
+			nav = MutMatchNav.fromString("abc");
 			result = matcher.match(nav);
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(1);
@@ -732,7 +732,7 @@ describe("MatchCodePointRanges", () => {
 				CodePointRange.fromNumbers(65, 90), // A-Z
 				CodePointRange.fromNumbers(97, 122) // a-z
 			);
-			const nav = new MutMatchNav(new StrSlice("123"));
+			const nav = MutMatchNav.fromString("123");
 
 			const result = matcher.match(nav);
 
@@ -791,7 +791,7 @@ describe("MatchNotCodePoint", () => {
 			const innerMatcher = MatchCodePoint.fromNumber(65); // A
 			const matcher =
 				MatchNotCodePoint.from(innerMatcher);
-			const nav = new MutMatchNav(new StrSlice("XYZ"));
+			const nav = MutMatchNav.fromString("XYZ");
 
 			const result = matcher.match(nav);
 
@@ -805,7 +805,7 @@ describe("MatchNotCodePoint", () => {
 			const innerMatcher = MatchCodePoint.fromNumber(65); // A
 			const matcher =
 				MatchNotCodePoint.from(innerMatcher);
-			const nav = new MutMatchNav(new StrSlice("ABC"));
+			const nav = MutMatchNav.fromString("ABC");
 
 			const result = matcher.match(nav);
 

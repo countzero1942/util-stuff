@@ -28,7 +28,7 @@ describe("GhostMatch", () => {
 			const innerMatcher = createLetterMatcher("A");
 			const ghostMatcher = GhostMatch.from(innerMatcher);
 
-			const nav = new MutMatchNav(new StrSlice("ABC"));
+			const nav = MutMatchNav.fromString("ABC");
 			const result = ghostMatcher.match(nav);
 
 			expect(result).not.toBeNull();
@@ -41,7 +41,7 @@ describe("GhostMatch", () => {
 			const innerMatcher = createLetterMatcher("X");
 			const ghostMatcher = GhostMatch.from(innerMatcher);
 
-			const nav = new MutMatchNav(new StrSlice("ABC"));
+			const nav = MutMatchNav.fromString("ABC");
 			const result = ghostMatcher.match(nav);
 
 			expect(result).toBeNull();
@@ -61,7 +61,7 @@ describe("GhostMatch", () => {
 				ghostComma
 			);
 
-			const nav = new MutMatchNav(new StrSlice("AB,C"));
+			const nav = MutMatchNav.fromString("AB,C");
 			const result = sequence.match(nav);
 
 			expect(result).not.toBeNull();
@@ -87,7 +87,7 @@ describe("GhostMatch", () => {
 				matcherB // This will try to match after a ghost capture exists
 			);
 
-			const nav = new MutMatchNav(new StrSlice("A,B"));
+			const nav = MutMatchNav.fromString("A,B");
 
 			// This should throw an error because we can't match after a ghost capture
 			expect(() => {
@@ -102,7 +102,7 @@ describe("GhostMatch", () => {
 			const matcherComma = createLetterMatcher(",");
 			const ghostComma = GhostMatch.from(matcherComma);
 
-			const nav = new MutMatchNav(new StrSlice("A,B"));
+			const nav = MutMatchNav.fromString("A,B");
 
 			// First match A normally
 			const resultA = matcherA.match(nav);

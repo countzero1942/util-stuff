@@ -49,10 +49,8 @@ export class MatchAnyString extends MatchStringBase {
 	public static fromStrings(
 		...matchValues: string[]
 	): MatchAnyString {
-		const index = new CodePointPrefixIndex<string>(
-			matchValues,
-			str => str
-		);
+		const index =
+			CodePointPrefixIndex.fromStrings(matchValues);
 		return new MatchAnyString(index);
 	}
 }
