@@ -55,6 +55,10 @@ describe("NavToken", () => {
 
 		expect(token.category).toBe("category");
 		expect(token.kind).toBe("kind");
+		expect(token.matchNav.captureMatch.value).toBe(
+			"test"
+		);
+		expect(token.matchNav.ghostMatch.value).toBe("");
 		expect(token.matchNav).toBe(matchNav);
 	});
 

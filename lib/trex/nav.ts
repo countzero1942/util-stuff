@@ -46,6 +46,16 @@ export class MutMatchNav {
 		 */
 		start: number = 0
 	) {
+		if (start < 0) {
+			throw new Error(
+				"MutMatchNav: start position cannot be negative"
+			);
+		}
+		if (start > this.source.length) {
+			throw new Error(
+				"MutMatchNav: start position cannot be beyond end of source"
+			);
+		}
 		this._startIndex = start;
 		this._navIndex = start;
 		this._captureIndex = start;
@@ -69,12 +79,16 @@ export class MutMatchNav {
 	 * Advances both navigation and capture indices by one code point
 	 * Used when a single code point has been successfully matched
 	 *
+	 * Throws if code point is undefined (beyond end of source)
+	 *
 	 * @returns This navigator instance for method chaining
 	 */
 	public moveCaptureForwardOneCodePoint(): MutMatchNav {
 		const currentCodePoint = this.peekCodePoint();
 		if (currentCodePoint === undefined) {
-			return this;
+			throw new Error(
+				"moveCaptureForwardOneCodePoint: beyond end of source"
+			);
 		}
 		const length = getCodePointCharLength(
 			currentCodePoint
@@ -88,11 +102,18 @@ export class MutMatchNav {
 	 * Advances both navigation and capture indices by the specified length
 	 * Used when a string of known length has been successfully matched
 	 *
+	 * Throws if length goes beyond end of source
+	 *
 	 * @param length Number of characters to advance
 	 * @returns This navigator instance for method chaining
 	 */
 	public moveCaptureForward(length: number): MutMatchNav {
 		this._navIndex += length;
+		if (this._navIndex > this.source.length) {
+			throw new Error(
+				"moveCaptureForward: beyond end of source"
+			);
+		}
 		this._captureIndex += length;
 		return this;
 	}
@@ -100,6 +121,8 @@ export class MutMatchNav {
 	/**
 	 * Moves both navigation and capture indices to the end of the source
 	 * Used to consume all remaining input
+	 *
+	 * No throw
 	 *
 	 * @returns This navigator instance for method chaining
 	 */
@@ -113,6 +136,8 @@ export class MutMatchNav {
 	 * Advances the start index and resets both navigation and capture indices
 	 * Used when committing a match and starting a new match attempt
 	 *
+	 * Throws if length goes beyond end of source
+	 *
 	 * @param length Number of characters to advance the start position
 	 * @returns This navigator instance for method chaining
 	 */
@@ -120,15 +145,30 @@ export class MutMatchNav {
 		length: number = 0
 	): MutMatchNav {
 		this._startIndex = this._navIndex + length;
+		if (this._startIndex > this.source.length) {
+			throw new Error(
+				"moveStartForward: beyond end of source"
+			);
+		}
 		this._captureIndex = this._startIndex;
 		this._navIndex = this._startIndex;
 		return this;
 	}
 
+	/**
+	 * Advances the start index and resets both navigation and capture indices
+	 * Used when committing a match and starting a new match attempt
+	 *
+	 * Throws if code point is undefined (beyond end of source)
+	 *
+	 * @returns This navigator instance for method chaining
+	 */
 	public moveStartForwardOneCodePoint(): MutMatchNav {
 		const currentCodePoint = this.peekCodePoint();
 		if (currentCodePoint === undefined) {
-			return this;
+			throw new Error(
+				"moveStartForwardOneCodePoint: beyond end of source"
+			);
 		}
 		const length = getCodePointCharLength(
 			currentCodePoint
@@ -140,8 +180,33 @@ export class MutMatchNav {
 	}
 
 	/**
+	 * Moves both navigation and capture indices to the end of the source
+	 *
+	 * @returns This navigator instance for method chaining
+	 */
+	public moveStartToEnd(): MutMatchNav {
+		this._startIndex = this.source.length;
+		this._navIndex = this.source.length;
+		this._captureIndex = this.source.length;
+		return this;
+	}
+
+	/**
+	 * Moves the start index to the navigation index
+	 *
+	 * @returns This navigator instance for method chaining
+	 */
+	public moveStartToNav(): MutMatchNav {
+		this._startIndex = this._navIndex;
+		this._captureIndex = this._navIndex;
+		return this;
+	}
+
+	/**
 	 * Advances only the navigation index, creating a "ghost capture" (lookahead)
 	 * Used for positive lookahead assertions without consuming input
+	 *
+	 * Throws if length goes beyond end of source
 	 *
 	 * @param length Number of characters to advance the navigation position
 	 * @returns This navigator instance for method chaining
@@ -150,6 +215,11 @@ export class MutMatchNav {
 		length: number
 	): MutMatchNav {
 		this._navIndex += length;
+		if (this._navIndex > this.source.length) {
+			throw new Error(
+				"moveGhostCaptureForward: beyond end of source"
+			);
+		}
 		return this;
 	}
 
@@ -179,6 +249,14 @@ export class MutMatchNav {
 		return new MutMatchNav(this.source, this._navIndex);
 	}
 
+	/**
+	 * Creates a new navigation state starting at the specified index
+	 *
+	 * Throws if index is beyond end of source
+	 *
+	 * @param index The index to start the new navigation state at
+	 * @returns A fresh MutMatchNav starting at the specified index
+	 */
 	public copyAndMoveStartToIndex(
 		index: number
 	): MutMatchNav {
@@ -256,10 +334,10 @@ export class MutMatchNav {
 		let minIndex = this._navIndex - 2;
 		while (index >= 0 && index >= minIndex) {
 			const codePoint = this.source.codePointAt(index);
-			if (codePoint === undefined) {
-				return undefined;
-			}
-			if (isCodePointLoneSurrogate(codePoint)) {
+			if (
+				codePoint !== undefined &&
+				isCodePointLoneSurrogate(codePoint)
+			) {
 				index--;
 				continue;
 			}
@@ -376,6 +454,8 @@ export class MutMatchNav {
 	}
 
 	public toString(): string {
-		return `Nav: [${this._startIndex}..${this._captureIndex}..${this._navIndex}], length: ${this.source.length}`;
+		return this.isInvalidated
+			? "Nav: INVALIDATED"
+			: `Nav: [${this._startIndex}..${this._captureIndex}..${this._navIndex}], length: ${this.source.length}`;
 	}
 }
