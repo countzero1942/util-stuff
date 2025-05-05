@@ -2,6 +2,7 @@ export * from "./match-base";
 export * from "./nav";
 export * from "./match-position";
 export * from "./match-code-point";
+export * from "./match-code-point-any";
 export * from "./match-any-string";
 export * from "./consts";
 export * from "./prefix-index";

@@ -27,14 +27,12 @@ import {
 import { matchWordsTest } from "@/examples/trex/word-matching";
 import { MatchCodePoint } from "@/trex";
 import { getError, getErrorMessage } from "@/utils/error";
+import { ArraySeq, MathProdSeq, Seq } from "@/utils/seq";
+import { formatNum } from "@/utils/string";
 
 // logGeneratePassword();
 
 // codePointSetArgs();
 // codePointSetArgsTestExaustiveCheck();
 
-try {
-	MatchCodePoint.fromNumber(-1);
-} catch (error) {
-	log(getError(error).message);
-}
+codePointSetArgsTestExaustiveCheck();

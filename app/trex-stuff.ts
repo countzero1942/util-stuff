@@ -200,7 +200,7 @@ export const codePointSetArgsTestExaustiveCheck = () => {
 	const rangeToString = (range: string) => {
 		const codePointRange =
 			CodePointRange.fromString(range);
-		return codePointRange.toFullString();
+		return codePointRange.toExpandedString();
 	};
 
 	const logResult = (
@@ -224,7 +224,7 @@ export const codePointSetArgsTestExaustiveCheck = () => {
 		seq.codePoints().forEach(codePoint => {
 			checkCount++;
 			const isMatch = matchSet.matchCodePoint(codePoint);
-			const isInSet = matchSet.codePointSet[codePoint];
+			const isInSet = matchSet.matchCodePoint(codePoint);
 			logResult(codePoint, isMatch, isInSet);
 		});
 	};
@@ -239,17 +239,16 @@ export const codePointSetArgsTestExaustiveCheck = () => {
 	checkString(str2, "str2");
 
 	logh("matchUnicodeWhiteSpace");
-	for (const codePointStr in matchUnicodeWhiteSpace.codePointSet) {
+	for (const codePoint of matchUnicodeWhiteSpace) {
 		checkCount++;
-		const codePoint = Number(codePointStr);
 		const isMatch = matchSet.matchCodePoint(codePoint);
-		const isInSet = matchSet.codePointSet[codePoint];
+		const isInSet = matchSet.matchCodePoint(codePoint);
 		logResult(codePoint, isMatch, isInSet);
 	}
 
 	logh("checkCount");
 	log(
-		`checkCount: ${checkCount}, setCount: ${matchSet.length}`
+		`checkCount: ${checkCount}, setCount: ${matchSet.size}`
 	);
 	log();
 };

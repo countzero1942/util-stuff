@@ -14,10 +14,11 @@ describe("CodePointPrefixIndex", () => {
 
 	describe("Constructor and Basic Properties", () => {
 		it("initializes empty with no elements", () => {
-			const index = CodePointPrefixIndex.from<TestItem>(
-				[],
-				keyExtractor
-			);
+			const index =
+				CodePointPrefixIndex.fromElements<TestItem>(
+					[],
+					keyExtractor
+				);
 			expect(index.size).toBe(0);
 			expect(index.getAllElements()).toEqual([]);
 			expect(index.getAllCodePoints()).toEqual([]);
@@ -29,10 +30,11 @@ describe("CodePointPrefixIndex", () => {
 				{ key: "banana", value: 2 },
 				{ key: "cherry", value: 3 },
 			];
-			const index = CodePointPrefixIndex.from<TestItem>(
-				items,
-				keyExtractor
-			);
+			const index =
+				CodePointPrefixIndex.fromElements<TestItem>(
+					items,
+					keyExtractor
+				);
 
 			expect(index.size).toBe(3);
 			expect(index.getAllElements()).toHaveLength(3);
@@ -46,10 +48,11 @@ describe("CodePointPrefixIndex", () => {
 				{ key: "", value: 1 },
 				{ key: "valid", value: 2 },
 			];
-			const index = CodePointPrefixIndex.from<TestItem>(
-				items,
-				keyExtractor
-			);
+			const index =
+				CodePointPrefixIndex.fromElements<TestItem>(
+					items,
+					keyExtractor
+				);
 
 			expect(index.size).toBe(1);
 			expect(index.getAllElements()).toEqual([items[1]]);
@@ -63,10 +66,11 @@ describe("CodePointPrefixIndex", () => {
 				{ key: "avocado", value: 2 },
 				{ key: "banana", value: 3 },
 			];
-			const index = CodePointPrefixIndex.from<TestItem>(
-				items,
-				keyExtractor
-			);
+			const index =
+				CodePointPrefixIndex.fromElements<TestItem>(
+					items,
+					keyExtractor
+				);
 
 			const aCodePoint = "a".codePointAt(0)!;
 			const results =
@@ -79,10 +83,11 @@ describe("CodePointPrefixIndex", () => {
 		});
 
 		it("getElementsByCodePoint returns empty array for non-existent code point", () => {
-			const index = CodePointPrefixIndex.from<TestItem>(
-				[{ key: "apple", value: 1 }],
-				keyExtractor
-			);
+			const index =
+				CodePointPrefixIndex.fromElements<TestItem>(
+					[{ key: "apple", value: 1 }],
+					keyExtractor
+				);
 
 			const zCodePoint = "z".codePointAt(0)!;
 			const results =
@@ -97,10 +102,11 @@ describe("CodePointPrefixIndex", () => {
 				{ key: "avocado", value: 2 },
 				{ key: "banana", value: 3 },
 			];
-			const index = CodePointPrefixIndex.from<TestItem>(
-				items,
-				keyExtractor
-			);
+			const index =
+				CodePointPrefixIndex.fromElements<TestItem>(
+					items,
+					keyExtractor
+				);
 
 			const results = index.getElementsByString("a");
 
@@ -111,10 +117,11 @@ describe("CodePointPrefixIndex", () => {
 		});
 
 		it("getElementsByString handles empty strings", () => {
-			const index = CodePointPrefixIndex.from<TestItem>(
-				[{ key: "apple", value: 1 }],
-				keyExtractor
-			);
+			const index =
+				CodePointPrefixIndex.fromElements<TestItem>(
+					[{ key: "apple", value: 1 }],
+					keyExtractor
+				);
 
 			const results = index.getElementsByString("");
 
@@ -127,10 +134,11 @@ describe("CodePointPrefixIndex", () => {
 				{ key: "avocado", value: 2 },
 				{ key: "banana", value: 3 },
 			];
-			const index = CodePointPrefixIndex.from<TestItem>(
-				items,
-				keyExtractor
-			);
+			const index =
+				CodePointPrefixIndex.fromElements<TestItem>(
+					items,
+					keyExtractor
+				);
 
 			const slice = new StrSlice("a");
 			const results = index.getElementsBySlice(slice);
@@ -148,10 +156,11 @@ describe("CodePointPrefixIndex", () => {
 				{ key: "banana", value: 3 },
 				{ key: "cherry", value: 4 },
 			];
-			const index = CodePointPrefixIndex.from<TestItem>(
-				items,
-				keyExtractor
-			);
+			const index =
+				CodePointPrefixIndex.fromElements<TestItem>(
+					items,
+					keyExtractor
+				);
 
 			const codePoints = index.getAllCodePoints();
 
@@ -168,10 +177,11 @@ describe("CodePointPrefixIndex", () => {
 				{ key: "abcde", value: 3 },
 				{ key: "xyz", value: 4 },
 			];
-			const index = CodePointPrefixIndex.from<TestItem>(
-				items,
-				keyExtractor
-			);
+			const index =
+				CodePointPrefixIndex.fromElements<TestItem>(
+					items,
+					keyExtractor
+				);
 
 			const lengths = index.getAllKeyLengths();
 
@@ -179,10 +189,11 @@ describe("CodePointPrefixIndex", () => {
 		});
 
 		it("hasCodePoint returns true for existing code point", () => {
-			const index = CodePointPrefixIndex.from<TestItem>(
-				[{ key: "apple", value: 1 }],
-				keyExtractor
-			);
+			const index =
+				CodePointPrefixIndex.fromElements<TestItem>(
+					[{ key: "apple", value: 1 }],
+					keyExtractor
+				);
 
 			expect(
 				index.hasCodePoint("a".codePointAt(0)!)
@@ -190,10 +201,11 @@ describe("CodePointPrefixIndex", () => {
 		});
 
 		it("hasCodePoint returns false for non-existent code point", () => {
-			const index = CodePointPrefixIndex.from<TestItem>(
-				[{ key: "apple", value: 1 }],
-				keyExtractor
-			);
+			const index =
+				CodePointPrefixIndex.fromElements<TestItem>(
+					[{ key: "apple", value: 1 }],
+					keyExtractor
+				);
 
 			expect(
 				index.hasCodePoint("z".codePointAt(0)!)
@@ -250,10 +262,11 @@ describe("CodePointPrefixIndex", () => {
 				{ key: "😎cool", value: 2 },
 				{ key: "normal", value: 3 },
 			];
-			const index = CodePointPrefixIndex.from<TestItem>(
-				items,
-				keyExtractor
-			);
+			const index =
+				CodePointPrefixIndex.fromElements<TestItem>(
+					items,
+					keyExtractor
+				);
 
 			const emojiCodePoint = "😊".codePointAt(0)!;
 			const results =
@@ -268,10 +281,11 @@ describe("CodePointPrefixIndex", () => {
 				{ key: "Apple", value: 1 },
 				{ key: "apple", value: 2 },
 			];
-			const index = CodePointPrefixIndex.from<TestItem>(
-				items,
-				keyExtractor
-			);
+			const index =
+				CodePointPrefixIndex.fromElements<TestItem>(
+					items,
+					keyExtractor
+				);
 
 			const upperACodePoint = "A".codePointAt(0)!;
 			const lowerACodePoint = "a".codePointAt(0)!;
@@ -292,7 +306,7 @@ describe("CodePointPrefixIndex", () => {
 					{ key: "abc", value: 2 },
 				];
 				const index =
-					CodePointPrefixIndex.from<TestItem>(
+					CodePointPrefixIndex.fromElements<TestItem>(
 						items,
 						keyExtractor
 					);
@@ -318,7 +332,7 @@ describe("CodePointPrefixIndex", () => {
 					{ key: "abc", value: 2 },
 				];
 				const index =
-					CodePointPrefixIndex.from<TestItem>(
+					CodePointPrefixIndex.fromElements<TestItem>(
 						items,
 						keyExtractor
 					);

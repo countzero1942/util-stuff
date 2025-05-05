@@ -178,21 +178,17 @@ describe("MatchCodePointLambda", () => {
 describe("MatchCodePointSet", () => {
 	describe("constructor", () => {
 		it("creates a matcher that matches specified code point set", () => {
-			const codePointSet = {
-				65: true,
-				66: true,
-				67: true,
-			}; // A, B, C
+			const codePointSet = new Set([65, 66, 67]); // A, B, C
 			const matcher =
 				MatchCodePointSet.fromString("ABC");
-			expect(matcher.codePointSet).toStrictEqual(
-				codePointSet
+			expect(Array.from(matcher)).toEqual(
+				Array.from(codePointSet)
 			);
 		});
 
 		it("throws error if code point set is empty", () => {
 			expect(() => {
-				MatchCodePointSet.fromSet({});
+				MatchCodePointSet.fromSet(new Set());
 			}).toThrow(
 				"MatchCodePointSet: empty code point set"
 			);
@@ -270,6 +266,24 @@ describe("MatchCodePointSet", () => {
 			expect(matcher.matchCodePoint(67)).toBe(true); // C
 		});
 
+		it("handles repeating code points", () => {
+			// Emoji '😀' (U+1F600) is represented as surrogate pair '\uD83D\uDE00'
+			const matcher =
+				MatchCodePointSet.fromArgs("AA😀😀CC");
+
+			expect(matcher.matchCodePoint(65)).toBe(true); // A
+			expect(matcher.matchCodePoint(0x1f600)).toBe(true); // 😀
+			expect(matcher.matchCodePoint(67)).toBe(true); // C
+			expect(matcher.size).toBe(3);
+		});
+
+		it("exhaustively checks for all entries in the set", () => {
+			const str = "abz 129\t!@#\r\n😀ABC";
+			const count = new CodePointSeq(str).count();
+			const matcher = MatchCodePointSet.fromString(str);
+			expect(matcher.size).toBe(count);
+		});
+
 		it("throws error on empty code points string", () => {
 			expect(() => {
 				MatchCodePointSet.fromString("");
@@ -291,12 +305,42 @@ describe("MatchCodePointSet", () => {
 			expect(matcher.matchCodePoint(66)).toBe(true);
 			expect(matcher.matchCodePoint(67)).toBe(true);
 			expect(matcher.matchCodePoint(68)).toBe(false);
-			expect(matcher.length).toBe(3);
-			expect(matcher.codePointSet).toStrictEqual({
-				65: true,
-				66: true,
-				67: true,
-			});
+			expect(matcher.size).toBe(3);
+			expect(Array.from(matcher)).toEqual([65, 66, 67]);
+		});
+
+		it("handles duplicate code points in matcher from an array of code points", () => {
+			const matcher = MatchCodePointSet.fromNumbers(
+				65,
+				66,
+				67,
+				65,
+				66,
+				67
+			); // A, B, C
+
+			expect(matcher.matchCodePoint(65)).toBe(true);
+			expect(matcher.matchCodePoint(66)).toBe(true);
+			expect(matcher.matchCodePoint(67)).toBe(true);
+			expect(matcher.matchCodePoint(68)).toBe(false);
+			expect(matcher.size).toBe(3);
+			expect(Array.from(matcher)).toEqual([65, 66, 67]);
+		});
+
+		it("exhaustively checks for all entries in the set", () => {
+			const numArray = [
+				0x20, 0x0d, 0x0a, 0x09, 0x0c, 0x0b, 0xa0,
+				0x1680, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004,
+				0x2005, 0x2006, 0x2007, 0x2008, 0x2009, 0x200a,
+				0x2028, 0x2029, 0x202f, 0x205f, 0x3000, 0xfeff,
+			];
+			const matcher = MatchCodePointSet.fromNumbers(
+				...numArray
+			);
+			for (const num of numArray) {
+				expect(matcher.matchCodePoint(num)).toBe(true);
+			}
+			expect(matcher.size).toBe(numArray.length);
 		});
 
 		it("throws error on empty code points array", () => {
@@ -338,7 +382,7 @@ describe("MatchCodePointSet", () => {
 			);
 		});
 
-		it("includes every code point added to the set 'fromArgs'", () => {
+		it("exhaustively checks for all code points added to the set 'fromArgs'", () => {
 			let checkCount = 0;
 
 			const range1: string = "a-z";
@@ -357,7 +401,7 @@ describe("MatchCodePointSet", () => {
 			const rangeToString = (range: string) => {
 				const codePointRange =
 					CodePointRange.fromString(range);
-				return codePointRange.toFullString();
+				return codePointRange.toExpandedString();
 			};
 
 			const checkString = (str: string) => {
@@ -367,7 +411,7 @@ describe("MatchCodePointSet", () => {
 					const isMatch =
 						matchSet.matchCodePoint(codePoint);
 					const isInSet =
-						matchSet.codePointSet[codePoint];
+						matchSet.matchCodePoint(codePoint);
 					expect(isMatch).toBe(true);
 					expect(isInSet).toBe(true);
 				});
@@ -377,23 +421,90 @@ describe("MatchCodePointSet", () => {
 				checkString(rangeToString(range));
 			};
 
+			const checkSet = (set: MatchCodePointSet) => {
+				for (const codePoint of set) {
+					checkCount++;
+					const isMatch =
+						set.matchCodePoint(codePoint);
+					const isInSet =
+						set.matchCodePoint(codePoint);
+					expect(isMatch).toBe(true);
+					expect(isInSet).toBe(true);
+				}
+			};
+
 			checkRangeStr(range1);
 			checkRangeStr(range2);
 			checkString(str1);
 			checkString(str2);
+			checkSet(matchUnicodeWhiteSpace);
 
-			for (const codePointStr in matchUnicodeWhiteSpace.codePointSet) {
-				checkCount++;
-				const codePoint = Number(codePointStr);
-				const isMatch =
-					matchSet.matchCodePoint(codePoint);
-				const isInSet =
-					matchSet.codePointSet[codePoint];
-				expect(isMatch).toBe(true);
-				expect(isInSet).toBe(true);
-			}
+			expect(checkCount).toBe(matchSet.size);
+		});
 
-			expect(checkCount).toBe(matchSet.length);
+		it("handles duplicate entries added to the set 'fromArgs'", () => {
+			let checkCount = 0;
+
+			const range1: string = "a-z";
+			const range2: string = "0-9";
+			const str1: string = "!@#$%^&*()_+";
+			const str2: string = "😀";
+
+			const matchSet = MatchCodePointSet.fromArgs(
+				CodePointRange.fromString(range1),
+				CodePointRange.fromString(range1),
+				CodePointRange.fromString(range2),
+				CodePointRange.fromString(range2),
+				str1,
+				str1,
+				str2,
+				str2,
+				matchUnicodeWhiteSpace,
+				matchUnicodeWhiteSpace
+			);
+
+			const rangeToString = (range: string) => {
+				const codePointRange =
+					CodePointRange.fromString(range);
+				return codePointRange.toExpandedString();
+			};
+
+			const checkString = (str: string) => {
+				const seq = new CodePointSeq(str);
+				seq.codePoints().forEach(codePoint => {
+					checkCount++;
+					const isMatch =
+						matchSet.matchCodePoint(codePoint);
+					const isInSet =
+						matchSet.matchCodePoint(codePoint);
+					expect(isMatch).toBe(true);
+					expect(isInSet).toBe(true);
+				});
+			};
+
+			const checkRangeStr = (range: string) => {
+				checkString(rangeToString(range));
+			};
+
+			const checkSet = (set: MatchCodePointSet) => {
+				for (const codePoint of set) {
+					checkCount++;
+					const isMatch =
+						set.matchCodePoint(codePoint);
+					const isInSet =
+						set.matchCodePoint(codePoint);
+					expect(isMatch).toBe(true);
+					expect(isInSet).toBe(true);
+				}
+			};
+
+			checkRangeStr(range1);
+			checkRangeStr(range2);
+			checkString(str1);
+			checkString(str2);
+			checkSet(matchUnicodeWhiteSpace);
+
+			expect(checkCount).toBe(matchSet.size);
 		});
 
 		it("throws an error on wrong type input", () => {
@@ -433,11 +544,22 @@ describe("allUnicodeCategories", () => {
 describe("MatchCodePointCategories", () => {
 	describe("constructor", () => {
 		it("creates a matcher with the specified categories", () => {
-			const categories = { Lu: true, Ll: true }; // Uppercase and lowercase letters
+			const categories = new Set(["Lu", "Ll"]); // Uppercase and lowercase letters
 			const matcher =
 				MatchCodePointCategories.fromString("Lu Ll");
-			expect(matcher.categories).toStrictEqual(
-				categories
+			expect(Array.from(matcher)).toEqual(
+				Array.from(categories)
+			);
+		});
+
+		it("handles duplicate entries", () => {
+			const categories = new Set(["Lu", "Ll"]); // Uppercase and lowercase letters
+			const matcher =
+				MatchCodePointCategories.fromString(
+					"Lu Lu Ll Ll"
+				);
+			expect(Array.from(matcher)).toEqual(
+				Array.from(categories)
 			);
 		});
 	});
@@ -579,7 +701,7 @@ describe("CodePointRange", () => {
 
 		it("returns string representation of range", () => {
 			const range = CodePointRange.fromNumbers(65, 90); // A-Z
-			expect(range.toFullString()).toBe(
+			expect(range.toExpandedString()).toBe(
 				"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 			);
 		});
@@ -591,7 +713,7 @@ describe("CodePointRange", () => {
 
 		it("returns string representation of range", () => {
 			const range = CodePointRange.fromString("A-Z"); // A-Z
-			expect(range.toFullString()).toBe(
+			expect(range.toExpandedString()).toBe(
 				"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 			);
 		});

@@ -184,7 +184,12 @@ export class CodePointRange {
 		return `${start}-${end}`;
 	}
 
-	public toFullString(): string {
+	/**
+	 * Returns a string containing all code points in the range
+	 *
+	 * @returns a string containing all code points in the range
+	 */
+	public toExpandedString(): string {
 		const codePoints = this.codePoints().toArray();
 		const fullString = String.fromCodePoint(
 			...codePoints
@@ -194,16 +199,20 @@ export class CodePointRange {
 }
 
 export class MatchCodePointSet extends MatchCodePointBase {
-	protected constructor(
-		public readonly codePointSet: Record<number, boolean>
-	) {
-		super();
+	#codePointSet: Set<number>;
 
-		if (this.length === 0) {
+	protected constructor(codePointSet: Set<number>) {
+		super();
+		this.#codePointSet = codePointSet;
+		if (this.size === 0) {
 			throw new Error(
 				"MatchCodePointSet: empty code point set"
 			);
 		}
+	}
+
+	public [Symbol.iterator](): IterableIterator<number> {
+		return this.#codePointSet.values();
 	}
 
 	public static fromString(
@@ -215,14 +224,11 @@ export class MatchCodePointSet extends MatchCodePointBase {
 			);
 		}
 
-		const codePointSet: Record<number, boolean> = {};
-
+		const codePointSet = new Set<number>();
 		const codePointSeq = new CodePointSeq(codePoints);
-
 		codePointSeq.foreach(codePoint => {
-			codePointSet[codePoint.element] = true;
+			codePointSet.add(codePoint.element);
 		});
-
 		return new MatchCodePointSet(codePointSet);
 	}
 
@@ -233,15 +239,13 @@ export class MatchCodePointSet extends MatchCodePointBase {
 			| string
 		)[]
 	) {
-		const codePointSet: Record<number, boolean> = {};
+		const codePointSet = new Set<number>();
 		for (const arg of args) {
 			switch (true) {
 				case arg instanceof CodePointRange:
-					// note: ranges cannot be empty
 					for (const codePoint of arg.codePoints()) {
-						codePointSet[codePoint] = true;
+						codePointSet.add(codePoint);
 					}
-
 					break;
 				case typeof arg === "string":
 					if (arg.length === 0) {
@@ -253,13 +257,12 @@ export class MatchCodePointSet extends MatchCodePointBase {
 						arg as string
 					);
 					codePointSeq.foreach(codePoint => {
-						codePointSet[codePoint.element] = true;
+						codePointSet.add(codePoint.element);
 					});
 					break;
 				case arg instanceof MatchCodePointSet:
-					// note: MatchCodePointSet cannot be empty
-					for (const codePoint in arg.codePointSet) {
-						codePointSet[codePoint] = true;
+					for (const codePoint of arg) {
+						codePointSet.add(codePoint);
 					}
 					break;
 				default:
@@ -283,20 +286,20 @@ export class MatchCodePointSet extends MatchCodePointBase {
 				"MatchCodePointSet.fromNumbers: empty code points array"
 			);
 		}
-		const codePointSet: Record<number, boolean> = {};
+		const codePointSet = new Set<number>();
 		for (const codePoint of codePoints) {
 			if (!isCodePointValid(codePoint)) {
 				throw new Error(
 					`MatchCodePointSet.fromNumbers: Invalid code point: ${codePoint}`
 				);
 			}
-			codePointSet[codePoint] = true;
+			codePointSet.add(codePoint);
 		}
 		return new MatchCodePointSet(codePointSet);
 	}
 
 	public static fromSet(
-		codePointSet: Record<number, boolean>
+		codePointSet: Set<number>
 	): MatchCodePointSet {
 		return new MatchCodePointSet(codePointSet);
 	}
@@ -306,7 +309,7 @@ export class MatchCodePointSet extends MatchCodePointBase {
 		const codePoint = nav.peekCodePoint();
 		if (
 			codePoint !== undefined &&
-			this.codePointSet[codePoint]
+			this.#codePointSet.has(codePoint)
 		) {
 			nav.moveCaptureForward(
 				getCodePointCharLength(codePoint)
@@ -317,11 +320,11 @@ export class MatchCodePointSet extends MatchCodePointBase {
 	}
 
 	public matchCodePoint(codePoint: number): boolean {
-		return this.codePointSet[codePoint] ?? false;
+		return this.#codePointSet.has(codePoint);
 	}
 
-	public get length(): number {
-		return Object.keys(this.codePointSet).length;
+	public get size(): number {
+		return this.#codePointSet.size;
 	}
 }
 
@@ -343,10 +346,15 @@ export const allUnicodeCategories =
 	initializeAllUnicodeCategories();
 
 export class MatchCodePointCategories extends MatchCodePointBase {
-	protected constructor(
-		public readonly categories: Record<string, boolean>
-	) {
+	#categories: Set<string>;
+
+	protected constructor(categories: Set<string>) {
 		super();
+		this.#categories = categories;
+	}
+
+	public [Symbol.iterator](): IterableIterator<string> {
+		return this.#categories.values();
 	}
 
 	public match(nav: MutMatchNav): MutMatchNav | null {
@@ -354,7 +362,7 @@ export class MatchCodePointCategories extends MatchCodePointBase {
 		const codePoint = nav.peekCodePoint();
 		if (
 			codePoint !== undefined &&
-			this.categories[unicode.getCategory(codePoint)]
+			this.#categories.has(unicode.getCategory(codePoint))
 		) {
 			nav.moveCaptureForward(
 				getCodePointCharLength(codePoint)
@@ -365,23 +373,22 @@ export class MatchCodePointCategories extends MatchCodePointBase {
 	}
 
 	public matchCodePoint(codePoint: number): boolean {
-		return (
-			this.categories[unicode.getCategory(codePoint)] ??
-			false
+		return this.#categories.has(
+			unicode.getCategory(codePoint)
 		);
 	}
 
 	public static fromString(
 		categories: string
 	): MatchCodePointCategories {
-		const categoriesSet: Record<string, boolean> = {};
+		const categoriesSet = new Set<string>();
 		for (const category of categories.split(" ")) {
 			if (allUnicodeCategories[category] === undefined) {
 				throw new Error(
 					`Invalid Unicode category: ${category}`
 				);
 			}
-			categoriesSet[category] = true;
+			categoriesSet.add(category);
 		}
 		return new MatchCodePointCategories(categoriesSet);
 	}

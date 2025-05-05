@@ -19,10 +19,15 @@ import {
 	LookBehindCodePoint,
 	MatchAll,
 	MatchAny,
+	MatchCodePointAny,
 	MatchEndSlice,
+	MatchRepeat,
 	MatchStartSlice,
+	matchUnicodeLetter,
 	matchUnicodeSpace,
+	NumberOfMatches,
 } from "@/trex";
+import exp from "constants";
 
 describe("Token", () => {
 	it("stores category, kind, and value", () => {
@@ -67,12 +72,13 @@ describe("NavToken", () => {
 		matchNav.moveCaptureForward(4); // Capture the whole string
 
 		const token = new NavToken(
-			"category",
-			"kind",
+			":category",
+			":kind",
 			matchNav
 		);
-
-		expect(token.toString()).toBe("category:kind 'test'");
+		expect(token.toString()).toBe(
+			":category:kind 'test'"
+		);
 	});
 });
 
@@ -390,6 +396,91 @@ describe("TRex", () => {
 			expect(fragments[3]).toBe("yyz ");
 			expect(fragments[4]).toBe(
 				"mmm cba xxxyyy yyyxxx "
+			);
+		});
+
+		it("finds words with ghost match + toString() and toStringWithGhostMatch()", () => {
+			const source = StrSlice.from("abc,  def, ghi,jkl");
+			const matcher = MatchAll.from(
+				MatchAny.from(
+					MatchStartSlice.default,
+					LookBehindCodePoint.from(
+						MatchCodePointAny.from(
+							matchUnicodeSpace,
+							MatchCodePoint.fromString(",")
+						)
+					)
+				),
+				MatchRepeat.from(matchUnicodeLetter),
+				MatchAny.from(
+					GhostMatch.from(
+						MatchAll.from(
+							MatchAnyString.fromStrings(","),
+							MatchRepeat.from(
+								matchUnicodeSpace,
+								NumberOfMatches.zeroOrMore()
+							)
+						)
+					),
+					MatchEndSlice.default
+				)
+			);
+			const trex = new TRex(matcher);
+
+			const result = trex.findAll(source);
+			const navTokens = result.getNavTokens();
+			expect(navTokens).toHaveLength(4);
+
+			expect(
+				navTokens[0].matchNav.captureMatch.value
+			).toBe("abc");
+			expect(
+				navTokens[0].matchNav.ghostMatch.value
+			).toBe(",  ");
+			expect(navTokens[0].toString()).toBe(
+				":find:match 'abc'"
+			);
+			expect(navTokens[0].toStringWithGhostMatch()).toBe(
+				":find:match 'abc' + ',  '"
+			);
+
+			expect(
+				navTokens[1].matchNav.captureMatch.value
+			).toBe("def");
+			expect(
+				navTokens[1].matchNav.ghostMatch.value
+			).toBe(", ");
+			expect(navTokens[1].toString()).toBe(
+				":find:match 'def'"
+			);
+			expect(navTokens[1].toStringWithGhostMatch()).toBe(
+				":find:match 'def' + ', '"
+			);
+
+			expect(
+				navTokens[2].matchNav.captureMatch.value
+			).toBe("ghi");
+			expect(
+				navTokens[2].matchNav.ghostMatch.value
+			).toBe(",");
+			expect(navTokens[2].toString()).toBe(
+				":find:match 'ghi'"
+			);
+			expect(navTokens[2].toStringWithGhostMatch()).toBe(
+				":find:match 'ghi' + ','"
+			);
+
+			expect(
+				navTokens[3].matchNav.captureMatch.value
+			).toBe("jkl");
+			expect(
+				navTokens[3].matchNav.ghostMatch.value
+			).toBe("");
+			expect(navTokens[3].toString()).toBe(
+				":find:match 'jkl'"
+			);
+			expect(navTokens[3].toStringWithGhostMatch()).toBe(
+				":find:match 'jkl' + ''"
 			);
 		});
 	});

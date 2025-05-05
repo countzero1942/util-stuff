@@ -1,27 +1,27 @@
 import { StrSlice } from "@/utils/slice";
 
 export class CodePointPrefixIndex<TElement> {
-	private readonly dict: Record<number, TElement[]> = {};
-	private readonly keyExtractor: (
-		element: TElement
-	) => string;
+	#prefixIndex: Map<number, TElement[]>;
+	#keyExtractor: (element: TElement) => string;
 
-	private addAll(elements: TElement[]): void {
+	private static createPrefixIndex<TElement>(
+		elements: TElement[],
+		keyExtractor: (element: TElement) => string
+	): Map<number, TElement[]> {
+		const prefixIndex = new Map<number, TElement[]>();
 		for (const element of elements) {
-			this.add(element);
+			const key = keyExtractor(element);
+			if (key === undefined || key.length === 0)
+				continue;
+
+			const codePoint = key.codePointAt(0) as number;
+
+			if (!prefixIndex.has(codePoint)) {
+				prefixIndex.set(codePoint, []);
+			}
+			prefixIndex.get(codePoint)!.push(element);
 		}
-	}
-
-	private add(element: TElement): void {
-		const key = this.keyExtractor(element);
-		if (key === undefined || key.length === 0) return;
-
-		const codePoint = key.codePointAt(0) as number;
-
-		if (this.dict[codePoint] === undefined) {
-			this.dict[codePoint] = [];
-		}
-		this.dict[codePoint].push(element);
+		return prefixIndex;
 	}
 
 	/**
@@ -34,21 +34,22 @@ export class CodePointPrefixIndex<TElement> {
 	 * @param keyExtractor Function to extract the first code point from each element
 	 */
 	private constructor(
-		elements: TElement[],
+		prefixIndex: Map<number, TElement[]>,
 		keyExtractor: (element: TElement) => string
 	) {
-		this.keyExtractor = keyExtractor;
-		if (elements.length > 0) {
-			this.addAll(elements);
-		}
+		this.#prefixIndex = prefixIndex;
+		this.#keyExtractor = keyExtractor;
 	}
 
-	public static from<TElement>(
+	public static fromElements<TElement>(
 		elements: TElement[],
 		keyExtractor: (element: TElement) => string
 	): CodePointPrefixIndex<TElement> {
 		return new CodePointPrefixIndex(
-			elements,
+			CodePointPrefixIndex.createPrefixIndex(
+				elements,
+				keyExtractor
+			),
 			keyExtractor
 		);
 	}
@@ -56,7 +57,10 @@ export class CodePointPrefixIndex<TElement> {
 	public static fromStrings(
 		strings: string[]
 	): CodePointPrefixIndex<string> {
-		return CodePointPrefixIndex.from(strings, str => str);
+		return CodePointPrefixIndex.fromElements(
+			strings,
+			str => str
+		);
 	}
 
 	/**
@@ -65,7 +69,7 @@ export class CodePointPrefixIndex<TElement> {
 	public getElementsByCodePoint(
 		codePoint: number
 	): TElement[] {
-		return this.dict[codePoint] ?? [];
+		return this.#prefixIndex.get(codePoint) ?? [];
 	}
 
 	/**
@@ -91,9 +95,7 @@ export class CodePointPrefixIndex<TElement> {
 	 * This method is not cached
 	 */
 	public getAllCodePoints(): number[] {
-		return Object.keys(this.dict).map(key =>
-			parseInt(key, 10)
-		);
+		return Array.from(this.#prefixIndex.keys());
 	}
 
 	/**
@@ -102,7 +104,7 @@ export class CodePointPrefixIndex<TElement> {
 	 * This method is not cached
 	 */
 	public getAllElements(): TElement[] {
-		return Object.values(this.dict).flat();
+		return Array.from(this.#prefixIndex.values()).flat();
 	}
 
 	private _allKeyLengths: number[] | undefined;
@@ -120,7 +122,7 @@ export class CodePointPrefixIndex<TElement> {
 		const lengths = new Set<number>();
 
 		for (const element of this.getAllElements()) {
-			const key = this.keyExtractor(element);
+			const key = this.#keyExtractor(element);
 			if (key !== undefined && key.length > 0) {
 				lengths.add(key.length);
 			}
@@ -137,8 +139,8 @@ export class CodePointPrefixIndex<TElement> {
 	 */
 	public hasCodePoint(codePoint: number): boolean {
 		return (
-			this.dict[codePoint] !== undefined &&
-			this.dict[codePoint].length > 0
+			this.#prefixIndex.has(codePoint) &&
+			this.#prefixIndex.get(codePoint)!.length > 0
 		);
 	}
 
@@ -148,7 +150,7 @@ export class CodePointPrefixIndex<TElement> {
 	public hasString(str: string): boolean {
 		const elements = this.getElementsByString(str);
 		return elements.some(
-			element => this.keyExtractor(element) === str
+			element => this.#keyExtractor(element) === str
 		);
 	}
 
@@ -158,7 +160,7 @@ export class CodePointPrefixIndex<TElement> {
 	public hasSlice(slice: StrSlice): boolean {
 		const elements = this.getElementsBySlice(slice);
 		return elements.some(element =>
-			slice.equals(this.keyExtractor(element))
+			slice.equals(this.#keyExtractor(element))
 		);
 	}
 
