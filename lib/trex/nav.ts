@@ -450,7 +450,10 @@ export class MutMatchNav {
 	}
 
 	public get isEmptyMatch(): boolean {
-		return this._startIndex === this._captureIndex;
+		return (
+			this._startIndex === this._captureIndex &&
+			this._startIndex === this._navIndex
+		);
 	}
 
 	public toString(): string {

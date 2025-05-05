@@ -57,6 +57,11 @@ describe("MutMatchNav", () => {
 			expect(endNav.isEndSlice).toBe(true);
 		});
 
+		it("handles empty match", () => {
+			const nav = MutMatchNav.fromString("test");
+			expect(nav.isEmptyMatch).toBe(true);
+		});
+
 		it("throws if start index is beyond end of source", () => {
 			expect(() =>
 				MutMatchNav.fromString("test", 5)
