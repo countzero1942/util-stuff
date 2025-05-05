@@ -19,6 +19,28 @@ describe("MutMatchNav", () => {
 			expect(nav.isInvalidated).toBe(false);
 		});
 
+		it("initializes with StrSlice", () => {
+			{
+				const nav = MutMatchNav.from(
+					StrSlice.from("test string")
+				);
+				expect(nav.startIndex).toBe(0);
+				expect(nav.navIndex).toBe(0);
+				expect(nav.captureIndex).toBe(0);
+				expect(nav.isInvalidated).toBe(false);
+			}
+			{
+				const nav = MutMatchNav.from(
+					StrSlice.from("test string"),
+					2
+				);
+				expect(nav.startIndex).toBe(2);
+				expect(nav.navIndex).toBe(2);
+				expect(nav.captureIndex).toBe(2);
+				expect(nav.isInvalidated).toBe(false);
+			}
+		});
+
 		it("has zero capture length initially", () => {
 			const nav = MutMatchNav.fromString("test string");
 			expect(nav.captureLength).toBe(0);

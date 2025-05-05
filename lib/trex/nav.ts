@@ -44,7 +44,7 @@ export class MutMatchNav {
 		/**
 		 * Starting position in the source (default: 0)
 		 */
-		start: number = 0
+		start: number
 	) {
 		if (start < 0) {
 			throw new Error(
