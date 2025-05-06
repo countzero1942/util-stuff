@@ -15,7 +15,7 @@ const createLetterMatcher = (
 
 describe("GhostMatch", () => {
 	describe("constructor", () => {
-		it("creates a matcher with the specified matcher", () => {
+		test("creates a matcher with the specified matcher", () => {
 			const innerMatcher = createLetterMatcher("A");
 			const ghostMatcher = GhostMatch.from(innerMatcher);
 
@@ -24,7 +24,7 @@ describe("GhostMatch", () => {
 	});
 
 	describe("match", () => {
-		it("should match but only advance the ghost capture, not the actual capture", () => {
+		test("should match but only advance the ghost capture, not the actual capture", () => {
 			const innerMatcher = createLetterMatcher("A");
 			const ghostMatcher = GhostMatch.from(innerMatcher);
 
@@ -37,7 +37,7 @@ describe("GhostMatch", () => {
 			expect(result?.ghostMatch.value).toBe("A");
 		});
 
-		it("should return null if the inner matcher doesn't match", () => {
+		test("should return null if the inner matcher doesn't match", () => {
 			const innerMatcher = createLetterMatcher("X");
 			const ghostMatcher = GhostMatch.from(innerMatcher);
 
@@ -48,7 +48,7 @@ describe("GhostMatch", () => {
 		});
 
 		// Updated test case - ghost match should only be used at the end of a sequence
-		it("is used at the end of a match sequence to handle delimiters", () => {
+		test("is used at the end of a match sequence to handle delimiters", () => {
 			const matcherA = createLetterMatcher("A");
 			const matcherB = createLetterMatcher("B");
 			const matcherComma = createLetterMatcher(",");
@@ -74,7 +74,7 @@ describe("GhostMatch", () => {
 		});
 
 		// New test case to demonstrate the error when ghost capture is in the middle
-		it("throws an error if a ghost match is followed by another match", () => {
+		test("throws an error if a ghost match is followed by another match", () => {
 			const matcherA = createLetterMatcher("A");
 			const matcherComma = createLetterMatcher(",");
 			const ghostComma = GhostMatch.from(matcherComma);
@@ -97,7 +97,7 @@ describe("GhostMatch", () => {
 			);
 		});
 
-		it("demonstrates proper use of ghost match in a sequence", () => {
+		test("demonstrates proper use of ghost match in a sequence", () => {
 			const matcherA = createLetterMatcher("A");
 			const matcherComma = createLetterMatcher(",");
 			const ghostComma = GhostMatch.from(matcherComma);

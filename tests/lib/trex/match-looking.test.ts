@@ -11,7 +11,7 @@ import { MatchAnyString } from "@/trex/match-any-string";
 import { matchUnicodeSpace } from "@/trex";
 
 describe("LookBehindCodePoint", () => {
-	it("matches when the previous code point matches: nav position", () => {
+	test("matches when the previous code point matches: nav position", () => {
 		const nav = MutMatchNav.fromString("abc", 1); // zero-width lookbehind
 		const matcher = LookBehindCodePoint.from(
 			MatchCodePoint.fromString("a")
@@ -23,7 +23,7 @@ describe("LookBehindCodePoint", () => {
 		expect(result?.navIndex).toBe(1); // Position shouldn't change
 	});
 
-	it("matches when the previous code point matches: capture", () => {
+	test("matches when the previous code point matches: capture", () => {
 		const nav = MutMatchNav.fromString("abc"); // zero-width lookbehind
 		nav.moveCaptureForward(1);
 		const matcher = LookBehindCodePoint.from(
@@ -36,7 +36,7 @@ describe("LookBehindCodePoint", () => {
 		expect(result?.captureMatch.value).toBe("a"); // Capture shouldn't change
 	});
 
-	it("does not match when the previous code point does not match", () => {
+	test("does not match when the previous code point does not match", () => {
 		const nav = MutMatchNav.fromString("abc", 1);
 		const matcher = LookBehindCodePoint.from(
 			MatchCodePoint.fromString("b")
@@ -47,7 +47,7 @@ describe("LookBehindCodePoint", () => {
 		expect(result).toBeNull();
 	});
 
-	it("does not match at the beginning of the string", () => {
+	test("does not match at the beginning of the string", () => {
 		const nav = MutMatchNav.fromString("abc"); // Beginning of string
 		const matcher = LookBehindCodePoint.from(
 			MatchCodePoint.fromString("a")
@@ -58,7 +58,7 @@ describe("LookBehindCodePoint", () => {
 		expect(result).toBeNull();
 	});
 
-	it("matches correctly with surrogate pairs: nav position", () => {
+	test("matches correctly with surrogate pairs: nav position", () => {
 		const nav = MutMatchNav.fromString("a😀b", 3); // zero-width lookbehind
 		const matcher = LookBehindCodePoint.from(
 			MatchCodePoint.fromString("😀")
@@ -70,7 +70,7 @@ describe("LookBehindCodePoint", () => {
 		expect(result?.navIndex).toBe(3); // Position shouldn't change
 	});
 
-	it("matches correctly with surrogate pairs: capture", () => {
+	test("matches correctly with surrogate pairs: capture", () => {
 		const nav = MutMatchNav.fromString("a😀b"); // zero-width lookbehind
 		nav.moveCaptureForward(3);
 		const matcher = LookBehindCodePoint.from(
@@ -85,7 +85,7 @@ describe("LookBehindCodePoint", () => {
 });
 
 describe("LookBehindAnyString", () => {
-	it("matches when the previous string is in the set: nav position", () => {
+	test("matches when the previous string is in the set: nav position", () => {
 		const nav = MutMatchNav.fromString("abcdef", 3); // zero-width lookbehind
 		const anyString = MatchAnyString.fromStrings(
 			"abc",
@@ -99,7 +99,7 @@ describe("LookBehindAnyString", () => {
 		expect(result?.navIndex).toBe(3); // Position shouldn't change
 	});
 
-	it("matches when the previous string is in the set: capture", () => {
+	test("matches when the previous string is in the set: capture", () => {
 		const nav = MutMatchNav.fromString("abcdef"); // zero-width lookbehind
 		nav.moveCaptureForward(3);
 		const anyString = MatchAnyString.fromStrings(
@@ -114,7 +114,7 @@ describe("LookBehindAnyString", () => {
 		expect(result?.captureMatch.value).toBe("abc"); // capture shouldn't change
 	});
 
-	it("does not match when the previous string is not in the set: nav position", () => {
+	test("does not match when the previous string is not in the set: nav position", () => {
 		const nav = MutMatchNav.fromString("abcdef", 3); // zero-width lookbehind
 		const anyString = MatchAnyString.fromStrings(
 			"xyz",
@@ -130,7 +130,7 @@ describe("LookBehindAnyString", () => {
 
 // ------------------ LookAheadCodePoint ------------------
 describe("LookAheadCodePoint", () => {
-	it("matches when the next code point matches", () => {
+	test("matches when the next code point matches", () => {
 		const nav = MutMatchNav.fromString("abc", 0); // zero-width lookahead
 		const matcher = LookAheadCodePoint.from(
 			MatchCodePoint.fromString("a")
@@ -140,7 +140,7 @@ describe("LookAheadCodePoint", () => {
 		expect(result?.navIndex).toBe(0); // Should not advance
 	});
 
-	it("does not match when the next code point does not match", () => {
+	test("does not match when the next code point does not match", () => {
 		const nav = MutMatchNav.fromString("abc", 0); // zero-width lookahead
 		const matcher = LookAheadCodePoint.from(
 			MatchCodePoint.fromString("b")
@@ -149,7 +149,7 @@ describe("LookAheadCodePoint", () => {
 		expect(result).toBeNull();
 	});
 
-	it("does not match at the end of the string", () => {
+	test("does not match at the end of the string", () => {
 		const nav = MutMatchNav.fromString("abc", 0); // zero-width lookahead
 		const matcher = LookAheadCodePoint.from(
 			MatchCodePoint.fromString("d")
@@ -158,7 +158,7 @@ describe("LookAheadCodePoint", () => {
 		expect(result).toBeNull();
 	});
 
-	it("matches correctly with surrogate pairs", () => {
+	test("matches correctly with surrogate pairs", () => {
 		const nav = MutMatchNav.fromString("a😀b", 0); // zero-width lookahead
 		nav.moveCaptureForward(1);
 		const matcher = LookAheadCodePoint.from(
@@ -169,7 +169,7 @@ describe("LookAheadCodePoint", () => {
 		expect(result?.captureMatch.value).toBe("a"); // Should not advance
 	});
 
-	it("works with any string matcher", () => {
+	test("works with any string matcher", () => {
 		const nav = MutMatchNav.fromString("xxx ", 0); // zero-width lookahead
 		const anyStringMatcher = MatchAnyString.fromStrings(
 			"xxx",
@@ -189,7 +189,7 @@ describe("LookAheadCodePoint", () => {
 
 // ------------------ LookAheadAnyString ------------------
 describe("LookAheadAnyString", () => {
-	it("matches at start of slice", () => {
+	test("matches at start of slice", () => {
 		const nav = MutMatchNav.fromString("abcdef", 0); // zero-width lookahead
 		const anyString = MatchAnyString.fromStrings(
 			"abc",
@@ -202,7 +202,7 @@ describe("LookAheadAnyString", () => {
 		expect(result?.captureMatch.value).toBe("");
 	});
 
-	it("matches at middle of slice with capture", () => {
+	test("matches at middle of slice with capture", () => {
 		let nav: MutMatchNav | null = MutMatchNav.fromString(
 			"abcdef",
 			0
@@ -224,7 +224,7 @@ describe("LookAheadAnyString", () => {
 		expect(result?.captureMatch.value).toBe("abc");
 	});
 
-	it("does not match beyond slice bounds", () => {
+	test("does not match beyond slice bounds", () => {
 		const source = StrSlice.from("xxxabcdef").slice(3, 6);
 		expect(source.value).toBe("abc");
 		let nav: MutMatchNav | null = MutMatchNav.from(
@@ -247,7 +247,7 @@ describe("LookAheadAnyString", () => {
 		expect(result).toBeNull();
 	});
 
-	it("does not match when the next string is not in the set", () => {
+	test("does not match when the next string is not in the set", () => {
 		const nav = MutMatchNav.fromString("abcdef", 0); // zero-width lookahead
 		const anyString = MatchAnyString.fromStrings(
 			"xy",
@@ -258,7 +258,7 @@ describe("LookAheadAnyString", () => {
 		expect(result).toBeNull();
 	});
 
-	it("does not match at the end of the string", () => {
+	test("does not match at the end of the string", () => {
 		const nav = MutMatchNav.fromString("abc", 2); // zero-width lookahead
 		const anyString = MatchAnyString.fromStrings("d");
 		const matcher = LookAheadAnyString.from(anyString);
@@ -266,7 +266,7 @@ describe("LookAheadAnyString", () => {
 		expect(result).toBeNull();
 	});
 
-	it("matches correctly with surrogate pairs and nav reference preserved", () => {
+	test("matches correctly with surrogate pairs and nav reference preserved", () => {
 		let nav: MutMatchNav | null =
 			MutMatchNav.fromString("🐶😀🐱");
 		const animalMatcher = MatchAnyString.fromStrings(

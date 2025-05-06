@@ -6,14 +6,15 @@ import {
 import { isBaseForm } from "unicode-properties";
 
 export class MatchAny extends MatchBase {
-	protected constructor(
-		public readonly matchers: MatchBase[]
-	) {
+	#_matchers: MatchBase[];
+
+	private constructor(matchers: MatchBase[]) {
 		super();
+		this.#_matchers = matchers.slice(); // defensive copy
 	}
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
-		for (const matcher of this.matchers) {
+		for (const matcher of this.#_matchers) {
 			const result = matcher.match(nav.copy());
 			if (result) {
 				return result;
@@ -25,19 +26,24 @@ export class MatchAny extends MatchBase {
 	public static from(...matchers: MatchBase[]): MatchAny {
 		return new MatchAny(matchers);
 	}
+
+	public get matchers(): readonly MatchBase[] {
+		return this.#_matchers;
+	}
 }
 
 export class MatchAll extends MatchBase {
-	protected constructor(
-		public readonly matchers: MatchBase[]
-	) {
+	#_matchers: MatchBase[];
+
+	private constructor(matchers: MatchBase[]) {
 		super();
+		this.#_matchers = matchers.slice(); // defensive copy
 	}
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertValid();
-		const matchersLength = this.matchers.length;
+		const matchersLength = this.#_matchers.length;
 		for (let i = 0; i < matchersLength; i++) {
-			const matcher = this.matchers[i];
+			const matcher = this.#_matchers[i];
 			const result = matcher.match(nav);
 			if (!result) {
 				return nav.invalidate();
@@ -50,12 +56,14 @@ export class MatchAll extends MatchBase {
 	public static from(...matchers: MatchBase[]): MatchAll {
 		return new MatchAll(matchers);
 	}
+
+	public get matchers(): readonly MatchBase[] {
+		return this.#_matchers;
+	}
 }
 
 export class MatchOpt extends MatchBase {
-	protected constructor(
-		public readonly matcher: MatchBase
-	) {
+	private constructor(public readonly matcher: MatchBase) {
 		super();
 	}
 

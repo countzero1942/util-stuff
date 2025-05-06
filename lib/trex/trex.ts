@@ -2,35 +2,76 @@ import { StrSlice } from "@/utils/slice";
 import { MatchBase, MutMatchNav } from "@/trex";
 import { log } from "console";
 
+/**
+ * A token return from TRex find operations.
+ *
+ * It contains the category, kind, and match value.
+ */
 export class Token<
 	TCategory extends string = string,
 	TKind extends string = string,
 > {
+	/**
+	 * Creates a new Token instance.
+	 *
+	 * @param category The category of the token.
+	 * @param kind The kind of the token.
+	 * @param matchValue The match value of the token.
+	 */
 	constructor(
 		public readonly category: TCategory,
 		public readonly kind: TKind,
 		public readonly matchValue: StrSlice
 	) {}
 
+	/**
+	 * Returns a string representation of the token.
+	 *
+	 * @returns A string representation of the token.
+	 */
 	public toString(): string {
 		return `${this.category}:${this.kind} '${this.matchValue.value}'`;
 	}
 }
 
+/**
+ * A token return from TRex find operations.
+ *
+ * It contains the category, kind, and match navigator.
+ *
+ * The match navigator contains the match and ghost match StrSlices.
+ */
 export class NavToken<
 	TCategory extends string = string,
 	TKind extends string = string,
 > {
+	/**
+	 * Creates a new NavToken instance.
+	 *
+	 * @param category The category of the token.
+	 * @param kind The kind of the token.
+	 * @param matchNav The match navigator containing the match and ghost match StrSlices.
+	 */
 	constructor(
 		public readonly category: TCategory,
 		public readonly kind: TKind,
 		public readonly matchNav: MutMatchNav
 	) {}
 
+	/**
+	 * Returns a string representation of the token.
+	 *
+	 * @returns A string representation of the token.
+	 */
 	public toString(): string {
 		return `${this.category}${this.kind} '${this.matchNav.captureMatch.value}'`;
 	}
 
+	/**
+	 * Returns a string representation of the token, including the ghost match.
+	 *
+	 * @returns A string representation of the token, including the ghost match.
+	 */
 	public toStringWithGhostMatch(): string {
 		return (
 			`${this.category}${this.kind} '${this.matchNav.captureMatch.value}'` +
@@ -39,15 +80,27 @@ export class NavToken<
 	}
 }
 
+/**
+ * The default category for find tokens.
+ */
 export type FindCategory = ":find";
 
+/**
+ * The default kind for find tokens.
+ */
 export type FindKind = ":match" | ":fragment";
 
+/**
+ * A default token returned from a find operation.
+ */
 export class FindToken extends Token<
 	FindCategory,
 	FindKind
 > {}
 
+/**
+ * A default token returned from a find operation.
+ */
 export class FindNavToken extends NavToken<
 	FindCategory,
 	FindKind
@@ -68,9 +121,23 @@ export type FindResult = {
 	fragmentNav: MutMatchNav;
 };
 
+/**
+ * Result of a findAll operation containing both the matched portion
+ * and the fragment before the match
+ */
 export class FindAllResult {
+	/**
+	 * Creates a new FindAllResult instance.
+	 *
+	 * @param results Array of FindResult objects
+	 */
 	constructor(public readonly results: FindResult[]) {}
 
+	/**
+	 * Returns an array of NavTokens for the results.
+	 *
+	 * @returns An array of NavTokens for the results.
+	 */
 	public getNavTokens(): FindNavToken[] {
 		const navTokens: FindNavToken[] = [];
 
@@ -101,6 +168,11 @@ export class FindAllResult {
 		return navTokens;
 	}
 
+	/**
+	 * Returns an array of Tokens for the results.
+	 *
+	 * @returns An array of Tokens for the results.
+	 */
 	public getTokens(): FindToken[] {
 		return this.getNavTokens().map(
 			navToken =>
@@ -113,9 +185,19 @@ export class FindAllResult {
 	}
 }
 
+/**
+ * A TRex instance. Used for searching text and breaking text into tokens.
+ */
 export class TRex {
 	public constructor(public readonly matcher: MatchBase) {}
 
+	/**
+	 * Finds the first match in the source text.
+	 *
+	 * @param source The source text to search.
+	 * @param start The starting position in the source text.
+	 * @returns A FindResult object containing the match navigator and fragment navigator.
+	 */
 	public find(
 		source: StrSlice,
 		start: number = 0
@@ -151,6 +233,12 @@ export class TRex {
 		};
 	}
 
+	/**
+	 * Finds all matches in the source text.
+	 *
+	 * @param source The source text to search.
+	 * @returns An array of FindResult objects.
+	 */
 	public findAll(source: StrSlice): FindAllResult {
 		const results: FindResult[] = [];
 		let currentPosition = 0;

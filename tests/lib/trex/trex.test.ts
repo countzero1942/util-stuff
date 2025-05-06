@@ -30,7 +30,7 @@ import {
 import exp from "constants";
 
 describe("Token", () => {
-	it("stores category, kind, and value", () => {
+	test("stores category, kind, and value", () => {
 		const value = StrSlice.from("test");
 		const token = new Token("category", "kind", value);
 
@@ -39,7 +39,7 @@ describe("Token", () => {
 		expect(token.matchValue).toBe(value);
 	});
 
-	it("formats toString correctly", () => {
+	test("formats toString correctly", () => {
 		const value = StrSlice.from("test");
 		const token = new Token("category", "kind", value);
 
@@ -48,7 +48,7 @@ describe("Token", () => {
 });
 
 describe("NavToken", () => {
-	it("stores category, kind, and matchNav", () => {
+	test("stores category, kind, and matchNav", () => {
 		const matchNav = MutMatchNav.fromString("test");
 		matchNav.moveCaptureForward(4); // Capture the whole string
 
@@ -67,7 +67,7 @@ describe("NavToken", () => {
 		expect(token.matchNav).toBe(matchNav);
 	});
 
-	it("formats toString correctly", () => {
+	test("formats toString correctly", () => {
 		const matchNav = MutMatchNav.fromString("test");
 		matchNav.moveCaptureForward(4); // Capture the whole string
 
@@ -83,7 +83,7 @@ describe("NavToken", () => {
 });
 
 describe("FindToken and FindNavToken", () => {
-	it("FindToken extends Token with correct type parameters", () => {
+	test("FindToken extends Token with correct type parameters", () => {
 		const value = StrSlice.from("test");
 		const token = new FindToken(":find", ":match", value);
 
@@ -93,7 +93,7 @@ describe("FindToken and FindNavToken", () => {
 		expect(token.matchValue).toBe(value);
 	});
 
-	it("FindNavToken extends NavToken with correct type parameters", () => {
+	test("FindNavToken extends NavToken with correct type parameters", () => {
 		const matchNav = MutMatchNav.fromString("test");
 		matchNav.moveCaptureForward(4); // Capture the whole string
 
@@ -111,7 +111,7 @@ describe("FindToken and FindNavToken", () => {
 });
 
 describe("FindAllResult", () => {
-	it("getNavTokens returns correct tokens", () => {
+	test("getNavTokens returns correct tokens", () => {
 		// Create a sample FindResult with a fragment and a match
 		const source = StrSlice.from("abc xxx def");
 
@@ -145,7 +145,7 @@ describe("FindAllResult", () => {
 		);
 	});
 
-	it("getNavTokens skips empty fragments", () => {
+	test("getNavTokens skips empty fragments", () => {
 		// Create a sample FindResult with an empty fragment and a match
 		const source = StrSlice.from("xxx def");
 
@@ -167,7 +167,7 @@ describe("FindAllResult", () => {
 		expect(navTokens[0].kind).toBe(":match");
 	});
 
-	it("getNavTokens handles null matchNav", () => {
+	test("getNavTokens handles null matchNav", () => {
 		// Create a sample FindResult with a fragment but no match
 		const source = StrSlice.from("abc def");
 
@@ -189,7 +189,7 @@ describe("FindAllResult", () => {
 		);
 	});
 
-	it("getTokens converts NavTokens to Tokens", () => {
+	test("getTokens converts NavTokens to Tokens", () => {
 		// Create a sample FindResult with a fragment and a match
 		const source = StrSlice.from("abc xxx def");
 
@@ -222,7 +222,7 @@ describe("FindAllResult", () => {
 
 describe("TRex", () => {
 	describe("find", () => {
-		it("finds a match in the source string", () => {
+		test("finds a match in the source string", () => {
 			const source = StrSlice.from("abc xxx def");
 			const matcher = MatchAnyString.fromStrings("xxx");
 			const trex = new TRex(matcher);
@@ -238,7 +238,7 @@ describe("TRex", () => {
 			);
 		});
 
-		it("returns null matchNav when no match is found", () => {
+		test("returns null matchNav when no match is found", () => {
 			const source = StrSlice.from("abc def");
 			const matcher = MatchAnyString.fromStrings("xxx");
 			const trex = new TRex(matcher);
@@ -251,7 +251,7 @@ describe("TRex", () => {
 			);
 		});
 
-		it("finds a match starting from a specific position", () => {
+		test("finds a match starting from a specific position", () => {
 			const source = StrSlice.from("xxx abc xxx def");
 			const matcher = MatchAnyString.fromStrings("xxx");
 			const trex = new TRex(matcher);
@@ -267,7 +267,7 @@ describe("TRex", () => {
 			);
 		});
 
-		it("handles surrogate pairs correctly", () => {
+		test("handles surrogate pairs correctly", () => {
 			const source = StrSlice.from("abc 😀 def");
 			const matcher = MatchCodePoint.fromString("😀");
 			const trex = new TRex(matcher);
@@ -285,7 +285,7 @@ describe("TRex", () => {
 	});
 
 	describe("findAll", () => {
-		it("finds all matches in the source string", () => {
+		test("finds all matches in the source string", () => {
 			const source = StrSlice.from(
 				"abc xxx def xxx ghi"
 			);
@@ -308,7 +308,7 @@ describe("TRex", () => {
 			expect(tokens[4].matchValue.value).toBe(" ghi");
 		});
 
-		it("handles case with no matches", () => {
+		test("handles case with no matches", () => {
 			const source = StrSlice.from("abc def ghi");
 			const matcher = MatchAnyString.fromStrings("xxx");
 			const trex = new TRex(matcher);
@@ -323,7 +323,7 @@ describe("TRex", () => {
 			);
 		});
 
-		it("throws error on empty match", () => {
+		test("throws error on empty match", () => {
 			const source = StrSlice.from("abc def ghi");
 			// Create a matcher that produces an empty match
 			const emptyMatcher = {
@@ -340,7 +340,7 @@ describe("TRex", () => {
 		});
 
 		// Test case from app/index.ts
-		it("finds words with MatchWord and MatchAnyString", () => {
+		test("finds words with MatchWord and MatchAnyString", () => {
 			const str =
 				"abc def xxx hij yyy lmn opq xxx yyz xxx yyy mmm cba xxxyyy yyyxxx yyy";
 			const source = StrSlice.from(str);
@@ -399,7 +399,7 @@ describe("TRex", () => {
 			);
 		});
 
-		it("finds words with ghost match + toString() and toStringWithGhostMatch()", () => {
+		test("finds words with ghost match + toString() and toStringWithGhostMatch()", () => {
 			const source = StrSlice.from("abc,  def, ghi,jkl");
 			const matcher = MatchAll.from(
 				MatchAny.from(
@@ -418,7 +418,7 @@ describe("TRex", () => {
 							MatchAnyString.fromStrings(","),
 							MatchRepeat.from(
 								matchUnicodeSpace,
-								NumberOfMatches.zeroOrMore()
+								NumberOfMatches.zeroOrMore
 							)
 						)
 					),

@@ -13,7 +13,7 @@ describe("CodePointPrefixIndex", () => {
 	const stringKeyExtractor = (str: string) => str;
 
 	describe("Constructor and Basic Properties", () => {
-		it("initializes empty with no elements", () => {
+		test("initializes empty with no elements", () => {
 			const index =
 				CodePointPrefixIndex.fromElements<TestItem>(
 					[],
@@ -24,7 +24,7 @@ describe("CodePointPrefixIndex", () => {
 			expect(index.getAllCodePoints()).toEqual([]);
 		});
 
-		it("initializes with provided elements", () => {
+		test("initializes with provided elements", () => {
 			const items = [
 				{ key: "apple", value: 1 },
 				{ key: "banana", value: 2 },
@@ -43,7 +43,7 @@ describe("CodePointPrefixIndex", () => {
 			);
 		});
 
-		it("handles empty strings in constructor", () => {
+		test("handles empty strings in constructor", () => {
 			const items = [
 				{ key: "", value: 1 },
 				{ key: "valid", value: 2 },
@@ -60,7 +60,7 @@ describe("CodePointPrefixIndex", () => {
 	});
 
 	describe("Query Methods TElement (TestItem)", () => {
-		it("getElementsByCodePoint returns elements with matching first code point", () => {
+		test("getElementsByCodePoint: returns elements with matching first code point", () => {
 			const items = [
 				{ key: "apple", value: 1 },
 				{ key: "avocado", value: 2 },
@@ -82,7 +82,7 @@ describe("CodePointPrefixIndex", () => {
 			);
 		});
 
-		it("getElementsByCodePoint returns empty array for non-existent code point", () => {
+		test("getElementsByCodePoint: returns empty array for non-existent code point", () => {
 			const index =
 				CodePointPrefixIndex.fromElements<TestItem>(
 					[{ key: "apple", value: 1 }],
@@ -96,7 +96,7 @@ describe("CodePointPrefixIndex", () => {
 			expect(results).toEqual([]);
 		});
 
-		it("getElementsByString returns elements with matching first code point", () => {
+		test("getElementsByString: returns elements with matching first code point", () => {
 			const items = [
 				{ key: "apple", value: 1 },
 				{ key: "avocado", value: 2 },
@@ -116,7 +116,7 @@ describe("CodePointPrefixIndex", () => {
 			);
 		});
 
-		it("getElementsByString handles empty strings", () => {
+		test("getElementsByString: handles empty strings", () => {
 			const index =
 				CodePointPrefixIndex.fromElements<TestItem>(
 					[{ key: "apple", value: 1 }],
@@ -128,7 +128,7 @@ describe("CodePointPrefixIndex", () => {
 			expect(results).toEqual([]);
 		});
 
-		it("getElementsBySlice returns elements with matching first code point", () => {
+		test("getElementsBySlice: returns elements with matching first code point", () => {
 			const items = [
 				{ key: "apple", value: 1 },
 				{ key: "avocado", value: 2 },
@@ -149,7 +149,21 @@ describe("CodePointPrefixIndex", () => {
 			);
 		});
 
-		it("getAllCodePoints returns all unique first code points", () => {
+		test("getElementsBySlice: handles empty slice", () => {
+			const index =
+				CodePointPrefixIndex.fromElements<TestItem>(
+					[{ key: "apple", value: 1 }],
+					keyExtractor
+				);
+
+			const results = index.getElementsBySlice(
+				new StrSlice("")
+			);
+
+			expect(results).toEqual([]);
+		});
+
+		test("getAllCodePoints: returns all unique first code points", () => {
 			const items = [
 				{ key: "apple", value: 1 },
 				{ key: "avocado", value: 2 },
@@ -170,7 +184,7 @@ describe("CodePointPrefixIndex", () => {
 			expect(codePoints).toContain("c".codePointAt(0));
 		});
 
-		it("getAllKeyLengths returns sorted unique key lengths", () => {
+		test("getAllKeyLengths: returns sorted unique key lengths", () => {
 			const items = [
 				{ key: "a", value: 1 },
 				{ key: "abc", value: 2 },
@@ -188,7 +202,7 @@ describe("CodePointPrefixIndex", () => {
 			expect(lengths).toEqual([1, 3, 5]);
 		});
 
-		it("hasCodePoint returns true for existing code point", () => {
+		test("hasCodePoint: returns true for existing code point", () => {
 			const index =
 				CodePointPrefixIndex.fromElements<TestItem>(
 					[{ key: "apple", value: 1 }],
@@ -200,7 +214,7 @@ describe("CodePointPrefixIndex", () => {
 			).toBe(true);
 		});
 
-		it("hasCodePoint returns false for non-existent code point", () => {
+		test("hasCodePoint: returns false for non-existent code point", () => {
 			const index =
 				CodePointPrefixIndex.fromElements<TestItem>(
 					[{ key: "apple", value: 1 }],
@@ -214,7 +228,7 @@ describe("CodePointPrefixIndex", () => {
 	});
 
 	describe("Query Methods string", () => {
-		it("hasString returns true for exact string match", () => {
+		test("hasString: returns true for exact string match", () => {
 			const index = CodePointPrefixIndex.fromStrings([
 				"apple",
 				"banana",
@@ -223,7 +237,7 @@ describe("CodePointPrefixIndex", () => {
 			expect(index.hasString("apple")).toBe(true);
 		});
 
-		it("hasString returns false for partial string match", () => {
+		test("hasString: returns false for partial string match", () => {
 			const index = CodePointPrefixIndex.fromStrings([
 				"apple",
 				"banana",
@@ -232,7 +246,7 @@ describe("CodePointPrefixIndex", () => {
 			expect(index.hasString("app")).toBe(false);
 		});
 
-		it("hasSlice returns true for exact slice match", () => {
+		test("hasSlice: returns true for exact slice match", () => {
 			const index = CodePointPrefixIndex.fromStrings([
 				"apple",
 				"banana",
@@ -243,7 +257,7 @@ describe("CodePointPrefixIndex", () => {
 			);
 		});
 
-		it("hasSlice returns false for partial slice match", () => {
+		test("hasSlice: returns false for partial slice match", () => {
 			const index = CodePointPrefixIndex.fromStrings([
 				"apple",
 				"banana",
@@ -256,7 +270,7 @@ describe("CodePointPrefixIndex", () => {
 	});
 
 	describe("Edge Cases and Unicode Handling", () => {
-		it("handles Unicode surrogate pairs correctly", () => {
+		test("handles Unicode surrogate pairs correctly", () => {
 			const items = [
 				{ key: "😊happy", value: 1 },
 				{ key: "😎cool", value: 2 },
@@ -276,7 +290,7 @@ describe("CodePointPrefixIndex", () => {
 			expect(results[0]).toEqual(items[0]);
 		});
 
-		it("handles case sensitivity", () => {
+		test("handles case sensitivity", () => {
 			const items = [
 				{ key: "Apple", value: 1 },
 				{ key: "apple", value: 2 },
@@ -300,7 +314,7 @@ describe("CodePointPrefixIndex", () => {
 		});
 
 		describe("Caching Behavior", () => {
-			it("caches getAllKeyLengths", () => {
+			test("caches getAllKeyLengths: returns sorted unique key lengths", () => {
 				const items = [
 					{ key: "a", value: 1 },
 					{ key: "abc", value: 2 },
@@ -326,7 +340,7 @@ describe("CodePointPrefixIndex", () => {
 				expect(result1).toBe(result2);
 			});
 
-			it("caches size", () => {
+			test("caches size: returns number of elements", () => {
 				const items = [
 					{ key: "a", value: 1 },
 					{ key: "abc", value: 2 },

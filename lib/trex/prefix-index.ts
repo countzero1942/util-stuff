@@ -1,14 +1,24 @@
 import { StrSlice } from "@/utils/slice";
 
+/**
+ * Creates an index that groups elements by their first code point
+ * for efficient prefix-based lookups.
+ *
+ * This object is immutable and its state is cached for performance.
+ *
+ * @param elements Array of elements to index
+ * @param keyExtractor Function to extract the first code point from each element
+ */
 export class CodePointPrefixIndex<TElement> {
-	#prefixIndex: Map<number, TElement[]>;
+	#prefixIndex: Map<number, readonly TElement[]>;
 	#keyExtractor: (element: TElement) => string;
 
 	private static createPrefixIndex<TElement>(
-		elements: TElement[],
+		elements: readonly TElement[],
 		keyExtractor: (element: TElement) => string
-	): Map<number, TElement[]> {
-		const prefixIndex = new Map<number, TElement[]>();
+	): Map<number, readonly TElement[]> {
+		// create mutable prefix index
+		const mutPrefixIndex = new Map<number, TElement[]>();
 		for (const element of elements) {
 			const key = keyExtractor(element);
 			if (key === undefined || key.length === 0)
@@ -16,10 +26,19 @@ export class CodePointPrefixIndex<TElement> {
 
 			const codePoint = key.codePointAt(0) as number;
 
-			if (!prefixIndex.has(codePoint)) {
-				prefixIndex.set(codePoint, []);
+			if (!mutPrefixIndex.has(codePoint)) {
+				mutPrefixIndex.set(codePoint, []);
 			}
-			prefixIndex.get(codePoint)!.push(element);
+			mutPrefixIndex.get(codePoint)!.push(element);
+		}
+
+		// create immutable prefix index
+		const prefixIndex = new Map<
+			number,
+			readonly TElement[]
+		>();
+		for (const [codePoint, elements] of mutPrefixIndex) {
+			prefixIndex.set(codePoint, elements.slice());
 		}
 		return prefixIndex;
 	}
@@ -28,21 +47,30 @@ export class CodePointPrefixIndex<TElement> {
 	 * Creates an index that groups elements by their first code point
 	 * for efficient prefix-based lookups.
 	 *
-	 * This object is immutable and its state is cached for performance.
+	 * This object is immutable and parts of its state are cached for performance.
 	 *
 	 * @param elements Array of elements to index
 	 * @param keyExtractor Function to extract the first code point from each element
 	 */
 	private constructor(
-		prefixIndex: Map<number, TElement[]>,
+		prefixIndex: Map<number, readonly TElement[]>,
 		keyExtractor: (element: TElement) => string
 	) {
 		this.#prefixIndex = prefixIndex;
 		this.#keyExtractor = keyExtractor;
 	}
 
+	/**
+	 * Creates an index that groups elements by their first code point
+	 * for efficient prefix-based lookups.
+	 *
+	 * This object is immutable and parts of its state are cached for performance.
+	 *
+	 * @param elements Array of elements to index
+	 * @param keyExtractor Function to extract the first code point from each element
+	 */
 	public static fromElements<TElement>(
-		elements: TElement[],
+		elements: readonly TElement[],
 		keyExtractor: (element: TElement) => string
 	): CodePointPrefixIndex<TElement> {
 		return new CodePointPrefixIndex(
@@ -54,8 +82,16 @@ export class CodePointPrefixIndex<TElement> {
 		);
 	}
 
+	/**
+	 * Creates an index that groups strings by their first code point
+	 * for efficient prefix-based lookups.
+	 *
+	 * This object is immutable and parts of its state are cached for performance.
+	 *
+	 * @param strings Array of strings to index
+	 */
 	public static fromStrings(
-		strings: string[]
+		strings: readonly string[]
 	): CodePointPrefixIndex<string> {
 		return CodePointPrefixIndex.fromElements(
 			strings,
@@ -68,14 +104,16 @@ export class CodePointPrefixIndex<TElement> {
 	 */
 	public getElementsByCodePoint(
 		codePoint: number
-	): TElement[] {
+	): readonly TElement[] {
 		return this.#prefixIndex.get(codePoint) ?? [];
 	}
 
 	/**
 	 * Get all elements that start with the first code point of the given string
 	 */
-	public getElementsByString(str: string): TElement[] {
+	public getElementsByString(
+		str: string
+	): readonly TElement[] {
 		if (!str || str.length === 0) return [];
 		const codePoint = str.codePointAt(0) as number;
 		return this.getElementsByCodePoint(codePoint);
@@ -84,7 +122,10 @@ export class CodePointPrefixIndex<TElement> {
 	/**
 	 * Get all elements that start with the first code point of the given slice
 	 */
-	public getElementsBySlice(slice: StrSlice): TElement[] {
+	public getElementsBySlice(
+		slice: StrSlice
+	): readonly TElement[] {
+		if (!slice || slice.isEmpty) return [];
 		const codePoint = slice.codePointAt(0) as number;
 		return this.getElementsByCodePoint(codePoint);
 	}
@@ -94,7 +135,7 @@ export class CodePointPrefixIndex<TElement> {
 	 *
 	 * This method is not cached
 	 */
-	public getAllCodePoints(): number[] {
+	public getAllCodePoints(): readonly number[] {
 		return Array.from(this.#prefixIndex.keys());
 	}
 
@@ -103,11 +144,11 @@ export class CodePointPrefixIndex<TElement> {
 	 *
 	 * This method is not cached
 	 */
-	public getAllElements(): TElement[] {
+	public getAllElements(): readonly TElement[] {
 		return Array.from(this.#prefixIndex.values()).flat();
 	}
 
-	private _allKeyLengths: number[] | undefined;
+	private _allKeyLengths: readonly number[] | undefined;
 
 	/**
 	 * Get all unique key lengths sorted from lowest to highest
@@ -116,7 +157,7 @@ export class CodePointPrefixIndex<TElement> {
 	 *
 	 * This method is cached
 	 */
-	public getAllKeyLengths(): number[] {
+	public getAllKeyLengths(): readonly number[] {
 		if (this._allKeyLengths) return this._allKeyLengths;
 
 		const lengths = new Set<number>();
@@ -130,7 +171,7 @@ export class CodePointPrefixIndex<TElement> {
 
 		this._allKeyLengths = Array.from(lengths).sort(
 			(a, b) => a - b
-		);
+		) as readonly number[];
 		return this._allKeyLengths;
 	}
 
@@ -151,7 +192,7 @@ export class CodePointPrefixIndex<TElement> {
 		const elements = this.getElementsByString(str);
 		return elements.some(
 			element => this.#keyExtractor(element) === str
-		);
+		) as boolean;
 	}
 
 	/**
@@ -161,7 +202,7 @@ export class CodePointPrefixIndex<TElement> {
 		const elements = this.getElementsBySlice(slice);
 		return elements.some(element =>
 			slice.equals(this.#keyExtractor(element))
-		);
+		) as boolean;
 	}
 
 	private _size: number | undefined;

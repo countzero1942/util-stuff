@@ -8,17 +8,43 @@ import { MutMatchNav } from "@/trex";
 
 describe("MatchCodePointAny", () => {
 	describe("constructor", () => {
-		it("creates a matcher with the specified matchers", () => {
+		test("creates a matcher with the specified matchers", () => {
 			const matcher = MatchCodePointAny.from(
 				MatchCodePoint.fromString("a"),
 				MatchCodePointSet.fromString("ab"),
 				MatchCodePointCategories.fromString("Lu")
 			);
 		});
+
+		test("returns array of matchers", () => {
+			const matcher = MatchCodePointAny.from(
+				MatchCodePoint.fromString("a"),
+				MatchCodePointSet.fromString("ab"),
+				MatchCodePointCategories.fromString("Lu")
+			);
+			expect(matcher.matchers).toHaveLength(3);
+			expect(matcher.matchers[0]).toBeInstanceOf(
+				MatchCodePoint
+			);
+			expect(matcher.matchers[1]).toBeInstanceOf(
+				MatchCodePointSet
+			);
+			expect(matcher.matchers[2]).toBeInstanceOf(
+				MatchCodePointCategories
+			);
+		});
+
+		test("throws if no matchers are provided", () => {
+			expect(() => {
+				MatchCodePointAny.from();
+			}).toThrow(
+				"MatchCodePointAny: No matchers provided"
+			);
+		});
 	});
 
 	describe("matchCodePoint", () => {
-		it("matches with single MatchCodePoint", () => {
+		test("matches with single MatchCodePoint", () => {
 			const matcher = MatchCodePointAny.from(
 				MatchCodePoint.fromString("a")
 			);
@@ -30,7 +56,7 @@ describe("MatchCodePointAny", () => {
 			).toBe(false);
 		});
 
-		it("matches with multiple MatchCodePointBase instances", () => {
+		test("matches with multiple MatchCodePointBase instances", () => {
 			const set = MatchCodePointSet.fromString("ab");
 			const cat =
 				MatchCodePointCategories.fromString("Lu");
@@ -57,7 +83,7 @@ describe("MatchCodePointAny", () => {
 			).toBe(false);
 		});
 
-		it("returns false if no matchers match", () => {
+		test("returns false if no matchers match", () => {
 			const matcher = MatchCodePointAny.from(
 				MatchCodePoint.fromString("x"),
 				MatchCodePointSet.fromString("y")
@@ -67,7 +93,7 @@ describe("MatchCodePointAny", () => {
 			).toBe(false);
 		});
 
-		it("is immutable to external mutation", () => {
+		test("is immutable to external mutation", () => {
 			const arr = [MatchCodePoint.fromString("a")];
 			const matcher = MatchCodePointAny.from(...arr);
 			arr[0] = MatchCodePoint.fromString("b");
@@ -81,7 +107,7 @@ describe("MatchCodePointAny", () => {
 	});
 
 	describe("matches with match(nav)", () => {
-		it("matches with single MatchCodePoint", () => {
+		test("matches with single MatchCodePoint", () => {
 			const matcher = MatchCodePointAny.from(
 				MatchCodePoint.fromString("a")
 			);
@@ -93,7 +119,7 @@ describe("MatchCodePointAny", () => {
 			expect(result?.captureMatch.value).toBe("a");
 		});
 
-		it("matches with multiple matchers", () => {
+		test("matches with multiple matchers", () => {
 			const matcher = MatchCodePointAny.from(
 				MatchCodePoint.fromString("a"),
 				MatchCodePointSet.fromString("ab"),
@@ -123,7 +149,7 @@ describe("MatchCodePointAny", () => {
 			expect(result3).toBeNull();
 		});
 
-		it("matches on the last matcher with repeat", () => {
+		test("matches on the last matcher with repeat", () => {
 			const matcher = MatchRepeat.from(
 				MatchCodePointAny.from(
 					MatchCodePoint.fromString("x"),
@@ -139,7 +165,7 @@ describe("MatchCodePointAny", () => {
 			expect(result?.captureMatch.value).toBe("123");
 		});
 
-		it("returns null if no matchers match", () => {
+		test("returns null if no matchers match", () => {
 			const matcher = MatchCodePointAny.from(
 				MatchCodePoint.fromString("x"),
 				MatchCodePointSet.fromString("y"),

@@ -20,7 +20,7 @@ import {
 
 describe("MatchAny", () => {
 	describe("constructor", () => {
-		it("creates a matcher with the specified matchers array", () => {
+		test("creates a matcher with the specified matchers array", () => {
 			const matcher1 = MatchCodePoint.fromString("A");
 			const matcher2 = MatchCodePoint.fromString("B");
 			const anyMatcher = MatchAny.from(
@@ -35,7 +35,7 @@ describe("MatchAny", () => {
 	});
 
 	describe("match", () => {
-		it("matches if any of the matchers match and returns the first successful match", () => {
+		test("matches if any of the matchers match and returns the first successful match", () => {
 			const matcherA = MatchCodePoint.fromString("A");
 			const matcherB = MatchCodePoint.fromString("B");
 			const anyMatcher = MatchAny.from(
@@ -54,7 +54,7 @@ describe("MatchAny", () => {
 			expect(resultB?.captureMatch.value).toBe("B");
 		});
 
-		it("returns null if none of the matchers match", () => {
+		test("returns null if none of the matchers match", () => {
 			const matcherA = MatchCodePoint.fromString("A");
 			const matcherB = MatchCodePoint.fromString("B");
 			const anyMatcher = MatchAny.from(
@@ -68,7 +68,7 @@ describe("MatchAny", () => {
 			expect(result).toBeNull();
 		});
 
-		it("tries matchers in order and returns the first match", () => {
+		test("tries matchers in order and returns the first match", () => {
 			const matcherA = MatchCodePoint.fromString("A");
 			const matcherB = MatchCodePoint.fromString("B");
 			const anyMatcher = MatchAny.from(
@@ -84,7 +84,7 @@ describe("MatchAny", () => {
 			expect(result?.captureMatch.value).toBe("A");
 		});
 
-		it("throws on invalid navigator", () => {
+		test("throws on invalid navigator", () => {
 			const matcherA = MatchCodePoint.fromString("A");
 			const anyMatcher = MatchAny.from(matcherA);
 
@@ -99,7 +99,7 @@ describe("MatchAny", () => {
 
 describe("MatchAll", () => {
 	describe("constructor", () => {
-		it("creates a matcher with the specified matchers array", () => {
+		test("creates a matcher with the specified matchers array", () => {
 			const matcher1 = MatchCodePoint.fromString("A");
 			const matcher2 = MatchCodePoint.fromString("B");
 			const allMatcher = MatchAll.from(
@@ -114,7 +114,7 @@ describe("MatchAll", () => {
 	});
 
 	describe("match", () => {
-		it("matches if all matchers match in sequence", () => {
+		test("matches if all matchers match in sequence", () => {
 			const matcherA = MatchCodePoint.fromString("A");
 			const matcherB = MatchCodePoint.fromString("B");
 			const allMatcher = MatchAll.from(
@@ -130,7 +130,7 @@ describe("MatchAll", () => {
 			expect(result?.captureMatch.value).toBe("AB");
 		});
 
-		it("returns null if any matcher in the sequence fails", () => {
+		test("returns null if any matcher in the sequence fails", () => {
 			const matcherA = MatchCodePoint.fromString("A");
 			const matcherB = MatchCodePoint.fromString("B");
 			const matcherC = MatchCodePoint.fromString("C");
@@ -147,7 +147,7 @@ describe("MatchAll", () => {
 			expect(result).toBeNull();
 		});
 
-		it("passes the updated navigator to each subsequent matcher", () => {
+		test("passes the updated navigator to each subsequent matcher", () => {
 			const matcherA = MatchCodePoint.fromString("A");
 			const matcherB = MatchCodePoint.fromString("B");
 			const matcherC = MatchCodePoint.fromString("C");
@@ -165,7 +165,7 @@ describe("MatchAll", () => {
 			expect(result).toBe(nav);
 		});
 
-		it("works with an empty matchers array", () => {
+		test("works with an empty matchers array", () => {
 			const allMatcher = MatchAll.from();
 
 			const nav = MutMatchNav.from(new StrSlice("ABC"));
@@ -179,7 +179,7 @@ describe("MatchAll", () => {
 
 describe("MatchOpt", () => {
 	describe("constructor", () => {
-		it("creates a matcher with the specified matcher", () => {
+		test("creates a matcher with the specified matcher", () => {
 			const innerMatcher =
 				MatchCodePoint.fromString("A");
 			const optMatcher = MatchOpt.from(innerMatcher);
@@ -189,7 +189,7 @@ describe("MatchOpt", () => {
 	});
 
 	describe("match", () => {
-		it("matches and advances the navigator if the inner matcher matches", () => {
+		test("matches and advances the navigator if the inner matcher matches", () => {
 			const innerMatcher =
 				MatchCodePoint.fromString("A");
 			const optMatcher = MatchOpt.from(innerMatcher);
@@ -201,7 +201,7 @@ describe("MatchOpt", () => {
 			expect(result?.captureMatch.value).toBe("A");
 		});
 
-		it("returns the original navigator without advancing if the inner matcher does not match", () => {
+		test("returns the original navigator without advancing if the inner matcher does not match", () => {
 			const innerMatcher =
 				MatchCodePoint.fromString("X");
 			const optMatcher = MatchOpt.from(innerMatcher);
@@ -215,7 +215,7 @@ describe("MatchOpt", () => {
 			expect(result?.captureMatch.value).toBe("");
 		});
 
-		it("does not invalidate the navigator if the inner matcher does not match", () => {
+		test("does not invalidate the navigator if the inner matcher does not match", () => {
 			const innerMatcher =
 				MatchCodePoint.fromString("X");
 			const optMatcher = MatchOpt.from(innerMatcher);
