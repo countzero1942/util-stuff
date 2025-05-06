@@ -59,6 +59,14 @@ export const getPerfectSquares = (n: number): number[] => {
 	);
 };
 
+export const getPerfectSquaresFromFactors = (
+	factors: number[]
+): number[] => {
+	return factors.filter(factor =>
+		Number.isInteger(Math.sqrt(factor))
+	);
+};
+
 export const flyMeToTheMoon = () => {
 	const factors = getFactors(384400);
 
@@ -79,4 +87,57 @@ export const flyMeToTheMoon = () => {
 	logh("All factors");
 	const factorsStr = factors.join(", ");
 	log(factorsStr);
+};
+
+export type FactorStat = {
+	n: number;
+	factorPairs: [number, number][];
+	factors: number[];
+	perfectSquares: number[];
+};
+
+export const getFacorStats = (
+	upto: number,
+	factorPairThreshold: number = 5,
+	perfectSquareThreshold: number = 10
+): FactorStat[] => {
+	const stats: FactorStat[] = [];
+	for (let n = 1; n <= upto; n++) {
+		const factorPairs = getFactorPairs(n);
+		if (factorPairs.length < factorPairThreshold) {
+			continue;
+		}
+		const factors =
+			getFactorsFromFactorPairs(factorPairs);
+		const perfectSquares =
+			getPerfectSquaresFromFactors(factors);
+		if (perfectSquares.length < perfectSquareThreshold) {
+			continue;
+		}
+		stats.push({
+			n,
+			factorPairs,
+			factors,
+			perfectSquares,
+		});
+	}
+
+	// stats.sort(
+	// 	(a, b) =>
+	// 		b.perfectSquares.length - a.perfectSquares.length
+	// );
+
+	stats.sort((a, b) => {
+		const diffSquares =
+			b.perfectSquares.length - a.perfectSquares.length;
+		if (diffSquares !== 0) return diffSquares;
+
+		const diffFactors =
+			b.factors.length - a.factors.length;
+		if (diffFactors !== 0) return diffFactors;
+
+		return b.n - a.n; // n descending
+	});
+
+	return stats;
 };
