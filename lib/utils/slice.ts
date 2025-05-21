@@ -708,6 +708,34 @@ export class StrSlice {
 			: "";
 	}
 
+	public *codepoints(): Generator<number, any, any> {
+		const endExcl = this.endExcl;
+		let charIndex = this.startIncl;
+
+		while (charIndex < endExcl) {
+			const codePoint =
+				this.source.codePointAt(charIndex);
+			if (codePoint === undefined) {
+				break;
+			}
+			yield codePoint;
+
+			charIndex += getCodePointCharLength(codePoint);
+		}
+	}
+
+	public *chars(): Generator<number, any, any> {
+		const endExcl = this.endExcl;
+		let charIndex = this.startIncl;
+
+		while (charIndex < endExcl) {
+			const char = this.source.charCodeAt(charIndex);
+			yield char;
+
+			charIndex += 1;
+		}
+	}
+
 	public toString(): string {
 		return this.value;
 	}

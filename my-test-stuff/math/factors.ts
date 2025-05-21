@@ -1,6 +1,8 @@
-import { logh } from "@/utils/log";
+import { div, logh, logobj } from "@/utils/log";
+import { Range } from "@/utils/seq";
 import { formatNum } from "@/utils/string";
 import { log } from "console";
+import { PrimeFactorizer } from "./prime-factorizer";
 
 /**
  * Returns all factor pairs (a, b) such that a * b === n.
@@ -94,15 +96,22 @@ export type FactorStat = {
 	factorPairs: [number, number][];
 	factors: number[];
 	perfectSquares: number[];
+	primeFactors: number[];
+	isPerfectSquare: boolean;
+	abundance: number;
 };
 
-export const getFacorStats = (
-	upto: number,
+export const getFactorStats = (
+	range: Range,
 	factorPairThreshold: number = 5,
 	perfectSquareThreshold: number = 10
 ): FactorStat[] => {
+	const primeFactorizer = new PrimeFactorizer(
+		range.endExcl
+	);
+
 	const stats: FactorStat[] = [];
-	for (let n = 1; n <= upto; n++) {
+	for (let n = range.startIncl; n <= range.endExcl; n++) {
 		const factorPairs = getFactorPairs(n);
 		if (factorPairs.length < factorPairThreshold) {
 			continue;
@@ -114,11 +123,24 @@ export const getFacorStats = (
 		if (perfectSquares.length < perfectSquareThreshold) {
 			continue;
 		}
+
+		const isPerfectSquare = Number.isInteger(
+			Math.sqrt(n)
+		);
+
+		const abundance =
+			factors.reduce((a, b) => a + b, 0) - n;
+
+		const primeFactors =
+			primeFactorizer.getPrimeFactors(n);
 		stats.push({
 			n,
 			factorPairs,
 			factors,
 			perfectSquares,
+			primeFactors,
+			isPerfectSquare,
+			abundance,
 		});
 	}
 
@@ -127,17 +149,62 @@ export const getFacorStats = (
 	// 		b.perfectSquares.length - a.perfectSquares.length
 	// );
 
+	// stats.sort((a, b) => {
+	// 	const diffSquares =
+	// 		b.perfectSquares.length - a.perfectSquares.length;
+	// 	if (diffSquares !== 0) return diffSquares;
+
+	// 	const diffFactors =
+	// 		b.factors.length - a.factors.length;
+	// 	if (diffFactors !== 0) return diffFactors;
+
+	// 	return b.n - a.n; // n descending
+	// });
+
 	stats.sort((a, b) => {
-		const diffSquares =
-			b.perfectSquares.length - a.perfectSquares.length;
-		if (diffSquares !== 0) return diffSquares;
-
-		const diffFactors =
-			b.factors.length - a.factors.length;
-		if (diffFactors !== 0) return diffFactors;
-
-		return b.n - a.n; // n descending
+		const diffNumber = a.n - b.n;
+		return diffNumber;
 	});
 
 	return stats;
+};
+
+export const logBasicStats = (
+	stats: FactorStat[],
+	range: Range
+) => {
+	logh("Stats");
+	let c = 1;
+	for (const stat of stats) {
+		const primeFactorsStr = stat.primeFactors.join(", ");
+		log(
+			`${c}: n:${formatNum(stat.n)}:` +
+				` factors: ${stat.factors.length}` +
+				` – prime factors: [${primeFactorsStr}]` +
+				` – perfect squares: ${stat.perfectSquares.length}`
+			// ` – is perfect square?: ${stat.isPerfectSquare}` +
+			// ` – abundance: ${formatNum(stat.abundance)}`
+		);
+		c++;
+	}
+
+	const percentage = (stats.length / range.length()) * 100;
+	logh(
+		`Stats: length: ${stats.length}: percentage: ${percentage.toFixed(2)}`
+	);
+};
+
+export const doLogBasicStatsForMoon = () => {
+	const range = Range.from(1, 384_400);
+	const factorPairThreshold = 10;
+	const perfectSquareThreshold = 12;
+	const stats = getFactorStats(
+		range,
+		factorPairThreshold,
+		perfectSquareThreshold
+	).filter(stat => stat.isPerfectSquare);
+	logBasicStats(stats, range);
+	div();
+	const moon = stats.find(stat => stat.n === 384_400);
+	logobj(moon);
 };
