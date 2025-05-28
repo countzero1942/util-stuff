@@ -815,17 +815,128 @@ export class StrSlice {
 		return new StrSlice(source, 0, endExcl);
 	}
 
+	/**
+	 * Creates a StrSlice for the entire string.
+	 *
+	 * @param source The string to create a StrSlice for.
+	 * @returns A StrSlice for the entire string.
+	 */
 	public static all(source: string): StrSlice {
 		return new StrSlice(source, 0);
 	}
 
+	/**
+	 * Creates an empty StrSlice.
+	 *
+	 * @param source The string to create an empty StrSlice for.
+	 * @returns An empty StrSlice.
+	 */
 	public static none(source: string): StrSlice {
 		return new StrSlice(source, 0, 0);
 	}
 
+	/**
+	 * An empty StrSlice.
+	 */
 	private static readonly EMPTY = new StrSlice("", 0, 0);
 
+	/**
+	 * Returns an empty StrSlice.
+	 *
+	 * @returns An empty StrSlice.
+	 */
 	public static empty(): StrSlice {
 		return StrSlice.EMPTY;
+	}
+
+	private static cachedBufferLength = 1024 * 8;
+	private static _cachedBuffer: Buffer | null = null;
+
+	/**
+	 * Returns a cached buffer for use in join operations.
+	 *
+	 * @returns A cached buffer for use in join operations.
+	 */
+	private static get cachedBuffer() {
+		if (!StrSlice._cachedBuffer) {
+			StrSlice._cachedBuffer = Buffer.alloc(
+				StrSlice.cachedBufferLength,
+				0
+			);
+		}
+		return StrSlice._cachedBuffer;
+	}
+
+	/**
+	 * Joins an array of StrSlices into a single string.
+	 *
+	 * @param slices The array of StrSlices to join.
+	 * @param sep The separator to use between StrSlices.
+	 * @returns The joined string.
+	 */
+	public static join(
+		slices: readonly StrSlice[],
+		sep: string = ""
+	) {
+		const getBufferByteSize = (
+			slices: readonly StrSlice[],
+			sep: string
+		) => {
+			const getSlicesCharLength = (
+				slices: readonly StrSlice[]
+			) => {
+				let totalBytes = 0;
+				for (const slice of slices) {
+					totalBytes += slice.length;
+				}
+				return totalBytes;
+			};
+			let totalBytes = 0;
+			totalBytes += getSlicesCharLength(slices) * 2;
+			totalBytes += sep.length * 2 * (slices.length - 1);
+			return totalBytes;
+		};
+
+		const byteSize = getBufferByteSize(slices, sep);
+		let buf =
+			byteSize <= StrSlice.cachedBufferLength
+				? StrSlice.cachedBuffer
+				: Buffer.alloc(byteSize, 0);
+
+		const last = slices.length - 1;
+		let offset = 0;
+		const slicesLength = slices.length;
+		for (let i = 0; i < slicesLength; i++) {
+			const slice = slices[i];
+			const source = slice.source;
+			const endExcl = slice.endExcl;
+			for (
+				let i_slice = slice.startIncl;
+				i_slice < endExcl;
+				i_slice++
+			) {
+				buf.writeUInt16LE(
+					source.charCodeAt(i_slice),
+					offset
+				);
+				offset += 2;
+			}
+			if (sep && i < last) {
+				const sepLength = sep.length;
+				for (
+					let i_sep = 0;
+					i_sep < sepLength;
+					i_sep++
+				) {
+					buf.writeUInt16LE(
+						sep.charCodeAt(i_sep),
+						offset
+					);
+					offset += 2;
+				}
+			}
+		}
+
+		return buf.toString("utf16le", 0, offset);
 	}
 }

@@ -273,12 +273,12 @@ export const specificWordMatchTestWithGhostMatch = () => {
 	const trex = new TRex(wordMatcher);
 
 	const result = trex.findAll(source);
-	const tokens = result.getTokens();
+	const tokens = result.getNavTokens();
 
 	logh("Word Match Test With Ghost Match");
 
 	tokens.forEach(token => {
-		log(token.toString());
+		log(token.toStringWithGhostMatch());
 	});
 
 	div();
@@ -307,12 +307,12 @@ export const specificWordMatchTestWithLookAhead = () => {
 	const trex = new TRex(wordMatcher);
 
 	const result = trex.findAll(source);
-	const tokens = result.getTokens();
+	const tokens = result.getNavTokens();
 
 	logh("Word Match Test With Look Ahead");
 
 	tokens.forEach(token => {
-		log(token.toString());
+		log(token.toStringWithGhostMatch());
 	});
 
 	div();

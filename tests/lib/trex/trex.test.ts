@@ -1,9 +1,7 @@
 import { StrSlice } from "@/utils/slice";
 import { MutMatchNav } from "@/trex/nav";
 import {
-	Token,
 	NavToken,
-	FindToken,
 	FindNavToken,
 	FindAllResult,
 	TRex,
@@ -28,24 +26,6 @@ import {
 	NumberOfMatches,
 } from "@/trex";
 import exp from "constants";
-
-describe("Token", () => {
-	test("stores category, kind, and value", () => {
-		const value = StrSlice.from("test");
-		const token = new Token("category", "kind", value);
-
-		expect(token.category).toBe("category");
-		expect(token.kind).toBe("kind");
-		expect(token.matchValue).toBe(value);
-	});
-
-	test("formats toString correctly", () => {
-		const value = StrSlice.from("test");
-		const token = new Token("category", "kind", value);
-
-		expect(token.toString()).toBe("category:kind 'test'");
-	});
-});
 
 describe("NavToken", () => {
 	test("stores category, kind, and matchNav", () => {
@@ -83,16 +63,6 @@ describe("NavToken", () => {
 });
 
 describe("FindToken and FindNavToken", () => {
-	test("FindToken extends Token with correct type parameters", () => {
-		const value = StrSlice.from("test");
-		const token = new FindToken(":find", ":match", value);
-
-		expect(token).toBeInstanceOf(Token);
-		expect(token.category).toBe(":find");
-		expect(token.kind).toBe(":match");
-		expect(token.matchValue).toBe(value);
-	});
-
 	test("FindNavToken extends NavToken with correct type parameters", () => {
 		const matchNav = MutMatchNav.fromString("test");
 		matchNav.moveCaptureForward(4); // Capture the whole string
@@ -188,36 +158,6 @@ describe("FindAllResult", () => {
 			"abc def"
 		);
 	});
-
-	test("getTokens converts NavTokens to Tokens", () => {
-		// Create a sample FindResult with a fragment and a match
-		const source = StrSlice.from("abc xxx def");
-
-		const fragmentNav = MutMatchNav.from(source, 0);
-		fragmentNav.moveCaptureForward(4); // Capture "abc "
-
-		const matchNav = MutMatchNav.from(source, 4);
-		matchNav.moveCaptureForward(3); // Capture "xxx"
-
-		const findResult = {
-			fragmentNav,
-			matchNav,
-		};
-
-		const findAllResult = new FindAllResult([findResult]);
-		const tokens = findAllResult.getTokens();
-
-		expect(tokens).toHaveLength(2);
-		expect(tokens[0]).toBeInstanceOf(FindToken);
-		expect(tokens[0].category).toBe(":find");
-		expect(tokens[0].kind).toBe(":fragment");
-		expect(tokens[0].matchValue.value).toBe("abc ");
-
-		expect(tokens[1]).toBeInstanceOf(FindToken);
-		expect(tokens[1].category).toBe(":find");
-		expect(tokens[1].kind).toBe(":match");
-		expect(tokens[1].matchValue.value).toBe("xxx");
-	});
 });
 
 describe("TRex", () => {
@@ -293,19 +233,29 @@ describe("TRex", () => {
 			const trex = new TRex(matcher);
 
 			const result = trex.findAll(source);
-			const tokens = result.getTokens();
+			const tokens = result.getNavTokens();
 
 			expect(tokens).toHaveLength(5);
 			expect(tokens[0].kind).toBe(":fragment");
-			expect(tokens[0].matchValue.value).toBe("abc ");
+			expect(tokens[0].matchNav.captureMatch.value).toBe(
+				"abc "
+			);
 			expect(tokens[1].kind).toBe(":match");
-			expect(tokens[1].matchValue.value).toBe("xxx");
+			expect(tokens[1].matchNav.captureMatch.value).toBe(
+				"xxx"
+			);
 			expect(tokens[2].kind).toBe(":fragment");
-			expect(tokens[2].matchValue.value).toBe(" def ");
+			expect(tokens[2].matchNav.captureMatch.value).toBe(
+				" def "
+			);
 			expect(tokens[3].kind).toBe(":match");
-			expect(tokens[3].matchValue.value).toBe("xxx");
+			expect(tokens[3].matchNav.captureMatch.value).toBe(
+				"xxx"
+			);
 			expect(tokens[4].kind).toBe(":fragment");
-			expect(tokens[4].matchValue.value).toBe(" ghi");
+			expect(tokens[4].matchNav.captureMatch.value).toBe(
+				" ghi"
+			);
 		});
 
 		test("handles case with no matches", () => {
@@ -314,11 +264,11 @@ describe("TRex", () => {
 			const trex = new TRex(matcher);
 
 			const result = trex.findAll(source);
-			const tokens = result.getTokens();
+			const tokens = result.getNavTokens();
 
 			expect(tokens).toHaveLength(1);
 			expect(tokens[0].kind).toBe(":fragment");
-			expect(tokens[0].matchValue.value).toBe(
+			expect(tokens[0].matchNav.captureMatch.value).toBe(
 				"abc def ghi"
 			);
 		});
@@ -363,7 +313,7 @@ describe("TRex", () => {
 			const trex = new TRex(wordMatcher);
 
 			const result = trex.findAll(source);
-			const tokens = result.getTokens();
+			const tokens = result.getNavTokens();
 
 			// Expected matches: "xxx", "yyy", "xxx", "xxx", "yyy", "yyy"
 			// (Note: "xxxyyy" and "yyyxxx" are not matched as words because they don't have word boundaries)
@@ -376,7 +326,7 @@ describe("TRex", () => {
 			// Check specific matches
 			const matches = tokens
 				.filter(t => t.kind === ":match")
-				.map(t => t.matchValue.value);
+				.map(t => t.matchNav.captureMatch.value);
 			expect(matches).toEqual([
 				"xxx",
 				"yyy",
@@ -389,7 +339,7 @@ describe("TRex", () => {
 			// Check that the fragments are correct
 			const fragments = tokens
 				.filter(t => t.kind === ":fragment")
-				.map(t => t.matchValue.value);
+				.map(t => t.matchNav.captureMatch.value);
 			expect(fragments[0]).toBe("abc def ");
 			expect(fragments[1]).toBe("hij ");
 			expect(fragments[2]).toBe("lmn opq ");

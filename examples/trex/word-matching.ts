@@ -39,7 +39,7 @@ const matchWord = MatchAll.from(
 export const matchWords = (str: string) => {
 	const tr = new TRex(matchWord);
 	const results = tr.findAll(StrSlice.from(str));
-	const tokens = results.getTokens();
+	const tokens = results.getNavTokens();
 	return tokens;
 };
 
@@ -49,5 +49,7 @@ export const matchWordsTest = () => {
 
 	const tokens = matchWords(str);
 
-	console.log(tokens);
+	for (const token of tokens) {
+		console.log(token.toStringWithGhostMatch());
+	}
 };

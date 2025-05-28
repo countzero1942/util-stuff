@@ -5,38 +5,6 @@ import { log } from "console";
 /**
  * A token return from TRex find operations.
  *
- * It contains the category, kind, and match value.
- */
-export class Token<
-	TCategory extends string = string,
-	TKind extends string = string,
-> {
-	/**
-	 * Creates a new Token instance.
-	 *
-	 * @param category The category of the token.
-	 * @param kind The kind of the token.
-	 * @param matchValue The match value of the token.
-	 */
-	constructor(
-		public readonly category: TCategory,
-		public readonly kind: TKind,
-		public readonly matchValue: StrSlice
-	) {}
-
-	/**
-	 * Returns a string representation of the token.
-	 *
-	 * @returns A string representation of the token.
-	 */
-	public toString(): string {
-		return `${this.category}:${this.kind} '${this.matchValue.value}'`;
-	}
-}
-
-/**
- * A token return from TRex find operations.
- *
  * It contains the category, kind, and match navigator.
  *
  * The match navigator contains the match and ghost match StrSlices.
@@ -89,14 +57,6 @@ export type FindCategory = ":find";
  * The default kind for find tokens.
  */
 export type FindKind = ":match" | ":fragment";
-
-/**
- * A default token returned from a find operation.
- */
-export class FindToken extends Token<
-	FindCategory,
-	FindKind
-> {}
 
 /**
  * A default token returned from a find operation.
@@ -166,22 +126,6 @@ export class FindAllResult {
 		}
 
 		return navTokens;
-	}
-
-	/**
-	 * Returns an array of Tokens for the results.
-	 *
-	 * @returns An array of Tokens for the results.
-	 */
-	public getTokens(): FindToken[] {
-		return this.getNavTokens().map(
-			navToken =>
-				new FindToken(
-					navToken.category,
-					navToken.kind,
-					navToken.matchNav.captureMatch
-				)
-		);
 	}
 }
 
