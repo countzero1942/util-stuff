@@ -25,7 +25,12 @@ import {
 	specificWordMatchTestWithLookAhead,
 } from "./trex-stuff";
 import { matchWordsTest } from "@/examples/trex/word-matching";
-import { MatchCodePoint } from "@/trex";
+import {
+	LookAheadAnyString,
+	MatchAnyString,
+	MatchCodePoint,
+	MutMatchNav,
+} from "@/trex";
 import { getError, getErrorMessage } from "@/utils/error";
 import {
 	ArraySeq,
@@ -51,4 +56,26 @@ import { testStrSliceJoin } from "@/my-tests/str-slice/test-join";
 
 // codePointSetArgsTestExaustiveCheck();
 
-matchWordsTest();
+// matchWordsTest();
+
+abstract class MyBase {
+	abstract get thing(): number;
+}
+
+class A extends MyBase {
+	get thing(): number {
+		return 1;
+	}
+}
+
+const a = new A();
+log(a.thing);
+
+class A2 extends A {
+	get thing(): number {
+		return 2;
+	}
+}
+
+const a2 = new A2();
+log(a2.thing);

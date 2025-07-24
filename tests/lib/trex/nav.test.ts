@@ -254,7 +254,7 @@ describe("MutMatchNav", () => {
 			const nav =
 				MutMatchNav.fromString("abc, def, hij");
 			//                     012345678901234567890
-			expect(() => nav.assertFresh()).not.toThrow();
+			expect(() => nav.assertNavIsFresh()).not.toThrow();
 			nav.moveCaptureForward(3);
 			nav.moveGhostCaptureForward(2);
 			expect(nav.navIndex).toBe(5);
@@ -262,10 +262,10 @@ describe("MutMatchNav", () => {
 			expect(nav.ghostCaptureLength).toBe(2);
 			expect(nav.captureMatch.value).toBe("abc");
 			expect(nav.ghostMatch.trim().value).toBe(",");
-			expect(() => nav.assertFresh()).toThrow();
+			expect(() => nav.assertNavIsFresh()).toThrow();
 
 			nav.moveStartForward(0);
-			expect(() => nav.assertFresh()).not.toThrow();
+			expect(() => nav.assertNavIsFresh()).not.toThrow();
 			nav.moveCaptureForward(3);
 			nav.moveGhostCaptureForward(2);
 			expect(nav.navIndex).toBe(10);
@@ -273,7 +273,7 @@ describe("MutMatchNav", () => {
 			expect(nav.ghostCaptureLength).toBe(2);
 			expect(nav.captureMatch.value).toBe("def");
 			expect(nav.ghostMatch.trim().value).toBe(",");
-			expect(() => nav.assertFresh()).toThrow();
+			expect(() => nav.assertNavIsFresh()).toThrow();
 		});
 
 		test("throws if moveGhostCaptureForward goes beyond end of source", () => {
@@ -379,7 +379,7 @@ describe("MutMatchNav", () => {
 			const nav = MutMatchNav.fromString("test");
 			nav.invalidate();
 
-			expect(() => nav.assertValid()).toThrow(
+			expect(() => nav.assertNavIsMatchable()).toThrow(
 				"Illegal use of invalidated navigator"
 			);
 		});
@@ -388,7 +388,7 @@ describe("MutMatchNav", () => {
 			const nav = MutMatchNav.fromString("test");
 			nav.moveGhostCaptureForward(2);
 
-			expect(() => nav.assertValid()).toThrow(
+			expect(() => nav.assertNavIsMatchable()).toThrow(
 				"Navigator has ghost capture at end: cannot match further"
 			);
 		});
@@ -397,7 +397,7 @@ describe("MutMatchNav", () => {
 			const nav = MutMatchNav.fromString("test");
 			nav.moveCaptureForward(1);
 
-			expect(() => nav.assertFresh()).toThrow(
+			expect(() => nav.assertNavIsFresh()).toThrow(
 				"Navigator is not fresh: it contains some form of match"
 			);
 		});
@@ -406,7 +406,7 @@ describe("MutMatchNav", () => {
 			const nav = MutMatchNav.fromString("test");
 			nav.moveGhostCaptureForward(1);
 
-			expect(() => nav.assertFresh()).toThrow(
+			expect(() => nav.assertNavIsFresh()).toThrow(
 				"Navigator is not fresh: it contains some form of match"
 			);
 		});

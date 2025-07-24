@@ -87,7 +87,7 @@ export class MatchCodePoint extends MatchCodePointBase {
 	 * @returns Navr captures code point if successful, or nav.invalidate() if no match
 	 */
 	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertValid();
+		nav.assertNavIsMatchable();
 		const codePoint = nav.peekCodePoint();
 		if (
 			codePoint !== undefined &&
@@ -158,7 +158,7 @@ export class MatchCodePointLambda extends MatchCodePointBase {
 	 * @returns Navr captures code point if successful, or nav.invalidate() if no match
 	 */
 	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertValid();
+		nav.assertNavIsMatchable();
 		const codePoint = nav.peekCodePoint();
 		if (
 			codePoint !== undefined &&
@@ -475,7 +475,7 @@ export class MatchCodePointSet extends MatchCodePointBase {
 	 * @returns Navr captures code point if successful, or nav.invalidate() if no match
 	 */
 	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertValid();
+		nav.assertNavIsMatchable();
 		const codePoint = nav.peekCodePoint();
 		if (
 			codePoint !== undefined &&
@@ -577,7 +577,7 @@ export class MatchCodePointCategories extends MatchCodePointBase {
 	 * @returns Navr captures code point if successful, or nav.invalidate() if no match
 	 */
 	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertValid();
+		nav.assertNavIsMatchable();
 		const codePoint = nav.peekCodePoint();
 		if (
 			codePoint !== undefined &&
@@ -650,7 +650,7 @@ export class MatchCodePointRange extends MatchCodePointBase {
 	 * @returns Navr captures code point if successful, or nav.invalidate() if no match
 	 */
 	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertValid();
+		nav.assertNavIsMatchable();
 		const codePoint = nav.source.codePointAt(
 			nav.navIndex
 		);
@@ -771,7 +771,7 @@ export class MatchCodePointRanges extends MatchCodePointBase {
 	 * @returns Navr captures code point if successful, or nav.invalidate() if no match
 	 */
 	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertValid();
+		nav.assertNavIsMatchable();
 		const codePoint = nav.source.codePointAt(
 			nav.navIndex
 		);
@@ -851,7 +851,7 @@ export class MatchNotCodePoint extends MatchCodePointBase {
 	 * @returns Navr captures code point if successful, or nav.invalidate() if no match
 	 */
 	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertValid();
+		nav.assertNavIsMatchable();
 		const codePoint = nav.peekCodePoint();
 		if (
 			codePoint !== undefined &&

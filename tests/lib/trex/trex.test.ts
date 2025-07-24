@@ -278,7 +278,7 @@ describe("TRex", () => {
 			// Create a matcher that produces an empty match
 			const emptyMatcher = {
 				match: (nav: MutMatchNav) => {
-					nav.assertValid();
+					nav.assertNavIsMatchable();
 					return nav; // Return without moving capture forward
 				},
 			};

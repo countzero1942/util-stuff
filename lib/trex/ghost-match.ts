@@ -6,7 +6,7 @@ export class GhostMatch extends MatchBase {
 		super();
 	}
 	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertValid();
+		nav.assertNavIsMatchable();
 		const result = this.matcher.match(
 			nav.copyAndMoveStartToNav()
 		);

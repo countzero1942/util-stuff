@@ -35,7 +35,7 @@ export class LookBehindCodePoint extends MatchBase {
 	 * @returns The navigation after matching, or null if no match.
 	 */
 	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertValid();
+		nav.assertNavIsMatchable();
 
 		const behindCodePoint = nav.peekBehindCodePoint();
 		if (
@@ -97,7 +97,7 @@ export class LookBehindAnyString extends MatchBase {
 	 * @returns The navigation after matching, or null if no match.
 	 */
 	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertValid();
+		nav.assertNavIsMatchable();
 
 		const prefixIndex = this.matcher.index;
 
@@ -162,7 +162,7 @@ export class LookAheadCodePoint extends MatchBase {
 	 * @returns The navigation after matching, or null if no match.
 	 */
 	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertValid();
+		nav.assertNavIsMatchable();
 
 		const aheadCodePoint = nav.peekAheadCodePoint();
 		if (
@@ -209,7 +209,7 @@ export class LookAheadAnyString extends MatchBase {
 	 * @returns The navigation after matching, or null if no match.
 	 */
 	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertValid();
+		nav.assertNavIsMatchable();
 
 		const aheadNav = nav.copyAndMoveStartToNav();
 		const result = this.matcher.match(aheadNav);

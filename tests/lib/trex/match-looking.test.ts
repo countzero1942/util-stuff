@@ -242,8 +242,8 @@ describe("LookAheadAnyString", () => {
 		if (!nav) {
 			throw new Error("Failed to match");
 		}
-		const result = matcher.match(nav);
 		expect(nav.captureMatch.value).toBe("abc");
+		const result = matcher.match(nav);
 		expect(result).toBeNull();
 	});
 

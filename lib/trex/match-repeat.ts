@@ -218,7 +218,7 @@ export class MatchRepeat extends MatchBase {
 	 * @returns The navigation after matching, or null if no match.
 	 */
 	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertValid();
+		nav.assertNavIsMatchable();
 		let count = 0;
 		let currentNav = nav;
 		const min = this.numberOfMatches.minNumber;

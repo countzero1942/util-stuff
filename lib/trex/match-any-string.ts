@@ -13,7 +13,7 @@ export class MatchAnyString extends MatchStringBase {
 	}
 
 	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertValid();
+		nav.assertNavIsMatchable();
 
 		// Get the first code point from the current position
 		const codePoint = nav.source.codePointAt(
