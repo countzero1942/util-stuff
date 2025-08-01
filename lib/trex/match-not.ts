@@ -53,7 +53,7 @@ export class MatchNot extends MatchBase {
 	 * @returns The navigation after matching, or null if no match.
 	 */
 	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsMatchable();
+		nav.assertNavIsValid();
 		const result = this.matcher.match(nav.copy());
 		if (result) {
 			return nav.invalidate();

@@ -4,11 +4,7 @@ import {
 	MatchAny,
 	MatchAll,
 	MatchOpt,
-	MatchRepeat,
-	GhostMatch,
 	MatchCodePoint,
-	NumberOfMatches,
-	AltFirstLastMatchers,
 } from "@/trex";
 
 // Helper function to create simple matchers for testing

@@ -12,7 +12,6 @@ import {
 	MatchNotCodePoint,
 } from "@/trex/match-code-point";
 import {
-	GhostMatch,
 	LookAheadCodePoint,
 	LookBehindCodePoint,
 	MatchAll,
@@ -43,7 +42,6 @@ describe("NavToken", () => {
 		expect(token.matchNav.captureMatch.value).toBe(
 			"test"
 		);
-		expect(token.matchNav.ghostMatch.value).toBe("");
 		expect(token.matchNav).toBe(matchNav);
 	});
 
@@ -278,7 +276,7 @@ describe("TRex", () => {
 			// Create a matcher that produces an empty match
 			const emptyMatcher = {
 				match: (nav: MutMatchNav) => {
-					nav.assertNavIsMatchable();
+					nav.assertNavIsValid();
 					return nav; // Return without moving capture forward
 				},
 			};
@@ -286,151 +284,6 @@ describe("TRex", () => {
 
 			expect(() => trex.findAll(source)).toThrow(
 				"Empty match found"
-			);
-		});
-
-		// Test case from app/index.ts
-		test("finds words with MatchWord and MatchAnyString", () => {
-			const str =
-				"abc def xxx hij yyy lmn opq xxx yyz xxx yyy mmm cba xxxyyy yyyxxx yyy";
-			const source = StrSlice.from(str);
-
-			const matcher = MatchAnyString.fromStrings(
-				"xxx",
-				"yyy"
-			);
-			const wordMatcher = MatchAll.from(
-				MatchAny.from(
-					MatchStartSlice.default,
-					LookBehindCodePoint.from(matchUnicodeSpace)
-				),
-				matcher,
-				MatchAny.from(
-					GhostMatch.from(matchUnicodeSpace),
-					MatchEndSlice.default
-				)
-			);
-			const trex = new TRex(wordMatcher);
-
-			const result = trex.findAll(source);
-			const tokens = result.getNavTokens();
-
-			// Expected matches: "xxx", "yyy", "xxx", "xxx", "yyy", "yyy"
-			// (Note: "xxxyyy" and "yyyxxx" are not matched as words because they don't have word boundaries)
-
-			// Check for correct number of tokens (fragments + matches)
-			expect(
-				tokens.filter(t => t.kind === ":match")
-			).toHaveLength(6);
-
-			// Check specific matches
-			const matches = tokens
-				.filter(t => t.kind === ":match")
-				.map(t => t.matchNav.captureMatch.value);
-			expect(matches).toEqual([
-				"xxx",
-				"yyy",
-				"xxx",
-				"xxx",
-				"yyy",
-				"yyy",
-			]);
-
-			// Check that the fragments are correct
-			const fragments = tokens
-				.filter(t => t.kind === ":fragment")
-				.map(t => t.matchNav.captureMatch.value);
-			expect(fragments[0]).toBe("abc def ");
-			expect(fragments[1]).toBe("hij ");
-			expect(fragments[2]).toBe("lmn opq ");
-			expect(fragments[3]).toBe("yyz ");
-			expect(fragments[4]).toBe(
-				"mmm cba xxxyyy yyyxxx "
-			);
-		});
-
-		test("finds words with ghost match + toString() and toStringWithGhostMatch()", () => {
-			const source = StrSlice.from("abc,  def, ghi,jkl");
-			const matcher = MatchAll.from(
-				MatchAny.from(
-					MatchStartSlice.default,
-					LookBehindCodePoint.from(
-						MatchCodePointAny.from(
-							matchUnicodeSpace,
-							MatchCodePoint.fromString(",")
-						)
-					)
-				),
-				MatchRepeat.from(matchUnicodeLetter),
-				MatchAny.from(
-					GhostMatch.from(
-						MatchAll.from(
-							MatchAnyString.fromStrings(","),
-							MatchRepeat.from(
-								matchUnicodeSpace,
-								NumberOfMatches.zeroOrMore
-							)
-						)
-					),
-					MatchEndSlice.default
-				)
-			);
-			const trex = new TRex(matcher);
-
-			const result = trex.findAll(source);
-			const navTokens = result.getNavTokens();
-			expect(navTokens).toHaveLength(4);
-
-			expect(
-				navTokens[0].matchNav.captureMatch.value
-			).toBe("abc");
-			expect(
-				navTokens[0].matchNav.ghostMatch.value
-			).toBe(",  ");
-			expect(navTokens[0].toString()).toBe(
-				":find:match 'abc'"
-			);
-			expect(navTokens[0].toStringWithGhostMatch()).toBe(
-				":find:match 'abc' + ',  '"
-			);
-
-			expect(
-				navTokens[1].matchNav.captureMatch.value
-			).toBe("def");
-			expect(
-				navTokens[1].matchNav.ghostMatch.value
-			).toBe(", ");
-			expect(navTokens[1].toString()).toBe(
-				":find:match 'def'"
-			);
-			expect(navTokens[1].toStringWithGhostMatch()).toBe(
-				":find:match 'def' + ', '"
-			);
-
-			expect(
-				navTokens[2].matchNav.captureMatch.value
-			).toBe("ghi");
-			expect(
-				navTokens[2].matchNav.ghostMatch.value
-			).toBe(",");
-			expect(navTokens[2].toString()).toBe(
-				":find:match 'ghi'"
-			);
-			expect(navTokens[2].toStringWithGhostMatch()).toBe(
-				":find:match 'ghi' + ','"
-			);
-
-			expect(
-				navTokens[3].matchNav.captureMatch.value
-			).toBe("jkl");
-			expect(
-				navTokens[3].matchNav.ghostMatch.value
-			).toBe("");
-			expect(navTokens[3].toString()).toBe(
-				":find:match 'jkl'"
-			);
-			expect(navTokens[3].toStringWithGhostMatch()).toBe(
-				":find:match 'jkl' + ''"
 			);
 		});
 	});

@@ -19,7 +19,6 @@ import { StrSlice } from "@/utils/slice";
 
 import {
 	CodePointRange,
-	GhostMatch,
 	MatchAll,
 	MutMatchNav,
 	MatchCodePoint,
@@ -253,37 +252,6 @@ export const codePointSetArgsTestExaustiveCheck = () => {
 	log();
 };
 
-export const specificWordMatchTestWithGhostMatch = () => {
-	const str =
-		"xxx abc def xxx hij yyy lmn opq xxx yyz xxx yyy mmm cba xxxyyy yyyxxx yyy";
-	const source = StrSlice.from(str);
-
-	const matcher = MatchAnyString.fromStrings("xxx", "yyy");
-	const wordMatcher = MatchAll.from(
-		MatchAny.from(
-			MatchStartSlice.default,
-			LookBehindCodePoint.from(matchUnicodeSpace)
-		),
-		matcher,
-		MatchAny.from(
-			GhostMatch.from(matchUnicodeSpace),
-			MatchEndSlice.default
-		)
-	);
-	const trex = new TRex(wordMatcher);
-
-	const result = trex.findAll(source);
-	const tokens = result.getNavTokens();
-
-	logh("Word Match Test With Ghost Match");
-
-	tokens.forEach(token => {
-		log(token.toStringWithGhostMatch());
-	});
-
-	div();
-};
-
 export const specificWordMatchTestWithLookAhead = () => {
 	let str =
 		"xxx abc def xxx hij yyy lmn opq xxx yyz xxx yyy mmm cba xxxyyy yyyxxx yyy";
@@ -312,52 +280,7 @@ export const specificWordMatchTestWithLookAhead = () => {
 	logh("Word Match Test With Look Ahead");
 
 	tokens.forEach(token => {
-		log(token.toStringWithGhostMatch());
-	});
-
-	div();
-};
-
-export const extractWordsWithGhostMatch = () => {
-	let str =
-		"xxx, abc 'def xxx hij' yyy {lmn opq xxx} yyz xxx. Yyy mmm cba; xxxyyy -- yyyxxx yyy";
-
-	// str = " abc yyy def ";
-
-	const source = StrSlice.from(str);
-
-	const startCodePoint = matchUnicodeLetter;
-	const contentCodePoint = matchUnicodeLetterOrDigit;
-
-	const contentMatcher = new MatchRepeat(contentCodePoint);
-
-	const wordMatcher = MatchAll.from(
-		MatchAny.from(
-			MatchStartSlice.default,
-			LookBehindCodePoint.from(
-				MatchNotCodePoint.from(startCodePoint)
-			)
-		),
-		contentMatcher,
-		MatchAny.from(
-			GhostMatch.from(
-				MatchRepeat.from(
-					MatchNotCodePoint.from(contentCodePoint)
-				)
-			),
-			MatchEndSlice.default
-		)
-	);
-
-	const trex = new TRex(wordMatcher);
-
-	const result = trex.findAll(source);
-	const tokens = result.getNavTokens();
-
-	logh("Extract Words With Ghost Match");
-
-	tokens.forEach(token => {
-		log(token.toStringWithGhostMatch());
+		log(token.toString());
 	});
 
 	div();

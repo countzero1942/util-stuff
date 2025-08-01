@@ -20,8 +20,6 @@ import {
 	codePointSetArgs,
 	codePointSetArgsTestExaustiveCheck,
 	doTRexStuff,
-	extractWordsWithGhostMatch,
-	specificWordMatchTestWithGhostMatch,
 	specificWordMatchTestWithLookAhead,
 } from "./trex-stuff";
 import { matchWordsTest } from "@/examples/trex/word-matching";

@@ -6,7 +6,6 @@ import {
 	MatchAny,
 	MatchOpt,
 	MatchRepeat,
-	GhostMatch,
 	MatchAnyString,
 	MatchStartSlice,
 	MatchEndSlice,
@@ -109,31 +108,6 @@ describe("MatchNot", () => {
 			const matcher = MatchRepeat.from(
 				MatchEndSlice.default,
 				NumberOfMatches.exactly(1)
-			);
-			const not = MatchNot.from(matcher);
-			const nav = MutMatchNav.fromString("abc");
-			const navCopy = nav.copy();
-			const result = not.match(nav);
-			expect(result).toBe(nav);
-			expect(result?.isInvalidated).toBe(false);
-			expect(nav).toMatchObject(navCopy);
-		});
-	});
-
-	describe("with GhostMatch", () => {
-		test("returns null when GhostMatch matches", () => {
-			const matcher = GhostMatch.from(
-				MatchStartSlice.default
-			);
-			const not = MatchNot.from(matcher);
-			const nav = MutMatchNav.fromString("");
-			const result = not.match(nav);
-			expect(result).toBeNull();
-			expect(nav.isInvalidated).toBe(true);
-		});
-		test("returns nav (same instance, unmutated) when GhostMatch does not match", () => {
-			const matcher = GhostMatch.from(
-				MatchEndSlice.default
 			);
 			const not = MatchNot.from(matcher);
 			const nav = MutMatchNav.fromString("abc");

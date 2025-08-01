@@ -36,7 +36,7 @@ export class MatchStartSlice extends MatchPositionBase {
 	 * @returns The navigation after matching, or null if no match.
 	 */
 	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsMatchable();
+		nav.assertNavIsValid();
 		return nav.navIndex === 0 ? nav : nav.invalidate();
 	}
 }
@@ -76,7 +76,7 @@ export class MatchEndSlice extends MatchPositionBase {
 	 * @returns The navigation after matching, or null if no match.
 	 */
 	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsMatchable();
+		nav.assertNavIsValid();
 		return nav.navIndex === nav.source.length
 			? nav
 			: nav.invalidate();
@@ -118,7 +118,7 @@ export class MatchNotStartSlice extends MatchPositionBase {
 	 * @returns The navigation after matching, or null if no match.
 	 */
 	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsMatchable();
+		nav.assertNavIsValid();
 		return nav.navIndex !== 0 ? nav : nav.invalidate();
 	}
 }
@@ -158,7 +158,7 @@ export class MatchNotEndSlice extends MatchPositionBase {
 	 * @returns The navigation after matching, or null if no match.
 	 */
 	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsMatchable();
+		nav.assertNavIsValid();
 		return nav.navIndex !== nav.source.length
 			? nav
 			: nav.invalidate();

@@ -13,7 +13,7 @@ export class MatchAny extends MatchBase {
 		this.#_matchers = matchers.slice(); // defensive copy
 	}
 	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsMatchable();
+		nav.assertNavIsValid();
 		for (const matcher of this.#_matchers) {
 			const result = matcher.match(nav.copy());
 			if (result) {
@@ -40,7 +40,7 @@ export class MatchAll extends MatchBase {
 		this.#_matchers = matchers.slice(); // defensive copy
 	}
 	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsMatchable();
+		nav.assertNavIsValid();
 		const matchersLength = this.#_matchers.length;
 		for (let i = 0; i < matchersLength; i++) {
 			const matcher = this.#_matchers[i];
@@ -72,7 +72,7 @@ export class MatchOpt extends MatchBase {
 	}
 
 	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsMatchable();
+		nav.assertNavIsValid();
 		const savedNav = nav.copy();
 		const result = this.matcher.match(nav);
 		if (result) {

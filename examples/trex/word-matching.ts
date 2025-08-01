@@ -50,6 +50,5 @@ export const matchWordsTest = () => {
 	const tokens = matchWords(str);
 
 	for (const token of tokens) {
-		console.log(token.toStringWithGhostMatch());
 	}
 };

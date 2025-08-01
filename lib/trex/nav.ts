@@ -21,8 +21,6 @@ export class MutMatchNav {
 	/** Starting position of the current match attempt */
 	private _startIndex: number;
 
-	private _ghostCaptureLength: number;
-
 	/** Position up to which text has been successfully captured */
 	private _captureIndex: number;
 
@@ -44,7 +42,6 @@ export class MutMatchNav {
 	) {
 		this.validateIndex(startIndex, "startIndex");
 		this._startIndex = startIndex;
-		this._ghostCaptureLength = 0;
 		this._captureIndex = startIndex;
 	}
 
@@ -165,7 +162,6 @@ export class MutMatchNav {
 			);
 		}
 		this._captureIndex = this._startIndex;
-		this._ghostCaptureLength = 0;
 		return this;
 	}
 
@@ -190,7 +186,6 @@ export class MutMatchNav {
 		);
 		this._startIndex += length;
 		this._captureIndex = this._startIndex;
-		this._ghostCaptureLength = 0;
 		return this;
 	}
 
@@ -203,7 +198,6 @@ export class MutMatchNav {
 		this.assertNavIsValid();
 		this._startIndex = this.source.length;
 		this._captureIndex = this.source.length;
-		this._ghostCaptureLength = 0;
 		return this;
 	}
 
@@ -217,7 +211,6 @@ export class MutMatchNav {
 		const navIndex = this.navIndex;
 		this._startIndex = navIndex;
 		this._captureIndex = navIndex;
-		this._ghostCaptureLength = 0;
 		return this;
 	}
 
@@ -228,34 +221,6 @@ export class MutMatchNav {
 		this.validateIndex(index, "index");
 		this._startIndex = index;
 		this._captureIndex = index;
-		this._ghostCaptureLength = 0;
-		return this;
-	}
-
-	/**
-	 * Advances only the navigation index, creating a "ghost capture" (lookahead)
-	 * Used for positive lookahead assertions without consuming input
-	 *
-	 * Throws if length goes beyond end of source
-	 *
-	 * @param length Number of characters to advance the navigation position
-	 * @returns This navigator instance for method chaining
-	 */
-	public moveGhostCaptureForward(
-		length: number
-	): MutMatchNav {
-		this.assertNavIsValid();
-		if (length < 0) {
-			throw new Error(
-				"moveGhostCaptureForward: length cannot be negative"
-			);
-		}
-		this._ghostCaptureLength += length;
-		if (this.navIndex > this.source.length) {
-			throw new Error(
-				"moveGhostCaptureForward: beyond end of source"
-			);
-		}
 		return this;
 	}
 
@@ -272,7 +237,6 @@ export class MutMatchNav {
 			this._startIndex
 		);
 		nav._captureIndex = this._captureIndex;
-		nav._ghostCaptureLength = this._ghostCaptureLength;
 		return nav;
 	}
 
@@ -327,27 +291,6 @@ export class MutMatchNav {
 		}
 	}
 
-	public assertNavHasNoGhostCapture(): void {
-		this.assertNavIsValid();
-		if (this._ghostCaptureLength > 0) {
-			throw new Error(
-				"Navigator has ghost capture at end: cannot match further"
-			);
-		}
-	}
-
-	/**
-	 * Ensures this navigation state is valid for matching
-	 *
-	 * Throws an error if the state has been invalidated or has an illegal ghost capture
-	 *
-	 * @throws Error if the navigation state is invalid
-	 */
-	public assertNavIsMatchable(): void {
-		this.assertNavIsValid();
-		this.assertNavHasNoGhostCapture();
-	}
-
 	/**
 	 * Verifies the navigation is at its starting position
 	 *
@@ -358,7 +301,7 @@ export class MutMatchNav {
 	public assertNavIsNew(): void {
 		if (this.navIndex !== this._startIndex) {
 			throw new Error(
-				"Navigator is not new: it contains some form of match"
+				"Navigator is not new: it contains a match"
 			);
 		}
 	}
@@ -439,7 +382,7 @@ export class MutMatchNav {
 	 */
 	public get navIndex(): number {
 		this.assertNavIsValid();
-		return this._captureIndex + this._ghostCaptureLength;
+		return this._captureIndex;
 	}
 
 	/**
@@ -482,14 +425,6 @@ export class MutMatchNav {
 	}
 
 	/**
-	 * Gets the length of the lookahead portion (from capture to navigation position)
-	 */
-	public get ghostCaptureLength(): number {
-		this.assertNavIsValid();
-		return this._ghostCaptureLength;
-	}
-
-	/**
 	 * Gets the successfully matched portion of the source text
 	 */
 	public get captureMatch(): StrSlice {
@@ -497,19 +432,6 @@ export class MutMatchNav {
 		return this.source.slice(
 			this._startIndex,
 			this._captureIndex
-		);
-	}
-
-	/**
-	 * Gets the ghost capture portion of the source text.
-	 * This is the portion between _captureIndex and _navIndex,
-	 * representing text that has been navigated but not yet committed to the capture.
-	 */
-	public get ghostMatch(): StrSlice {
-		this.assertNavIsValid();
-		return this.source.slice(
-			this._captureIndex,
-			this.navIndex
 		);
 	}
 
@@ -521,6 +443,6 @@ export class MutMatchNav {
 	public toString(): string {
 		return this.isInvalidated
 			? "Nav: INVALIDATED"
-			: `Nav: [${this._startIndex}..${this._captureIndex}..${this.navIndex}], length: ${this.source.length}`;
+			: `Nav: [${this._startIndex}..${this.navIndex}], length: ${this.source.length}`;
 	}
 }

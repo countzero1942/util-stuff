@@ -34,18 +34,6 @@ export class NavToken<
 	public toString(): string {
 		return `${this.category}${this.kind} '${this.matchNav.captureMatch.value}'`;
 	}
-
-	/**
-	 * Returns a string representation of the token, including the ghost match.
-	 *
-	 * @returns A string representation of the token, including the ghost match.
-	 */
-	public toStringWithGhostMatch(): string {
-		return (
-			`${this.category}${this.kind} '${this.matchNav.captureMatch.value}'` +
-			` + '${this.matchNav.ghostMatch.value}'`
-		);
-	}
 }
 
 /**
