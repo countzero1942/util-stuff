@@ -152,7 +152,7 @@ export class TRex {
 		// const str =
 		// 	"abc def xxx hij yyy lmn opq xxx yyz xxx yyy mmm cba xxxyyy yyyxxx yyy";
 		//     01234567890123456789012345678901234567890123456789012345678901234567890
-		while (!nav.isEndSlice) {
+		while (!nav.isNavIndexAtSourceEnd) {
 			const result = this.matcher.match(nav.copy());
 			if (result) {
 				const matchNav = result;
@@ -165,11 +165,12 @@ export class TRex {
 					fragmentNav,
 				};
 			}
-			nav = nav.moveStartForwardOneCodePoint();
+			nav = nav.moveStartIndexForwardOneCodePoint();
 		}
 
 		const matchNav = nav.invalidate();
-		const fragmentNav = originalNav.moveCaptureToEnd();
+		const fragmentNav =
+			originalNav.moveCaptureToSourceEnd();
 
 		return {
 			matchNav,

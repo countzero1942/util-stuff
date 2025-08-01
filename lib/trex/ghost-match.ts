@@ -8,7 +8,7 @@ export class GhostMatch extends MatchBase {
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertNavIsMatchable();
 		const result = this.matcher.match(
-			nav.copyAndMoveStartToNav()
+			nav.copy().moveStartIndexToNavIndex()
 		);
 		if (result) {
 			nav.moveGhostCaptureForward(result.captureLength);
