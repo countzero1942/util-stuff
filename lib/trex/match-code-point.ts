@@ -652,7 +652,7 @@ export class MatchCodePointRange extends MatchCodePointBase {
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertNavIsValid();
 		const codePoint = nav.source.codePointAt(
-			nav.navIndex
+			nav.captureIndex
 		);
 		if (
 			codePoint !== undefined &&
@@ -773,7 +773,7 @@ export class MatchCodePointRanges extends MatchCodePointBase {
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertNavIsValid();
 		const codePoint = nav.source.codePointAt(
-			nav.navIndex
+			nav.captureIndex
 		);
 		if (
 			codePoint !== undefined &&

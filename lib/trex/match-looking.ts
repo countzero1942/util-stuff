@@ -211,9 +211,7 @@ export class LookAheadAnyString extends MatchBase {
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertNavIsValid();
 
-		const aheadNav = nav
-			.copy()
-			.moveStartIndexToNavIndex();
+		const aheadNav = nav.copyAndMoveNext("LookForward");
 		const result = this.matcher.match(aheadNav);
 
 		return result ? nav : nav.invalidate();

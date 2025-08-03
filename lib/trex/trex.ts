@@ -153,7 +153,7 @@ export class TRex {
 					fragmentNav,
 				};
 			}
-			nav = nav.moveStartIndexForwardOneCodePoint();
+			nav = nav.moveNextOneCodePoint();
 		}
 
 		const matchNav = nav.invalidate();
@@ -194,7 +194,7 @@ export class TRex {
 			}
 
 			// Move to the position after the current match
-			currentPosition = result.matchNav.navIndex;
+			currentPosition = result.matchNav.captureIndex;
 		}
 
 		return new FindAllResult(results);

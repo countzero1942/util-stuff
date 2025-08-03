@@ -37,7 +37,9 @@ export class MatchStartSlice extends MatchPositionBase {
 	 */
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertNavIsValid();
-		return nav.navIndex === 0 ? nav : nav.invalidate();
+		return nav.captureIndex === 0
+			? nav
+			: nav.invalidate();
 	}
 }
 
@@ -77,7 +79,7 @@ export class MatchEndSlice extends MatchPositionBase {
 	 */
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertNavIsValid();
-		return nav.navIndex === nav.source.length
+		return nav.captureIndex === nav.source.length
 			? nav
 			: nav.invalidate();
 	}
@@ -119,7 +121,9 @@ export class MatchNotStartSlice extends MatchPositionBase {
 	 */
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertNavIsValid();
-		return nav.navIndex !== 0 ? nav : nav.invalidate();
+		return nav.captureIndex !== 0
+			? nav
+			: nav.invalidate();
 	}
 }
 
@@ -159,7 +163,7 @@ export class MatchNotEndSlice extends MatchPositionBase {
 	 */
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertNavIsValid();
-		return nav.navIndex !== nav.source.length
+		return nav.captureIndex !== nav.source.length
 			? nav
 			: nav.invalidate();
 	}

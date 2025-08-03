@@ -71,9 +71,7 @@ describe("MatchAnyString", () => {
 			const result = matcher.match(nav);
 			expect(result).not.toBeNull();
 			// Should match 'foobar' first
-			const after = result as any;
-			// nav index should be 6 (length of 'foobar')
-			expect(after.navIndex).toBe(6);
+			expect(result!.captureIndex).toBe(6);
 		});
 
 		test("handles Unicode code points correctly", () => {
@@ -85,9 +83,7 @@ describe("MatchAnyString", () => {
 			const result = matcher.match(nav);
 			expect(result).not.toBeNull();
 			// Should match '😀foo' at start
-			const after = result as any;
-			// nav index should be 4 (😀 is 2 code units, plus 'foo' = 3, total 5)
-			expect(after.navIndex).toBe("😀foo".length);
+			expect(result!.captureIndex).toBe("😀foo".length);
 		});
 
 		test("returns null for empty input", () => {

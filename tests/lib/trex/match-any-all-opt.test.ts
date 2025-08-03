@@ -203,11 +203,13 @@ describe("MatchOpt", () => {
 			const optMatcher = MatchOpt.from(innerMatcher);
 
 			const nav = MutMatchNav.from(new StrSlice("ABC"));
-			const originalNavIndex = nav.navIndex;
+			const originalNavIndex = nav.captureIndex;
 			const result = optMatcher.match(nav);
 
 			expect(result).not.toBeNull();
-			expect(result?.navIndex).toBe(originalNavIndex);
+			expect(result?.captureIndex).toBe(
+				originalNavIndex
+			);
 			expect(result?.captureMatch.value).toBe("");
 		});
 

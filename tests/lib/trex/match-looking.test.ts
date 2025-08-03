@@ -20,7 +20,7 @@ describe("LookBehindCodePoint", () => {
 		const result = matcher.match(nav);
 
 		expect(result).not.toBeNull();
-		expect(result?.navIndex).toBe(1); // Position shouldn't change
+		expect(result?.captureIndex).toBe(1); // Position shouldn't change
 	});
 
 	test("matches when the previous code point matches: capture", () => {
@@ -67,7 +67,7 @@ describe("LookBehindCodePoint", () => {
 		const result = matcher.match(nav);
 
 		expect(result).not.toBeNull();
-		expect(result?.navIndex).toBe(3); // Position shouldn't change
+		expect(result?.captureIndex).toBe(3); // Position shouldn't change
 	});
 
 	test("matches correctly with surrogate pairs: capture", () => {
@@ -96,7 +96,7 @@ describe("LookBehindAnyString", () => {
 		const result = matcher.match(nav);
 
 		expect(result).not.toBeNull();
-		expect(result?.navIndex).toBe(3); // Position shouldn't change
+		expect(result?.captureIndex).toBe(3); // Position shouldn't change
 	});
 
 	test("matches when the previous string is in the set: capture", () => {
@@ -137,7 +137,7 @@ describe("LookAheadCodePoint", () => {
 		);
 		const result = matcher.match(nav);
 		expect(result).not.toBeNull();
-		expect(result?.navIndex).toBe(0); // Should not advance
+		expect(result?.captureIndex).toBe(0); // Should not advance
 	});
 
 	test("does not match when the next code point does not match", () => {

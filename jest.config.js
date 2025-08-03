@@ -12,7 +12,7 @@ export default {
 	},
 	extensionsToTreatAsEsm: [".ts", ".tsx"],
 	coverageProvider: "v8",
-	collectCoverage: false,
+	collectCoverage: true,
 	coveragePathIgnorePatterns: ["/node_modules/"],
 	coverageReporters: ["json", "html"],
 	coverageDirectory: "coverage",

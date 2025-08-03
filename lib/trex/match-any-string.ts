@@ -17,7 +17,7 @@ export class MatchAnyString extends MatchStringBase {
 
 		// Get the first code point from the current position
 		const codePoint = nav.source.codePointAt(
-			nav.navIndex
+			nav.captureIndex
 		);
 		if (codePoint === undefined) return nav.invalidate();
 
@@ -29,7 +29,10 @@ export class MatchAnyString extends MatchStringBase {
 		// Check each candidate string
 		for (const matchValue of candidates) {
 			if (
-				nav.source.startsWith(matchValue, nav.navIndex)
+				nav.source.startsWith(
+					matchValue,
+					nav.captureIndex
+				)
 			) {
 				nav.moveCaptureForward(matchValue.length);
 				return nav;

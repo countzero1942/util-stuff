@@ -79,7 +79,6 @@ describe("MatchCodePoint", () => {
 
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(1);
-			expect(result?.navIndex).toBe(1);
 			expect(result?.captureMatch.value).toBe("A");
 		});
 
@@ -103,7 +102,6 @@ describe("MatchCodePoint", () => {
 
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(2); // Surrogate pair takes 2 chars
-			expect(result?.navIndex).toBe(2);
 			expect(result?.captureMatch.value).toBe("😀");
 		});
 	});
@@ -142,7 +140,6 @@ describe("MatchCodePointLambda", () => {
 
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(1);
-			expect(result?.navIndex).toBe(1);
 			expect(result?.captureMatch.value).toBe("A");
 		});
 
@@ -205,7 +202,6 @@ describe("MatchCodePointSet", () => {
 
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(1);
-			expect(result?.navIndex).toBe(1);
 			expect(result?.captureMatch.value).toBe("A");
 		});
 
@@ -220,7 +216,6 @@ describe("MatchCodePointSet", () => {
 
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(2);
-			expect(result?.navIndex).toBe(2);
 			expect(result?.captureMatch.value).toBe("😀");
 		});
 
@@ -773,7 +768,6 @@ describe("MatchCodePointRange", () => {
 
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(1);
-			expect(result?.navIndex).toBe(1);
 			expect(result?.captureMatch.value).toBe("A");
 		});
 
@@ -858,7 +852,6 @@ describe("MatchCodePointRanges", () => {
 			let result = matcher.match(nav);
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(1);
-			expect(result?.navIndex).toBe(1);
 			expect(result?.captureMatch.value).toBe("A");
 
 			// Test lowercase
@@ -866,7 +859,6 @@ describe("MatchCodePointRanges", () => {
 			result = matcher.match(nav);
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(1);
-			expect(result?.navIndex).toBe(1);
 			expect(result?.captureMatch.value).toBe("a");
 		});
 
@@ -940,7 +932,6 @@ describe("MatchNotCodePoint", () => {
 
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(1);
-			expect(result?.navIndex).toBe(1);
 			expect(result?.captureMatch.value).toBe("X");
 		});
 

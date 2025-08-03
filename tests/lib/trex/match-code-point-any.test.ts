@@ -115,7 +115,6 @@ describe("MatchCodePointAny", () => {
 			const result = matcher.match(nav);
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(1);
-			expect(result?.navIndex).toBe(1);
 			expect(result?.captureMatch.value).toBe("a");
 		});
 
@@ -130,7 +129,6 @@ describe("MatchCodePointAny", () => {
 			const result1 = matcher.match(nav);
 			expect(result1).not.toBeNull();
 			expect(result1?.captureIndex).toBe(1);
-			expect(result1?.navIndex).toBe(1);
 			expect(result1?.captureMatch.value).toBe("a");
 
 			if (!result1) {
@@ -139,7 +137,6 @@ describe("MatchCodePointAny", () => {
 			const result2 = matcher.match(result1);
 			expect(result2).not.toBeNull();
 			expect(result2?.captureIndex).toBe(2);
-			expect(result2?.navIndex).toBe(2);
 			expect(result2?.captureMatch.value).toBe("aB");
 
 			if (!result2) {
@@ -161,7 +158,6 @@ describe("MatchCodePointAny", () => {
 			const result = matcher.match(nav);
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(3);
-			expect(result?.navIndex).toBe(3);
 			expect(result?.captureMatch.value).toBe("123");
 		});
 
