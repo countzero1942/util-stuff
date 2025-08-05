@@ -4,6 +4,15 @@ import {
 	getCodePointCharLength,
 } from "../utils/string";
 
+/**
+ * Move mode for navigation to safely move to next start index
+ *
+ * "MoveForward" checks for a capture to move beyond; otherwise
+ * throws an error to prevent infinite loops.
+ *
+ * "LookForward" only looks ahead at start index or capture index.
+ * So no worry about infinite loops.
+ */
 export type NavMoveMode = "MoveForward" | "LookForward";
 
 /**
@@ -20,10 +29,10 @@ export type NavMoveMode = "MoveForward" | "LookForward";
  */
 export class MutMatchNav {
 	/** Starting position of the current match attempt */
-	private _startIndex: number;
+	protected _startIndex: number;
 
 	/** Position up to which text has been successfully captured */
-	private _captureIndex: number;
+	protected _captureIndex: number;
 
 	/**
 	 * Creates a new navigation state for parsing
@@ -31,7 +40,7 @@ export class MutMatchNav {
 	 * @param source The source text to navigate through
 	 * @param startIndex Starting position in the source (default: 0)
 	 */
-	private constructor(
+	protected constructor(
 		/**
 		 * The source text being navigated
 		 */

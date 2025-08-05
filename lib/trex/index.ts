@@ -11,3 +11,6 @@ export * from "./match-repeat";
 export * from "./match-not";
 export * from "./match-looking";
 export * from "./trex";
+export * from "./group-nav";
+export * from "./group-match";
+export * from "./group-match-any-all";
