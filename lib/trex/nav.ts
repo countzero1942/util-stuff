@@ -69,6 +69,32 @@ export class MutMatchNav {
 	}
 
 	/**
+	 * Creates a new navigation state for parsing from a first and last navigator
+	 *
+	 * @param first The first navigator
+	 * @param last The last navigator
+	 * @returns A new MutMatchNav with the same source and capture index as the first navigator
+	 */
+	public static fromFirstAndLast(
+		first: MutMatchNav,
+		last: MutMatchNav
+	): MutMatchNav {
+		first.assertNavIsValid();
+		last.assertNavIsValid();
+		if (first.source !== last.source) {
+			throw new Error(
+				"MutMatchNav.fromFirstAndLast: sources do not match"
+			);
+		}
+		const nav = new MutMatchNav(
+			first.source,
+			first._startIndex
+		);
+		nav._captureIndex = last.captureIndex;
+		return nav;
+	}
+
+	/**
 	 * Creates a new navigation state for parsing from a string
 	 *
 	 * @param source The source text to navigate through

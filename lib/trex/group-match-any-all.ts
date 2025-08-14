@@ -1,22 +1,22 @@
-import { GroupMatch } from "./group-match";
-import {
-	GroupMatchNav,
-	GroupMatchNavList,
-	GroupName,
-} from "./group-nav";
+import { GroupMatch, GroupMatchBase } from "./group-match";
+import { GroupMatchNav, GroupName } from "./group-nav";
 import { MutMatchNav } from "./nav";
 
-export class GroupMatchAny {
-	#_matchers: GroupMatch[];
+export class GroupMatchAny extends GroupMatchBase {
+	#_matchers: GroupMatchBase[];
 
-	private constructor(matchers: GroupMatch[]) {
+	protected constructor(
+		groupName: GroupName,
+		matchers: GroupMatchBase[]
+	) {
+		super(groupName);
 		this.#_matchers = matchers.slice(); // defensive copy
 	}
 
-	public static from(
-		matchers: GroupMatch[]
+	public static fromUnnamed(
+		...matchers: GroupMatchBase[]
 	): GroupMatchAny {
-		return new GroupMatchAny(matchers);
+		return new GroupMatchAny(GroupName.empty, matchers);
 	}
 
 	public match(nav: MutMatchNav): GroupMatchNav | null {
@@ -31,37 +31,109 @@ export class GroupMatchAny {
 	}
 }
 
-export class GroupMatchAll {
-	#_matchers: GroupMatch[];
+export class GroupMatchAll extends GroupMatchBase {
+	#_matchers: GroupMatchBase[];
 	#_groupName: GroupName;
 
-	private constructor(
+	protected constructor(
 		groupName: GroupName,
-		matchers: GroupMatch[]
+		matchers: GroupMatchBase[]
 	) {
+		super(groupName);
 		this.#_groupName = groupName;
 		this.#_matchers = matchers.slice(); // defensive copy
 	}
 
 	public static fromUnnamed(
-		matchers: GroupMatch[]
+		...matchers: GroupMatchBase[]
 	): GroupMatchAll {
 		return new GroupMatchAll(GroupName.empty, matchers);
 	}
 
 	public static fromNamed(
 		groupName: GroupName,
-		matchers: GroupMatch[]
+		...matchers: GroupMatchBase[]
 	): GroupMatchAll {
 		return new GroupMatchAll(groupName, matchers);
 	}
 
-	public match(
-		nav: MutMatchNav
-	): GroupMatchNavList | null {
+	private static _flattenedGroupName =
+		GroupName.fromName(":flattened");
+
+	public static get flattenedGroupName(): GroupName {
+		return GroupMatchAll._flattenedGroupName;
+	}
+
+	/**
+	 * Creates a flattened GroupMatchAll with flattened group name.
+	 *
+	 * A flattened GroupMatchAll will add all child named matches to its parent's
+	 * children matches.
+	 *
+	 * @param matchers The matchers to use.
+	 * @returns A GroupMatchAll with the flattened group name.
+	 */
+	public static fromFlattened(
+		...matchers: GroupMatchBase[]
+	): GroupMatchAll {
+		return new GroupMatchAll(
+			GroupMatchAll._flattenedGroupName,
+			matchers
+		);
+	}
+
+	public isFlattened(): boolean {
+		return this.#_groupName.isGroupName(
+			GroupMatchAll.flattenedGroupName
+		);
+	}
+
+	/**
+	 * Adds a GroupMatchNav result to the savedNavs array based on the
+	 * result's group name.
+	 *
+	 * If the result has a non-empty group name, it is added to the
+	 * savedNavs array. (Match added to parent.)
+	 *
+	 * If the result has the flattened group name, its children are added
+	 * to the savedNavs array. (Child matches added to parent's children.)
+	 *
+	 * If the result has an empty group name, nothing is added to the
+	 * savedNavs array. (Unnamed group matches are ignored.)
+	 *
+	 * @param result The result to add.
+	 * @param savedNavs The array to add the result to.
+	 */
+	public static addResultsToSavedNavs(
+		result: GroupMatchNav,
+		savedNavs: GroupMatchNav[]
+	): void {
+		// case: named group match: add potential branch
+		if (result.groupName.isNotEmpty()) {
+			savedNavs.push(result);
+			return;
+		}
+		// case: flattened group match: add children to parent's children
+		if (
+			result.groupName.isGroupName(
+				GroupMatchAll.flattenedGroupName
+			)
+		) {
+			for (const child of result.children) {
+				if (child.groupName.isNotEmpty()) {
+					savedNavs.push(child);
+				}
+			}
+			return;
+		}
+		// case: unnamed group match: do not include in savedNavs
+		return;
+	}
+
+	public match(nav: MutMatchNav): GroupMatchNav | null {
 		nav.assertNavIsValid();
 		nav.assertNavIsNew();
-		const orgNav = nav.copy();
+		const firstNav = nav.copy();
 		const savedNavs: GroupMatchNav[] = [];
 		let curNav = nav.copy();
 		const matchersLength = this.#_matchers.length;
@@ -71,10 +143,17 @@ export class GroupMatchAll {
 			if (!result) {
 				return null;
 			}
-			savedNavs.push(result);
-			curNav = result.nav.copy();
+
+			GroupMatchAll.addResultsToSavedNavs(
+				result,
+				savedNavs
+			);
+
+			curNav = result.wholeMatchNav.copy();
 		}
-		return GroupMatchNavList.fromNamed(
+
+		return GroupMatchNav.fromChildren(
+			MutMatchNav.fromFirstAndLast(firstNav, curNav),
 			this.#_groupName,
 			savedNavs
 		);

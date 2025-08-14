@@ -3,11 +3,23 @@ import { MatchBase } from "./match-base";
 import { MutMatchNav } from "./nav";
 import { GroupName } from "./group-nav";
 
-export class GroupMatch {
+export abstract class GroupMatchBase {
+	protected constructor(
+		public readonly groupName: GroupName
+	) {}
+
+	public abstract match(
+		nav: MutMatchNav
+	): GroupMatchNav | null;
+}
+
+export class GroupMatch extends GroupMatchBase {
 	private constructor(
 		public readonly groupName: GroupName,
 		public readonly matcher: MatchBase
-	) {}
+	) {
+		super(groupName);
+	}
 
 	public static from(
 		groupName: GroupName,
