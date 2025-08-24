@@ -12,8 +12,15 @@ import {
  *
  * "LookForward" only looks ahead at start index or capture index.
  * So no worry about infinite loops.
+ *
+ * "MoveMatchAll" moves to the next match in a match-all expression.
+ * Since matches can be optional with zero length, this move mode
+ * is used after a successful match without checking capture length.
  */
-export type NavMoveMode = "MoveForward" | "LookForward";
+export type NavMoveMode =
+	| "MoveForward"
+	| "LookForward"
+	| "MoveMatchAll";
 
 /**
  * MutMatchNav (Mutable Match Navigator)
@@ -304,15 +311,22 @@ export class MutMatchNav {
 	 * @throws Error if the navigation is caught in an infinite loop
 	 */
 	public assertIsMovable(moveMode: NavMoveMode): void {
-		this.assertNavIsValid();
-		if (
-			moveMode === "MoveForward" &&
-			this._startIndex === this._captureIndex
-		) {
-			throw new Error(
-				"move-next infinite loop error: startIndex equals captureIndex " +
-					"so it can never move forward!"
-			);
+		switch (moveMode) {
+			case "MoveForward":
+				if (this._startIndex === this._captureIndex) {
+					throw new Error(
+						"move-next infinite loop error: startIndex equals captureIndex " +
+							"so it can never move forward!"
+					);
+				}
+				break;
+			case "LookForward":
+			case "MoveMatchAll":
+				return;
+			default:
+				throw new Error(
+					`MutMatchNav.assertIsMovable: Invalid move mode: ${moveMode}`
+				);
 		}
 	}
 

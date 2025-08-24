@@ -245,3 +245,34 @@ export const ddivsn = () => {
 	ddivs();
 	logn();
 };
+
+const toDisplayString = (a: any): string => {
+	switch (a) {
+		case null:
+			return '<null>';
+		case undefined:
+			return '<undefined>';
+		default:
+			try {
+				return typeof a === 'string' ? a : a.toString();
+			} catch {
+				return '<error>';
+			}
+	}
+};
+
+export const alignRight = (a: any, max_length: number) => {
+	const s = toDisplayString(a);
+	const pad = max_length - s.length;
+	return pad > 0
+		? s.padStart(max_length, ' ')
+		: s.slice(-max_length);
+};
+
+export const alignLeft = (a: any, max_length: number) => {
+	const s = toDisplayString(a);
+	const pad = max_length - s.length;
+	return pad > 0
+		? s.padEnd(max_length, ' ')
+		: s.slice(0, max_length);
+};

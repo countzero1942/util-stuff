@@ -149,7 +149,9 @@ export class GroupMatchAll extends GroupMatchBase {
 				savedNavs
 			);
 
-			curNav = result.wholeMatchNav.copy();
+			curNav = result.wholeMatchNav
+				.copy()
+				.moveNext("MoveMatchAll");
 		}
 
 		return GroupMatchNav.fromChildren(

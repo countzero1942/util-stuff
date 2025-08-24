@@ -121,7 +121,7 @@ export class GroupMatchNav {
 	// }
 
 	public toString(): string {
-		return `${this.groupName.toString()} ${this.wholeMatchNav.toString()} [${this.children.length}]`;
+		return `<${this.groupName.toString()}> '${this.wholeMatchNav.captureMatch.value}' [${this.children.length}]`;
 	}
 }
 

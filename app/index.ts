@@ -13,6 +13,7 @@ import {
 	logobj,
 	logg,
 	ddiv,
+	alignRight,
 } from "@/utils/log";
 import { getFullType } from "@/utils/types";
 import { logGeneratePassword } from "@/utils/password";
@@ -46,6 +47,14 @@ import {
 import { StrSlice } from "@/utils/slice";
 import { Buffer } from "buffer";
 import { testStrSliceJoin } from "@/my-tests/str-slice/test-join";
+import { doGroupBasicsCurrentTest } from "@/examples/trex/groups/group-basics";
+import {
+	areEqual,
+	getLogForRelativeEpsilon,
+	getRelativeEpsilonFromLog,
+	precisionRound,
+} from "@/utils/math";
+import { testAreEqualAndSafeAddAcrossExponents } from "@/my-tests/math/areEqual-and-safeAdd";
 
 // logGeneratePassword();
 
@@ -56,24 +65,32 @@ import { testStrSliceJoin } from "@/my-tests/str-slice/test-join";
 
 // matchWordsTest();
 
-abstract class MyBase {
-	abstract get thing(): number;
-}
+testAreEqualAndSafeAddAcrossExponents();
 
-class A extends MyBase {
-	get thing(): number {
-		return 1;
-	}
-}
+div();
 
-const a = new A();
-log(a.thing);
+//doGroupBasicsCurrentTest();
 
-class A2 extends A {
-	get thing(): number {
-		return 2;
-	}
-}
+// log(0.1 + 0.2);
 
-const a2 = new A2();
-log(a2.thing);
+// 300000000000000070000
+// 3000000000000000500
+// 4.440892098500626e-271
+//            3e+306
+// 123456789012345678901234567890
+
+const n1 = 4.440892098500626e-271;
+const marker = "123456789012345678901234567890";
+const n2 = 3e306;
+
+const s1 = alignRight(n1, 24);
+const l1 = s1.length;
+const s2 = alignRight(n2, 24);
+const l2 = s2.length;
+
+log(s1);
+log(marker);
+log(s2);
+log(marker);
+
+div();

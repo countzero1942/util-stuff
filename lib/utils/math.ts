@@ -8,9 +8,13 @@ import { log } from "node:console";
  * @param maxIncl Max integer inclusive
  * @returns Random integer in min-inclusive and max-inclusive
  */
-export function randomInteger(minIncl: number, maxIncl: number) {
+export function randomInteger(
+	minIncl: number,
+	maxIncl: number
+) {
 	return (
-		Math.floor(Math.random() * (maxIncl - minIncl + 1)) + minIncl
+		Math.floor(Math.random() * (maxIncl - minIncl + 1)) +
+		minIncl
 	);
 }
 
@@ -22,7 +26,10 @@ export function randomInteger(minIncl: number, maxIncl: number) {
  * @param maxExcl Max real number exclusive
  * @returns Random floating-point number in min-inclusive and max-exclusive
  */
-export function randomNumber(minIncl: number, maxExcl: number) {
+export function randomNumber(
+	minIncl: number,
+	maxExcl: number
+) {
 	return Math.random() * (maxExcl - minIncl) + minIncl;
 }
 
@@ -34,8 +41,11 @@ export function randomNumber(minIncl: number, maxExcl: number) {
  * @param max Maximum value
  * @returns Clamped number
  */
-export const clamp = (num: number, min: number, max: number) =>
-	Math.min(Math.max(num, min), max);
+export const clamp = (
+	num: number,
+	min: number,
+	max: number
+) => Math.min(Math.max(num, min), max);
 
 /**
  * Rounds a floating point number to `places` number
@@ -62,7 +72,10 @@ export const clamp = (num: number, min: number, max: number) =>
  *
  * @returns The fixed-place rounded floating point number
  */
-export const fixedRound = (x: number, places: number = 0) => {
+export const fixedRound = (
+	x: number,
+	places: number = 0
+) => {
 	switch (places) {
 		case 0:
 			return Math.round(x);
@@ -91,7 +104,10 @@ export const fixedRound = (x: number, places: number = 0) => {
  * @returns The rounded number which may include floating point errors.
  * So compare numbers with `areEquals(a,b)` not `a === b`
  */
-export function precisionRound(n: number, sigDigits: number) {
+export function precisionRound(
+	n: number,
+	sigDigits: number
+) {
 	// 123,456,789 -> round(-3) -> 123,456,000
 	// num-digs: 9, sig-digs: 6, round: -3
 	// sig-digs - num-digs = round
@@ -132,6 +148,46 @@ function isZero(n: number) {
  * Gets the relative epsilon of a number based on its
  * ten-based power.
  *
+ * Number.Epsilon only weeds out floating point errors
+ * in the 16th digit of precision. So this is for numbers
+ * with a 10-based power of -1. Therefore floor + 1 is used
+ * to shift the -1 power to 0 to preserve the default epsilon
+ * And this will also shift all other powers-of-ten and yield
+ * the proper relative epsilon
+ */
+export function getLogForRelativeEpsilon(n: number) {
+	/**
+	 * Note: Number.Epsilon is for 15-prec numbers in: 0.1 <= n < 1
+	 * So this is for numbers with a 10-based power of -1
+	 * Therefore floor + 1 is used to shift the -1 power to 0 to
+	 * preserve the default epsilon
+	 * And this will also shift all other powers-of-ten and yeild
+	 * the proper relative epsilon
+	 */
+	return Math.floor(Math.log10(Math.abs(n))) + 1;
+}
+
+/**
+ * Gets the relative epsilon of a number based on its
+ * ten-based power.
+ *
+ * Number.Epsilon only weeds out floating-point errors
+ * in: 0.1 <= n <= 1.
+ *
+ * The relative epsilon is Number.Epsilon shifted to
+ * the number's ten-based power. If the power is -1
+ * it is multiplied by 10^0.
+ *
+ * @param n The number to get the relative epsilon of
+ */
+export function getRelativeEpsilonFromLog(logN: number) {
+	return 2 * Number.EPSILON * 10 ** logN;
+}
+
+/**
+ * Gets the relative epsilon of a number based on its
+ * ten-based power.
+ *
  * Number.Epsilon only weeds out floating-point errors
  * in: 0.1 <= n <= 1.
  *
@@ -143,12 +199,14 @@ function isZero(n: number) {
  * @returns The relative epsilson
  */
 export function getRelativeEspilon(n: number): number {
-	// Number.Epsilon is for 15-prec numbers in: 0.1 <= n < 1
-	// So this is for numbers with a 10-based power of -1
-	// Therefore floor + 1 is used to shift the -1 power to 0 to
-	// preserve the default epsilon
-	// And this will also shift all other powers-of-ten and yeild
-	// the proper relative epsilon
+	/**
+	 * Note: Number.Epsilon is for 15-prec numbers in: 0.1 <= n < 1
+	 * So this is for numbers with a 10-based power of -1
+	 * Therefore floor + 1 is used to shift the -1 power to 0 to
+	 * preserve the default epsilon
+	 * And this will also shift all other powers-of-ten and yeild
+	 * the proper relative epsilon
+	 */
 
 	// avoid log(0)! Compare against default epsilon in this case
 
@@ -156,37 +214,42 @@ export function getRelativeEspilon(n: number): number {
 		return Number.EPSILON;
 	}
 
-	const logN = Math.floor(Math.log10(n)) + 1;
-	const relEpsilon = 2 * Number.EPSILON * 10 ** logN;
+	const logN = getLogForRelativeEpsilon(n);
+	const relEpsilon = getRelativeEpsilonFromLog(logN);
 	return relEpsilon > 1e-323 ? relEpsilon : 0;
 }
 
 /**
- * Determines if two numbers are equal to 15 digit precision.
+ * Floating-point equality to 15 digits of precision, robust across all exponents.
  *
- * Weeds out floating-point errors in the 16th digit of precision.
+ * - Uses a relative epsilon scaled by the base-10 exponent of the inputs.
+ * - Only considers numbers equal if they are in the same base-10 order of magnitude.
+ * - For subnormal numbers (relativeEpsilon === 0), falls back to exact equality
+ * (no floating-point error expected).
+ * - Handles infinities: areEqual(Infinity, Infinity) and areEqual(-Infinity, -Infinity)
+ * return true; mixed sign returns false.
+ * - NaN is never equal to anything, including itself.
  *
- * Method uses a relative Number.Epsilon to determine if
- * two numbers are within this range.
- *
- * Number.Epsilon only works in: 0.1 <= n <= 1. Therefore the relative
- * epsilon is shifted to the 10-based power of the numbers being compared.
- *
- * Note: for very tiny numbers that yeild a relative epsilon of 0, these
- * are considered true. That is, the numbers are indistinct. Only distinct
- * numbers within a full 15-digit precision are not considered equal.
+ * Note: Only numbers in the mid-range of exponents have the
+ * full 15 digits of precision; at the extreme ends (very small/large),
+ * precision drops and only leading digits are reliable.
  *
  * @param a First number to be compared
  * @param b Second number to be compared
  * @returns True if numbers are equal within 15 digits of precision.
  */
 export function areEqual(a: number, b: number): boolean {
-	// Number.Epsilon is for 15-prec numbers in: 0.1 <= n < 1
-	// So this is for numbers with a 10-based power of -1
-	// Therefore floor + 1 is used to shift the -1 power to 0 to
-	// preserve the default epsilon
-	// And this will also shift all other powers-of-ten and yeild
-	// the proper relative epsilon
+	/**
+	 * Floating-point equality to 15 digits of precision, robust across all exponents.
+	 *
+	 * - Uses a relative epsilon scaled by the base-10 exponent of the inputs.
+	 * - Only considers numbers equal if they are in the same base-10 order of magnitude.
+	 * - For subnormal numbers (relativeEpsilon === 0), falls back to exact equality (no floating-point error expected).
+	 * - Handles infinities: areEqual(Infinity, Infinity) and areEqual(-Infinity, -Infinity) return true; mixed sign returns false.
+	 * - NaN is never equal to anything, including itself.
+	 *
+	 * Note: Only numbers in the mid-range of exponents have the full 15 digits of precision; at the extreme ends (very small/large), precision drops and only leading digits are reliable.
+	 */
 
 	// avoid log(0)! Compare against default epsilon in this case
 
@@ -199,19 +262,86 @@ export function areEqual(a: number, b: number): boolean {
 			return false;
 		// case: both a and b are non-zero: log(n) is safe
 		default:
-			const logA = Math.floor(Math.log10(a)) + 1;
-			const logB = Math.floor(Math.log10(b)) + 1;
+			const logA = getLogForRelativeEpsilon(a);
+			const logB = getLogForRelativeEpsilon(b);
 			if (logA !== logB) {
+				// If numbers are not in the same order of magnitude,
+				// they cannot be equal within floating-point error.
 				return false;
 			}
-			const relativeEpsilon = 2 * Number.EPSILON * 10 ** logA;
-			// note: tiny numbers < 1e-308 can have a relEps of 0
-			// therefore we consider them indistinct and equal
-			return relativeEpsilon > 1e-323
-				? Math.abs(a - b) < relativeEpsilon
-				: true;
+			const relativeEpsilon =
+				getRelativeEpsilonFromLog(logA);
+			// For subnormal numbers (relativeEpsilon === 0), only exact
+			// equality is possible; no floating-point error margin.
+			// For normal numbers, checks if difference is within the
+			// scaled epsilon.
+			return Math.abs(a - b) <= relativeEpsilon;
 	}
 }
+
+/**
+ * Floating-point safe addition.
+ *
+ * - If the sum is within the relative epsilon of zero, returns 0
+ * (treats as indistinguishable from zero).
+ * - Uses a relative epsilon scaled to the order of magnitude of the inputs.
+ * - Only applies the epsilon check if both numbers are in the same order of
+ * magnitude.
+ * - For subnormal results (relativeEpsilon === 0), returns the sum directly
+ * (no floating-point error expected).
+ * - Handles infinities and NaN according to IEEE 754/JavaScript semantics.
+ * - For very large or very small numbers, precision may be less than 15 digits.
+ *
+ * @param a First number to add
+ * @param b Second number to add
+ * @returns The sum of the two numbers, with floating-point error handling.
+ */
+export const safeAdd = (a: number, b: number) => {
+	/**
+	 * Floating-point safe addition.
+	 *
+	 * - If the sum is within the relative epsilon of zero, returns 0
+	 * (treats as indistinguishable from zero).
+	 * - Uses a relative epsilon scaled to the order of magnitude of the inputs.
+	 * - Only applies the epsilon check if both numbers are in the same order of
+	 * magnitude.
+	 * - For subnormal results (relativeEpsilon === 0), returns the sum directly
+	 * (no floating-point error expected).
+	 * - Handles infinities and NaN according to IEEE 754/JavaScript semantics.
+	 * - For very large or very small numbers, precision may be less than 15 digits.
+	 */
+	const sum = a + b;
+
+	if (a === 0 || b === 0) {
+		// If either input is zero, return the sum directly
+		// (covers infinities and NaN as well).
+		return sum;
+	}
+
+	if (sum === 0 || isNaN(sum)) {
+		// If the result is exactly zero or NaN, return as-is
+		// (covers +Infinity + -Infinity and other special cases).
+		return sum;
+	}
+
+	const logA = getLogForRelativeEpsilon(a);
+	const logB = getLogForRelativeEpsilon(b);
+
+	if (logA !== logB) {
+		// If inputs are not of the same order of magnitude,
+		// do not perform epsilon check.
+		return sum;
+	}
+	const relativeEpsilon = getRelativeEpsilonFromLog(logA);
+	// For subnormal numbers (relativeEpsilon === 0),
+	// no floating-point error is possible.
+	if (relativeEpsilon === 0) {
+		return sum;
+	}
+
+	// If the sum is within the relative epsilon of zero, treat as zero.
+	return Math.abs(sum) < relativeEpsilon ? 0 : sum;
+};
 
 /**
  * Tests for even numbers.
@@ -220,6 +350,21 @@ export function areEqual(a: number, b: number): boolean {
  * @returns True if the number 'n' is even
  */
 export const isEven = (n: number) => n % 2 === 0;
+
+/**
+ * Adds multiple floating-point numbers safely, using safeAdd for each step.
+ * Accepts a variable number of arguments via the spread operator.
+ * Returns 0 for an empty array.
+ *
+ * @param numbers The numbers to add
+ * @returns The sum, with floating-point error handling
+ */
+export const safeAddMany = (
+	...numbers: number[]
+): number => {
+	if (numbers.length === 0) return 0;
+	return numbers.reduce((acc, n) => safeAdd(acc, n), 0);
+};
 
 /**
  * Tests for odd numbers.
@@ -262,8 +407,10 @@ export const getDigitAccuracy = (
 
 	let matches = 0;
 	for (let i = sigDigits - 1; i >= 0; i--) {
-		const digA = Math.floor(shiftA / Math.pow(10, i)) % 10;
-		const digB = Math.floor(shiftB / Math.pow(10, i)) % 10;
+		const digA =
+			Math.floor(shiftA / Math.pow(10, i)) % 10;
+		const digB =
+			Math.floor(shiftB / Math.pow(10, i)) % 10;
 		if (digA === digB) {
 			matches++;
 		} else {
