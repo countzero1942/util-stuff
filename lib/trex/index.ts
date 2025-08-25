@@ -15,3 +15,4 @@ export * from "./group-nav";
 export * from "./group-match";
 export * from "./group-match-any-all";
 export * from "./group-match-repeat";
+export * from "./group-splitter";

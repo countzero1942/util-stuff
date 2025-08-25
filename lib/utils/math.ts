@@ -114,34 +114,9 @@ export function precisionRound(
 	// 6 - 9 = -3
 	// try: num-digs = ceil(log10)
 	const clamSigDigits = clamp(sigDigits, 1, 15);
-	const numDigits = Math.ceil(Math.log10(n));
+	const numDigits = Math.ceil(Math.log10(Math.abs(n)));
 	const roundPlaces = clamSigDigits - numDigits;
 	return fixedRound(n, roundPlaces);
-}
-
-/**
- * Determines is number is zero in 15 digits of precision.
- *
- * This will weed out all floating point errors that are
- * in the 16th digit of precision.
- *
- * @param x The number to compare to zero.
- * @returns True if the number is zero within 15 digits of precision.
- */
-function isZero(n: number) {
-	// Note: precision rounding can't be used here. Because precision
-	// keeps digits according to its power. There is no way to
-	// round down to zero in this case.
-
-	// Foating point errors occur in the 16th digit of precision
-	// and are within the range of Number.Epsilon. So no need
-	// to round to 15 digits of precision. There can be use-cases
-	// for such rounded, but they are external to this function.
-
-	// One could round a number according to some fixed decimal place.
-	// But this is an external use-case to this function.
-
-	Math.abs(n) < Number.EPSILON;
 }
 
 /**
@@ -216,41 +191,40 @@ export function getRelativeEspilon(n: number): number {
 
 	const logN = getLogForRelativeEpsilon(n);
 	const relEpsilon = getRelativeEpsilonFromLog(logN);
-	return relEpsilon > 1e-323 ? relEpsilon : 0;
+	return relEpsilon;
 }
 
 /**
  * Floating-point equality to 15 digits of precision, robust across all exponents.
  *
+ * Theory:
+ * - Only the first 15 significant digits of a double-precision number are
+ * reliable.
+ * - Any difference in the 16th digit or beyond is indistinguishable from
+ * floating-point noise and is ignored.
+ * - All reliably-distinguishable 15-digit numbers are treated as distinct;
+ * neighbor numbers (differing only in the 16th digit or higher) are considered equal.
+ * - This is a principled, information-theoretic filter, not just a tolerance
+ * for floating-point error.
+ *
+ * Implementation:
  * - Uses a relative epsilon scaled by the base-10 exponent of the inputs.
- * - Only considers numbers equal if they are in the same base-10 order of magnitude.
- * - For subnormal numbers (relativeEpsilon === 0), falls back to exact equality
- * (no floating-point error expected).
+ * - Only considers numbers equal if they are in the same base-10 order of
+ * magnitude.
+ * - For subnormal numbers (relativeEpsilon === 0), falls back to exact
+ * equality (no floating-point error expected).
  * - Handles infinities: areEqual(Infinity, Infinity) and areEqual(-Infinity, -Infinity)
  * return true; mixed sign returns false.
  * - NaN is never equal to anything, including itself.
  *
- * Note: Only numbers in the mid-range of exponents have the
- * full 15 digits of precision; at the extreme ends (very small/large),
- * precision drops and only leading digits are reliable.
+ * Note: Only numbers in the mid-range of exponents have the full 15 digits of precision;
+ * at the extreme ends (very small/large), precision drops and only leading digits are reliable.
  *
  * @param a First number to be compared
  * @param b Second number to be compared
  * @returns True if numbers are equal within 15 digits of precision.
  */
 export function areEqual(a: number, b: number): boolean {
-	/**
-	 * Floating-point equality to 15 digits of precision, robust across all exponents.
-	 *
-	 * - Uses a relative epsilon scaled by the base-10 exponent of the inputs.
-	 * - Only considers numbers equal if they are in the same base-10 order of magnitude.
-	 * - For subnormal numbers (relativeEpsilon === 0), falls back to exact equality (no floating-point error expected).
-	 * - Handles infinities: areEqual(Infinity, Infinity) and areEqual(-Infinity, -Infinity) return true; mixed sign returns false.
-	 * - NaN is never equal to anything, including itself.
-	 *
-	 * Note: Only numbers in the mid-range of exponents have the full 15 digits of precision; at the extreme ends (very small/large), precision drops and only leading digits are reliable.
-	 */
-
 	// avoid log(0)! Compare against default epsilon in this case
 
 	switch (true) {
@@ -282,11 +256,19 @@ export function areEqual(a: number, b: number): boolean {
 /**
  * Floating-point safe addition.
  *
- * - If the sum is within the relative epsilon of zero, returns 0
- * (treats as indistinguishable from zero).
+ * Theory:
+ * - Only the first 15 significant digits of a double-precision number are reliable.
+ * - Any difference in the 16th digit or beyond is indistinguishable from floating-point
+ * noise and is ignored.
+ * - This logic is inherited from 'areEqual': if the sum is within the relative epsilon
+ * of zero (i.e., only the 16th digit or higher differs), it is treated as zero.
+ * - This prevents the propagation of unreliable noise in arithmetic operations.
+ *
+ * Implementation:
+ * - If the sum is within the relative epsilon of zero, returns 0 (treats as
+ * indistinguishable from zero).
  * - Uses a relative epsilon scaled to the order of magnitude of the inputs.
- * - Only applies the epsilon check if both numbers are in the same order of
- * magnitude.
+ * - Only applies the epsilon check if both numbers are in the same order of magnitude.
  * - For subnormal results (relativeEpsilon === 0), returns the sum directly
  * (no floating-point error expected).
  * - Handles infinities and NaN according to IEEE 754/JavaScript semantics.
@@ -297,19 +279,6 @@ export function areEqual(a: number, b: number): boolean {
  * @returns The sum of the two numbers, with floating-point error handling.
  */
 export const safeAdd = (a: number, b: number) => {
-	/**
-	 * Floating-point safe addition.
-	 *
-	 * - If the sum is within the relative epsilon of zero, returns 0
-	 * (treats as indistinguishable from zero).
-	 * - Uses a relative epsilon scaled to the order of magnitude of the inputs.
-	 * - Only applies the epsilon check if both numbers are in the same order of
-	 * magnitude.
-	 * - For subnormal results (relativeEpsilon === 0), returns the sum directly
-	 * (no floating-point error expected).
-	 * - Handles infinities and NaN according to IEEE 754/JavaScript semantics.
-	 * - For very large or very small numbers, precision may be less than 15 digits.
-	 */
 	const sum = a + b;
 
 	if (a === 0 || b === 0) {
@@ -393,17 +362,21 @@ export const getDigitAccuracy = (
 	b: number,
 	sigDigits = 15
 ): number => {
-	const logA = Math.floor(Math.log10(a)) + 1;
-	const logB = Math.floor(Math.log10(b)) + 1;
+	const logA = Math.floor(Math.log10(Math.abs(a))) + 1;
+	const logB = Math.floor(Math.log10(Math.abs(b))) + 1;
 	if (logA !== logB) {
 		return 0;
 	}
 	const clamSigDigits = clamp(sigDigits, 1, 15);
-	const numDigits = Math.ceil(Math.log10(a));
+	const numDigits = Math.ceil(Math.log10(Math.abs(a)));
 	const roundPlaces = clamSigDigits - numDigits;
 
-	const shiftA = Math.floor(Math.pow(10, roundPlaces) * a);
-	const shiftB = Math.floor(Math.pow(10, roundPlaces) * b);
+	const shiftA = Math.floor(
+		Math.pow(10, roundPlaces) * Math.abs(a)
+	);
+	const shiftB = Math.floor(
+		Math.pow(10, roundPlaces) * Math.abs(b)
+	);
 
 	let matches = 0;
 	for (let i = sigDigits - 1; i >= 0; i--) {
@@ -429,6 +402,6 @@ export const getDigitAccuracy = (
  * @returns True if the number is a power of ten.
  */
 export const isPowerOfTen = (a: number) => {
-	const logNum = Math.log10(a);
+	const logNum = Math.log10(Math.abs(a));
 	return logNum % 1 === 0;
 };

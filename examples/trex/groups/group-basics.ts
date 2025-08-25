@@ -11,6 +11,7 @@ import {
 	MatchAll,
 	MatchEndSlice,
 	MatchOpt,
+	GroupSplitter,
 } from "@/trex";
 import { div, logobj } from "@/utils/log";
 import { log } from "console";
@@ -29,7 +30,6 @@ const logGroups = (group: GroupMatchNav | null) => {
 };
 
 export const doBasicGroupMatch = () => {
-	const nav = MutMatchNav.fromString("1234.5678");
 	const wholeMatcher = GroupMatch.from(
 		GroupName.fromName("whole-part"),
 		MatchRepeat.from(
@@ -81,6 +81,29 @@ export const doBasicGroupMatch = () => {
 	}
 };
 
+const doBasicSplitter = () => {
+	const navString = ".1234.5678.90210.";
+	const nav = MutMatchNav.fromString(navString);
+	const splitter = GroupSplitter.from(
+		GroupName.fromName("number"),
+		GroupMatch.from(
+			GroupName.fromName("decimal-point"),
+			MatchCodePoint.fromString(".")
+		),
+		null
+	);
+
+	const result = splitter.match(nav);
+	if (!result) {
+		log(`No match for navString: ${navString}`);
+		div();
+		return;
+	}
+	logGroups(result);
+	div();
+};
+
 export const doGroupBasicsCurrentTest = () => {
-	doBasicGroupMatch();
+	// doBasicGroupMatch();
+	doBasicSplitter();
 };

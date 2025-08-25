@@ -53,6 +53,8 @@ import {
 	getLogForRelativeEpsilon,
 	getRelativeEpsilonFromLog,
 	precisionRound,
+	safeAdd,
+	safeAddMany,
 } from "@/utils/math";
 import { testAreEqualAndSafeAddAcrossExponents } from "@/my-tests/math/areEqual-and-safeAdd";
 
@@ -65,32 +67,4 @@ import { testAreEqualAndSafeAddAcrossExponents } from "@/my-tests/math/areEqual-
 
 // matchWordsTest();
 
-testAreEqualAndSafeAddAcrossExponents();
-
-div();
-
-//doGroupBasicsCurrentTest();
-
-// log(0.1 + 0.2);
-
-// 300000000000000070000
-// 3000000000000000500
-// 4.440892098500626e-271
-//            3e+306
-// 123456789012345678901234567890
-
-const n1 = 4.440892098500626e-271;
-const marker = "123456789012345678901234567890";
-const n2 = 3e306;
-
-const s1 = alignRight(n1, 24);
-const l1 = s1.length;
-const s2 = alignRight(n2, 24);
-const l2 = s2.length;
-
-log(s1);
-log(marker);
-log(s2);
-log(marker);
-
-div();
+doGroupBasicsCurrentTest();

@@ -486,6 +486,6 @@ export class MutMatchNav {
 	public toString(): string {
 		return this.isInvalidated
 			? "Nav: INVALIDATED"
-			: `Nav: [${this._startIndex}..${this._captureIndex}], length: ${this.source.length}`;
+			: `Nav: [${this._startIndex}..${this._captureIndex}], '${this.captureMatch.value}'`;
 	}
 }
