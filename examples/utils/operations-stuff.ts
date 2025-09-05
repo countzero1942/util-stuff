@@ -1,16 +1,20 @@
 import { log } from "console";
 import { StepNav } from "@/utils/operations";
 
-const steps = [
-	"First Match",
-	"Content Match",
-	"Last Match",
-] as const;
+// const steps = [
+// 	"First Match",
+// 	"Content Match",
+// 	"Last Match",
+// ] as const;
 
-type Step = (typeof steps)[number];
+// type Step = (typeof steps)[number];
 
 export const doStepNavTest = () => {
-	const stepNav = new StepNav(steps);
+	const stepNav = StepNav.fromSteps(
+		"First Match",
+		"Content Match",
+		"Last Match"
+	);
 
 	while (stepNav.isNotComplete) {
 		switch (stepNav.step) {

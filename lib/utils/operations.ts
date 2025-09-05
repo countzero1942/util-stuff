@@ -10,7 +10,15 @@
 export class StepNav<TStep extends string> {
 	private _index: number = 0;
 
-	constructor(public readonly steps: readonly TStep[]) {}
+	private constructor(
+		public readonly steps: readonly TStep[]
+	) {}
+
+	static fromSteps<TStep extends string>(
+		...steps: readonly TStep[]
+	) {
+		return new StepNav(steps);
+	}
 
 	get index(): number {
 		return this._index;
@@ -19,7 +27,7 @@ export class StepNav<TStep extends string> {
 	get step(): TStep {
 		if (this.isComplete)
 			throw new Error(
-				"StepNav.step: operation is complete, step is undefined"
+				"StepNav.step: nav state is complete, step is undefined"
 			);
 		return this.steps[this._index];
 	}
@@ -35,7 +43,7 @@ export class StepNav<TStep extends string> {
 	next(): void {
 		if (this.isComplete)
 			throw new Error(
-				"StepNav.next(): operation is already complete"
+				"StepNav.next(): nav state is already complete"
 			);
 		this._index++;
 	}

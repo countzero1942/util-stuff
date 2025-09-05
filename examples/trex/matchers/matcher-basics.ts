@@ -51,7 +51,7 @@ export const doRepeatMatcherTestWithAltFirstAltLast =
 		const numberMatcher = MatchRepeat.from(
 			contentGroupMatcher,
 			NumberOfMatches.between(1, 4),
-			AltFirstLastMatchers.from(
+			AltFirstLastMatchers.fromBoth(
 				startGroupMatcher,
 				endGroupMatcher
 			)
@@ -69,9 +69,13 @@ export const doRepeatMatcherTestWithAltFirstAltLast =
 			"1,567,890,321",
 			"1,567,890,3",
 			"123,567,890,321,123",
+			"1,567,890,321,123",
+			"123,567,890,321,3",
+			"1,567,890,321,3",
 			"123",
 			"12",
 			"1",
+			"1234",
 		];
 
 		for (const navString of navStrings) {
@@ -82,7 +86,6 @@ export const doRepeatMatcherTestWithAltFirstAltLast =
 				div();
 				continue;
 			}
-			div();
 			log(
 				`navString: '${navString}' |  ` +
 					`result.captureMatch.value: '${result.captureMatch.value}'`

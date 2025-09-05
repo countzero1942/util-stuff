@@ -8,8 +8,8 @@ import { StepNav } from "@/utils/operations";
  * Defines the number of matches for a repeat matcher.
  */
 export class NumberOfMatches {
-	public readonly minNumber: number;
-	public readonly maxNumber: number;
+	readonly minNumber: number;
+	readonly maxNumber: number;
 
 	/**
 	 * @param minNumber The minimum number of matches.
@@ -44,28 +44,28 @@ export class NumberOfMatches {
 	/**
 	 * Matches one or more times. (Static getter)
 	 */
-	public static get oneOrMore(): NumberOfMatches {
+	static get oneOrMore(): NumberOfMatches {
 		return new NumberOfMatches(1, -1);
 	}
 
 	/**
 	 * Matches zero or more times. (Static getter)
 	 */
-	public static get zeroOrMore(): NumberOfMatches {
+	static get zeroOrMore(): NumberOfMatches {
 		return new NumberOfMatches(0, -1);
 	}
 
 	/**
 	 * Matches exactly the given number of times.
 	 */
-	public static exactly(number: number): NumberOfMatches {
+	static exactly(number: number): NumberOfMatches {
 		return new NumberOfMatches(number, number);
 	}
 
 	/**
 	 * Matches between the given number of times.
 	 */
-	public static between(
+	static between(
 		minNumber: number,
 		maxNumber: number
 	): NumberOfMatches {
@@ -76,7 +76,7 @@ export class NumberOfMatches {
 	 * Matches at least the given number of times.
 	 *
 	 */
-	public static atLeast(number: number): NumberOfMatches {
+	static atLeast(number: number): NumberOfMatches {
 		return new NumberOfMatches(number);
 	}
 }
@@ -91,50 +91,13 @@ export class AltFirstLastMatchers {
 	) {}
 
 	/**
-	 * Returns the first and next matchers for a repeat matcher.
-	 *
-	 * If altFirstMatch is not null, Start is a MatchAny with altFirstMatch
-	 * as the first matcher and contentMatcher as the second matcher.
-	 *
-	 * If altLastMatch is not null, Next is a MatchAny with contentMatcher
-	 * as the first matcher and altLastMatch as the second matcher.
-	 *
-	 * If both altFirstMatch and altLastMatch are null, Start and Next are
-	 * contentMatcher.
-	 *
-	 * @param contentMatcher The matcher to use for the content.
-	 * @returns The first and next matchers.
-	 */
-	public getStartAndNextMatcher(
-		contentMatcher: MatchBase
-	): [MatchBase, MatchBase] {
-		const firstMatch =
-			this.altFirstMatch !== null
-				? MatchAny.from(
-						this.altFirstMatch,
-						contentMatcher
-					)
-				: contentMatcher;
-
-		const nextMatch =
-			this.altLastMatch !== null
-				? MatchAny.from(
-						contentMatcher,
-						this.altLastMatch
-					)
-				: contentMatcher;
-
-		return [firstMatch, nextMatch];
-	}
-
-	/**
 	 * Creates a new AltFirstLastMatchers instance with the given matchers.
 	 *
 	 * @param altFirstMatch The first matcher.
 	 * @param altLastMatch The last matcher.
 	 * @returns A new AltFirstLastMatchers instance.
 	 */
-	public static from(
+	static fromBoth(
 		altFirstMatch: MatchBase,
 		altLastMatch: MatchBase
 	): AltFirstLastMatchers {
@@ -150,7 +113,7 @@ export class AltFirstLastMatchers {
 	 * @param altFirstMatch The first matcher.
 	 * @returns A new AltFirstLastMatchers instance.
 	 */
-	public static fromAltFirst(
+	static fromAltFirst(
 		altFirstMatch: MatchBase
 	): AltFirstLastMatchers {
 		return new AltFirstLastMatchers(altFirstMatch, null);
@@ -162,7 +125,7 @@ export class AltFirstLastMatchers {
 	 * @param altLastMatch The last matcher.
 	 * @returns A new AltFirstLastMatchers instance.
 	 */
-	public static fromAltLast(
+	static fromAltLast(
 		altLastMatch: MatchBase
 	): AltFirstLastMatchers {
 		return new AltFirstLastMatchers(null, altLastMatch);
@@ -175,24 +138,12 @@ export class AltFirstLastMatchers {
 	 *
 	 * @returns The default AltFirstLastMatchers instance.
 	 */
-	public static get default(): AltFirstLastMatchers {
+	static get default(): AltFirstLastMatchers {
 		return AltFirstLastMatchers._default;
 	}
 
 	private static _default = new AltFirstLastMatchers();
 }
-
-const matchRepeatSteps = [
-	"First Matcher",
-	"Content Matcher",
-	"Last Matcher",
-] as const;
-
-type MatchRepeatStep = (typeof matchRepeatSteps)[number];
-
-export const matchRepeatStepNav = new StepNav(
-	matchRepeatSteps
-);
 
 /**
  * A repeat matcher.
@@ -205,12 +156,45 @@ export class MatchRepeat extends MatchBase {
 	 * @param numberOfMatches The number of times to repeat.
 	 * @param altFirstLastMatchers The altFirst and altLast matchers.
 	 */
-	public constructor(
+	private constructor(
 		public readonly matcher: MatchBase,
 		public readonly numberOfMatches: NumberOfMatches = NumberOfMatches.oneOrMore,
 		public readonly altFirstLastMatchers: AltFirstLastMatchers = AltFirstLastMatchers.default
 	) {
 		super();
+	}
+
+	/**
+	 * Creates a new MatchRepeat instance.
+	 *
+	 * @param matcher The matcher to repeat.
+	 * @param numberOfMatches The number of times to repeat.
+	 * @param altFirstLastMatchers The altFirst and altLast matchers.
+	 * @returns A new MatchRepeat instance.
+	 */
+	static from(
+		matcher: MatchBase,
+		numberOfMatches: NumberOfMatches = NumberOfMatches.oneOrMore,
+		altFirstLastMatchers: AltFirstLastMatchers = AltFirstLastMatchers.default
+	): MatchRepeat {
+		return new MatchRepeat(
+			matcher,
+			numberOfMatches,
+			altFirstLastMatchers
+		);
+	}
+
+	static #_matchRepeatStepNav = StepNav.fromSteps(
+		"First Matcher",
+		"Content Matcher",
+		"Last Matcher"
+	);
+
+	/**
+	 * Returns a new copy of the match repeat step nav.
+	 */
+	static getMatchRepeatStepNav() {
+		return this.#_matchRepeatStepNav.copyNew();
 	}
 
 	/**
@@ -231,13 +215,15 @@ export class MatchRepeat extends MatchBase {
 	 * @param nav The navigation to match.
 	 * @returns The navigation after matching, or null if no match.
 	 */
-	public match(nav: MutMatchNav): MutMatchNav | null {
+	match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertNavIsValid();
+
 		let count = 0;
-		let currentNav = nav.copy();
 		const min = this.numberOfMatches.minNumber;
 		const max = this.numberOfMatches.maxNumber;
 		const beyondCount = max + 1;
+
+		let currentNav = nav.copy();
 
 		const firstMatcher =
 			this.altFirstLastMatchers.altFirstMatch;
@@ -245,19 +231,11 @@ export class MatchRepeat extends MatchBase {
 		const lastMatcher =
 			this.altFirstLastMatchers.altLastMatch;
 
-		const stepNav = matchRepeatStepNav.copyNew();
+		const stepNav = MatchRepeat.getMatchRepeatStepNav();
 
 		let isFailedMatch = false;
 
-		log(
-			`>>> BEGIN: min: ${min} | max: ${max} | beyondCount: ${beyondCount}`
-		);
-
 		while (count < beyondCount && stepNav.isNotComplete) {
-			log(
-				`>>> DOING: min: ${min} | max: ${max} | beyondCount: ${beyondCount}`
-			);
-
 			/**
 			 * The result of the current match.
 			 *
@@ -269,48 +247,33 @@ export class MatchRepeat extends MatchBase {
 
 			const isCurrentMatchEmpty = () => {
 				if (result === null) {
-					log(
-						`>>> IS CURRENT MATCH EMPTY: TRUE: result is null`
-					);
 					return true;
 				}
-
-				const b =
-					currentNav.captureIndex ===
-					result.captureIndex;
-				log(
-					`>>> IS CURRENT MATCH EMPTY: ${b} | ${currentNav.captureIndex} === ${result.captureIndex}`
+				return (
+					result.captureIndex ===
+					currentNav.captureIndex
 				);
-				return b;
+			};
+
+			const doAltMatcher = (
+				altMatcher: MatchBase | null
+			) => {
+				if (altMatcher) {
+					result = altMatcher.match(currentNav.copy());
+					if (!result) {
+						isFailedMatch = true;
+					}
+				}
+				stepNav.next();
 			};
 
 			switch (stepNav.step) {
 				case "First Matcher":
-					log(
-						`>>> ENTER First Matcher: exists: ${!!firstMatcher} | min: ${min} | max: ${max}`
-					);
-					if (firstMatcher) {
-						result = firstMatcher.match(
-							currentNav.copy()
-						);
-						log(
-							`>>> firstMatcher result: ${result?.captureMatch.value}`
-						);
-						if (!result) {
-							isFailedMatch = true;
-						}
-					}
-					stepNav.next();
+					doAltMatcher(firstMatcher);
 					break;
 				case "Content Matcher":
-					log(
-						`>>> ENTER Content Matcher: min: ${min} | max: ${max}`
-					);
 					result = contentMatcher.match(
 						currentNav.copy()
-					);
-					log(
-						`>>> contentMatcher result: ${result?.captureMatch.value}`
 					);
 					if (!result) {
 						isFailedMatch = true;
@@ -320,376 +283,32 @@ export class MatchRepeat extends MatchBase {
 					}
 					break;
 				case "Last Matcher":
-					log(
-						`>>> ENTER Last Matcher: exists: ${!!lastMatcher} | min: ${min} | max: ${max}`
-					);
-					if (lastMatcher) {
-						result = lastMatcher.match(
-							currentNav.copy()
-						);
-						log(
-							`>>> lastMatcher result: ${result?.captureMatch.value}`
-						);
-						if (!result) {
-							isFailedMatch = true;
-						}
-					}
-
-					stepNav.next();
+					doAltMatcher(lastMatcher);
 					break;
 				default:
 					throw "never";
 			}
 
+			// note: result will also be null on failed match
 			if (isFailedMatch) {
 				break;
 			}
 
 			if (isCurrentMatchEmpty() === false) {
 				count++;
-				log(
-					`>>> count INC: ${count} | min: ${min} | max: ${max}`
-				);
-			} else {
-				log(
-					`>>> count NO INC: ${count} | min: ${min} | max: ${max}`
-				);
 			}
 
+			// note: result here is only null if altMatcher is null
+			// and no matching took place
 			if (result) {
 				currentNav = result;
 			}
-		}
+		} // while (count < beyondCount && stepNav.isNotComplete)
 
 		if (count >= min && count <= max) {
-			log(
-				`>>> SUCCESS: min: ${min} | max: ${max} | count: ${count}` +
-					` | nav: '${currentNav.captureMatch.value}'`
-			);
 			return currentNav;
 		} else {
-			log(
-				`>>> FAILURE: min: ${min} | max: ${max} | count: ${count}`
-			);
 			return nav.invalidate();
 		}
-	}
-
-	public match3(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsValid();
-		let count = 0;
-		let currentNav = nav.copy();
-		const min = this.numberOfMatches.minNumber;
-		const max = this.numberOfMatches.maxNumber;
-		const beyondMaxCount = max + 1;
-
-		const firstMatch =
-			this.altFirstLastMatchers.altFirstMatch;
-		const contentMatch = this.matcher;
-		const lastMatch =
-			this.altFirstLastMatchers.altLastMatch;
-
-		let isFirstMatch = true;
-		let isContentMatch = false;
-		let isLastMatch = false;
-		let isLastMatchDone = false;
-		let isFailedMatch = false;
-		log(
-			`>>> BEGIN: min: ${min} | max: ${max} | lastCount: ${beyondMaxCount}`
-		);
-
-		while (
-			count < beyondMaxCount &&
-			isLastMatchDone === false
-		) {
-			log(
-				`>>> DOING: min: ${min} | max: ${max} | lastCount: ${beyondMaxCount}`
-			);
-
-			let result: MutMatchNav | null = null;
-
-			const isCurrentMatchEmpty = () => {
-				if (result === null) {
-					log(
-						`>>> IS CURRENT MATCH EMPTY: TRUE: result is null`
-					);
-					return true;
-				}
-
-				const b =
-					currentNav.captureIndex ===
-					result.captureIndex;
-				log(
-					`>>> IS CURRENT MATCH EMPTY: ${b} | ${currentNav.captureIndex} === ${result.captureIndex}`
-				);
-				return b;
-			};
-
-			switch (true) {
-				case isFirstMatch:
-					log(
-						`>>> ENTER isFirstMatch: min: ${min} | max: ${max}`
-					);
-					if (firstMatch) {
-						log(
-							`>>> ENTER firstMatch: min: ${min} | max: ${max}`
-						);
-						result = firstMatch.match(
-							currentNav.copy()
-						);
-						log(
-							`>>> firstMatch: ${result?.captureMatch.value}`
-						);
-						if (!result) {
-							isFailedMatch = true;
-						}
-					}
-					isFirstMatch = false;
-					isContentMatch = true;
-					break;
-				case isContentMatch:
-					log(
-						`>>> ENTER isContentMatch: min: ${min} | max: ${max}`
-					);
-					result = contentMatch.match(
-						currentNav.copy()
-					);
-					log(
-						`>>> contentMatch: ${result?.captureMatch.value}`
-					);
-					if (!result) {
-						isFailedMatch = true;
-					}
-					if (isCurrentMatchEmpty()) {
-						isContentMatch = false;
-						isLastMatch = true;
-					}
-					break;
-				case isLastMatch:
-					log(
-						`>>> ENTER isLastMatch: min: ${min} | max: ${max}`
-					);
-					if (lastMatch) {
-						log(
-							`>>> ENTER lastMatch: min: ${min} | max: ${max}`
-						);
-						result = lastMatch.match(
-							currentNav.copy()
-						);
-						log(
-							`>>> lastMatch: ${result?.captureMatch.value}`
-						);
-						if (!result) {
-							isFailedMatch = true;
-						}
-					}
-					isLastMatch = false;
-					isLastMatchDone = true;
-					break;
-				default:
-					throw "never";
-			}
-
-			if (isFailedMatch) {
-				break;
-			}
-
-			if (isCurrentMatchEmpty() === false) {
-				count++;
-				log(
-					`>>> count INC: ${count} | min: ${min} | max: ${max}`
-				);
-			} else {
-				log(
-					`>>> count NO INC: ${count} | min: ${min} | max: ${max}`
-				);
-			}
-
-			if (result) {
-				currentNav = result;
-			}
-		}
-
-		if (count >= min && count <= max) {
-			log(
-				`>>> SUCCESS: min: ${min} | max: ${max} | count: ${count}` +
-					` | nav: '${currentNav.captureMatch.value}'`
-			);
-			return currentNav;
-		} else {
-			log(
-				`>>> FAILURE: min: ${min} | max: ${max} | count: ${count}`
-			);
-			return nav.invalidate();
-		}
-	}
-
-	public match2(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsValid();
-		let count = 0;
-		let currentNav = nav.copy();
-		const min = this.numberOfMatches.minNumber;
-		const max = this.numberOfMatches.maxNumber;
-		const lastCount = max + 1;
-
-		const firstMatch =
-			this.altFirstLastMatchers.altFirstMatch;
-		const contentMatch = this.matcher;
-		const lastMatch =
-			this.altFirstLastMatchers.altLastMatch;
-
-		let isFirstMatch = true;
-		let isContentMatch = false;
-		let isLastMatch = false;
-		let isLastMatchDone = false;
-		let isFailedMatch = false;
-		log(
-			`>>> BEGIN: min: ${min} | max: ${max} | lastCount: ${lastCount}`
-		);
-
-		while (
-			count < lastCount &&
-			isLastMatchDone === false
-		) {
-			log(
-				`>>> DOING: min: ${min} | max: ${max} | lastCount: ${lastCount}`
-			);
-
-			let result: MutMatchNav | null = null;
-
-			const isCurrentMatchEmpty = () => {
-				if (result === null) {
-					log(
-						`>>> IS CURRENT MATCH EMPTY: TRUE: result is null`
-					);
-					return true;
-				}
-
-				const b =
-					currentNav.captureIndex ===
-					result.captureIndex;
-				log(
-					`>>> IS CURRENT MATCH EMPTY: ${b} | ${currentNav.captureIndex} === ${result.captureIndex}`
-				);
-				return b;
-			};
-
-			switch (true) {
-				case isFirstMatch:
-					log(
-						`>>> ENTER isFirstMatch: min: ${min} | max: ${max}`
-					);
-					if (firstMatch) {
-						log(
-							`>>> ENTER firstMatch: min: ${min} | max: ${max}`
-						);
-						result = firstMatch.match(
-							currentNav.copy()
-						);
-						log(
-							`>>> firstMatch: ${result?.captureMatch.value}`
-						);
-						if (!result) {
-							isFailedMatch = true;
-						}
-					}
-					isFirstMatch = false;
-					isContentMatch = true;
-					break;
-				case isContentMatch:
-					log(
-						`>>> ENTER isContentMatch: min: ${min} | max: ${max}`
-					);
-					result = contentMatch.match(
-						currentNav.copy()
-					);
-					log(
-						`>>> contentMatch: ${result?.captureMatch.value}`
-					);
-					if (!result) {
-						isFailedMatch = true;
-					}
-					if (isCurrentMatchEmpty()) {
-						isContentMatch = false;
-						isLastMatch = true;
-					}
-					break;
-				case isLastMatch:
-					log(
-						`>>> ENTER isLastMatch: min: ${min} | max: ${max}`
-					);
-					if (lastMatch) {
-						log(
-							`>>> ENTER lastMatch: min: ${min} | max: ${max}`
-						);
-						result = lastMatch.match(
-							currentNav.copy()
-						);
-						log(
-							`>>> lastMatch: ${result?.captureMatch.value}`
-						);
-						if (!result) {
-							isFailedMatch = true;
-						}
-					}
-					isLastMatch = false;
-					isLastMatchDone = true;
-					break;
-				default:
-					throw "never";
-			}
-
-			if (isFailedMatch) {
-				break;
-			}
-
-			if (isCurrentMatchEmpty() === false) {
-				count++;
-				log(
-					`>>> count INC: ${count} | min: ${min} | max: ${max}`
-				);
-			} else {
-				log(
-					`>>> count NO INC: ${count} | min: ${min} | max: ${max}`
-				);
-			}
-
-			if (result) {
-				currentNav = result;
-			}
-		}
-
-		if (count >= min && count <= max) {
-			log(
-				`>>> SUCCESS: min: ${min} | max: ${max} | count: ${count}` +
-					` | nav: '${currentNav.captureMatch.value}'`
-			);
-			return currentNav;
-		} else {
-			log(
-				`>>> FAILURE: min: ${min} | max: ${max} | count: ${count}`
-			);
-			return nav.invalidate();
-		}
-	}
-
-	/**
-	 * Creates a new MatchRepeat instance.
-	 *
-	 * @param matcher The matcher to repeat.
-	 * @param numberOfMatches The number of times to repeat.
-	 * @param altFirstLastMatchers The altFirst and altLast matchers.
-	 * @returns A new MatchRepeat instance.
-	 */
-	public static from(
-		matcher: MatchBase,
-		numberOfMatches: NumberOfMatches = NumberOfMatches.oneOrMore,
-		altFirstLastMatchers: AltFirstLastMatchers = AltFirstLastMatchers.default
-	): MatchRepeat {
-		return new MatchRepeat(
-			matcher,
-			numberOfMatches,
-			altFirstLastMatchers
-		);
-	}
+	} // match
 }

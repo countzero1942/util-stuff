@@ -20,14 +20,14 @@ describe("AltFirstLastMatchers", () => {
 	test("constructs with provided matchers", () => {
 		const m1 = MatchCodePoint.fromString("A");
 		const m2 = MatchCodePoint.fromString("B");
-		const alt = AltFirstLastMatchers.from(m1, m2);
+		const alt = AltFirstLastMatchers.fromBoth(m1, m2);
 		expect(alt.altFirstMatch).toBe(m1);
 		expect(alt.altLastMatch).toBe(m2);
 	});
 	test("from() creates instance with both matchers", () => {
 		const m1 = MatchCodePoint.fromString("A");
 		const m2 = MatchCodePoint.fromString("B");
-		const alt = AltFirstLastMatchers.from(m1, m2);
+		const alt = AltFirstLastMatchers.fromBoth(m1, m2);
 		expect(alt.altFirstMatch).toBe(m1);
 		expect(alt.altLastMatch).toBe(m2);
 	});
@@ -73,7 +73,7 @@ describe("AltFirstLastMatchers", () => {
 		const altFirst = MatchCodePoint.fromString("A");
 		const altLast = MatchCodePointRange.fromString("B-C");
 		const content = MatchCodePointSet.fromString("DEF");
-		const alt = AltFirstLastMatchers.from(
+		const alt = AltFirstLastMatchers.fromBoth(
 			altFirst,
 			altLast
 		);
@@ -174,7 +174,7 @@ describe("NumberOfMatches", () => {
 				MatchCodePoint.fromString("{");
 			const altLastMatch =
 				MatchCodePoint.fromString("}");
-			const alt = AltFirstLastMatchers.from(
+			const alt = AltFirstLastMatchers.fromBoth(
 				altFirstMatch,
 				altLastMatch
 			);
@@ -311,7 +311,7 @@ describe("MatchRepeat", () => {
 			const repeatMatcher = MatchRepeat.from(
 				innerMatcher,
 				NumberOfMatches.oneOrMore,
-				AltFirstLastMatchers.from(
+				AltFirstLastMatchers.fromBoth(
 					altFirstMatcher,
 					altLastMatcher
 				)
