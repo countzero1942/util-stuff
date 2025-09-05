@@ -1,6 +1,8 @@
 import { MatchBase } from "./match-base";
 import { MatchAny } from "./match-any-all-opt";
 import { MutMatchNav } from "./nav";
+import { log } from "console";
+import { StepNav } from "@/utils/operations";
 
 /**
  * Defines the number of matches for a repeat matcher.
@@ -180,6 +182,18 @@ export class AltFirstLastMatchers {
 	private static _default = new AltFirstLastMatchers();
 }
 
+const matchRepeatSteps = [
+	"First Matcher",
+	"Content Matcher",
+	"Last Matcher",
+] as const;
+
+type MatchRepeatStep = (typeof matchRepeatSteps)[number];
+
+export const matchRepeatStepNav = new StepNav(
+	matchRepeatSteps
+);
+
 /**
  * A repeat matcher.
  */
@@ -220,32 +234,441 @@ export class MatchRepeat extends MatchBase {
 	public match(nav: MutMatchNav): MutMatchNav | null {
 		nav.assertNavIsValid();
 		let count = 0;
-		let currentNav = nav;
+		let currentNav = nav.copy();
 		const min = this.numberOfMatches.minNumber;
 		const max = this.numberOfMatches.maxNumber;
+		const beyondCount = max + 1;
 
-		const [firstMatch, nextMatch] =
-			this.altFirstLastMatchers.getStartAndNextMatcher(
-				this.matcher
+		const firstMatcher =
+			this.altFirstLastMatchers.altFirstMatch;
+		const contentMatcher = this.matcher;
+		const lastMatcher =
+			this.altFirstLastMatchers.altLastMatch;
+
+		const stepNav = matchRepeatStepNav.copyNew();
+
+		let isFailedMatch = false;
+
+		log(
+			`>>> BEGIN: min: ${min} | max: ${max} | beyondCount: ${beyondCount}`
+		);
+
+		while (count < beyondCount && stepNav.isNotComplete) {
+			log(
+				`>>> DOING: min: ${min} | max: ${max} | beyondCount: ${beyondCount}`
 			);
 
-		while (count < max) {
-			const result =
-				count === 0
-					? firstMatch.match(currentNav.copy())
-					: nextMatch.match(currentNav.copy());
+			/**
+			 * The result of the current match.
+			 *
+			 * Will be null if the match fails.
+			 * Will be null if firstMatcher or lastMatcher is null.
+			 * So it is not a reliable indicator of failed match.
+			 */
+			let result: MutMatchNav | null = null;
 
-			if (!result) {
+			const isCurrentMatchEmpty = () => {
+				if (result === null) {
+					log(
+						`>>> IS CURRENT MATCH EMPTY: TRUE: result is null`
+					);
+					return true;
+				}
+
+				const b =
+					currentNav.captureIndex ===
+					result.captureIndex;
+				log(
+					`>>> IS CURRENT MATCH EMPTY: ${b} | ${currentNav.captureIndex} === ${result.captureIndex}`
+				);
+				return b;
+			};
+
+			switch (stepNav.step) {
+				case "First Matcher":
+					log(
+						`>>> ENTER First Matcher: exists: ${!!firstMatcher} | min: ${min} | max: ${max}`
+					);
+					if (firstMatcher) {
+						result = firstMatcher.match(
+							currentNav.copy()
+						);
+						log(
+							`>>> firstMatcher result: ${result?.captureMatch.value}`
+						);
+						if (!result) {
+							isFailedMatch = true;
+						}
+					}
+					stepNav.next();
+					break;
+				case "Content Matcher":
+					log(
+						`>>> ENTER Content Matcher: min: ${min} | max: ${max}`
+					);
+					result = contentMatcher.match(
+						currentNav.copy()
+					);
+					log(
+						`>>> contentMatcher result: ${result?.captureMatch.value}`
+					);
+					if (!result) {
+						isFailedMatch = true;
+					}
+					if (isCurrentMatchEmpty()) {
+						stepNav.next();
+					}
+					break;
+				case "Last Matcher":
+					log(
+						`>>> ENTER Last Matcher: exists: ${!!lastMatcher} | min: ${min} | max: ${max}`
+					);
+					if (lastMatcher) {
+						result = lastMatcher.match(
+							currentNav.copy()
+						);
+						log(
+							`>>> lastMatcher result: ${result?.captureMatch.value}`
+						);
+						if (!result) {
+							isFailedMatch = true;
+						}
+					}
+
+					stepNav.next();
+					break;
+				default:
+					throw "never";
+			}
+
+			if (isFailedMatch) {
 				break;
 			}
 
-			count++;
-			currentNav = result;
+			if (isCurrentMatchEmpty() === false) {
+				count++;
+				log(
+					`>>> count INC: ${count} | min: ${min} | max: ${max}`
+				);
+			} else {
+				log(
+					`>>> count NO INC: ${count} | min: ${min} | max: ${max}`
+				);
+			}
+
+			if (result) {
+				currentNav = result;
+			}
 		}
 
 		if (count >= min && count <= max) {
+			log(
+				`>>> SUCCESS: min: ${min} | max: ${max} | count: ${count}` +
+					` | nav: '${currentNav.captureMatch.value}'`
+			);
 			return currentNav;
 		} else {
+			log(
+				`>>> FAILURE: min: ${min} | max: ${max} | count: ${count}`
+			);
+			return nav.invalidate();
+		}
+	}
+
+	public match3(nav: MutMatchNav): MutMatchNav | null {
+		nav.assertNavIsValid();
+		let count = 0;
+		let currentNav = nav.copy();
+		const min = this.numberOfMatches.minNumber;
+		const max = this.numberOfMatches.maxNumber;
+		const beyondMaxCount = max + 1;
+
+		const firstMatch =
+			this.altFirstLastMatchers.altFirstMatch;
+		const contentMatch = this.matcher;
+		const lastMatch =
+			this.altFirstLastMatchers.altLastMatch;
+
+		let isFirstMatch = true;
+		let isContentMatch = false;
+		let isLastMatch = false;
+		let isLastMatchDone = false;
+		let isFailedMatch = false;
+		log(
+			`>>> BEGIN: min: ${min} | max: ${max} | lastCount: ${beyondMaxCount}`
+		);
+
+		while (
+			count < beyondMaxCount &&
+			isLastMatchDone === false
+		) {
+			log(
+				`>>> DOING: min: ${min} | max: ${max} | lastCount: ${beyondMaxCount}`
+			);
+
+			let result: MutMatchNav | null = null;
+
+			const isCurrentMatchEmpty = () => {
+				if (result === null) {
+					log(
+						`>>> IS CURRENT MATCH EMPTY: TRUE: result is null`
+					);
+					return true;
+				}
+
+				const b =
+					currentNav.captureIndex ===
+					result.captureIndex;
+				log(
+					`>>> IS CURRENT MATCH EMPTY: ${b} | ${currentNav.captureIndex} === ${result.captureIndex}`
+				);
+				return b;
+			};
+
+			switch (true) {
+				case isFirstMatch:
+					log(
+						`>>> ENTER isFirstMatch: min: ${min} | max: ${max}`
+					);
+					if (firstMatch) {
+						log(
+							`>>> ENTER firstMatch: min: ${min} | max: ${max}`
+						);
+						result = firstMatch.match(
+							currentNav.copy()
+						);
+						log(
+							`>>> firstMatch: ${result?.captureMatch.value}`
+						);
+						if (!result) {
+							isFailedMatch = true;
+						}
+					}
+					isFirstMatch = false;
+					isContentMatch = true;
+					break;
+				case isContentMatch:
+					log(
+						`>>> ENTER isContentMatch: min: ${min} | max: ${max}`
+					);
+					result = contentMatch.match(
+						currentNav.copy()
+					);
+					log(
+						`>>> contentMatch: ${result?.captureMatch.value}`
+					);
+					if (!result) {
+						isFailedMatch = true;
+					}
+					if (isCurrentMatchEmpty()) {
+						isContentMatch = false;
+						isLastMatch = true;
+					}
+					break;
+				case isLastMatch:
+					log(
+						`>>> ENTER isLastMatch: min: ${min} | max: ${max}`
+					);
+					if (lastMatch) {
+						log(
+							`>>> ENTER lastMatch: min: ${min} | max: ${max}`
+						);
+						result = lastMatch.match(
+							currentNav.copy()
+						);
+						log(
+							`>>> lastMatch: ${result?.captureMatch.value}`
+						);
+						if (!result) {
+							isFailedMatch = true;
+						}
+					}
+					isLastMatch = false;
+					isLastMatchDone = true;
+					break;
+				default:
+					throw "never";
+			}
+
+			if (isFailedMatch) {
+				break;
+			}
+
+			if (isCurrentMatchEmpty() === false) {
+				count++;
+				log(
+					`>>> count INC: ${count} | min: ${min} | max: ${max}`
+				);
+			} else {
+				log(
+					`>>> count NO INC: ${count} | min: ${min} | max: ${max}`
+				);
+			}
+
+			if (result) {
+				currentNav = result;
+			}
+		}
+
+		if (count >= min && count <= max) {
+			log(
+				`>>> SUCCESS: min: ${min} | max: ${max} | count: ${count}` +
+					` | nav: '${currentNav.captureMatch.value}'`
+			);
+			return currentNav;
+		} else {
+			log(
+				`>>> FAILURE: min: ${min} | max: ${max} | count: ${count}`
+			);
+			return nav.invalidate();
+		}
+	}
+
+	public match2(nav: MutMatchNav): MutMatchNav | null {
+		nav.assertNavIsValid();
+		let count = 0;
+		let currentNav = nav.copy();
+		const min = this.numberOfMatches.minNumber;
+		const max = this.numberOfMatches.maxNumber;
+		const lastCount = max + 1;
+
+		const firstMatch =
+			this.altFirstLastMatchers.altFirstMatch;
+		const contentMatch = this.matcher;
+		const lastMatch =
+			this.altFirstLastMatchers.altLastMatch;
+
+		let isFirstMatch = true;
+		let isContentMatch = false;
+		let isLastMatch = false;
+		let isLastMatchDone = false;
+		let isFailedMatch = false;
+		log(
+			`>>> BEGIN: min: ${min} | max: ${max} | lastCount: ${lastCount}`
+		);
+
+		while (
+			count < lastCount &&
+			isLastMatchDone === false
+		) {
+			log(
+				`>>> DOING: min: ${min} | max: ${max} | lastCount: ${lastCount}`
+			);
+
+			let result: MutMatchNav | null = null;
+
+			const isCurrentMatchEmpty = () => {
+				if (result === null) {
+					log(
+						`>>> IS CURRENT MATCH EMPTY: TRUE: result is null`
+					);
+					return true;
+				}
+
+				const b =
+					currentNav.captureIndex ===
+					result.captureIndex;
+				log(
+					`>>> IS CURRENT MATCH EMPTY: ${b} | ${currentNav.captureIndex} === ${result.captureIndex}`
+				);
+				return b;
+			};
+
+			switch (true) {
+				case isFirstMatch:
+					log(
+						`>>> ENTER isFirstMatch: min: ${min} | max: ${max}`
+					);
+					if (firstMatch) {
+						log(
+							`>>> ENTER firstMatch: min: ${min} | max: ${max}`
+						);
+						result = firstMatch.match(
+							currentNav.copy()
+						);
+						log(
+							`>>> firstMatch: ${result?.captureMatch.value}`
+						);
+						if (!result) {
+							isFailedMatch = true;
+						}
+					}
+					isFirstMatch = false;
+					isContentMatch = true;
+					break;
+				case isContentMatch:
+					log(
+						`>>> ENTER isContentMatch: min: ${min} | max: ${max}`
+					);
+					result = contentMatch.match(
+						currentNav.copy()
+					);
+					log(
+						`>>> contentMatch: ${result?.captureMatch.value}`
+					);
+					if (!result) {
+						isFailedMatch = true;
+					}
+					if (isCurrentMatchEmpty()) {
+						isContentMatch = false;
+						isLastMatch = true;
+					}
+					break;
+				case isLastMatch:
+					log(
+						`>>> ENTER isLastMatch: min: ${min} | max: ${max}`
+					);
+					if (lastMatch) {
+						log(
+							`>>> ENTER lastMatch: min: ${min} | max: ${max}`
+						);
+						result = lastMatch.match(
+							currentNav.copy()
+						);
+						log(
+							`>>> lastMatch: ${result?.captureMatch.value}`
+						);
+						if (!result) {
+							isFailedMatch = true;
+						}
+					}
+					isLastMatch = false;
+					isLastMatchDone = true;
+					break;
+				default:
+					throw "never";
+			}
+
+			if (isFailedMatch) {
+				break;
+			}
+
+			if (isCurrentMatchEmpty() === false) {
+				count++;
+				log(
+					`>>> count INC: ${count} | min: ${min} | max: ${max}`
+				);
+			} else {
+				log(
+					`>>> count NO INC: ${count} | min: ${min} | max: ${max}`
+				);
+			}
+
+			if (result) {
+				currentNav = result;
+			}
+		}
+
+		if (count >= min && count <= max) {
+			log(
+				`>>> SUCCESS: min: ${min} | max: ${max} | count: ${count}` +
+					` | nav: '${currentNav.captureMatch.value}'`
+			);
+			return currentNav;
+		} else {
+			log(
+				`>>> FAILURE: min: ${min} | max: ${max} | count: ${count}`
+			);
 			return nav.invalidate();
 		}
 	}

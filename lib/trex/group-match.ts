@@ -1,7 +1,7 @@
 import { GroupMatchNav } from "./group-nav";
 import { MatchBase } from "./match-base";
 import { MutMatchNav } from "./nav";
-import { GroupName } from "./group-nav";
+import { GroupName } from "./group-name";
 
 export abstract class GroupMatchBase {
 	protected constructor(

@@ -1,5 +1,6 @@
 import { GroupMatch, GroupMatchBase } from "./group-match";
-import { GroupMatchNav, GroupName } from "./group-nav";
+import { GroupMatchNav } from "./group-nav";
+import { GroupName } from "./group-name";
 import { MutMatchNav } from "./nav";
 
 export class GroupMatchAny extends GroupMatchBase {
@@ -57,11 +58,8 @@ export class GroupMatchAll extends GroupMatchBase {
 		return new GroupMatchAll(groupName, matchers);
 	}
 
-	private static _flattenedGroupName =
-		GroupName.fromName(":flattened");
-
 	public static get flattenedGroupName(): GroupName {
-		return GroupMatchAll._flattenedGroupName;
+		return GroupName.flattened;
 	}
 
 	/**
@@ -77,14 +75,14 @@ export class GroupMatchAll extends GroupMatchBase {
 		...matchers: GroupMatchBase[]
 	): GroupMatchAll {
 		return new GroupMatchAll(
-			GroupMatchAll._flattenedGroupName,
+			GroupName.flattened,
 			matchers
 		);
 	}
 
 	public isFlattened(): boolean {
 		return this.#_groupName.isGroupName(
-			GroupMatchAll.flattenedGroupName
+			GroupName.flattened
 		);
 	}
 
@@ -151,7 +149,7 @@ export class GroupMatchAll extends GroupMatchBase {
 
 			curNav = result.wholeMatchNav
 				.copy()
-				.moveNext("MoveMatchAll");
+				.moveNext("OptMoveForward");
 		}
 
 		return GroupMatchNav.fromChildren(

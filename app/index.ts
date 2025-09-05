@@ -57,6 +57,8 @@ import {
 	safeAddMany,
 } from "@/utils/math";
 import { testAreEqualAndSafeAddAcrossExponents } from "@/my-tests/math/areEqual-and-safeAdd";
+import { doRepeatMatcherTestWithAltFirstAltLast } from "@/examples/trex/matchers/matcher-basics";
+import { doStepNavTest } from "@/examples/utils/operations-stuff";
 
 // logGeneratePassword();
 
@@ -67,4 +69,6 @@ import { testAreEqualAndSafeAddAcrossExponents } from "@/my-tests/math/areEqual-
 
 // matchWordsTest();
 
-doGroupBasicsCurrentTest();
+// doGroupBasicsCurrentTest();
+
+doRepeatMatcherTestWithAltFirstAltLast();

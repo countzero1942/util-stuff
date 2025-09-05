@@ -1,3 +1,4 @@
+import { LineInfo } from "@/parser/types/key-value";
 import {
 	GroupMatchNav,
 	MutMatchNav,
@@ -13,7 +14,7 @@ import {
 	MatchOpt,
 	GroupSplitter,
 } from "@/trex";
-import { div, logobj } from "@/utils/log";
+import { div, divs, logobj } from "@/utils/log";
 import { log } from "console";
 
 const logGroups = (group: GroupMatchNav | null) => {
@@ -23,6 +24,8 @@ const logGroups = (group: GroupMatchNav | null) => {
 	}
 	if (group.groupName.isNotEmpty()) {
 		log(group.toString());
+		log(group.noEndMatchNav.toString());
+		divs();
 	}
 	group.children.forEach(child => {
 		log(child.toString());
@@ -82,28 +85,78 @@ export const doBasicGroupMatch = () => {
 };
 
 const doBasicSplitter = () => {
-	const navString = ".1234.5678.90210.";
-	const nav = MutMatchNav.fromString(navString);
 	const splitter = GroupSplitter.from(
 		GroupName.fromName("number"),
 		GroupMatch.from(
 			GroupName.fromName("decimal-point"),
 			MatchCodePoint.fromString(".")
 		),
-		null
+		{
+			endMatcher: GroupMatch.from(
+				GroupName.fromName("end"),
+				MatchCodePoint.fromString(".")
+			),
+		}
 	);
 
-	const result = splitter.match(nav);
-	if (!result) {
-		log(`No match for navString: ${navString}`);
+	const navStrings = [
+		"1234.5678.90210",
+		".1234.5678.90210",
+		".1234.5678.90210",
+		".1234",
+		"1234.",
+		"1234",
+	];
+	for (const navString of navStrings) {
+		const nav = MutMatchNav.fromString(navString);
+		const result = splitter.match(nav);
+		if (!result) {
+			log(`No match for navString: ${navString}`);
+			div();
+			continue;
+		}
+		logGroups(result);
 		div();
-		return;
 	}
-	logGroups(result);
-	div();
+};
+
+const doSplitterWithEndMatcher = () => {
+	const splitter = GroupSplitter.from(
+		GroupName.fromName("number"),
+		GroupMatch.from(
+			GroupName.fromName("decimal-point"),
+			MatchCodePoint.fromString(".")
+		),
+		{
+			endMatcher: GroupMatch.from(
+				GroupName.end,
+				MatchRepeat.from(
+					MatchCodePoint.fromString(" "),
+					NumberOfMatches.oneOrMore
+				)
+			),
+		}
+	);
+
+	const navString = "1234.5678 90210  .1234 .1234.5678.";
+	let nav = MutMatchNav.fromString(navString);
+	while (nav.isNavIndexAtSourceEnd === false) {
+		const result = splitter.match(nav);
+		if (!result) {
+			log(`No match for navString: ${navString}`);
+			div();
+			break;
+		}
+		logGroups(result);
+		div();
+		nav = result.wholeMatchNav.copyAndMoveNext(
+			"OptMoveForward"
+		);
+	}
 };
 
 export const doGroupBasicsCurrentTest = () => {
 	// doBasicGroupMatch();
-	doBasicSplitter();
+	// doBasicSplitter();
+	doSplitterWithEndMatcher();
 };

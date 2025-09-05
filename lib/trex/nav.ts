@@ -7,20 +7,16 @@ import {
 /**
  * Move mode for navigation to safely move to next start index
  *
- * "MoveForward" checks for a capture to move beyond; otherwise
+ * "MustMoveForward": checks for a capture to move beyond; otherwise
  * throws an error to prevent infinite loops.
  *
- * "LookForward" only looks ahead at start index or capture index.
- * So no worry about infinite loops.
+ * "OptMoveForward": used in cases where matches can be zero-length
+ * or look matches. This move mode does not check for a capture to move beyond.
  *
- * "MoveMatchAll" moves to the next match in a match-all expression.
- * Since matches can be optional with zero length, this move mode
- * is used after a successful match without checking capture length.
  */
 export type NavMoveMode =
-	| "MoveForward"
-	| "LookForward"
-	| "MoveMatchAll";
+	| "MustMoveForward"
+	| "OptMoveForward";
 
 /**
  * MutMatchNav (Mutable Match Navigator)
@@ -218,12 +214,37 @@ export class MutMatchNav {
 	 * @returns This navigator instance for method chaining
 	 */
 	public moveNext(
-		moveMode: NavMoveMode = "MoveForward"
+		moveMode: NavMoveMode = "MustMoveForward"
 	): MutMatchNav {
 		this.assertNavIsValid();
 		this.assertIsMovable(moveMode);
 		this._startIndex = this._captureIndex;
 		return this;
+	}
+
+	/**
+	 * Creates a copy of this navigator with the capture index shrunk by the specified length
+	 *
+	 * @throws Error if the capture index would become less than the start index
+	 
+	 * @param length Number of characters to shrink the capture index by
+	 * @returns A new MutMatchNav with the capture index shrunk
+ */
+	public copyAndShrinkCapture(
+		length: number
+	): MutMatchNav {
+		this.assertNavIsValid();
+		const nav = new MutMatchNav(
+			this.source,
+			this._startIndex
+		);
+		nav._captureIndex = this._captureIndex - length;
+		if (nav._captureIndex < nav._startIndex) {
+			throw new Error(
+				"MutMatchNav.copyAndShrinkCapture: capture index cannot be less than start index"
+			);
+		}
+		return nav;
 	}
 
 	/**
@@ -249,7 +270,7 @@ export class MutMatchNav {
 	 * @returns A fresh MutMatchNav starting at the current capture index
 	 */
 	public copyAndMoveNext(
-		moveMode: NavMoveMode = "MoveForward"
+		moveMode: NavMoveMode = "MustMoveForward"
 	): MutMatchNav {
 		this.assertNavIsValid();
 		this.assertIsMovable(moveMode);
@@ -312,7 +333,7 @@ export class MutMatchNav {
 	 */
 	public assertIsMovable(moveMode: NavMoveMode): void {
 		switch (moveMode) {
-			case "MoveForward":
+			case "MustMoveForward":
 				if (this._startIndex === this._captureIndex) {
 					throw new Error(
 						"move-next infinite loop error: startIndex equals captureIndex " +
@@ -320,8 +341,7 @@ export class MutMatchNav {
 					);
 				}
 				break;
-			case "LookForward":
-			case "MoveMatchAll":
+			case "OptMoveForward":
 				return;
 			default:
 				throw new Error(

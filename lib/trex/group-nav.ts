@@ -1,68 +1,5 @@
 import { MutMatchNav } from "./nav";
-
-export class GroupName {
-	private constructor(
-		public readonly name: string,
-		public readonly category: string | undefined
-	) {}
-
-	public static fromName(name: string): GroupName {
-		if (name === "") {
-			throw new Error("'name' cannot be empty");
-		}
-		return new GroupName(name, undefined);
-	}
-
-	public static fromNameAndCategory(
-		name: string,
-		category: string
-	): GroupName {
-		if (name === "") {
-			throw new Error("'name' cannot be empty");
-		}
-		if (category === "") {
-			throw new Error("'category' cannot be empty");
-		}
-		return new GroupName(name, category);
-	}
-
-	private static _empty: GroupName = new GroupName(
-		"",
-		undefined
-	);
-	public static get empty(): GroupName {
-		return GroupName._empty;
-	}
-
-	public isEmpty(): boolean {
-		return this.name === "";
-	}
-
-	public isNotEmpty(): boolean {
-		return this.name !== "";
-	}
-
-	public is(
-		name: string,
-		category: string | undefined = undefined
-	): boolean {
-		return (
-			this.name === name && this.category === category
-		);
-	}
-
-	public isGroupName(groupName: GroupName): boolean {
-		return (
-			this === groupName ||
-			(this.name === groupName.name &&
-				this.category === groupName.category)
-		);
-	}
-
-	public toString(): string {
-		return `${this.name}${this.category ? ":" + this.category : ""}`;
-	}
-}
+import { GroupName } from "./group-name";
 
 /**
  * A group navigation node that contains a contiguous match
@@ -111,6 +48,23 @@ export class GroupMatchNav {
 			wholeMatchNav,
 			children
 		);
+	}
+
+	public get noEndMatchNav(): MutMatchNav {
+		const length = this.children.length;
+		if (length >= 1) {
+			const potentialEnd = this.children[length - 1];
+			if (
+				potentialEnd.groupName.isGroupName(
+					GroupName.end
+				)
+			) {
+				return this.wholeMatchNav.copyAndShrinkCapture(
+					potentialEnd.wholeMatchNav.captureLength
+				);
+			}
+		}
+		return this.wholeMatchNav;
 	}
 
 	// public copy(): GroupMatchNav {

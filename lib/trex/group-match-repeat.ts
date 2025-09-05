@@ -3,8 +3,8 @@ import {
 	GroupMatchAll,
 	GroupMatchAny,
 } from "./group-match-any-all";
-import { GroupMatchNav, GroupName } from "./group-nav";
-import { MatchBase } from "./match-base";
+import { GroupMatchNav } from "./group-nav";
+import { GroupName } from "./group-name";
 import { NumberOfMatches } from "./match-repeat";
 import { MutMatchNav } from "./nav";
 

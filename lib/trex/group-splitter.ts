@@ -1,33 +1,34 @@
 import { GroupMatchBase } from "./group-match";
-import { GroupMatchNav, GroupName } from "./group-nav";
+import { GroupMatchNav } from "./group-nav";
+import { GroupName } from "./group-name";
 import { MutMatchNav } from "./nav";
+
+export type GroupSplitterArgs = {
+	endMatcher?: GroupMatchBase;
+};
 
 export class GroupSplitter extends GroupMatchBase {
 	#_groupName: GroupName;
 	#_splitter: GroupMatchBase;
-	#_endMatcher: GroupMatchBase | null;
+	#_args?: GroupSplitterArgs;
 
 	protected constructor(
 		groupName: GroupName,
 		splitter: GroupMatchBase,
-		endMatcher: GroupMatchBase | null
+		args?: GroupSplitterArgs
 	) {
 		super(groupName);
 		this.#_groupName = groupName;
 		this.#_splitter = splitter;
-		this.#_endMatcher = endMatcher;
+		this.#_args = args;
 	}
 
 	public static from(
 		groupName: GroupName,
 		splitter: GroupMatchBase,
-		endMatcher: GroupMatchBase | null
+		args?: GroupSplitterArgs
 	): GroupSplitter {
-		return new GroupSplitter(
-			groupName,
-			splitter,
-			endMatcher
-		);
+		return new GroupSplitter(groupName, splitter, args);
 	}
 
 	public match(nav: MutMatchNav): GroupMatchNav | null {
@@ -37,13 +38,14 @@ export class GroupSplitter extends GroupMatchBase {
 		let fragmentNav = nav.copy();
 		let isLastFragmentAdded = false;
 		const savedNavs: GroupMatchNav[] = [];
+		const endMatcher = this.#_args?.endMatcher;
 
 		const addFragment = (
 			result: GroupMatchNav | null
 		) => {
 			const fragmentMatch = GroupMatchNav.from(
-				fragmentNav.copy(),
-				GroupName.fromName(":fragment")
+				fragmentNav,
+				GroupName.fragment
 			);
 			savedNavs.push(fragmentMatch);
 
@@ -53,16 +55,22 @@ export class GroupSplitter extends GroupMatchBase {
 				}
 				fragmentNav =
 					result.wholeMatchNav.copyAndMoveNext(
-						"MoveMatchAll"
+						"OptMoveForward"
 					);
 			} else {
-				fragmentNav.moveNext("MoveMatchAll");
+				fragmentNav = fragmentNav.copyAndMoveNext(
+					"OptMoveForward"
+				);
 			}
 		};
 
 		while (fragmentNav.isNavIndexAtSourceEnd === false) {
+			const curNav = fragmentNav.copyAndMoveNext(
+				"OptMoveForward"
+			);
+
 			const splitResult = this.#_splitter.match(
-				fragmentNav.copyAndMoveNext("MoveMatchAll")
+				curNav.copy()
 			);
 			// case: splitter matched
 			if (splitResult) {
@@ -70,8 +78,10 @@ export class GroupSplitter extends GroupMatchBase {
 				continue;
 			}
 
-			if (this.#_endMatcher) {
-				const endResult = this.#_endMatcher.match(nav);
+			if (endMatcher) {
+				const endResult = endMatcher.match(
+					curNav.copy()
+				);
 				// case: end matcher matched
 				if (endResult) {
 					addFragment(endResult);
