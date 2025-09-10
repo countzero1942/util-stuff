@@ -159,3 +159,28 @@ export class GroupMatchAll extends GroupMatchBase {
 		);
 	}
 }
+
+export class GroupMatchOpt extends GroupMatchBase {
+	private constructor(
+		groupName: GroupName,
+		public readonly matcher: GroupMatchBase
+	) {
+		super(groupName);
+	}
+
+	public static from(
+		matcher: GroupMatchBase
+	): GroupMatchOpt {
+		return new GroupMatchOpt(GroupName.empty, matcher);
+	}
+
+	public match(nav: MutMatchNav): GroupMatchNav | null {
+		nav.assertNavIsValid();
+		const savedNav = nav.copy();
+		const result = this.matcher.match(nav);
+		if (result) {
+			return result;
+		}
+		return GroupMatchNav.from(savedNav, GroupName.empty);
+	}
+}

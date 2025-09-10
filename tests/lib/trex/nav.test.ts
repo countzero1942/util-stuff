@@ -428,9 +428,7 @@ describe("MutMatchNav", () => {
 			test("returns correct string for initial state", () => {
 				const nav = MutMatchNav.fromString("abcdef", 2);
 				expect(nav.captureMatch.value).toBe("");
-				expect(nav.toString()).toBe(
-					"Nav: [2..2], length: 6"
-				);
+				expect(nav.toString()).toBe("Nav: [2..2], ''");
 			});
 
 			test("returns correct string after advancing capture and nav", () => {
@@ -438,7 +436,7 @@ describe("MutMatchNav", () => {
 				nav.moveCaptureForward(3); // navIndex and captureIndex now 3
 				expect(nav.captureMatch.value).toBe("abc");
 				expect(nav.toString()).toBe(
-					"Nav: [0..3], length: 6"
+					"Nav: [0..3], 'abc'"
 				);
 			});
 
@@ -447,15 +445,13 @@ describe("MutMatchNav", () => {
 				nav.moveCaptureToSourceEnd();
 				expect(nav.captureMatch.value).toBe("abc");
 				expect(nav.toString()).toBe(
-					"Nav: [0..3], length: 3"
+					"Nav: [0..3], 'abc'"
 				);
 			});
 
 			test("returns correct string for empty source", () => {
 				const nav = MutMatchNav.fromString("");
-				expect(nav.toString()).toBe(
-					"Nav: [0..0], length: 0"
-				);
+				expect(nav.toString()).toBe("Nav: [0..0], ''");
 			});
 
 			test("returns correct string for ghost capture at end", () => {
@@ -463,7 +459,7 @@ describe("MutMatchNav", () => {
 				nav.moveCaptureForward(3);
 				expect(nav.captureMatch.value).toBe("abc");
 				expect(nav.toString()).toBe(
-					"Nav: [0..3], length: 8"
+					"Nav: [0..3], 'abc'"
 				);
 			});
 

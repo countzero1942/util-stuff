@@ -170,7 +170,7 @@ export const codePointSetArgs = () => {
 		"😀"
 	);
 
-	const matcher = new MatchRepeat(matchSet);
+	const matcher = MatchRepeat.from(matchSet);
 
 	const nav = MutMatchNav.fromString("abc123!@#😀ABC");
 	const result = matcher.match(nav);
@@ -261,13 +261,13 @@ export const specificWordMatchTestWithLookAhead = () => {
 	const source = StrSlice.from(str);
 
 	const matcher = MatchAnyString.fromStrings("xxx", "yyy");
-	const wordMatcher = MatchAll.from(
-		MatchAny.from(
+	const wordMatcher = MatchAll.fromMatchers(
+		MatchAny.fromMatchers(
 			MatchStartSlice.default,
 			LookBehindCodePoint.from(matchUnicodeSpace)
 		),
 		matcher,
-		MatchAny.from(
+		MatchAny.fromMatchers(
 			LookAheadCodePoint.from(matchUnicodeSpace),
 			MatchEndSlice.default
 		)

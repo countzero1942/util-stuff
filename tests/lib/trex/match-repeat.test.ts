@@ -9,6 +9,7 @@ import {
 	MatchAny,
 	MatchCodePointSet,
 	MatchCodePointRange,
+	MatchOpt,
 } from "@/trex";
 
 describe("AltFirstLastMatchers", () => {
@@ -42,51 +43,6 @@ describe("AltFirstLastMatchers", () => {
 		const alt = AltFirstLastMatchers.fromAltLast(m2);
 		expect(alt.altFirstMatch).toBeNull();
 		expect(alt.altLastMatch).toBe(m2);
-	});
-	test("getStartAndNextMatcher: fromAltFirst", () => {
-		const altFirst = MatchCodePoint.fromString("A");
-		const content = MatchCodePointSet.fromString("BCD");
-		const alt =
-			AltFirstLastMatchers.fromAltFirst(altFirst);
-		const [start, next] =
-			alt.getStartAndNextMatcher(content);
-		expect(start).toBeInstanceOf(MatchAny);
-		expect((start as MatchAny).matchers[0]).toBe(
-			altFirst
-		);
-		expect((start as MatchAny).matchers[1]).toBe(content);
-		expect(next).toBeInstanceOf(MatchCodePointSet);
-		expect(next).toBe(content);
-	});
-	test("getStartAndNextMatcher: fromAltLast", () => {
-		const altLast = MatchCodePoint.fromString("A");
-		const content = MatchCodePointSet.fromString("BCD");
-		const alt = AltFirstLastMatchers.fromAltLast(altLast);
-		const [start, next] =
-			alt.getStartAndNextMatcher(content);
-		expect(start).toBe(content);
-		expect(next).toBeInstanceOf(MatchAny);
-		expect((next as MatchAny).matchers[0]).toBe(content);
-		expect((next as MatchAny).matchers[1]).toBe(altLast);
-	});
-	test("getStartAndNextMatcher: fromAltFirst and fromAltLast", () => {
-		const altFirst = MatchCodePoint.fromString("A");
-		const altLast = MatchCodePointRange.fromString("B-C");
-		const content = MatchCodePointSet.fromString("DEF");
-		const alt = AltFirstLastMatchers.fromBoth(
-			altFirst,
-			altLast
-		);
-		const [start, next] =
-			alt.getStartAndNextMatcher(content);
-		expect(start).toBeInstanceOf(MatchAny);
-		expect((start as MatchAny).matchers[0]).toBe(
-			altFirst
-		);
-		expect((start as MatchAny).matchers[1]).toBe(content);
-		expect(next).toBeInstanceOf(MatchAny);
-		expect((next as MatchAny).matchers[0]).toBe(content);
-		expect((next as MatchAny).matchers[1]).toBe(altLast);
 	});
 });
 
@@ -167,91 +123,6 @@ describe("NumberOfMatches", () => {
 			);
 		});
 	});
-
-	describe("handles getStartAndNextMatcher correctly", () => {
-		test("returns correct matchers for altFirstMatch and altLastMatch", () => {
-			const altFirstMatch =
-				MatchCodePoint.fromString("{");
-			const altLastMatch =
-				MatchCodePoint.fromString("}");
-			const alt = AltFirstLastMatchers.fromBoth(
-				altFirstMatch,
-				altLastMatch
-			);
-			const matcher = matchUnicodeLetter;
-
-			const [start, next] =
-				alt.getStartAndNextMatcher(matcher);
-			expect(start).toBeInstanceOf(MatchAny);
-			if (!(start instanceof MatchAny)) {
-				throw new Error("start is not a MatchAny");
-			}
-			// @ts-ignore
-			expect(start.matchers[0]).toBe(altFirstMatch);
-			// @ts-ignore
-			expect(start.matchers[1]).toBe(matcher);
-			expect(next).toBeInstanceOf(MatchAny);
-			if (!(next instanceof MatchAny)) {
-				throw new Error("next is not a MatchAny");
-			}
-			// @ts-ignore
-			expect(next.matchers[0]).toBe(matcher);
-			// @ts-ignore
-			expect(next.matchers[1]).toBe(altLastMatch);
-		});
-
-		test("returns correct matchers for altFirstMatch only", () => {
-			const altFirstMatch =
-				MatchCodePoint.fromString("{");
-			const alt =
-				AltFirstLastMatchers.fromAltFirst(
-					altFirstMatch
-				);
-			const matcher = matchUnicodeLetter;
-
-			const [start, next] =
-				alt.getStartAndNextMatcher(matcher);
-			expect(start).toBeInstanceOf(MatchAny);
-			if (!(start instanceof MatchAny)) {
-				throw new Error("start is not a MatchAny");
-			}
-			// @ts-ignore
-			expect(start.matchers[0]).toBe(altFirstMatch);
-			// @ts-ignore
-			expect(start.matchers[1]).toBe(matcher);
-			expect(next).toBe(matcher);
-		});
-
-		test("returns correct matchers for altLastMatch only", () => {
-			const altLastMatch =
-				MatchCodePoint.fromString("}");
-			const alt =
-				AltFirstLastMatchers.fromAltLast(altLastMatch);
-			const matcher = matchUnicodeLetter;
-
-			const [start, next] =
-				alt.getStartAndNextMatcher(matcher);
-			expect(start).toBe(matcher);
-			expect(next).toBeInstanceOf(MatchAny);
-			if (!(next instanceof MatchAny)) {
-				throw new Error("next is not a MatchAny");
-			}
-			// @ts-ignore
-			expect(next.matchers[0]).toBe(matcher);
-			// @ts-ignore
-			expect(next.matchers[1]).toBe(altLastMatch);
-		});
-
-		test("returns correct matchers for altFirstMatch and altLastMatch both null", () => {
-			const alt = AltFirstLastMatchers.default;
-			const matcher = matchUnicodeLetter;
-
-			const [start, next] =
-				alt.getStartAndNextMatcher(matcher);
-			expect(start).toBe(matcher);
-			expect(next).toBe(matcher);
-		});
-	});
 });
 
 // Helper function to create simple matchers for testing
@@ -327,54 +198,89 @@ describe("MatchRepeat", () => {
 		});
 	});
 
-	describe("match", () => {
-		test("matches the minimum required occurrences", () => {
+	describe("match repeat with NumberOfMatches", () => {
+		const hasAllAs = (str: string | undefined) => {
+			return (
+				str?.split("").every(c => c === "A") ?? false
+			);
+		};
+
+		test("matches the minimum required occurrences: atLeast", () => {
 			const innerMatcher =
 				MatchCodePoint.fromString("A");
 			const repeatMatcher = MatchRepeat.from(
 				innerMatcher,
-				NumberOfMatches.between(2, 5)
+				NumberOfMatches.atLeast(2)
 			);
 
-			const nav = MutMatchNav.fromString("AABC");
-			const result = repeatMatcher.match(nav);
+			const successfulNavStrs = [
+				"AA",
+				"AABC",
+				"AAA",
+				"AAABC",
+			];
 
-			expect(result).not.toBeNull();
-			expect(result).not.toBe(nav); // Should be a new instance
-			expect(result?.captureMatch.value).toBe("AA");
+			for (const navStr of successfulNavStrs) {
+				const nav = MutMatchNav.fromString(navStr);
+				const result = repeatMatcher.match(nav);
+				expect(result).not.toBeNull();
+				expect(result).not.toBe(nav); // Should be a new instance
+				expect(
+					hasAllAs(result?.captureMatch.value)
+				).toBe(true);
+			}
+
+			const failedNavStrs = ["A", "B", "AB", "ABC"];
+
+			for (const navStr of failedNavStrs) {
+				const nav = MutMatchNav.fromString(navStr);
+				const result = repeatMatcher.match(nav);
+				expect(result).toBeNull();
+			}
 		});
 
-		test("matches up to the maximum allowed occurrences", () => {
+		test("matches within range: between", () => {
 			const innerMatcher =
 				MatchCodePoint.fromString("A");
 			const repeatMatcher = MatchRepeat.from(
 				innerMatcher,
-				NumberOfMatches.between(1, 3)
+				NumberOfMatches.between(2, 3)
 			);
 
-			const nav = MutMatchNav.fromString("AAAAA");
-			const result = repeatMatcher.match(nav);
+			const successfulNavStrs = [
+				"AA",
+				"AAA",
+				"AAB",
+				"AAAB",
+			];
 
-			expect(result).not.toBeNull();
-			expect(result).not.toBe(nav); // Should be a new instance
-			expect(result?.captureMatch.value).toBe("AAA");
+			for (const navStr of successfulNavStrs) {
+				const nav = MutMatchNav.fromString(navStr);
+				const result = repeatMatcher.match(nav);
+				expect(result).not.toBeNull();
+				expect(result).not.toBe(nav); // Should be a new instance
+				expect(
+					hasAllAs(result?.captureMatch.value)
+				).toBe(true);
+			}
+
+			const failedNavStrs = [
+				"A",
+				"B",
+				"AB",
+				"AAAA",
+				"AAAAB",
+				"AAAAA",
+			];
+
+			for (const navStr of failedNavStrs) {
+				const nav = MutMatchNav.fromString(navStr);
+				const result = repeatMatcher.match(nav);
+				expect(result).toBeNull();
+			}
 		});
 
-		test("returns null if fewer than minimum occurrences match", () => {
-			const innerMatcher =
-				MatchCodePoint.fromString("A");
-			const repeatMatcher = MatchRepeat.from(
-				innerMatcher,
-				NumberOfMatches.between(3, 5)
-			);
-
-			const nav = MutMatchNav.fromString("AAB");
-			const result = repeatMatcher.match(nav);
-
-			expect(result).toBeNull();
-		});
-
-		test("matches unlimited occurrences when max is -1", () => {
+		test("matches one or more", () => {
 			const innerMatcher =
 				MatchCodePoint.fromString("A");
 			const repeatMatcher = MatchRepeat.from(
@@ -382,12 +288,55 @@ describe("MatchRepeat", () => {
 				NumberOfMatches.oneOrMore
 			);
 
-			const nav = MutMatchNav.fromString("AAAAAB");
-			const result = repeatMatcher.match(nav);
+			const successfulNavStrs = ["A", "AA", "AAA"];
 
-			expect(result).not.toBeNull();
-			expect(result).not.toBe(nav); // Should be a new instance
-			expect(result?.captureMatch.value).toBe("AAAAA");
+			for (const navStr of successfulNavStrs) {
+				const nav = MutMatchNav.fromString(navStr);
+				const result = repeatMatcher.match(nav);
+				expect(result).not.toBeNull();
+				expect(result).not.toBe(nav); // Should be a new instance
+				expect(
+					hasAllAs(result?.captureMatch.value)
+				).toBe(true);
+			}
+
+			const failedNavStrs = ["", "B", "BB"];
+
+			for (const navStr of failedNavStrs) {
+				const nav = MutMatchNav.fromString(navStr);
+				const result = repeatMatcher.match(nav);
+				expect(result).toBeNull();
+			}
+		});
+
+		test("matches zero or more", () => {
+			const innerMatcher =
+				MatchCodePoint.fromString("A");
+			const repeatMatcher = MatchRepeat.from(
+				innerMatcher,
+				NumberOfMatches.zeroOrMore
+			);
+
+			const successfulNavStrs = ["A", "AA", "AAA"];
+
+			for (const navStr of successfulNavStrs) {
+				const nav = MutMatchNav.fromString(navStr);
+				const result = repeatMatcher.match(nav);
+				expect(result).not.toBeNull();
+				expect(result).not.toBe(nav); // Should be a new instance
+				expect(
+					hasAllAs(result?.captureMatch.value)
+				).toBe(true);
+			}
+
+			const optionalNavStrs = ["", "B", "BB"];
+
+			for (const navStr of optionalNavStrs) {
+				const nav = MutMatchNav.fromString(navStr);
+				const result = repeatMatcher.match(nav);
+				expect(result).not.toBeNull();
+				expect(result?.captureMatch.value).toBe("");
+			}
 		});
 
 		test("uses altFirstMatch for the first match if provided", () => {
@@ -412,22 +361,38 @@ describe("MatchRepeat", () => {
 		});
 
 		test("uses altLastMatch for the last match if provided", () => {
-			const innerMatcher =
-				MatchCodePoint.fromString("A");
-			const altLastMatcher =
-				MatchCodePoint.fromString("B");
+			const contentMatcher = MatchOpt.from(
+				MatchCodePoint.fromString("A")
+			);
+			const altLastMatcher = MatchOpt.from(
+				MatchCodePoint.fromString("B")
+			);
 			const repeatMatcher = MatchRepeat.from(
-				innerMatcher,
+				contentMatcher,
 				NumberOfMatches.between(2, 3),
 				AltFirstLastMatchers.fromAltLast(altLastMatcher)
 			);
 
-			const nav = MutMatchNav.fromString("AABC");
-			const result = repeatMatcher.match(nav);
+			const successfulNavStrs = [
+				"AA->AA",
+				"AB->AB",
+				"AAA->AAA",
+				"AAB->AAB",
+				"AAAC->AAA",
+				"AABC->AAB",
+			];
 
-			expect(result).not.toBeNull();
-			expect(result).not.toBe(nav); // Should be a new instance
-			expect(result?.captureMatch.value).toBe("AAB");
+			for (const pair of successfulNavStrs) {
+				const [navStr, expected] = pair.split("->");
+
+				const nav = MutMatchNav.fromString(navStr);
+				const result = repeatMatcher.match(nav);
+				expect(result).not.toBeNull();
+				expect(result).not.toBe(nav); // Should be a new instance
+				expect(result?.captureMatch.value).toBe(
+					expected
+				);
+			}
 		});
 
 		test("should match zero occurrences when min is 0", () => {

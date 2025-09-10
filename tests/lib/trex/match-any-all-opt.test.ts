@@ -19,7 +19,7 @@ describe("MatchAny", () => {
 		test("creates a matcher with the specified matchers array", () => {
 			const matcher1 = MatchCodePoint.fromString("A");
 			const matcher2 = MatchCodePoint.fromString("B");
-			const anyMatcher = MatchAny.from(
+			const anyMatcher = MatchAny.fromMatchers(
 				matcher1,
 				matcher2
 			);
@@ -34,7 +34,7 @@ describe("MatchAny", () => {
 		test("matches if any of the matchers match and returns the first successful match", () => {
 			const matcherA = MatchCodePoint.fromString("A");
 			const matcherB = MatchCodePoint.fromString("B");
-			const anyMatcher = MatchAny.from(
+			const anyMatcher = MatchAny.fromMatchers(
 				matcherA,
 				matcherB
 			);
@@ -53,7 +53,7 @@ describe("MatchAny", () => {
 		test("returns null if none of the matchers match", () => {
 			const matcherA = MatchCodePoint.fromString("A");
 			const matcherB = MatchCodePoint.fromString("B");
-			const anyMatcher = MatchAny.from(
+			const anyMatcher = MatchAny.fromMatchers(
 				matcherA,
 				matcherB
 			);
@@ -67,7 +67,7 @@ describe("MatchAny", () => {
 		test("tries matchers in order and returns the first match", () => {
 			const matcherA = MatchCodePoint.fromString("A");
 			const matcherB = MatchCodePoint.fromString("B");
-			const anyMatcher = MatchAny.from(
+			const anyMatcher = MatchAny.fromMatchers(
 				matcherA,
 				matcherB
 			);
@@ -82,7 +82,7 @@ describe("MatchAny", () => {
 
 		test("throws on invalid navigator", () => {
 			const matcherA = MatchCodePoint.fromString("A");
-			const anyMatcher = MatchAny.from(matcherA);
+			const anyMatcher = MatchAny.fromMatchers(matcherA);
 
 			const nav = MutMatchNav.from(new StrSlice("XYZ"));
 			nav.invalidate();
@@ -98,7 +98,7 @@ describe("MatchAll", () => {
 		test("creates a matcher with the specified matchers array", () => {
 			const matcher1 = MatchCodePoint.fromString("A");
 			const matcher2 = MatchCodePoint.fromString("B");
-			const allMatcher = MatchAll.from(
+			const allMatcher = MatchAll.fromMatchers(
 				matcher1,
 				matcher2
 			);
@@ -113,7 +113,7 @@ describe("MatchAll", () => {
 		test("matches if all matchers match in sequence", () => {
 			const matcherA = MatchCodePoint.fromString("A");
 			const matcherB = MatchCodePoint.fromString("B");
-			const allMatcher = MatchAll.from(
+			const allMatcher = MatchAll.fromMatchers(
 				matcherA,
 				matcherB
 			);
@@ -130,7 +130,7 @@ describe("MatchAll", () => {
 			const matcherA = MatchCodePoint.fromString("A");
 			const matcherB = MatchCodePoint.fromString("B");
 			const matcherC = MatchCodePoint.fromString("C");
-			const allMatcher = MatchAll.from(
+			const allMatcher = MatchAll.fromMatchers(
 				matcherA,
 				matcherB,
 				matcherC
@@ -147,7 +147,7 @@ describe("MatchAll", () => {
 			const matcherA = MatchCodePoint.fromString("A");
 			const matcherB = MatchCodePoint.fromString("B");
 			const matcherC = MatchCodePoint.fromString("C");
-			const allMatcher = MatchAll.from(
+			const allMatcher = MatchAll.fromMatchers(
 				matcherA,
 				matcherB,
 				matcherC
@@ -162,7 +162,7 @@ describe("MatchAll", () => {
 		});
 
 		test("works with an empty matchers array", () => {
-			const allMatcher = MatchAll.from();
+			const allMatcher = MatchAll.fromMatchers();
 
 			const nav = MutMatchNav.from(new StrSlice("ABC"));
 			const result = allMatcher.match(nav);

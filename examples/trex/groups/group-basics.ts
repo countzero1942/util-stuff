@@ -13,6 +13,11 @@ import {
 	MatchEndSlice,
 	MatchOpt,
 	GroupSplitter,
+	MatchCodePointAny,
+	MatchCodePointSet,
+	GroupMatchOpt,
+	GroupMatchRepeat,
+	AltFirstLastGroupMatchers,
 } from "@/trex";
 import { div, divs, logobj } from "@/utils/log";
 import { log } from "console";
@@ -47,7 +52,7 @@ export const doBasicGroupMatch = () => {
 
 	const decimalPartMatcher = GroupMatch.from(
 		GroupName.fromName("decimal-part"),
-		MatchAll.from(
+		MatchAll.fromMatchers(
 			MatchRepeat.from(
 				MatchCodePointCategories.fromString("Nd"),
 				NumberOfMatches.zeroOrMore
@@ -80,6 +85,140 @@ export const doBasicGroupMatch = () => {
 			continue;
 		}
 		logGroups(result);
+		div();
+	}
+};
+
+const doGroupOptMatch = () => {
+	const signMatcher = GroupMatchOpt.from(
+		GroupMatch.from(
+			GroupName.fromName("sign"),
+			MatchCodePointSet.fromString("+-")
+		)
+	);
+
+	const digitsMatcher = GroupMatch.from(
+		GroupName.fromName("digits"),
+		MatchAll.fromMatchers(
+			MatchRepeat.from(
+				MatchCodePointCategories.fromString("Nd"),
+				NumberOfMatches.oneOrMore
+			),
+			MatchEndSlice.default
+		)
+	);
+
+	const numberMatcher = GroupMatchAll.fromNamed(
+		GroupName.fromName("number"),
+		signMatcher,
+		digitsMatcher
+	);
+
+	const navStrings = [
+		"1234",
+		"+1234",
+		"-1234",
+		"+-1234",
+		"+1234abc",
+		"+",
+	];
+	for (const navString of navStrings) {
+		const nav = MutMatchNav.fromString(navString);
+		const result = numberMatcher.match(nav);
+		if (!result) {
+			log(`No match for navString: ${navString}`);
+			div();
+			continue;
+		}
+		logGroups(result);
+		div();
+	}
+};
+
+const doGroupRepeatMatchWithAltFirstLast = () => {
+	const groupSeparatorMatcher =
+		MatchCodePoint.fromString(",");
+
+	const startGroupMatcher = GroupMatchOpt.from(
+		GroupMatch.from(
+			GroupName.fromName("start-group"),
+			MatchAll.fromMatchers(
+				MatchRepeat.from(
+					MatchCodePointCategories.fromString("Nd"),
+					NumberOfMatches.between(1, 2)
+				),
+				groupSeparatorMatcher
+			)
+		)
+	);
+
+	const contentGroupMatcher = GroupMatchOpt.from(
+		GroupMatch.from(
+			GroupName.fromName("content-group"),
+			MatchAll.fromMatchers(
+				MatchRepeat.from(
+					MatchCodePointCategories.fromString("Nd"),
+					NumberOfMatches.exactly(3)
+				),
+				groupSeparatorMatcher
+			)
+		)
+	);
+
+	const endGroupMatcher = GroupMatchOpt.from(
+		GroupMatch.from(
+			GroupName.fromName("end-group"),
+			MatchAll.fromMatchers(
+				MatchRepeat.from(
+					MatchCodePointCategories.fromString("Nd"),
+					NumberOfMatches.between(1, 3)
+				),
+				MatchEndSlice.default
+			)
+		)
+	);
+
+	const numberMatcher = GroupMatchRepeat.from(
+		GroupName.fromName("number"),
+		contentGroupMatcher,
+		NumberOfMatches.between(1, 4),
+		AltFirstLastGroupMatchers.fromBoth(
+			startGroupMatcher,
+			endGroupMatcher
+		)
+	);
+
+	const navStrings = [
+		"123,12",
+		"12,567",
+		"1,567",
+		"1,567,8",
+		"1,567,89",
+		"1,567,890",
+		"123,567,890",
+		"123,567,890,321",
+		"1,567,890,321",
+		"1,567,890,3",
+		"123,567,890,321,123",
+		"1,567,890,321,123",
+		"123,567,890,321,3",
+		"1,567,890,321,3",
+		"123",
+		"12",
+		"1",
+		"1234",
+	];
+
+	for (const navString of navStrings) {
+		const nav = MutMatchNav.fromString(navString);
+		const result = numberMatcher.match(nav);
+		if (!result) {
+			log(`No match for navString: '${navString}'`);
+			div();
+			continue;
+		}
+		logGroups(result);
+		div();
 		div();
 	}
 };
@@ -158,5 +297,7 @@ const doSplitterWithEndMatcher = () => {
 export const doGroupBasicsCurrentTest = () => {
 	// doBasicGroupMatch();
 	// doBasicSplitter();
-	doSplitterWithEndMatcher();
+	//doSplitterWithEndMatcher();
+
+	doGroupRepeatMatchWithAltFirstLast();
 };

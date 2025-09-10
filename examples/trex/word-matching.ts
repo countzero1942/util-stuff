@@ -17,20 +17,20 @@ const wordStart =
 const wordContent =
 	MatchCodePointCategories.fromString("Lu Lo Ll Nd");
 
-const wordStartBound = MatchAny.from(
+const wordStartBound = MatchAny.fromMatchers(
 	MatchStartSlice.default,
 	LookBehindCodePoint.from(
 		MatchNotCodePoint.from(wordStart)
 	)
 );
-const wordContentBound = MatchAny.from(
+const wordContentBound = MatchAny.fromMatchers(
 	LookAheadCodePoint.from(
 		MatchNotCodePoint.from(wordContent)
 	),
 	MatchEndSlice.default
 );
 
-const matchWord = MatchAll.from(
+const matchWord = MatchAll.fromMatchers(
 	wordStartBound,
 	MatchRepeat.from(wordContent),
 	wordContentBound

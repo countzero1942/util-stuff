@@ -365,7 +365,7 @@ describe("MatchCodePointSet", () => {
 				matchUnicodeWhiteSpace
 			);
 
-			const matcher = new MatchRepeat(matchSet);
+			const matcher = MatchRepeat.from(matchSet);
 
 			const nav = MutMatchNav.fromString(
 				"abz 129\t!@#\r\n😀ABC"
@@ -390,7 +390,7 @@ describe("MatchCodePointSet", () => {
 				matchUnicodeWhiteSpace
 			);
 
-			const matcher = new MatchRepeat(matchSet);
+			const matcher = MatchRepeat.from(matchSet);
 
 			const nav = MutMatchNav.fromString(
 				"abz 129\t!@#\r\n😀ABC"

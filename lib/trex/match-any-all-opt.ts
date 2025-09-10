@@ -23,7 +23,9 @@ export class MatchAny extends MatchBase {
 		return nav.invalidate();
 	}
 
-	public static from(...matchers: MatchBase[]): MatchAny {
+	public static fromMatchers(
+		...matchers: MatchBase[]
+	): MatchAny {
 		return new MatchAny(matchers);
 	}
 
@@ -53,7 +55,9 @@ export class MatchAll extends MatchBase {
 		return nav;
 	}
 
-	public static from(...matchers: MatchBase[]): MatchAll {
+	public static fromMatchers(
+		...matchers: MatchBase[]
+	): MatchAll {
 		return new MatchAll(matchers);
 	}
 

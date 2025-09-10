@@ -5,7 +5,10 @@ import {
 } from "./group-match-any-all";
 import { GroupMatchNav } from "./group-nav";
 import { GroupName } from "./group-name";
-import { NumberOfMatches } from "./match-repeat";
+import {
+	MatchRepeat,
+	NumberOfMatches,
+} from "./match-repeat";
 import { MutMatchNav } from "./nav";
 
 export class AltFirstLastGroupMatchers {
@@ -15,50 +18,13 @@ export class AltFirstLastGroupMatchers {
 	) {}
 
 	/**
-	 * Returns the first and next matchers for a repeat matcher.
-	 *
-	 * If altFirstMatch is not null, Start is a MatchAny with altFirstMatch
-	 * as the first matcher and contentMatcher as the second matcher.
-	 *
-	 * If altLastMatch is not null, Next is a MatchAny with contentMatcher
-	 * as the first matcher and altLastMatch as the second matcher.
-	 *
-	 * If both altFirstMatch and altLastMatch are null, Start and Next are
-	 * contentMatcher.
-	 *
-	 * @param contentMatcher The matcher to use for the content.
-	 * @returns The first and next matchers.
-	 */
-	public getStartAndNextMatcher(
-		contentMatcher: GroupMatchBase
-	): [GroupMatchBase, GroupMatchBase] {
-		const firstMatch =
-			this.altFirstMatch !== null
-				? GroupMatchAny.fromUnnamed(
-						this.altFirstMatch,
-						contentMatcher
-					)
-				: contentMatcher;
-
-		const nextMatch =
-			this.altLastMatch !== null
-				? GroupMatchAny.fromUnnamed(
-						contentMatcher,
-						this.altLastMatch
-					)
-				: contentMatcher;
-
-		return [firstMatch, nextMatch];
-	}
-
-	/**
 	 * Creates a new AltFirstLastMatchers instance with the given matchers.
 	 *
 	 * @param altFirstMatch The first matcher.
 	 * @param altLastMatch The last matcher.
 	 * @returns A new AltFirstLastMatchers instance.
 	 */
-	public static from(
+	public static fromBoth(
 		altFirstMatch: GroupMatchBase,
 		altLastMatch: GroupMatchBase
 	): AltFirstLastGroupMatchers {
@@ -151,35 +117,103 @@ export class GroupMatchRepeat extends GroupMatchBase {
 	public match(nav: MutMatchNav): GroupMatchNav | null {
 		nav.assertNavIsValid();
 		nav.assertNavIsNew();
+
 		let count = 0;
-		const firstNav = nav.copy();
-		let currentNav = nav.copy();
 		const min = this.numberOfMatches.minNumber;
 		const max = this.numberOfMatches.maxNumber;
+		const beyondCount = max + 1;
+
+		let firstNav = nav.copy();
+		let currentNav = nav.copy();
+
 		const savedNavs: GroupMatchNav[] = [];
 
-		const [firstMatch, nextMatch] =
-			this.altFirstLastMatchers.getStartAndNextMatcher(
-				this.matcher
-			);
+		const firstMatcher =
+			this.altFirstLastMatchers.altFirstMatch;
+		const contentMatcher = this.matcher;
+		const lastMatcher =
+			this.altFirstLastMatchers.altLastMatch;
 
-		while (count < max) {
-			const result =
-				count === 0
-					? firstMatch.match(currentNav.copy())
-					: nextMatch.match(currentNav.copy());
+		const stepNav = MatchRepeat.getMatchRepeatStepNav();
 
-			if (!result) {
+		let isFailedMatch = false;
+
+		while (count < beyondCount && stepNav.isNotComplete) {
+			/**
+			 * The result of the current match.
+			 *
+			 * Will be null if the match fails.
+			 * Will be null if firstMatcher or lastMatcher is null.
+			 * So it is not a reliable indicator of failed match.
+			 */
+			let result: GroupMatchNav | null = null;
+
+			const isCurrentMatchEmpty = () => {
+				if (result === null) {
+					return true;
+				}
+				return (
+					result.wholeMatchNav.captureIndex ===
+					currentNav.captureIndex
+				);
+			};
+
+			const doAltMatcher = (
+				altMatcher: GroupMatchBase | null
+			) => {
+				if (altMatcher) {
+					result = altMatcher.match(currentNav.copy());
+					if (!result) {
+						isFailedMatch = true;
+					}
+				}
+				stepNav.next();
+			};
+
+			switch (stepNav.step) {
+				case "First Matcher":
+					doAltMatcher(firstMatcher);
+					break;
+				case "Content Matcher":
+					result = contentMatcher.match(
+						currentNav.copy()
+					);
+					if (!result) {
+						isFailedMatch = true;
+					}
+					if (isCurrentMatchEmpty()) {
+						stepNav.next();
+					}
+					break;
+				case "Last Matcher":
+					doAltMatcher(lastMatcher);
+					break;
+				default:
+					throw "never";
+			}
+
+			// note: result will also be null on failed match
+			if (isFailedMatch) {
 				break;
 			}
 
-			count++;
-			currentNav = result.wholeMatchNav;
+			if (isCurrentMatchEmpty() === false) {
+				count++;
+			}
 
-			GroupMatchAll.addResultsToSavedNavs(
-				result,
-				savedNavs
-			);
+			// note: result here is only null if altMatcher is null
+			// and no matching took place
+			if (result) {
+				GroupMatchAll.addResultsToSavedNavs(
+					result,
+					savedNavs
+				);
+
+				currentNav =
+					result.wholeMatchNav.copyAndMoveNext(
+						"OptMoveForward"
+					);
+			}
 		}
 
 		if (count >= min && count <= max) {

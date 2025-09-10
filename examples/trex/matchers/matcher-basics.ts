@@ -21,7 +21,7 @@ export const doRepeatMatcherTestWithAltFirstAltLast =
 			MatchCodePoint.fromString(",");
 
 		const startGroupMatcher = MatchOpt.from(
-			MatchAll.from(
+			MatchAll.fromMatchers(
 				MatchRepeat.from(
 					MatchCodePointCategories.fromString("Nd"),
 					NumberOfMatches.between(1, 2)
@@ -31,7 +31,7 @@ export const doRepeatMatcherTestWithAltFirstAltLast =
 		);
 
 		const contentGroupMatcher = MatchOpt.from(
-			MatchAll.from(
+			MatchAll.fromMatchers(
 				MatchRepeat.from(
 					MatchCodePointCategories.fromString("Nd"),
 					NumberOfMatches.exactly(3)
@@ -40,7 +40,7 @@ export const doRepeatMatcherTestWithAltFirstAltLast =
 			)
 		);
 
-		const endGroupMatcher = MatchAll.from(
+		const endGroupMatcher = MatchAll.fromMatchers(
 			MatchRepeat.from(
 				MatchCodePointCategories.fromString("Nd"),
 				NumberOfMatches.between(1, 3)
@@ -96,8 +96,49 @@ export const doRepeatMatcherTestWithAltFirstAltLast =
 
 export const doRepeatMatcherTestWithAltFirst = () => {};
 
-export const doRepeatMatcherTestWithAltLast = () => {};
+export const doRepeatMatcherTestWithOptAltLast = () => {
+	const repeatMatcher = MatchRepeat.from(
+		MatchOpt.from(MatchCodePoint.fromString("A")),
+		NumberOfMatches.between(2, 3),
+		AltFirstLastMatchers.fromAltLast(
+			MatchOpt.from(MatchCodePoint.fromString("B"))
+		)
+	);
+
+	const navStrs = [
+		"AA->AA",
+		"AB->AB",
+		"AAA->AAA",
+		"AAB->AAB",
+		"AAAC->AAA",
+		"AABC->AAB",
+		"A->",
+		"B->",
+		"BA->",
+		"BAA->",
+		"AAAA->",
+		"AAAB->",
+	];
+
+	for (const pair of navStrs) {
+		const [navStr, expected] = pair.split("->");
+		const nav = MutMatchNav.fromString(navStr);
+		const result = repeatMatcher.match(nav);
+		if (!result) {
+			log(`No match for navString: '${navStr}'`);
+			div();
+			continue;
+		}
+		log(
+			`navString: '${navStr}' |  ` +
+				`result.captureMatch.value: '${result.captureMatch.value}' | ` +
+				`expected: '${expected}'`
+		);
+		div();
+	}
+};
 
 export const doMatcherBasicsCurrentTest = () => {
-	doRepeatMatcherTestWithAltFirstAltLast();
+	// doRepeatMatcherTestWithAltFirstAltLast();
+	doRepeatMatcherTestWithOptAltLast();
 };

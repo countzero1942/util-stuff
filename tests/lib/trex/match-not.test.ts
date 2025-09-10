@@ -23,7 +23,7 @@ describe("MatchNot", () => {
 
 	describe("with MatchAll", () => {
 		test("returns null and invalidates nav when MatchAll matches", () => {
-			const matcher = MatchAll.from(
+			const matcher = MatchAll.fromMatchers(
 				MatchStartSlice.default
 			);
 			const not = MatchNot.from(matcher);
@@ -33,7 +33,7 @@ describe("MatchNot", () => {
 			expect(nav.isInvalidated).toBe(true);
 		});
 		test("returns nav (same instance, unmutated) when MatchAll does not match", () => {
-			const matcher = MatchAll.from(
+			const matcher = MatchAll.fromMatchers(
 				MatchEndSlice.default
 			);
 			const not = MatchNot.from(matcher);
@@ -48,7 +48,7 @@ describe("MatchNot", () => {
 
 	describe("with MatchAny", () => {
 		test("returns null when MatchAny matches", () => {
-			const matcher = MatchAny.from(
+			const matcher = MatchAny.fromMatchers(
 				MatchStartSlice.default
 			);
 			const not = MatchNot.from(matcher);
@@ -58,7 +58,7 @@ describe("MatchNot", () => {
 			expect(nav.isInvalidated).toBe(true);
 		});
 		test("returns nav (same instance, unmutated) when MatchAny does not match", () => {
-			const matcher = MatchAny.from(
+			const matcher = MatchAny.fromMatchers(
 				MatchEndSlice.default
 			);
 			const not = MatchNot.from(matcher);
@@ -95,22 +95,22 @@ describe("MatchNot", () => {
 	describe("with MatchRepeat", () => {
 		test("returns null when MatchRepeat matches", () => {
 			const matcher = MatchRepeat.from(
-				MatchStartSlice.default,
-				NumberOfMatches.exactly(1)
+				MatchAnyString.fromStrings("a"),
+				NumberOfMatches.exactly(2)
 			);
 			const not = MatchNot.from(matcher);
-			const nav = MutMatchNav.fromString("");
+			const nav = MutMatchNav.fromString("aa");
 			const result = not.match(nav);
 			expect(result).toBeNull();
 			expect(nav.isInvalidated).toBe(true);
 		});
 		test("returns nav (same instance, unmutated) when MatchRepeat does not match", () => {
 			const matcher = MatchRepeat.from(
-				MatchEndSlice.default,
-				NumberOfMatches.exactly(1)
+				MatchAnyString.fromStrings("a"),
+				NumberOfMatches.exactly(2)
 			);
 			const not = MatchNot.from(matcher);
-			const nav = MutMatchNav.fromString("abc");
+			const nav = MutMatchNav.fromString("ab");
 			const navCopy = nav.copy();
 			const result = not.match(nav);
 			expect(result).toBe(nav);
