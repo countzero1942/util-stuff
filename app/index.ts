@@ -58,8 +58,8 @@ import {
 } from "@/utils/math";
 import { testAreEqualAndSafeAddAcrossExponents } from "@/my-tests/math/areEqual-and-safeAdd";
 import {
-	doMatcherBasicsCurrentTest,
-	doRepeatMatcherTestWithAltFirstAltLast,
+	runMatcherBasicsTests,
+	doNumberRepeatMatcherWithAltFirstAltLast,
 } from "@/examples/trex/matchers/matcher-basics";
 import { doStepNavTest } from "@/examples/utils/operations-stuff";
 
@@ -74,4 +74,4 @@ import { doStepNavTest } from "@/examples/utils/operations-stuff";
 
 // doGroupBasicsCurrentTest();
 
-doMatcherBasicsCurrentTest();
+await runMatcherBasicsTests();

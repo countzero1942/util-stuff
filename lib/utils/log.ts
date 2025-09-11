@@ -7,6 +7,10 @@ export const getArrowLabel = (
 	"══▶";
 };
 
+export const cls = () => {
+	process.stdout.write("\x1Bc");
+};
+
 /**
  * Logs a horizontal line of a given length.
  * @param {number} [length=50] The length of the line.
@@ -249,14 +253,14 @@ export const ddivsn = () => {
 const toDisplayString = (a: any): string => {
 	switch (a) {
 		case null:
-			return '<null>';
+			return "<null>";
 		case undefined:
-			return '<undefined>';
+			return "<undefined>";
 		default:
 			try {
-				return typeof a === 'string' ? a : a.toString();
+				return typeof a === "string" ? a : a.toString();
 			} catch {
-				return '<error>';
+				return "<error>";
 			}
 	}
 };
@@ -265,7 +269,7 @@ export const alignRight = (a: any, max_length: number) => {
 	const s = toDisplayString(a);
 	const pad = max_length - s.length;
 	return pad > 0
-		? s.padStart(max_length, ' ')
+		? s.padStart(max_length, " ")
 		: s.slice(-max_length);
 };
 
@@ -273,6 +277,6 @@ export const alignLeft = (a: any, max_length: number) => {
 	const s = toDisplayString(a);
 	const pad = max_length - s.length;
 	return pad > 0
-		? s.padEnd(max_length, ' ')
+		? s.padEnd(max_length, " ")
 		: s.slice(0, max_length);
 };
