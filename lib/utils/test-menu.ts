@@ -1,12 +1,12 @@
 import prompts from "prompts";
 import { cls, log, logh } from "./log";
 import { getFullType, getType } from "./types";
+import chalk from "chalk";
 
 export type TestMenuItem = {
 	func: () => void;
 	name: string;
 	description?: string[];
-	index?: number;
 };
 
 export const chooseAnOption = async (
@@ -42,15 +42,20 @@ export const pressEnterToContinue = async () => {
 
 export const writeTestMenu = (items: TestMenuItem[]) => {
 	logh("Choose a test");
+	log();
+	let index = 1;
 	for (const item of items) {
-		log(`${item.index}: ${item.name}`);
+		log(
+			`${chalk.magentaBright(index)}: ${chalk.cyan(item.name)}`
+		);
 		log();
 		if (item.description) {
 			for (const line of item.description) {
-				log(`   ${line}`);
+				log(`   ${chalk.gray(line)}`);
 			}
 		}
 		log();
+		index++;
 	}
 };
 

@@ -60,7 +60,7 @@ import { testAreEqualAndSafeAddAcrossExponents } from "@/my-tests/math/areEqual-
 import {
 	runMatcherBasicsTests,
 	doNumberRepeatMatcherWithAltFirstAltLast,
-} from "@/examples/trex/matchers/matcher-basics";
+} from "@/examples/trex/matchers/repeat-matchers";
 import { doStepNavTest } from "@/examples/utils/operations-stuff";
 
 // logGeneratePassword();

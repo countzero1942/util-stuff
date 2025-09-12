@@ -1,4 +1,5 @@
 import { getType, toReadonlyTuple } from "@/utils/types";
+import chalk from "chalk";
 
 export const getArrowLabel = (
 	label: string,
@@ -16,14 +17,14 @@ export const cls = () => {
  * @param {number} [length=50] The length of the line.
  */
 export const logln = (length: number = 50) =>
-	console.log("─".repeat(length));
+	console.log(chalk.gray("─".repeat(length)));
 
 /**
  * Logs a double horizontal line of a given length.
  * @param {number} [length=50] The length of the line.
  */
 export const logdln = (length: number = 50) =>
-	console.log("═".repeat(length));
+	console.log(chalk.gray("═".repeat(length)));
 
 /**
  * Logs data to the console. The data is passed directly to console.log.
@@ -72,9 +73,9 @@ export const logh = (
 	if (newLineAbove) {
 		logn();
 	}
-	log(line);
-	log(header);
-	log(line);
+	log(chalk.gray(line));
+	log(chalk.magentaBright(header));
+	log(chalk.gray(line));
 };
 
 /**

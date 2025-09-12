@@ -3,6 +3,7 @@ import { MatchAny } from "./match-any-all-opt";
 import { MutMatchNav } from "./nav";
 import { log } from "console";
 import { StepNav } from "@/utils/operations";
+import chalk from "chalk";
 
 /**
  * Defines the number of matches for a repeat matcher.
@@ -234,6 +235,7 @@ export class MatchRepeat extends MatchBase {
 		const stepNav = MatchRepeat.getMatchRepeatStepNav();
 
 		let isFailedMatch = false;
+		let didContentMatch = false;
 
 		while (count < beyondCount && stepNav.isNotComplete) {
 			/**
@@ -275,7 +277,10 @@ export class MatchRepeat extends MatchBase {
 					result = contentMatcher.match(
 						currentNav.copy()
 					);
-					if (!result) {
+					if (result) {
+						didContentMatch = true;
+					}
+					if (!result && didContentMatch === false) {
 						isFailedMatch = true;
 					}
 					if (isCurrentMatchEmpty()) {
@@ -305,8 +310,21 @@ export class MatchRepeat extends MatchBase {
 			}
 		} // while (count < beyondCount && stepNav.isNotComplete)
 
-		if (count >= min && count <= max) {
+		// case: successful match in range
+		if (
+			isFailedMatch === false &&
+			count >= min &&
+			count <= max
+		) {
 			return currentNav;
+			// case: failed match with zero matches allowed
+		} else if (
+			isFailedMatch === true &&
+			count === 0 &&
+			min === 0
+		) {
+			return nav;
+			// case: failed match
 		} else {
 			return nav.invalidate();
 		}
