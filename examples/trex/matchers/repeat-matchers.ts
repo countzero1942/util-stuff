@@ -13,10 +13,11 @@ import {
 	MutMatchNav,
 	NumberOfMatches,
 } from "@/trex";
-import { div, logh } from "@/utils/log";
+import { div, logh, loghn } from "@/utils/log";
+import { NumSeq } from "@/utils/seq";
 import {
 	TestMenuItem,
-	runTestMenu,
+	runExamplesMenu,
 } from "@/utils/test-menu";
 import { doesNotMatch } from "assert";
 import chalk from "chalk";
@@ -80,42 +81,41 @@ const matchFailedNavStrings = (
 	}
 };
 
-export const doBasicOptRepeatMatcherWithOptAltFirst =
-	() => {
-		const repeatMatcher = MatchRepeat.from(
-			MatchOpt.from(MatchCodePoint.fromString("B")),
-			NumberOfMatches.between(2, 3),
-			AltFirstLastMatchers.fromAltFirst(
-				MatchOpt.from(MatchCodePoint.fromString("A"))
-			)
-		);
+const doBasicOptRepeatMatcherWithOptAltFirst = () => {
+	const repeatMatcher = MatchRepeat.from(
+		MatchOpt.from(MatchCodePoint.fromString("B")),
+		NumberOfMatches.between(2, 3),
+		AltFirstLastMatchers.fromAltFirst(
+			MatchOpt.from(MatchCodePoint.fromString("A"))
+		)
+	);
 
-		const succesfulNavStrs = [
-			"BB->BB",
-			"AB->AB",
-			"BBB->BBB",
-			"ABB->ABB",
-			"BBBA->BBB",
-			"BBBC->BBB",
-		];
-		const failedNavStrs = [
-			"A",
-			"B",
-			"BA",
-			"AA",
-			"AAB",
-			"BBBB->over match",
-			"ABBB->over match",
-		];
+	const succesfulNavStrs = [
+		"BB->BB",
+		"AB->AB",
+		"BBB->BBB",
+		"ABB->ABB",
+		"BBBA->BBB",
+		"ABBC->ABB",
+	];
+	const failedNavStrs = [
+		"A",
+		"B",
+		"BA",
+		"AA",
+		"AAB",
+		"BBBB->over match",
+		"ABBB->over match",
+	];
 
-		matchSuccessfulNavStrings(
-			repeatMatcher,
-			succesfulNavStrs
-		);
-		matchFailedNavStrings(repeatMatcher, failedNavStrs);
-	};
+	matchSuccessfulNavStrings(
+		repeatMatcher,
+		succesfulNavStrs
+	);
+	matchFailedNavStrings(repeatMatcher, failedNavStrs);
+};
 
-export const doBasicOptRepeatMatcherWithOptAltLast = () => {
+const doBasicOptRepeatMatcherWithOptAltLast = () => {
 	const repeatMatcher = MatchRepeat.from(
 		MatchOpt.from(MatchCodePoint.fromString("B")),
 		NumberOfMatches.between(2, 3),
@@ -150,7 +150,7 @@ export const doBasicOptRepeatMatcherWithOptAltLast = () => {
 	matchFailedNavStrings(repeatMatcher, failedNavStrs);
 };
 
-export const doBasicOptRepeatMatcherWithOptAltFirstOptAltLast =
+const doBasicOptRepeatMatcherWithOptAltFirstOptAltLast =
 	() => {
 		const repeatMatcher = MatchRepeat.from(
 			MatchOpt.from(MatchCodePoint.fromString("B")),
@@ -197,7 +197,7 @@ export const doBasicOptRepeatMatcherWithOptAltFirstOptAltLast =
 		matchFailedNavStrings(repeatMatcher, failedNavStrs);
 	};
 
-export const doBasicFullStringOptRepeatMatcherWithOptAltFirstOptAltLast =
+const doBasicFullStringOptRepeatMatcherWithOptAltFirstOptAltLast =
 	() => {
 		const repeatMatcher = MatchAll.fromMatchers(
 			MatchRepeat.from(
@@ -250,69 +250,67 @@ export const doBasicFullStringOptRepeatMatcherWithOptAltFirstOptAltLast =
 		matchFailedNavStrings(repeatMatcher, failedNavStrs);
 	};
 
-export const doBasicFullStringOptRepeatMatcherReqAltLast =
-	() => {
-		const repeatMatcher = MatchAll.fromMatchers(
-			MatchRepeat.from(
-				MatchOpt.from(MatchCodePoint.fromString("B")),
-				NumberOfMatches.between(2, 3),
-				AltFirstLastMatchers.fromAltLast(
-					MatchCodePoint.fromString("C")
-				)
-			),
-			MatchEndSlice.default
-		);
+const doBasicFullStringOptRepeatMatcherReqAltLast = () => {
+	const repeatMatcher = MatchAll.fromMatchers(
+		MatchRepeat.from(
+			MatchOpt.from(MatchCodePoint.fromString("B")),
+			NumberOfMatches.between(2, 3),
+			AltFirstLastMatchers.fromAltLast(
+				MatchCodePoint.fromString("C")
+			)
+		),
+		MatchEndSlice.default
+	);
 
-		const succesfulNavStrs = ["BC->BC", "BBC->BBC"];
-		const failedNavStrs = [
-			"B",
-			"C",
-			"BB->no end match",
-			"BBB->no end match",
-			"BCA->not full match",
-			"BBCA->not full match",
-			"BBBC->over match",
-		];
+	const succesfulNavStrs = ["BC->BC", "BBC->BBC"];
+	const failedNavStrs = [
+		"B",
+		"C",
+		"BB->no end match",
+		"BBB->no end match",
+		"BCA->not full match",
+		"BBCA->not full match",
+		"BBBC->over match",
+	];
 
-		matchSuccessfulNavStrings(
-			repeatMatcher,
-			succesfulNavStrs
-		);
-		matchFailedNavStrings(repeatMatcher, failedNavStrs);
-	};
+	matchSuccessfulNavStrings(
+		repeatMatcher,
+		succesfulNavStrs
+	);
+	matchFailedNavStrings(repeatMatcher, failedNavStrs);
+};
 
-export const doBasicFullStringOptRepeatMatcherReqAltFirst =
-	() => {
-		const repeatMatcher = MatchAll.fromMatchers(
-			MatchRepeat.from(
-				MatchOpt.from(MatchCodePoint.fromString("B")),
-				NumberOfMatches.between(2, 3),
-				AltFirstLastMatchers.fromAltFirst(
-					MatchCodePoint.fromString("A")
-				)
-			),
-			MatchEndSlice.default
-		);
+const doBasicFullStringOptRepeatMatcherReqAltFirst = () => {
+	const repeatMatcher = MatchAll.fromMatchers(
+		MatchRepeat.from(
+			MatchOpt.from(MatchCodePoint.fromString("B")),
+			NumberOfMatches.between(2, 3),
+			AltFirstLastMatchers.fromAltFirst(
+				MatchCodePoint.fromString("A")
+			)
+		),
+		MatchEndSlice.default
+	);
 
-		const succesfulNavStrs = ["AB->AB", "ABB->ABB"];
-		const failedNavStrs = [
-			"A",
-			"B",
-			"BB->no first match",
-			"BBB->no first match",
-			"ABC->not full match",
-			"ABBC->not full match",
-			"ABBB->over match",
-		];
+	const succesfulNavStrs = ["AB->AB", "ABB->ABB"];
+	const failedNavStrs = [
+		"A",
+		"B",
+		"BB->no first match",
+		"BBB->no first match",
+		"ABC->not full match",
+		"ABBC->not full match",
+		"ABBB->over match",
+	];
 
-		matchSuccessfulNavStrings(
-			repeatMatcher,
-			succesfulNavStrs
-		);
-		matchFailedNavStrings(repeatMatcher, failedNavStrs);
-	};
+	matchSuccessfulNavStrings(
+		repeatMatcher,
+		succesfulNavStrs
+	);
+	matchFailedNavStrings(repeatMatcher, failedNavStrs);
+};
 
-export const doBasicFullStringOptRepeatMatcherReqAltFirstOptAltLast =
+const doBasicFullStringOptRepeatMatcherReqAltFirstOptAltLast =
 	() => {
 		const repeatMatcher = MatchAll.fromMatchers(
 			MatchRepeat.from(
@@ -349,7 +347,7 @@ export const doBasicFullStringOptRepeatMatcherReqAltFirstOptAltLast =
 		matchFailedNavStrings(repeatMatcher, failedNavStrs);
 	};
 
-export const doBasicFullStringOptRepeatMatcherOptAltFirstReqAltLast =
+const doBasicFullStringOptRepeatMatcherOptAltFirstReqAltLast =
 	() => {
 		const repeatMatcher = MatchAll.fromMatchers(
 			MatchRepeat.from(
@@ -391,7 +389,7 @@ export const doBasicFullStringOptRepeatMatcherOptAltFirstReqAltLast =
 		matchFailedNavStrings(repeatMatcher, failedNavStrs);
 	};
 
-export const doBasicFullStringReqRepeatMatcherReqAltFirstReqAltLast =
+const doBasicFullStringReqRepeatMatcherReqAltFirstReqAltLast =
 	() => {
 		const repeatMatcher = MatchAll.fromMatchers(
 			MatchRepeat.from(
@@ -423,84 +421,80 @@ export const doBasicFullStringReqRepeatMatcherReqAltFirstReqAltLast =
 		matchFailedNavStrings(repeatMatcher, failedNavStrs);
 	};
 
-export const doNumberRepeatMatcherWithAltFirstAltLast =
-	() => {
-		const groupSeparatorMatcher =
-			MatchCodePoint.fromString(",");
+const doNumberRepeatMatcherWithAltFirstAltLast = () => {
+	const groupSeparatorMatcher =
+		MatchCodePoint.fromString(",");
 
-		const startGroupMatcher = MatchOpt.from(
-			MatchAll.fromMatchers(
-				MatchRepeat.from(
-					MatchCodePointCategories.fromString("Nd"),
-					NumberOfMatches.between(1, 2)
-				),
-				groupSeparatorMatcher
-			)
-		);
-
-		const contentGroupMatcher = MatchOpt.from(
-			MatchAll.fromMatchers(
-				MatchRepeat.from(
-					MatchCodePointCategories.fromString("Nd"),
-					NumberOfMatches.exactly(3)
-				),
-				groupSeparatorMatcher
-			)
-		);
-
-		const endGroupMatcher = MatchAll.fromMatchers(
+	const startGroupMatcher = MatchOpt.from(
+		MatchAll.fromMatchers(
 			MatchRepeat.from(
 				MatchCodePointCategories.fromString("Nd"),
-				NumberOfMatches.between(1, 3)
+				NumberOfMatches.between(1, 2)
 			),
-			MatchEndSlice.default
-		);
+			groupSeparatorMatcher
+		)
+	);
 
-		const numberMatcher = MatchRepeat.from(
-			contentGroupMatcher,
-			NumberOfMatches.between(1, 4),
-			AltFirstLastMatchers.fromBoth(
-				startGroupMatcher,
-				endGroupMatcher
-			)
-		);
+	const contentGroupMatcher = MatchOpt.from(
+		MatchAll.fromMatchers(
+			MatchRepeat.from(
+				MatchCodePointCategories.fromString("Nd"),
+				NumberOfMatches.exactly(3)
+			),
+			groupSeparatorMatcher
+		)
+	);
 
-		const succesfulNavStrings = [
-			"123,12->123,12",
-			"12,567->12,567",
-			"1,567->1,567",
-			"1,567,8->1,567,8",
-			"1,567,89->1,567,89",
-			"1,567,890->1,567,890",
-			"123,567,890->123,567,890",
-			"123,567,890,321->123,567,890,321",
-			"1,567,890,321->1,567,890,321",
-			"1,567,890,3->1,567,890,3",
-			"123->123",
-			"12->12",
-			"1->1",
-		];
-		const failedNavStrings = [
-			"12,->incomplete",
-			"12,123,->incomplete",
-			"123,567,890,321,123->over match",
-			"1,567,890,321,123->over match",
-			"123,567,890,321,3->over match",
-			"1,567,890,321,3->over match",
-			"1234->not handled",
-		];
+	const endGroupMatcher = MatchAll.fromMatchers(
+		MatchRepeat.from(
+			MatchCodePointCategories.fromString("Nd"),
+			NumberOfMatches.between(1, 3)
+		),
+		MatchEndSlice.default
+	);
 
-		matchSuccessfulNavStrings(
-			numberMatcher,
-			succesfulNavStrings
-		);
-		matchFailedNavStrings(
-			numberMatcher,
-			failedNavStrings
-		);
-	};
+	const numberMatcher = MatchRepeat.from(
+		contentGroupMatcher,
+		NumberOfMatches.between(1, 4),
+		AltFirstLastMatchers.fromBoth(
+			startGroupMatcher,
+			endGroupMatcher
+		)
+	);
 
-export const doBasicRepeatMatcherZeroOrMore = () => {
+	const succesfulNavStrings = [
+		"123,12->123,12",
+		"12,567->12,567",
+		"1,567->1,567",
+		"1,567,8->1,567,8",
+		"1,567,89->1,567,89",
+		"1,567,890->1,567,890",
+		"123,567,890->123,567,890",
+		"123,567,890,321->123,567,890,321",
+		"1,567,890,321->1,567,890,321",
+		"1,567,890,3->1,567,890,3",
+		"123->123",
+		"12->12",
+		"1->1",
+	];
+	const failedNavStrings = [
+		"12,->incomplete",
+		"12,123,->incomplete",
+		"123,567,890,321,123->over match",
+		"1,567,890,321,123->over match",
+		"123,567,890,321,3->over match",
+		"1,567,890,321,3->over match",
+		"1234->not handled",
+	];
+
+	matchSuccessfulNavStrings(
+		numberMatcher,
+		succesfulNavStrings
+	);
+	matchFailedNavStrings(numberMatcher, failedNavStrings);
+};
+
+const doBasicRepeatMatcherZeroOrMore = () => {
 	const repeatMatcher = MatchRepeat.from(
 		MatchCodePoint.fromString("A"),
 		NumberOfMatches.zeroOrMore
@@ -520,13 +514,158 @@ export const doBasicRepeatMatcherZeroOrMore = () => {
 	);
 };
 
+const doTimedRepeatMatcherTestContentOnlyEfficiency =
+	() => {
+		const repeatMatcher = MatchRepeat.from(
+			MatchCodePointCategories.fromString("Nd"),
+			NumberOfMatches.between(4, 16)
+		);
+		const baseString = "12345678901234567890";
+
+		const succesfulNavStrings = NumSeq.from(4, 16)
+			.map(len => baseString.slice(0, len))
+			.toArray();
+
+		const failedNavStringsA = NumSeq.from(1, 2)
+			.map(len => baseString.slice(0, len))
+			.toArray();
+
+		const failedNavStringsB = NumSeq.from(17, 20)
+			.map(len => baseString.slice(0, len))
+			.toArray();
+
+		const failedNavStrings = [
+			...failedNavStringsA,
+			...failedNavStringsB,
+		];
+
+		const succesfulNavs = succesfulNavStrings.map(
+			navStr => MutMatchNav.fromString(navStr)
+		);
+
+		const failedNavs = failedNavStrings.map(navStr =>
+			MutMatchNav.fromString(navStr)
+		);
+
+		const checkResults = (
+			title: string,
+			matchfn: (nav: MutMatchNav) => MutMatchNav | null
+		) => {
+			loghn(title);
+			for (const nav of succesfulNavs) {
+				const result = matchfn(nav.copy());
+				if (!result) {
+					log(
+						chalk.red(
+							`No match for navString: ${nav}`
+						)
+					);
+					continue;
+				} else if (
+					result.captureLength !== nav.source.length
+				) {
+					log(
+						chalk.red(
+							`Match lengths do not match for navString: ${nav}`
+						)
+					);
+					continue;
+				} else {
+					log(
+						chalk.green(
+							`Match: '${result.captureMatch.value}'`
+						)
+					);
+				}
+			}
+
+			for (const nav of failedNavs) {
+				const result = matchfn(nav.copy());
+				if (result) {
+					log(
+						chalk.red(
+							`Should not match navString: ${nav}`
+						)
+					);
+					continue;
+				} else {
+					log(
+						chalk.green(
+							`No match (as expected) for navString: ${nav.source.value}`
+						)
+					);
+				}
+			}
+		};
+
+		const repeatCount = 10000;
+
+		const doRepeatMatch = (
+			title: string,
+			matchfn: (nav: MutMatchNav) => MutMatchNav | null
+		) => {
+			loghn(title);
+
+			const start = performance.now();
+
+			for (let i = 0; i < repeatCount; i++) {
+				for (const nav of succesfulNavs) {
+					const result = matchfn(nav.copy());
+					if (!result) throw "never";
+					else if (
+						result.captureLength !== nav.source.length
+					)
+						throw "never";
+				}
+				for (const nav of failedNavs) {
+					const result = matchfn(nav.copy());
+					if (result) throw "never";
+				}
+			}
+
+			const end = performance.now();
+
+			const time = end - start;
+			log(`Time: ${time.toFixed(2)} ms`);
+			return time;
+		};
+
+		checkResults("Normal Repeat Match", nav =>
+			repeatMatcher.match(nav)
+		);
+		div();
+		checkResults("Content Only Repeat Match", nav =>
+			repeatMatcher.matchContentOnly(nav)
+		);
+		// checkResultsMatchContentOnly();
+		div();
+		const normalTime = doRepeatMatch(
+			"Normal Repeat Match",
+			nav => repeatMatcher.match(nav)
+		);
+		div();
+		const contentOnlyTime = doRepeatMatch(
+			"Content Only Repeat Match",
+			nav => repeatMatcher.matchContentOnly(nav)
+		);
+		div();
+		const ratio = (contentOnlyTime / normalTime) * 100;
+		const faster = (1.0 / ratio) * 100;
+		log();
+		log(
+			`${chalk.magentaBright("Result")}: ${chalk.cyan("matchContentOnly")} takes ` +
+				`${chalk.green(ratio.toFixed(2) + "%")} of the time of ${chalk.cyan("match")} and ` +
+				`is ${chalk.green(faster.toFixed(2) + "X")} faster.`
+		);
+	};
+
 const doStuffItems: TestMenuItem[] = [
 	{
 		func: doBasicOptRepeatMatcherWithOptAltFirst,
 		name: "Basic Opt Repeat Matcher With Opt AltFirst",
 		description: [
 			"Match 'B' between 2 and 3 times with 'A' as",
-			"an alt first match.",
+			"an optional alt first match.",
 		],
 	},
 	{
@@ -534,23 +673,23 @@ const doStuffItems: TestMenuItem[] = [
 		name: "Basic Opt Repeat Matcher With Opt AltLast",
 		description: [
 			"Match 'B' between 2 and 3 times with 'C' as",
-			"an alt last match.",
+			"an optional alt last match.",
 		],
 	},
 	{
 		func: doBasicOptRepeatMatcherWithOptAltFirstOptAltLast,
 		name: "Basic Opt Repeat Matcher With Opt AltFirst and Opt AltLast",
 		description: [
-			"Match 'B' between 2 and 3 times with 'A' as",
-			"an alt first match and 'C' as an alt last match.",
+			"Match 'B' optionally between 2 and 3 times with 'A' as",
+			"an optional alt first match and 'C' as an optional alt last match.",
 		],
 	},
 	{
 		func: doBasicFullStringOptRepeatMatcherWithOptAltFirstOptAltLast,
 		name: "Basic Opt Repeat Matcher With Opt AltFirst and Opt AltLast: Full String",
 		description: [
-			"Match 'B' between 2 and 3 times with 'A' as",
-			"an alt first match and 'C' as an alt last match.",
+			"Match 'B' optionally between 2 and 3 times with 'A' as",
+			"an optional alt first match and 'C' as an optional alt last match.",
 			"Must match entire string view.",
 		],
 	},
@@ -558,7 +697,7 @@ const doStuffItems: TestMenuItem[] = [
 		func: doBasicFullStringOptRepeatMatcherReqAltLast,
 		name: "Basic Full String Opt Repeat Matcher Req AltLast",
 		description: [
-			"Match 'B' between 2 and 3 times with 'C' as an alt last match.",
+			"Match 'B' optionally between 2 and 3 times with 'C' as a required alt last match.",
 			"Must match 'C'. Must match entire string view.",
 		],
 	},
@@ -566,7 +705,7 @@ const doStuffItems: TestMenuItem[] = [
 		func: doBasicFullStringOptRepeatMatcherReqAltFirst,
 		name: "Basic Full String Opt Repeat Matcher Req AltFirst",
 		description: [
-			"Match 'B' between 2 and 3 times with 'A' as an alt first match.",
+			"Match 'B' optionally between 2 and 3 times with 'A' as a required alt first match.",
 			"Must match 'A'.",
 		],
 	},
@@ -574,24 +713,24 @@ const doStuffItems: TestMenuItem[] = [
 		func: doBasicFullStringOptRepeatMatcherReqAltFirstOptAltLast,
 		name: "Basic Full String Opt Repeat Matcher Req AltFirst Opt AltLast",
 		description: [
-			"Match 'B' between 2 and 3 times with 'A' as an alt first match",
-			"and 'C' as an alt last match. Must match 'A'.",
+			"Match 'B' optionally between 2 and 3 times with 'A' as a required alt first match",
+			"and 'C' as an optional alt last match. Must match 'A'.",
 		],
 	},
 	{
 		func: doBasicFullStringOptRepeatMatcherOptAltFirstReqAltLast,
 		name: "Basic Full String Opt Repeat Matcher Opt AltFirst Req AltLast",
 		description: [
-			"Match 'B' between 2 and 3 times with 'A' as an alt first match",
-			"and 'C' as an alt last match. Must match 'C'.",
+			"Match 'B' optionally between 2 and 3 times with 'A' as an optional alt first match",
+			"and 'C' as a required alt last match. Must match 'C'.",
 		],
 	},
 	{
 		func: doBasicFullStringReqRepeatMatcherReqAltFirstReqAltLast,
 		name: "Basic Full String Req Repeat Matcher Req AltFirst Req AltLast",
 		description: [
-			"Match 'B' between 3 and 4 times with 'A' as an alt first match",
-			"and 'C' as an alt last match. Must match 'A', 'B' and 'C'.",
+			"Match 'B' between 3 and 4 times with 'A' as a required alt first match",
+			"and 'C' as a required alt last match. Must match 'A', 'B' and 'C'.",
 		],
 	},
 	{
@@ -600,7 +739,7 @@ const doStuffItems: TestMenuItem[] = [
 		description: [
 			"Do number repeat matcher with alt first and alt last.",
 			"Groups of 3 numbers separated by commas. Both ends can have",
-			"between 1 and 2 numbers.",
+			"between 1 and 2 numbers. The final end must be between 1 and 3 numbers.",
 		],
 	},
 	{
@@ -611,9 +750,18 @@ const doStuffItems: TestMenuItem[] = [
 			"Matches 'A' zero or more times.",
 		],
 	},
+	{
+		func: doTimedRepeatMatcherTestContentOnlyEfficiency,
+		name: "Timed Repeat Matcher Test Content-Only Matcher Efficiency",
+		description: [
+			"This checks the efficiency of writing a separate content-only match function.",
+			"Since 'match' will call this function 'matchContentOnly' when there are no",
+			"altFirst and altLast matchers, this logic must be commented out in order",
+			"for the test to work. (Efficiency is around 2x faster.)",
+		],
+	},
 ];
 
-export const runMatcherBasicsTests = async () => {
-	// doBasicFullStringOptRepeatMatcherReqAltFirst();
-	await runTestMenu(doStuffItems);
+export const runRepeatMatcherExamples = async () => {
+	await runExamplesMenu("Repeat Matchers", doStuffItems);
 };

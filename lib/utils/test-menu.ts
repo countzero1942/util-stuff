@@ -40,8 +40,11 @@ export const pressEnterToContinue = async () => {
 	return;
 };
 
-export const writeTestMenu = (items: TestMenuItem[]) => {
-	logh("Choose a test");
+export const writeExamplesMenu = (
+	menuName: string,
+	items: TestMenuItem[]
+) => {
+	logh(`Choose an example for ${menuName}:`);
 	log();
 	let index = 1;
 	for (const item of items) {
@@ -59,11 +62,12 @@ export const writeTestMenu = (items: TestMenuItem[]) => {
 	}
 };
 
-export const runTestMenu = async (
+export const runExamplesMenu = async (
+	menuName: string,
 	testMenuItems: TestMenuItem[]
 ) => {
 	while (true) {
-		writeTestMenu(testMenuItems);
+		writeExamplesMenu(menuName, testMenuItems);
 		const index = await chooseAnOption(
 			testMenuItems.length
 		);

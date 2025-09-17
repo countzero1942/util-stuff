@@ -57,11 +57,9 @@ import {
 	safeAddMany,
 } from "@/utils/math";
 import { testAreEqualAndSafeAddAcrossExponents } from "@/my-tests/math/areEqual-and-safeAdd";
-import {
-	runMatcherBasicsTests,
-	doNumberRepeatMatcherWithAltFirstAltLast,
-} from "@/examples/trex/matchers/repeat-matchers";
+import { runRepeatMatcherExamples } from "@/examples/trex/matchers/repeat-matchers";
 import { doStepNavTest } from "@/examples/utils/operations-stuff";
+import chalk from "chalk";
 
 // logGeneratePassword();
 
@@ -74,4 +72,49 @@ import { doStepNavTest } from "@/examples/utils/operations-stuff";
 
 // doGroupBasicsCurrentTest();
 
-await runMatcherBasicsTests();
+// const navStrs = ["abc", "def", "ghi"];
+
+// const matcher = MatchAnyString.fromStrings(...navStrs);
+
+// const navs = navStrs.map(navStr =>
+// 	MutMatchNav.fromString(navStr)
+// );
+
+// for (const nav of navs) {
+// 	const result = matcher.match(nav);
+
+// 	if (!result) {
+// 		log(
+// 			chalk.red(
+// 				`No match for navString: '${nav.source.value}'`
+// 			)
+// 		);
+// 		continue;
+// 	} else {
+// 		log(
+// 			chalk.green(
+// 				`Match: '${result.captureMatch.value}'`
+// 			)
+// 		);
+// 	}
+// }
+
+// for (const navStr of navStrs) {
+// 	const nav = MutMatchNav.fromString(navStr);
+
+// 	const result = matcher.match(nav);
+
+// 	if (!result) {
+// 		log(chalk.red(`No match for navString: '${navStr}'`));
+// 		continue;
+// 	} else {
+// 		log(
+// 			chalk.green(
+// 				`Match: '${result.captureMatch.value}'`
+// 			)
+// 		);
+// 	}
+// }
+// div();
+
+await runRepeatMatcherExamples();

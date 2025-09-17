@@ -198,6 +198,50 @@ export class MatchRepeat extends MatchBase {
 		return this.#_matchRepeatStepNav.copyNew();
 	}
 
+	matchContentOnly(nav: MutMatchNav): MutMatchNav | null {
+		nav.assertNavIsValid();
+
+		let count = 0;
+		const min = this.numberOfMatches.minNumber;
+		const max = this.numberOfMatches.maxNumber;
+		const beyondCount = max + 1;
+
+		let currentNav = nav.copy();
+
+		const contentMatcher = this.matcher;
+
+		while (count < beyondCount) {
+			const isCurrentMatchEmpty = () => {
+				if (result === null) {
+					return true;
+				}
+				return (
+					result.captureIndex ===
+					currentNav.captureIndex
+				);
+			};
+
+			const result = contentMatcher.match(
+				currentNav.copy()
+			);
+			if (isCurrentMatchEmpty()) {
+				break;
+			}
+
+			count++;
+
+			if (result) {
+				currentNav = result;
+			}
+		} // while (count < beyondCount)
+
+		if (count >= min && count <= max) {
+			return currentNav;
+		} else {
+			return nav.invalidate();
+		}
+	} // match
+
 	/**
 	 * Matches the repeat matcher according to the numberOfMatches
 	 * and altFirstLastMatchers.
@@ -217,7 +261,18 @@ export class MatchRepeat extends MatchBase {
 	 * @returns The navigation after matching, or null if no match.
 	 */
 	match(nav: MutMatchNav): MutMatchNav | null {
+		const firstMatcher =
+			this.altFirstLastMatchers.altFirstMatch;
+		const lastMatcher =
+			this.altFirstLastMatchers.altLastMatch;
+
+		if (!firstMatcher && !lastMatcher) {
+			return this.matchContentOnly(nav);
+		}
+
 		nav.assertNavIsValid();
+
+		const contentMatcher = this.matcher;
 
 		let count = 0;
 		const min = this.numberOfMatches.minNumber;
@@ -225,12 +280,6 @@ export class MatchRepeat extends MatchBase {
 		const beyondCount = max + 1;
 
 		let currentNav = nav.copy();
-
-		const firstMatcher =
-			this.altFirstLastMatchers.altFirstMatch;
-		const contentMatcher = this.matcher;
-		const lastMatcher =
-			this.altFirstLastMatchers.altLastMatch;
 
 		const stepNav = MatchRepeat.getMatchRepeatStepNav();
 

@@ -86,11 +86,8 @@ export const logh = (
  * @param header The header to log.
  */
 export const loghn = (header: string) => {
-	const line = "═".repeat(header.length);
-	log(line);
-	log(header);
-	log(line);
-	logn();
+	logh(header);
+	log();
 };
 
 /**
