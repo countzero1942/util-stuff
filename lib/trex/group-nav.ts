@@ -1,5 +1,6 @@
 import { MutMatchNav } from "./nav";
 import { GroupName } from "./group-name";
+import chalk from "chalk";
 
 /**
  * A group navigation node that contains a contiguous match
@@ -75,7 +76,12 @@ export class GroupMatchNav {
 	// }
 
 	public toString(): string {
-		return `<${this.groupName.toString()}> '${this.wholeMatchNav.captureMatch.value}' [${this.children.length}]`;
+		return (
+			`${chalk.magentaBright("GroupNav: ")}` +
+			`${"<" + chalk.blueBright(this.groupName.toString()) + ">"} ` +
+			`'${chalk.green(this.wholeMatchNav.captureMatch.value)}' ` +
+			`+[${chalk.cyan(this.children.length)}]`
+		);
 	}
 }
 

@@ -115,6 +115,11 @@ export class GroupMatchRepeat extends GroupMatchBase {
 	 * @returns The navigation after matching, or null if no match.
 	 */
 	public match(nav: MutMatchNav): GroupMatchNav | null {
+		const firstMatcher =
+			this.altFirstLastMatchers.altFirstMatch;
+		const lastMatcher =
+			this.altFirstLastMatchers.altLastMatch;
+
 		nav.assertNavIsValid();
 		nav.assertNavIsNew();
 
@@ -128,15 +133,12 @@ export class GroupMatchRepeat extends GroupMatchBase {
 
 		const savedNavs: GroupMatchNav[] = [];
 
-		const firstMatcher =
-			this.altFirstLastMatchers.altFirstMatch;
 		const contentMatcher = this.matcher;
-		const lastMatcher =
-			this.altFirstLastMatchers.altLastMatch;
 
 		const stepNav = MatchRepeat.getMatchRepeatStepNav();
 
 		let isFailedMatch = false;
+		let didContentMatch = false;
 
 		while (count < beyondCount && stepNav.isNotComplete) {
 			/**
@@ -178,7 +180,10 @@ export class GroupMatchRepeat extends GroupMatchBase {
 					result = contentMatcher.match(
 						currentNav.copy()
 					);
-					if (!result) {
+					if (result) {
+						didContentMatch = true;
+					}
+					if (!result && didContentMatch === false) {
 						isFailedMatch = true;
 					}
 					if (isCurrentMatchEmpty()) {
@@ -216,7 +221,12 @@ export class GroupMatchRepeat extends GroupMatchBase {
 			}
 		}
 
-		if (count >= min && count <= max) {
+		// case: successful match in range
+		if (
+			isFailedMatch === false &&
+			count >= min &&
+			count <= max
+		) {
 			return GroupMatchNav.fromChildren(
 				MutMatchNav.fromFirstAndLast(
 					firstNav,
@@ -225,7 +235,20 @@ export class GroupMatchRepeat extends GroupMatchBase {
 				this.groupName,
 				savedNavs
 			);
-		} else {
+		}
+		// case: failed match with zero matches allowed
+		else if (
+			isFailedMatch === true &&
+			count === 0 &&
+			min === 0
+		) {
+			return GroupMatchNav.from(
+				nav.copy(),
+				this.groupName
+			);
+		}
+		// case: failed match
+		else {
 			return nav.invalidate();
 		}
 	}

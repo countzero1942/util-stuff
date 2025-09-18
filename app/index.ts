@@ -47,7 +47,7 @@ import {
 import { StrSlice } from "@/utils/slice";
 import { Buffer } from "buffer";
 import { testStrSliceJoin } from "@/my-tests/str-slice/test-join";
-import { doGroupBasicsCurrentTest } from "@/examples/trex/groups/group-basics";
+import { doGroupBasicsExamplesMenu } from "@/examples/trex/groups/group-basics";
 import {
 	areEqual,
 	getLogForRelativeEpsilon,
@@ -60,6 +60,7 @@ import { testAreEqualAndSafeAddAcrossExponents } from "@/my-tests/math/areEqual-
 import { runRepeatMatcherExamples } from "@/examples/trex/matchers/repeat-matchers";
 import { doStepNavTest } from "@/examples/utils/operations-stuff";
 import chalk from "chalk";
+import { runGroupRepeatMatcherExamples } from "@/examples/trex/groups/group-repeat-matchers";
 
 // logGeneratePassword();
 
@@ -70,51 +71,6 @@ import chalk from "chalk";
 
 // matchWordsTest();
 
-// doGroupBasicsCurrentTest();
-
-// const navStrs = ["abc", "def", "ghi"];
-
-// const matcher = MatchAnyString.fromStrings(...navStrs);
-
-// const navs = navStrs.map(navStr =>
-// 	MutMatchNav.fromString(navStr)
-// );
-
-// for (const nav of navs) {
-// 	const result = matcher.match(nav);
-
-// 	if (!result) {
-// 		log(
-// 			chalk.red(
-// 				`No match for navString: '${nav.source.value}'`
-// 			)
-// 		);
-// 		continue;
-// 	} else {
-// 		log(
-// 			chalk.green(
-// 				`Match: '${result.captureMatch.value}'`
-// 			)
-// 		);
-// 	}
-// }
-
-// for (const navStr of navStrs) {
-// 	const nav = MutMatchNav.fromString(navStr);
-
-// 	const result = matcher.match(nav);
-
-// 	if (!result) {
-// 		log(chalk.red(`No match for navString: '${navStr}'`));
-// 		continue;
-// 	} else {
-// 		log(
-// 			chalk.green(
-// 				`Match: '${result.captureMatch.value}'`
-// 			)
-// 		);
-// 	}
-// }
-// div();
-
-await runRepeatMatcherExamples();
+// await runRepeatMatcherExamples();
+// await doGroupBasicsExamplesMenu();
+await runGroupRepeatMatcherExamples();

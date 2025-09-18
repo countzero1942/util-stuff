@@ -3,6 +3,7 @@ import {
 	isCodePointLoneSurrogate,
 	getCodePointCharLength,
 } from "../utils/string";
+import chalk from "chalk";
 
 /**
  * Move mode for navigation to safely move to next start index
@@ -504,8 +505,11 @@ export class MutMatchNav {
 	 * Gets a string representation of the navigation state
 	 */
 	public toString(): string {
+		const navStr = chalk.magentaBright("Nav");
 		return this.isInvalidated
-			? "Nav: INVALIDATED"
-			: `Nav: [${this._startIndex}..${this._captureIndex}], '${this.captureMatch.value}'`;
+			? `${navStr}: ${chalk.red("INVALIDATED")}`
+			: `${navStr}: [${chalk.cyan(this._startIndex)}` +
+					`..${chalk.cyan(this._captureIndex)}], ` +
+					`'${chalk.green(this.captureMatch.value)}'`;
 	}
 }

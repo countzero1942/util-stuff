@@ -1,9 +1,8 @@
 import prompts from "prompts";
 import { cls, log, logh } from "./log";
-import { getFullType, getType } from "./types";
 import chalk from "chalk";
 
-export type TestMenuItem = {
+export type ExamplesMenuItem = {
 	func: () => void;
 	name: string;
 	description?: string[];
@@ -42,7 +41,7 @@ export const pressEnterToContinue = async () => {
 
 export const writeExamplesMenu = (
 	menuName: string,
-	items: TestMenuItem[]
+	items: ExamplesMenuItem[]
 ) => {
 	logh(`Choose an example for ${menuName}:`);
 	log();
@@ -64,7 +63,7 @@ export const writeExamplesMenu = (
 
 export const runExamplesMenu = async (
 	menuName: string,
-	testMenuItems: TestMenuItem[]
+	testMenuItems: ExamplesMenuItem[]
 ) => {
 	while (true) {
 		writeExamplesMenu(menuName, testMenuItems);

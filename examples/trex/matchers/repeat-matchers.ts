@@ -16,9 +16,9 @@ import {
 import { div, logh, loghn } from "@/utils/log";
 import { NumSeq } from "@/utils/seq";
 import {
-	TestMenuItem,
+	ExamplesMenuItem,
 	runExamplesMenu,
-} from "@/utils/test-menu";
+} from "@/utils/examples-menu";
 import { doesNotMatch } from "assert";
 import chalk from "chalk";
 import { log } from "console";
@@ -659,7 +659,7 @@ const doTimedRepeatMatcherTestContentOnlyEfficiency =
 		);
 	};
 
-const doStuffItems: TestMenuItem[] = [
+const exampleItems: ExamplesMenuItem[] = [
 	{
 		func: doBasicOptRepeatMatcherWithOptAltFirst,
 		name: "Basic Opt Repeat Matcher With Opt AltFirst",
@@ -763,5 +763,5 @@ const doStuffItems: TestMenuItem[] = [
 ];
 
 export const runRepeatMatcherExamples = async () => {
-	await runExamplesMenu("Repeat Matchers", doStuffItems);
+	await runExamplesMenu("Repeat Matchers", exampleItems);
 };

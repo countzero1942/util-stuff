@@ -1,4 +1,3 @@
-import { LineInfo } from "@/parser/types/key-value";
 import {
 	GroupMatchNav,
 	MutMatchNav,
@@ -21,21 +20,7 @@ import {
 } from "@/trex";
 import { div, divs, logobj } from "@/utils/log";
 import { log } from "console";
-
-const logGroups = (group: GroupMatchNav | null) => {
-	if (!group) {
-		log("Null group nav");
-		return;
-	}
-	if (group.groupName.isNotEmpty()) {
-		log(group.toString());
-		log(group.noEndMatchNav.toString());
-		divs();
-	}
-	group.children.forEach(child => {
-		log(child.toString());
-	});
-};
+import { logGroups } from "./common";
 
 export const doBasicGroupMatch = () => {
 	const wholeMatcher = GroupMatch.from(
@@ -79,12 +64,7 @@ export const doBasicGroupMatch = () => {
 	for (const navString of navStrings) {
 		const nav = MutMatchNav.fromString(navString);
 		const result = numberMatcher.match(nav);
-		if (!result) {
-			log(`No match for navString: ${navString}`);
-			div();
-			continue;
-		}
-		logGroups(result);
+		logGroups(navString, result);
 		div();
 	}
 };
@@ -125,12 +105,7 @@ const doGroupOptMatch = () => {
 	for (const navString of navStrings) {
 		const nav = MutMatchNav.fromString(navString);
 		const result = numberMatcher.match(nav);
-		if (!result) {
-			log(`No match for navString: ${navString}`);
-			div();
-			continue;
-		}
-		logGroups(result);
+		logGroups(navString, result);
 		div();
 	}
 };
@@ -212,15 +187,10 @@ const doGroupRepeatMatchWithAltFirstLast = () => {
 	for (const navString of navStrings) {
 		const nav = MutMatchNav.fromString(navString);
 		const result = numberMatcher.match(nav);
-		if (!result) {
-			log(`No match for navString: '${navString}'`);
-			div();
-			continue;
-		}
-		logGroups(result);
 		div();
-		div();
+		logGroups(navString, result);
 	}
+	div();
 };
 
 const doBasicSplitter = () => {
@@ -249,12 +219,7 @@ const doBasicSplitter = () => {
 	for (const navString of navStrings) {
 		const nav = MutMatchNav.fromString(navString);
 		const result = splitter.match(nav);
-		if (!result) {
-			log(`No match for navString: ${navString}`);
-			div();
-			continue;
-		}
-		logGroups(result);
+		logGroups(navString, result);
 		div();
 	}
 };
@@ -281,20 +246,18 @@ const doSplitterWithEndMatcher = () => {
 	let nav = MutMatchNav.fromString(navString);
 	while (nav.isNavIndexAtSourceEnd === false) {
 		const result = splitter.match(nav);
-		if (!result) {
-			log(`No match for navString: ${navString}`);
-			div();
-			break;
-		}
-		logGroups(result);
+		logGroups(navString, result);
 		div();
+
+		if (!result) break;
+
 		nav = result.wholeMatchNav.copyAndMoveNext(
 			"OptMoveForward"
 		);
 	}
 };
 
-export const doGroupBasicsCurrentTest = () => {
+export const doGroupBasicsExamplesMenu = () => {
 	// doBasicGroupMatch();
 	// doBasicSplitter();
 	//doSplitterWithEndMatcher();
