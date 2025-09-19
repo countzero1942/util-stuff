@@ -74,3 +74,12 @@ import { runGroupRepeatMatcherExamples } from "@/examples/trex/groups/group-repe
 // await runRepeatMatcherExamples();
 // await doGroupBasicsExamplesMenu();
 await runGroupRepeatMatcherExamples();
+
+// let n = Number.MAX_SAFE_INTEGER - 1;
+
+// for (let i = 0; i < 5; i++) {
+// 	log(
+// 		`i: ${i} | n: ${n} | isSafeInteger: ${Number.isSafeInteger(n)}`
+// 	);
+// 	n++;
+// }

@@ -51,15 +51,27 @@ describe("NumberOfMatches", () => {
 		test("constructs with min and default max", () => {
 			const n = NumberOfMatches.atLeast(2);
 			expect(n.minNumber).toBe(2);
-			expect(n.maxNumber).toBe(Number.MAX_SAFE_INTEGER);
+			expect(n.maxNumber).toBe(
+				NumberOfMatches.maxNumberMatches
+			);
 		});
-		test("constructs with min and explicit default max", () => {
+		test("constructs with min and explicit MAX_SAFE_INTEGER", () => {
 			const n = NumberOfMatches.between(
 				2,
 				Number.MAX_SAFE_INTEGER
 			);
 			expect(n.minNumber).toBe(2);
-			expect(n.maxNumber).toBe(Number.MAX_SAFE_INTEGER);
+			expect(n.maxNumber).toBe(
+				NumberOfMatches.maxNumberMatches
+			);
+		});
+
+		test("constructs with min and max of -1", () => {
+			const n = NumberOfMatches.between(2, -1);
+			expect(n.minNumber).toBe(2);
+			expect(n.maxNumber).toBe(
+				NumberOfMatches.maxNumberMatches
+			);
 		});
 
 		test("constructs with min and max", () => {
@@ -78,14 +90,14 @@ describe("NumberOfMatches", () => {
 			const zeroOrMore = NumberOfMatches.zeroOrMore;
 			expect(zeroOrMore.minNumber).toBe(0);
 			expect(zeroOrMore.maxNumber).toBe(
-				Number.MAX_SAFE_INTEGER
+				NumberOfMatches.maxNumberMatches
 			);
 		});
 		test("return correct values with oneOrMore method", () => {
 			const oneOrMore = NumberOfMatches.oneOrMore;
 			expect(oneOrMore.minNumber).toBe(1);
 			expect(oneOrMore.maxNumber).toBe(
-				Number.MAX_SAFE_INTEGER
+				NumberOfMatches.maxNumberMatches
 			);
 		});
 		test("return correct values with between method", () => {
@@ -97,7 +109,7 @@ describe("NumberOfMatches", () => {
 			const atLeast = NumberOfMatches.atLeast(2);
 			expect(atLeast.minNumber).toBe(2);
 			expect(atLeast.maxNumber).toBe(
-				Number.MAX_SAFE_INTEGER
+				NumberOfMatches.maxNumberMatches
 			);
 		});
 	});
@@ -146,7 +158,7 @@ describe("MatchRepeat", () => {
 			).toBe(1);
 			expect(
 				repeatMatcher.numberOfMatches.maxNumber
-			).toBe(Number.MAX_SAFE_INTEGER);
+			).toBe(NumberOfMatches.maxNumberMatches);
 			expect(
 				repeatMatcher.altFirstLastMatchers.altFirstMatch
 			).toBeNull();

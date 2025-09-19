@@ -1,6 +1,10 @@
 import { MutMatchNav } from "@/trex";
 import { StrSlice } from "@/utils/slice";
 
+// Local helper to strip ANSI color codes from strings produced by chalk or similar
+// This keeps tests robust regardless of whether coloring is enabled.
+const stripAnsi = (s: string): string => s.replace(/\u001B\[[0-9;]*m/g, "");
+
 describe("MutMatchNav", () => {
 	// Helper function to create a nav with a given source text
 	// const createNav = (source: string, start = 0) => {
@@ -428,45 +432,45 @@ describe("MutMatchNav", () => {
 			test("returns correct string for initial state", () => {
 				const nav = MutMatchNav.fromString("abcdef", 2);
 				expect(nav.captureMatch.value).toBe("");
-				expect(nav.toString()).toBe("Nav: [2..2], ''");
+				expect(stripAnsi(nav.toString())).toBe("Nav: [2..2], ''");
 			});
-
+			
 			test("returns correct string after advancing capture and nav", () => {
 				const nav = MutMatchNav.fromString("abcdef");
 				nav.moveCaptureForward(3); // navIndex and captureIndex now 3
 				expect(nav.captureMatch.value).toBe("abc");
-				expect(nav.toString()).toBe(
+				expect(stripAnsi(nav.toString())).toBe(
 					"Nav: [0..3], 'abc'"
 				);
 			});
-
+			
 			test("returns correct string at end of source", () => {
 				const nav = MutMatchNav.fromString("abc");
 				nav.moveCaptureToSourceEnd();
 				expect(nav.captureMatch.value).toBe("abc");
-				expect(nav.toString()).toBe(
+				expect(stripAnsi(nav.toString())).toBe(
 					"Nav: [0..3], 'abc'"
 				);
 			});
-
+			
 			test("returns correct string for empty source", () => {
 				const nav = MutMatchNav.fromString("");
-				expect(nav.toString()).toBe("Nav: [0..0], ''");
+				expect(stripAnsi(nav.toString())).toBe("Nav: [0..0], ''");
 			});
-
+			
 			test("returns correct string for ghost capture at end", () => {
 				const nav = MutMatchNav.fromString("abc, def");
 				nav.moveCaptureForward(3);
 				expect(nav.captureMatch.value).toBe("abc");
-				expect(nav.toString()).toBe(
+				expect(stripAnsi(nav.toString())).toBe(
 					"Nav: [0..3], 'abc'"
 				);
 			});
-
+			
 			test("returns correct string for invalidated navigator", () => {
 				const nav = MutMatchNav.fromString("test");
 				nav.invalidate();
-				expect(nav.toString()).toBe("Nav: INVALIDATED");
+				expect(stripAnsi(nav.toString())).toBe("Nav: INVALIDATED");
 			});
 		});
 	});

@@ -514,6 +514,42 @@ const doBasicRepeatMatcherZeroOrMore = () => {
 	);
 };
 
+const doBasicZeroOrMoreOptRepeatMatcherWithOptAltFirstOptAltLast =
+	() => {
+		const repeatMatcher = MatchRepeat.from(
+			MatchOpt.from(MatchCodePoint.fromString("B")),
+			NumberOfMatches.between(0, 2),
+			AltFirstLastMatchers.fromBoth(
+				MatchOpt.from(MatchCodePoint.fromString("A")),
+				MatchOpt.from(MatchCodePoint.fromString("C"))
+			)
+		);
+
+		const succesfulNavStrs = [
+			"B->B",
+			"A->A",
+			"C->C",
+			"AB->AB",
+			"AC->AC",
+			"BB->BB",
+			"BC->BC",
+			"->",
+			"X->",
+		];
+		const failedNavStrs = [
+			"ABC->over match",
+			"ABB->over match",
+			"BBB->over match",
+			"BBC->over match",
+		];
+
+		matchSuccessfulNavStrings(
+			repeatMatcher,
+			succesfulNavStrs
+		);
+		matchFailedNavStrings(repeatMatcher, failedNavStrs);
+	};
+
 const doTimedRepeatMatcherTestContentOnlyEfficiency =
 	() => {
 		const repeatMatcher = MatchRepeat.from(
@@ -748,6 +784,15 @@ const exampleItems: ExamplesMenuItem[] = [
 		description: [
 			"Do basic repeat matcher zero or more.",
 			"Matches 'A' zero or more times.",
+		],
+	},
+	{
+		func: doBasicZeroOrMoreOptRepeatMatcherWithOptAltFirstOptAltLast,
+		name: "Basic Zero Or More Opt Repeat Matcher Opt AltFirst Opt AltLast",
+		description: [
+			"Do basic zero or more opt repeat matcher opt alt first opt alt last.",
+			"Matches 'B' between 0 and 2 times with 'A' as an optional alt first match",
+			"and 'C' as an optional alt last match.",
 		],
 	},
 	{

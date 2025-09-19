@@ -26,6 +26,8 @@ export default {
 		"^@/my-tests/(.*)$": "<rootDir>/my-test-stuff/$1",
 		"^@/types/(.*)$": "<rootDir>/lib/types/$1",
 		"^@/examples/(.*)$": "<rootDir>/examples/$1",
+		// Map ESM-only 'chalk' to a test stub to avoid Jest ESM parsing issues
+		"^chalk$": "<rootDir>/tests/mocks/chalk.ts",
 	},
 };
 // "@/app/*": ["app/*"],

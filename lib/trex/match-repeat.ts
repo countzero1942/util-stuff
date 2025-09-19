@@ -11,6 +11,7 @@ import chalk from "chalk";
 export class NumberOfMatches {
 	readonly minNumber: number;
 	readonly maxNumber: number;
+	readonly hasOverMatchingError: boolean;
 
 	/**
 	 * @param minNumber The minimum number of matches.
@@ -19,13 +20,16 @@ export class NumberOfMatches {
 	 */
 	protected constructor(
 		minNumber: number,
-		maxNumber: number = -1
+		maxNumber: number = -1,
+		hasOverMatchingError: boolean = true
 	) {
 		this.minNumber = minNumber;
 		this.maxNumber =
-			maxNumber === -1
-				? Number.MAX_SAFE_INTEGER
+			maxNumber === -1 ||
+			maxNumber > NumberOfMatches.maxNumberMatches
+				? NumberOfMatches.maxNumberMatches
 				: maxNumber;
+		this.hasOverMatchingError = hasOverMatchingError;
 
 		if (this.minNumber < 0) {
 			throw new Error(
@@ -40,6 +44,16 @@ export class NumberOfMatches {
 					` (${this.minNumber} > ${this.maxNumber})`
 			);
 		}
+	}
+
+	static #_maxNumberMatches = Number.MAX_SAFE_INTEGER - 1;
+	/**
+	 * The maximum number of matches.
+	 *
+	 * This is set to Number.MAX_SAFE_INTEGER - 1 to avoid overflow.
+	 */
+	static get maxNumberMatches() {
+		return this.#_maxNumberMatches;
 	}
 
 	/**
@@ -59,8 +73,15 @@ export class NumberOfMatches {
 	/**
 	 * Matches exactly the given number of times.
 	 */
-	static exactly(number: number): NumberOfMatches {
-		return new NumberOfMatches(number, number);
+	static exactly(
+		number: number,
+		hasOverMatchingError: boolean = true
+	): NumberOfMatches {
+		return new NumberOfMatches(
+			number,
+			number,
+			hasOverMatchingError
+		);
 	}
 
 	/**
@@ -68,17 +89,29 @@ export class NumberOfMatches {
 	 */
 	static between(
 		minNumber: number,
-		maxNumber: number
+		maxNumber: number,
+		hasOverMatchingError: boolean = true
 	): NumberOfMatches {
-		return new NumberOfMatches(minNumber, maxNumber);
+		return new NumberOfMatches(
+			minNumber,
+			maxNumber,
+			hasOverMatchingError
+		);
 	}
 
 	/**
 	 * Matches at least the given number of times.
 	 *
 	 */
-	static atLeast(number: number): NumberOfMatches {
-		return new NumberOfMatches(number);
+	static atLeast(
+		number: number,
+		hasOverMatchingError: boolean = true
+	): NumberOfMatches {
+		return new NumberOfMatches(
+			number,
+			-1,
+			hasOverMatchingError
+		);
 	}
 }
 
@@ -204,7 +237,11 @@ export class MatchRepeat extends MatchBase {
 		let count = 0;
 		const min = this.numberOfMatches.minNumber;
 		const max = this.numberOfMatches.maxNumber;
-		const beyondCount = max + 1;
+		const hasOverMatchingError =
+			this.numberOfMatches.hasOverMatchingError;
+		const beyondCount = hasOverMatchingError
+			? max + 1
+			: max;
 
 		let currentNav = nav.copy();
 
