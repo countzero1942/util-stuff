@@ -71,9 +71,9 @@ import { runGroupRepeatMatcherExamples } from "@/examples/trex/groups/group-repe
 
 // matchWordsTest();
 
-// await runRepeatMatcherExamples();
+await runRepeatMatcherExamples();
 // await doGroupBasicsExamplesMenu();
-await runGroupRepeatMatcherExamples();
+// await runGroupRepeatMatcherExamples();
 
 // let n = Number.MAX_SAFE_INTEGER - 1;
 

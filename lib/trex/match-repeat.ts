@@ -11,7 +11,14 @@ import chalk from "chalk";
 export class NumberOfMatches {
 	readonly minNumber: number;
 	readonly maxNumber: number;
-	readonly hasOverMatchingError: boolean;
+	/**
+	 * If true, a fail will result if too many repeat matches are found
+	 * (greater than maxNumber). (Default: true)
+	 *
+	 * If false, the repeat matcher will stop at exactly the maxNumber
+	 * of matches.
+	 */
+	readonly doesOverMatchingFail: boolean;
 
 	/**
 	 * @param minNumber The minimum number of matches.
@@ -21,15 +28,14 @@ export class NumberOfMatches {
 	protected constructor(
 		minNumber: number,
 		maxNumber: number = -1,
-		hasOverMatchingError: boolean = true
+		doesOverMatchingFail: boolean = true
 	) {
 		this.minNumber = minNumber;
 		this.maxNumber =
-			maxNumber === -1 ||
-			maxNumber > NumberOfMatches.maxNumberMatches
+			maxNumber === -1 || maxNumber > NumberOfMatches.maxNumberMatches
 				? NumberOfMatches.maxNumberMatches
 				: maxNumber;
-		this.hasOverMatchingError = hasOverMatchingError;
+		this.doesOverMatchingFail = doesOverMatchingFail;
 
 		if (this.minNumber < 0) {
 			throw new Error(
@@ -72,46 +78,59 @@ export class NumberOfMatches {
 
 	/**
 	 * Matches exactly the given number of times.
+	 *
+	 * @param number The number of times to match.
+	 * @param doesOverMatchingFail If true, a fail will result if too many
+	 * repeat matches are found (greater than maxNumber). (Default: true)
+	 *
+	 * If false, the repeat matcher will stop at exactly the maxNumber
+	 * of matches.
 	 */
 	static exactly(
 		number: number,
-		hasOverMatchingError: boolean = true
+		doesOverMatchingFail: boolean = true
 	): NumberOfMatches {
-		return new NumberOfMatches(
-			number,
-			number,
-			hasOverMatchingError
-		);
+		return new NumberOfMatches(number, number, doesOverMatchingFail);
 	}
 
 	/**
 	 * Matches between the given number of times.
+	 *
+	 * @param minNumber The minimum number of matches.
+	 * @param maxNumber The maximum number of matches.
+	 * @param doesOverMatchingFail If true, a fail will result if too many
+	 * repeat matches are found (greater than maxNumber). (Default: true)
+	 *
+	 * If false, the repeat matcher will stop at exactly the maxNumber
+	 * of matches.
 	 */
 	static between(
 		minNumber: number,
 		maxNumber: number,
-		hasOverMatchingError: boolean = true
+		doesOverMatchingFail: boolean = true
 	): NumberOfMatches {
 		return new NumberOfMatches(
 			minNumber,
 			maxNumber,
-			hasOverMatchingError
+			doesOverMatchingFail
 		);
 	}
 
 	/**
 	 * Matches at least the given number of times.
 	 *
+	 * @param number The minimum number of matches.
+	 * @param doesOverMatchingFail If true, a fail will result if too many
+	 * repeat matches are found (greater than maxNumber). (Default: true)
+	 *
+	 * If false, the repeat matcher will stop at exactly the maxNumber
+	 * of matches.
 	 */
 	static atLeast(
 		number: number,
-		hasOverMatchingError: boolean = true
+		doesOverMatchingFail: boolean = true
 	): NumberOfMatches {
-		return new NumberOfMatches(
-			number,
-			-1,
-			hasOverMatchingError
-		);
+		return new NumberOfMatches(number, -1, doesOverMatchingFail);
 	}
 }
 
@@ -135,10 +154,7 @@ export class AltFirstLastMatchers {
 		altFirstMatch: MatchBase,
 		altLastMatch: MatchBase
 	): AltFirstLastMatchers {
-		return new AltFirstLastMatchers(
-			altFirstMatch,
-			altLastMatch
-		);
+		return new AltFirstLastMatchers(altFirstMatch, altLastMatch);
 	}
 
 	/**
@@ -147,9 +163,7 @@ export class AltFirstLastMatchers {
 	 * @param altFirstMatch The first matcher.
 	 * @returns A new AltFirstLastMatchers instance.
 	 */
-	static fromAltFirst(
-		altFirstMatch: MatchBase
-	): AltFirstLastMatchers {
+	static fromAltFirst(altFirstMatch: MatchBase): AltFirstLastMatchers {
 		return new AltFirstLastMatchers(altFirstMatch, null);
 	}
 
@@ -159,9 +173,7 @@ export class AltFirstLastMatchers {
 	 * @param altLastMatch The last matcher.
 	 * @returns A new AltFirstLastMatchers instance.
 	 */
-	static fromAltLast(
-		altLastMatch: MatchBase
-	): AltFirstLastMatchers {
+	static fromAltLast(altLastMatch: MatchBase): AltFirstLastMatchers {
 		return new AltFirstLastMatchers(null, altLastMatch);
 	}
 
@@ -237,9 +249,7 @@ export class MatchRepeat extends MatchBase {
 		let count = 0;
 		const min = this.numberOfMatches.minNumber;
 		const max = this.numberOfMatches.maxNumber;
-		const hasOverMatchingError =
-			this.numberOfMatches.hasOverMatchingError;
-		const beyondCount = hasOverMatchingError
+		const beyondCount = this.numberOfMatches.doesOverMatchingFail
 			? max + 1
 			: max;
 
@@ -252,15 +262,10 @@ export class MatchRepeat extends MatchBase {
 				if (result === null) {
 					return true;
 				}
-				return (
-					result.captureIndex ===
-					currentNav.captureIndex
-				);
+				return result.captureIndex === currentNav.captureIndex;
 			};
 
-			const result = contentMatcher.match(
-				currentNav.copy()
-			);
+			const result = contentMatcher.match(currentNav.copy());
 			if (isCurrentMatchEmpty()) {
 				break;
 			}
@@ -287,7 +292,7 @@ export class MatchRepeat extends MatchBase {
 	 * the match fails.
 	 *
 	 * If the number of matches is greater than the maximum number of matches,
-	 * the match fails.
+	 * and `doesOverMatchingFail` is `true`, the match fails. (Default: true)
 	 *
 	 * A succesful match will move the nav capture forward by the length of
 	 * the match.
@@ -298,10 +303,8 @@ export class MatchRepeat extends MatchBase {
 	 * @returns The navigation after matching, or null if no match.
 	 */
 	match(nav: MutMatchNav): MutMatchNav | null {
-		const firstMatcher =
-			this.altFirstLastMatchers.altFirstMatch;
-		const lastMatcher =
-			this.altFirstLastMatchers.altLastMatch;
+		const firstMatcher = this.altFirstLastMatchers.altFirstMatch;
+		const lastMatcher = this.altFirstLastMatchers.altLastMatch;
 
 		if (!firstMatcher && !lastMatcher) {
 			return this.matchContentOnly(nav);
@@ -314,7 +317,9 @@ export class MatchRepeat extends MatchBase {
 		let count = 0;
 		const min = this.numberOfMatches.minNumber;
 		const max = this.numberOfMatches.maxNumber;
-		const beyondCount = max + 1;
+		const beyondCount = this.numberOfMatches.doesOverMatchingFail
+			? max + 1
+			: max;
 
 		let currentNav = nav.copy();
 
@@ -329,7 +334,7 @@ export class MatchRepeat extends MatchBase {
 			 *
 			 * Will be null if the match fails.
 			 * Will be null if firstMatcher or lastMatcher is null.
-			 * So it is not a reliable indicator of failed match.
+			 * So it is not a reliable indicator of a failed match.
 			 */
 			let result: MutMatchNav | null = null;
 
@@ -337,15 +342,10 @@ export class MatchRepeat extends MatchBase {
 				if (result === null) {
 					return true;
 				}
-				return (
-					result.captureIndex ===
-					currentNav.captureIndex
-				);
+				return result.captureIndex === currentNav.captureIndex;
 			};
 
-			const doAltMatcher = (
-				altMatcher: MatchBase | null
-			) => {
+			const doAltMatcher = (altMatcher: MatchBase | null) => {
 				if (altMatcher) {
 					result = altMatcher.match(currentNav.copy());
 					if (!result) {
@@ -360,9 +360,7 @@ export class MatchRepeat extends MatchBase {
 					doAltMatcher(firstMatcher);
 					break;
 				case "Content Matcher":
-					result = contentMatcher.match(
-						currentNav.copy()
-					);
+					result = contentMatcher.match(currentNav.copy());
 					if (result) {
 						didContentMatch = true;
 					}
@@ -397,21 +395,15 @@ export class MatchRepeat extends MatchBase {
 		} // while (count < beyondCount && stepNav.isNotComplete)
 
 		// case: successful match in range
-		if (
-			isFailedMatch === false &&
-			count >= min &&
-			count <= max
-		) {
+		if (isFailedMatch === false && count >= min && count <= max) {
 			return currentNav;
-			// case: failed match with zero matches allowed
-		} else if (
-			isFailedMatch === true &&
-			count === 0 &&
-			min === 0
-		) {
+		}
+		// case: failed match with zero matches allowed
+		else if (isFailedMatch === true && count === 0 && min === 0) {
 			return nav;
-			// case: failed match
-		} else {
+		}
+		// case: failed match
+		else {
 			return nav.invalidate();
 		}
 	} // match

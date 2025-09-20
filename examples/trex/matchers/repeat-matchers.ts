@@ -8,6 +8,7 @@ import {
 	MatchCodePoint,
 	MatchCodePointCategories,
 	MatchEndSlice,
+	MatchNot,
 	MatchOpt,
 	MatchRepeat,
 	MutMatchNav,
@@ -15,18 +16,16 @@ import {
 } from "@/trex";
 import { div, logh, loghn } from "@/utils/log";
 import { NumSeq } from "@/utils/seq";
-import {
-	ExamplesMenuItem,
-	runExamplesMenu,
-} from "@/utils/examples-menu";
+import { ExamplesMenuItem, runExamplesMenu } from "@/utils/examples-menu";
 import { doesNotMatch } from "assert";
 import chalk from "chalk";
 import { log } from "console";
 import prompts from "prompts";
+import { set } from "moderndash";
 
 const matchSuccessfulNavStrings = (
 	matcher: MatchBase,
-	navStrings: string[]
+	navStrings: readonly string[]
 ) => {
 	logh("Success cases");
 	for (const pair of navStrings) {
@@ -64,9 +63,7 @@ const matchFailedNavStrings = (
 		const msgStr = msg ? `-> '${chalk.cyan(msg)}'` : "";
 
 		if (!result) {
-			log(
-				`No match for navString: '${chalk.green(navStr)}' ${msgStr}`
-			);
+			log(`No match for navString: '${chalk.green(navStr)}' ${msgStr}`);
 			div();
 			continue;
 		}
@@ -108,10 +105,7 @@ const doBasicOptRepeatMatcherWithOptAltFirst = () => {
 		"ABBB->over match",
 	];
 
-	matchSuccessfulNavStrings(
-		repeatMatcher,
-		succesfulNavStrs
-	);
+	matchSuccessfulNavStrings(repeatMatcher, succesfulNavStrs);
 	matchFailedNavStrings(repeatMatcher, failedNavStrs);
 };
 
@@ -143,121 +137,106 @@ const doBasicOptRepeatMatcherWithOptAltLast = () => {
 		"BBBC->over match",
 	];
 
-	matchSuccessfulNavStrings(
-		repeatMatcher,
-		succesfulNavStrs
-	);
+	matchSuccessfulNavStrings(repeatMatcher, succesfulNavStrs);
 	matchFailedNavStrings(repeatMatcher, failedNavStrs);
 };
 
-const doBasicOptRepeatMatcherWithOptAltFirstOptAltLast =
-	() => {
-		const repeatMatcher = MatchRepeat.from(
+const doBasicOptRepeatMatcherWithOptAltFirstOptAltLast = () => {
+	const repeatMatcher = MatchRepeat.from(
+		MatchOpt.from(MatchCodePoint.fromString("B")),
+		NumberOfMatches.between(2, 3),
+		AltFirstLastMatchers.fromBoth(
+			MatchOpt.from(MatchCodePoint.fromString("A")),
+			MatchOpt.from(MatchCodePoint.fromString("C"))
+		)
+	);
+
+	const succesfulNavStrs = [
+		"BB->BB",
+		"AB->AB",
+		"BC->BC",
+		"AC->AC",
+		"ABB->ABB",
+		"ABC->ABC",
+		"BBB->BBB",
+		"BBC->BBC",
+		"ABA->AB",
+		"ACC->AC",
+		"BCC->BC",
+		"BBA->BB",
+		"ABBA->ABB",
+		"ABCA->ABC",
+		"BBBA->BBB",
+	];
+	const failedNavStrs = [
+		"A",
+		"B",
+		"BA",
+		"AA",
+		"AAB",
+		"BBBC->over match",
+		"BBBB->over match",
+		"ABBB->over match",
+		"ABBC->over match",
+	];
+
+	matchSuccessfulNavStrings(repeatMatcher, succesfulNavStrs);
+	matchFailedNavStrings(repeatMatcher, failedNavStrs);
+};
+
+const doBasicFullStringOptRepeatMatcherWithOptAltFirstOptAltLast = () => {
+	const repeatMatcher = MatchAll.fromMatchers(
+		MatchRepeat.from(
 			MatchOpt.from(MatchCodePoint.fromString("B")),
 			NumberOfMatches.between(2, 3),
 			AltFirstLastMatchers.fromBoth(
 				MatchOpt.from(MatchCodePoint.fromString("A")),
 				MatchOpt.from(MatchCodePoint.fromString("C"))
 			)
-		);
+		),
+		MatchEndSlice.default
+	);
 
-		const succesfulNavStrs = [
-			"BB->BB",
-			"AB->AB",
-			"BC->BC",
-			"AC->AC",
-			"ABB->ABB",
-			"ABC->ABC",
-			"BBB->BBB",
-			"BBC->BBC",
-			"ABA->AB",
-			"ACC->AC",
-			"BCC->BC",
-			"BBA->BB",
-			"ABBA->ABB",
-			"ABCA->ABC",
-			"BBBA->BBB",
-		];
-		const failedNavStrs = [
-			"A",
-			"B",
-			"BA",
-			"AA",
-			"AAB",
-			"BBBC->over match",
-			"BBBB->over match",
-			"ABBB->over match",
-			"ABBC->over match",
-		];
+	const succesfulNavStrs = [
+		"BB->BB",
+		"AB->AB",
+		"BC->BC",
+		"AC->AC",
+		"ABB->ABB",
+		"ABC->ABC",
+		"BBB->BBB",
+		"BBC->BBC",
+	];
+	const failedNavStrs = [
+		"A",
+		"B",
+		"BA",
+		"AA",
+		"AAB",
+		"ABA->not full match",
+		"ACC->not full match",
+		"BCC->not full match",
+		"BBA->not full match",
+		"ABBA->not full match",
+		"ABCA->not full match",
+		"BBBA->not full match",
+		"BBCA->not full match",
+		"BBBC->over match",
+		"BBBB->over match",
+		"ABBB->over match",
+		"ABBC->over match",
+	];
 
-		matchSuccessfulNavStrings(
-			repeatMatcher,
-			succesfulNavStrs
-		);
-		matchFailedNavStrings(repeatMatcher, failedNavStrs);
-	};
-
-const doBasicFullStringOptRepeatMatcherWithOptAltFirstOptAltLast =
-	() => {
-		const repeatMatcher = MatchAll.fromMatchers(
-			MatchRepeat.from(
-				MatchOpt.from(MatchCodePoint.fromString("B")),
-				NumberOfMatches.between(2, 3),
-				AltFirstLastMatchers.fromBoth(
-					MatchOpt.from(
-						MatchCodePoint.fromString("A")
-					),
-					MatchOpt.from(MatchCodePoint.fromString("C"))
-				)
-			),
-			MatchEndSlice.default
-		);
-
-		const succesfulNavStrs = [
-			"BB->BB",
-			"AB->AB",
-			"BC->BC",
-			"AC->AC",
-			"ABB->ABB",
-			"ABC->ABC",
-			"BBB->BBB",
-			"BBC->BBC",
-		];
-		const failedNavStrs = [
-			"A",
-			"B",
-			"BA",
-			"AA",
-			"AAB",
-			"ABA->not full match",
-			"ACC->not full match",
-			"BCC->not full match",
-			"BBA->not full match",
-			"ABBA->not full match",
-			"ABCA->not full match",
-			"BBBA->not full match",
-			"BBCA->not full match",
-			"BBBC->over match",
-			"BBBB->over match",
-			"ABBB->over match",
-			"ABBC->over match",
-		];
-
-		matchSuccessfulNavStrings(
-			repeatMatcher,
-			succesfulNavStrs
-		);
-		matchFailedNavStrings(repeatMatcher, failedNavStrs);
-	};
+	matchSuccessfulNavStrings(repeatMatcher, succesfulNavStrs);
+	matchFailedNavStrings(repeatMatcher, failedNavStrs);
+};
 
 const doBasicFullStringOptRepeatMatcherReqAltLast = () => {
 	const repeatMatcher = MatchAll.fromMatchers(
 		MatchRepeat.from(
 			MatchOpt.from(MatchCodePoint.fromString("B")),
 			NumberOfMatches.between(2, 3),
-			AltFirstLastMatchers.fromAltLast(
-				MatchCodePoint.fromString("C")
-			)
+			AltFirstLastMatchers.fromAltLast(MatchCodePoint.fromString("C"))
 		),
 		MatchEndSlice.default
 	);
@@ -273,10 +252,7 @@ const doBasicFullStringOptRepeatMatcherReqAltLast = () => {
 		"BBBC->over match",
 	];
 
-	matchSuccessfulNavStrings(
-		repeatMatcher,
-		succesfulNavStrs
-	);
+	matchSuccessfulNavStrings(repeatMatcher, succesfulNavStrs);
 	matchFailedNavStrings(repeatMatcher, failedNavStrs);
 };
 
@@ -285,9 +261,7 @@ const doBasicFullStringOptRepeatMatcherReqAltFirst = () => {
 		MatchRepeat.from(
 			MatchOpt.from(MatchCodePoint.fromString("B")),
 			NumberOfMatches.between(2, 3),
-			AltFirstLastMatchers.fromAltFirst(
-				MatchCodePoint.fromString("A")
-			)
+			AltFirstLastMatchers.fromAltFirst(MatchCodePoint.fromString("A"))
 		),
 		MatchEndSlice.default
 	);
@@ -303,127 +277,99 @@ const doBasicFullStringOptRepeatMatcherReqAltFirst = () => {
 		"ABBB->over match",
 	];
 
-	matchSuccessfulNavStrings(
-		repeatMatcher,
-		succesfulNavStrs
-	);
+	matchSuccessfulNavStrings(repeatMatcher, succesfulNavStrs);
 	matchFailedNavStrings(repeatMatcher, failedNavStrs);
 };
 
-const doBasicFullStringOptRepeatMatcherReqAltFirstOptAltLast =
-	() => {
-		const repeatMatcher = MatchAll.fromMatchers(
-			MatchRepeat.from(
-				MatchOpt.from(MatchCodePoint.fromString("B")),
-				NumberOfMatches.between(2, 3),
-				AltFirstLastMatchers.fromBoth(
-					MatchCodePoint.fromString("A"),
-					MatchOpt.from(MatchCodePoint.fromString("C"))
-				)
-			),
-			MatchEndSlice.default
-		);
+const doBasicFullStringOptRepeatMatcherReqAltFirstOptAltLast = () => {
+	const repeatMatcher = MatchAll.fromMatchers(
+		MatchRepeat.from(
+			MatchOpt.from(MatchCodePoint.fromString("B")),
+			NumberOfMatches.between(2, 3),
+			AltFirstLastMatchers.fromBoth(
+				MatchCodePoint.fromString("A"),
+				MatchOpt.from(MatchCodePoint.fromString("C"))
+			)
+		),
+		MatchEndSlice.default
+	);
 
-		const succesfulNavStrs = [
-			"AB->AB",
-			"AC->AC",
-			"ABB->ABB",
-			"ABC->ABC",
-		];
-		const failedNavStrs = [
-			"AA",
-			"BA",
-			"AAB",
-			"AAC",
-			"BBB",
-			"ABBB->over match",
-			"ABBC->over match",
-		];
+	const succesfulNavStrs = ["AB->AB", "AC->AC", "ABB->ABB", "ABC->ABC"];
+	const failedNavStrs = [
+		"AA",
+		"BA",
+		"AAB",
+		"AAC",
+		"BBB",
+		"ABBB->over match",
+		"ABBC->over match",
+	];
 
-		matchSuccessfulNavStrings(
-			repeatMatcher,
-			succesfulNavStrs
-		);
-		matchFailedNavStrings(repeatMatcher, failedNavStrs);
-	};
+	matchSuccessfulNavStrings(repeatMatcher, succesfulNavStrs);
+	matchFailedNavStrings(repeatMatcher, failedNavStrs);
+};
 
-const doBasicFullStringOptRepeatMatcherOptAltFirstReqAltLast =
-	() => {
-		const repeatMatcher = MatchAll.fromMatchers(
-			MatchRepeat.from(
-				MatchOpt.from(MatchCodePoint.fromString("B")),
-				NumberOfMatches.between(2, 3),
-				AltFirstLastMatchers.fromBoth(
-					MatchOpt.from(
-						MatchCodePoint.fromString("A")
-					),
-					MatchCodePoint.fromString("C")
-				)
-			),
-			MatchEndSlice.default
-		);
+const doBasicFullStringOptRepeatMatcherOptAltFirstReqAltLast = () => {
+	const repeatMatcher = MatchAll.fromMatchers(
+		MatchRepeat.from(
+			MatchOpt.from(MatchCodePoint.fromString("B")),
+			NumberOfMatches.between(2, 3),
+			AltFirstLastMatchers.fromBoth(
+				MatchOpt.from(MatchCodePoint.fromString("A")),
+				MatchCodePoint.fromString("C")
+			)
+		),
+		MatchEndSlice.default
+	);
 
-		const succesfulNavStrs = [
-			"BC->BC",
-			"AC->AC",
-			"ABC->ABC",
-			"BBC->BBC",
-		];
-		const failedNavStrs = [
-			"AB",
-			"BB",
-			"ABB",
-			"BBB",
-			"BCA->not full match",
-			"ACA->not full match",
-			"ABCA->not full match",
-			"BBCA->not full match",
-			"BBBC->over match",
-			"ABBC->over match",
-		];
+	const succesfulNavStrs = ["BC->BC", "AC->AC", "ABC->ABC", "BBC->BBC"];
+	const failedNavStrs = [
+		"AB",
+		"BB",
+		"ABB",
+		"BBB",
+		"BCA->not full match",
+		"ACA->not full match",
+		"ABCA->not full match",
+		"BBCA->not full match",
+		"BBBC->over match",
+		"ABBC->over match",
+	];
 
-		matchSuccessfulNavStrings(
-			repeatMatcher,
-			succesfulNavStrs
-		);
-		matchFailedNavStrings(repeatMatcher, failedNavStrs);
-	};
+	matchSuccessfulNavStrings(repeatMatcher, succesfulNavStrs);
+	matchFailedNavStrings(repeatMatcher, failedNavStrs);
+};
 
-const doBasicFullStringReqRepeatMatcherReqAltFirstReqAltLast =
-	() => {
-		const repeatMatcher = MatchAll.fromMatchers(
-			MatchRepeat.from(
-				MatchCodePoint.fromString("B"),
-				NumberOfMatches.between(3, 4),
-				AltFirstLastMatchers.fromBoth(
-					MatchCodePoint.fromString("A"),
-					MatchCodePoint.fromString("C")
-				)
-			),
-			MatchEndSlice.default
-		);
+const doBasicFullStringReqRepeatMatcherReqAltFirstReqAltLast = () => {
+	const repeatMatcher = MatchAll.fromMatchers(
+		MatchRepeat.from(
+			MatchCodePoint.fromString("B"),
+			NumberOfMatches.between(3, 4),
+			AltFirstLastMatchers.fromBoth(
+				MatchCodePoint.fromString("A"),
+				MatchCodePoint.fromString("C")
+			)
+		),
+		MatchEndSlice.default
+	);
 
-		const succesfulNavStrs = ["ABC->ABC", "ABBC->ABBC"];
-		const failedNavStrs = [
-			"ABB",
-			"ACC",
-			"BBB",
-			"BBC",
-			"CAB",
-			"AABC",
-			"ABBBC->over match",
-		];
+	const succesfulNavStrs = ["ABC->ABC", "ABBC->ABBC"];
+	const failedNavStrs = [
+		"ABB",
+		"ACC",
+		"BBB",
+		"BBC",
+		"CAB",
+		"AABC",
+		"ABBBC->over match",
+	];
 
-		matchSuccessfulNavStrings(
-			repeatMatcher,
-			succesfulNavStrs
-		);
-		matchFailedNavStrings(repeatMatcher, failedNavStrs);
-	};
+	matchSuccessfulNavStrings(repeatMatcher, succesfulNavStrs);
+	matchFailedNavStrings(repeatMatcher, failedNavStrs);
+};
 
 const doNumberRepeatMatcherWithAltFirstAltLast = () => {
-	const groupSeparatorMatcher =
-		MatchCodePoint.fromString(",");
+	const groupSeparatorMatcher = MatchCodePoint.fromString(",");
 
 	const startGroupMatcher = MatchOpt.from(
 		MatchAll.fromMatchers(
@@ -456,10 +402,7 @@ const doNumberRepeatMatcherWithAltFirstAltLast = () => {
 	const numberMatcher = MatchRepeat.from(
 		contentGroupMatcher,
 		NumberOfMatches.between(1, 4),
-		AltFirstLastMatchers.fromBoth(
-			startGroupMatcher,
-			endGroupMatcher
-		)
+		AltFirstLastMatchers.fromBoth(startGroupMatcher, endGroupMatcher)
 	);
 
 	const succesfulNavStrings = [
@@ -487,10 +430,7 @@ const doNumberRepeatMatcherWithAltFirstAltLast = () => {
 		"1234->not handled",
 	];
 
-	matchSuccessfulNavStrings(
-		numberMatcher,
-		succesfulNavStrings
-	);
+	matchSuccessfulNavStrings(numberMatcher, succesfulNavStrings);
 	matchFailedNavStrings(numberMatcher, failedNavStrings);
 };
 
@@ -508,192 +448,228 @@ const doBasicRepeatMatcherZeroOrMore = () => {
 		"BB->",
 	];
 
-	matchSuccessfulNavStrings(
-		repeatMatcher,
-		succesfulNavStrs
-	);
+	matchSuccessfulNavStrings(repeatMatcher, succesfulNavStrs);
 };
 
-const doBasicZeroOrMoreOptRepeatMatcherWithOptAltFirstOptAltLast =
-	() => {
-		const repeatMatcher = MatchRepeat.from(
-			MatchOpt.from(MatchCodePoint.fromString("B")),
-			NumberOfMatches.between(0, 2),
-			AltFirstLastMatchers.fromBoth(
-				MatchOpt.from(MatchCodePoint.fromString("A")),
-				MatchOpt.from(MatchCodePoint.fromString("C"))
+const doBasicZeroOrMoreOptRepeatMatcherWithOptAltFirstOptAltLast = () => {
+	const repeatMatcher = MatchRepeat.from(
+		MatchOpt.from(MatchCodePoint.fromString("B")),
+		NumberOfMatches.between(0, 2),
+		AltFirstLastMatchers.fromBoth(
+			MatchOpt.from(MatchCodePoint.fromString("A")),
+			MatchOpt.from(MatchCodePoint.fromString("C"))
+		)
+	);
+
+	const succesfulNavStrs = [
+		"B->B",
+		"A->A",
+		"C->C",
+		"AB->AB",
+		"AC->AC",
+		"BB->BB",
+		"BC->BC",
+		"->",
+		"X->",
+	];
+	const failedNavStrs = [
+		"ABC->over match",
+		"ABB->over match",
+		"BBB->over match",
+		"BBC->over match",
+	];
+
+	matchSuccessfulNavStrings(repeatMatcher, succesfulNavStrs);
+	matchFailedNavStrings(repeatMatcher, failedNavStrs);
+};
+
+const doNoOvermatchingError = () => {
+	const spaceMatcher = MatchCodePoint.fromString(" ");
+	const spaceTabMatcher = MatchRepeat.from(
+		spaceMatcher,
+		NumberOfMatches.exactly(3, false)
+	);
+	const repeatMatcher = MatchRepeat.from(
+		spaceTabMatcher,
+		NumberOfMatches.oneOrMore,
+		AltFirstLastMatchers.fromAltLast(
+			MatchNot.from(
+				MatchRepeat.from(spaceMatcher, NumberOfMatches.between(1, 2))
 			)
-		);
+		)
+	);
 
-		const succesfulNavStrs = [
-			"B->B",
-			"A->A",
-			"C->C",
-			"AB->AB",
-			"AC->AC",
-			"BB->BB",
-			"BC->BC",
-			"->",
-			"X->",
-		];
-		const failedNavStrs = [
-			"ABC->over match",
-			"ABB->over match",
-			"BBB->over match",
-			"BBC->over match",
-		];
+	const spaceTab = "   ";
 
-		matchSuccessfulNavStrings(
-			repeatMatcher,
-			succesfulNavStrs
-		);
-		matchFailedNavStrings(repeatMatcher, failedNavStrs);
+	const tabs = NumSeq.from(1, 5)
+		.map(n => spaceTab.repeat(n))
+		.toArray() as readonly string[];
+
+	const tabsSlice = tabs.slice(0, 3);
+	const failedTabsA = tabsSlice.map(t => t + " ");
+	const failedTabsB = tabsSlice.map(t => t + "  ");
+
+	const failedTabs = [
+		"",
+		" ",
+		"  ",
+		...failedTabsA,
+		...failedTabsB,
+	].toSorted((a, b) => a.length - b.length);
+
+	logh("Success cases");
+	for (const tab of tabs) {
+		const nav = MutMatchNav.fromString(tab);
+		const result = repeatMatcher.match(nav);
+		if (!result) {
+			log(
+				chalk.red(`No match for tab: '${tab}' length: ${tab.length}`)
+			);
+			continue;
+		}
+		log(chalk.green(`Match: '${result.captureMatch.value}'`));
+		log(chalk.gray("        01234567890123456789"));
+	}
+
+	logh("Failed cases");
+	for (const tab of failedTabs) {
+		const nav = MutMatchNav.fromString(tab);
+		const result = repeatMatcher.match(nav);
+		if (result) {
+			log(
+				chalk.red(
+					`Should not match tab: '${tab}' length: ${tab.length}`
+				)
+			);
+			continue;
+		} else {
+			log(chalk.green(`No match: '${tab}'`));
+			log(chalk.gray("           01234567890123456789"));
+		}
+	}
+};
+
+const doTimedRepeatMatcherTestContentOnlyEfficiency = () => {
+	const repeatMatcher = MatchRepeat.from(
+		MatchCodePointCategories.fromString("Nd"),
+		NumberOfMatches.between(4, 16)
+	);
+	const baseString = "12345678901234567890";
+
+	const succesfulNavStrings = NumSeq.from(4, 16)
+		.map(len => baseString.slice(0, len))
+		.toArray();
+
+	const failedNavStringsA = NumSeq.from(1, 2)
+		.map(len => baseString.slice(0, len))
+		.toArray();
+
+	const failedNavStringsB = NumSeq.from(17, 20)
+		.map(len => baseString.slice(0, len))
+		.toArray();
+
+	const failedNavStrings = [...failedNavStringsA, ...failedNavStringsB];
+
+	const succesfulNavs = succesfulNavStrings.map(navStr =>
+		MutMatchNav.fromString(navStr)
+	);
+
+	const failedNavs = failedNavStrings.map(navStr =>
+		MutMatchNav.fromString(navStr)
+	);
+
+	const checkResults = (
+		title: string,
+		matchfn: (nav: MutMatchNav) => MutMatchNav | null
+	) => {
+		loghn(title);
+		for (const nav of succesfulNavs) {
+			const result = matchfn(nav.copy());
+			if (!result) {
+				log(chalk.red(`No match for navString: ${nav}`));
+				continue;
+			} else if (result.captureLength !== nav.source.length) {
+				log(
+					chalk.red(
+						`Match lengths do not match for navString: ${nav}`
+					)
+				);
+				continue;
+			} else {
+				log(chalk.green(`Match: '${result.captureMatch.value}'`));
+			}
+		}
+
+		for (const nav of failedNavs) {
+			const result = matchfn(nav.copy());
+			if (result) {
+				log(chalk.red(`Should not match navString: ${nav}`));
+				continue;
+			} else {
+				log(
+					chalk.green(
+						`No match (as expected) for navString: ${nav.source.value}`
+					)
+				);
+			}
+		}
 	};
 
-const doTimedRepeatMatcherTestContentOnlyEfficiency =
-	() => {
-		const repeatMatcher = MatchRepeat.from(
-			MatchCodePointCategories.fromString("Nd"),
-			NumberOfMatches.between(4, 16)
-		);
-		const baseString = "12345678901234567890";
+	const repeatCount = 10000;
 
-		const succesfulNavStrings = NumSeq.from(4, 16)
-			.map(len => baseString.slice(0, len))
-			.toArray();
+	const doRepeatMatch = (
+		title: string,
+		matchfn: (nav: MutMatchNav) => MutMatchNav | null
+	) => {
+		loghn(title);
 
-		const failedNavStringsA = NumSeq.from(1, 2)
-			.map(len => baseString.slice(0, len))
-			.toArray();
+		const start = performance.now();
 
-		const failedNavStringsB = NumSeq.from(17, 20)
-			.map(len => baseString.slice(0, len))
-			.toArray();
-
-		const failedNavStrings = [
-			...failedNavStringsA,
-			...failedNavStringsB,
-		];
-
-		const succesfulNavs = succesfulNavStrings.map(
-			navStr => MutMatchNav.fromString(navStr)
-		);
-
-		const failedNavs = failedNavStrings.map(navStr =>
-			MutMatchNav.fromString(navStr)
-		);
-
-		const checkResults = (
-			title: string,
-			matchfn: (nav: MutMatchNav) => MutMatchNav | null
-		) => {
-			loghn(title);
+		for (let i = 0; i < repeatCount; i++) {
 			for (const nav of succesfulNavs) {
 				const result = matchfn(nav.copy());
-				if (!result) {
-					log(
-						chalk.red(
-							`No match for navString: ${nav}`
-						)
-					);
-					continue;
-				} else if (
-					result.captureLength !== nav.source.length
-				) {
-					log(
-						chalk.red(
-							`Match lengths do not match for navString: ${nav}`
-						)
-					);
-					continue;
-				} else {
-					log(
-						chalk.green(
-							`Match: '${result.captureMatch.value}'`
-						)
-					);
-				}
+				if (!result) throw "never";
+				else if (result.captureLength !== nav.source.length)
+					throw "never";
 			}
-
 			for (const nav of failedNavs) {
 				const result = matchfn(nav.copy());
-				if (result) {
-					log(
-						chalk.red(
-							`Should not match navString: ${nav}`
-						)
-					);
-					continue;
-				} else {
-					log(
-						chalk.green(
-							`No match (as expected) for navString: ${nav.source.value}`
-						)
-					);
-				}
+				if (result) throw "never";
 			}
-		};
+		}
 
-		const repeatCount = 10000;
+		const end = performance.now();
 
-		const doRepeatMatch = (
-			title: string,
-			matchfn: (nav: MutMatchNav) => MutMatchNav | null
-		) => {
-			loghn(title);
-
-			const start = performance.now();
-
-			for (let i = 0; i < repeatCount; i++) {
-				for (const nav of succesfulNavs) {
-					const result = matchfn(nav.copy());
-					if (!result) throw "never";
-					else if (
-						result.captureLength !== nav.source.length
-					)
-						throw "never";
-				}
-				for (const nav of failedNavs) {
-					const result = matchfn(nav.copy());
-					if (result) throw "never";
-				}
-			}
-
-			const end = performance.now();
-
-			const time = end - start;
-			log(`Time: ${time.toFixed(2)} ms`);
-			return time;
-		};
-
-		checkResults("Normal Repeat Match", nav =>
-			repeatMatcher.match(nav)
-		);
-		div();
-		checkResults("Content Only Repeat Match", nav =>
-			repeatMatcher.matchContentOnly(nav)
-		);
-		// checkResultsMatchContentOnly();
-		div();
-		const normalTime = doRepeatMatch(
-			"Normal Repeat Match",
-			nav => repeatMatcher.match(nav)
-		);
-		div();
-		const contentOnlyTime = doRepeatMatch(
-			"Content Only Repeat Match",
-			nav => repeatMatcher.matchContentOnly(nav)
-		);
-		div();
-		const ratio = (contentOnlyTime / normalTime) * 100;
-		const faster = (1.0 / ratio) * 100;
-		log();
-		log(
-			`${chalk.magentaBright("Result")}: ${chalk.cyan("matchContentOnly")} takes ` +
-				`${chalk.green(ratio.toFixed(2) + "%")} of the time of ${chalk.cyan("match")} and ` +
-				`is ${chalk.green(faster.toFixed(2) + "X")} faster.`
-		);
+		const time = end - start;
+		log(`Time: ${time.toFixed(2)} ms`);
+		return time;
 	};
+
+	checkResults("Normal Repeat Match", nav => repeatMatcher.match(nav));
+	div();
+	checkResults("Content Only Repeat Match", nav =>
+		repeatMatcher.matchContentOnly(nav)
+	);
+	// checkResultsMatchContentOnly();
+	div();
+	const normalTime = doRepeatMatch("Normal Repeat Match", nav =>
+		repeatMatcher.match(nav)
+	);
+	div();
+	const contentOnlyTime = doRepeatMatch(
+		"Content Only Repeat Match",
+		nav => repeatMatcher.matchContentOnly(nav)
+	);
+	div();
+	const ratio = (contentOnlyTime / normalTime) * 100;
+	const faster = (1.0 / ratio) * 100;
+	log();
+	log(
+		`${chalk.magentaBright("Result")}: ${chalk.cyan("matchContentOnly")} takes ` +
+			`${chalk.green(ratio.toFixed(2) + "%")} of the time of ${chalk.cyan("match")} and ` +
+			`is ${chalk.green(faster.toFixed(2) + "X")} faster.`
+	);
+};
 
 const exampleItems: ExamplesMenuItem[] = [
 	{
@@ -793,6 +769,17 @@ const exampleItems: ExamplesMenuItem[] = [
 			"Do basic zero or more opt repeat matcher opt alt first opt alt last.",
 			"Matches 'B' between 0 and 2 times with 'A' as an optional alt first match",
 			"and 'C' as an optional alt last match.",
+		],
+	},
+	{
+		func: doNoOvermatchingError,
+		name: "Spaces to tabs example: doesOverMatchingFail = false",
+		description: [
+			"The default behavior of the repeat matcher is to fail if too many ",
+			"matches are found. Here we set doesOverMatchingFail to false so the ",
+			"matcher will stop at exactly the maxNumber of matches. This is useful ",
+			"for matching consecutive groups of spaces representing tabs. And we ",
+			"fail if there are extra spaces at the end.",
 		],
 	},
 	{
