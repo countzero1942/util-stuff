@@ -32,10 +32,7 @@ export class GroupName extends GroupNamerBase {
 		return new GroupName(name, category);
 	}
 
-	private static _empty: GroupName = new GroupName(
-		"",
-		undefined
-	);
+	private static _empty: GroupName = new GroupName("", undefined);
 	public static get empty(): GroupName {
 		return GroupName._empty;
 	}
@@ -52,9 +49,7 @@ export class GroupName extends GroupNamerBase {
 		name: string,
 		category: string | undefined = undefined
 	): boolean {
-		return (
-			this.name === name && this.category === category
-		);
+		return this.name === name && this.category === category;
 	}
 
 	public isGroupName(groupName: GroupName): boolean {
@@ -77,8 +72,7 @@ export class GroupName extends GroupNamerBase {
 		return this;
 	}
 
-	private static _fragment =
-		GroupName.fromName(":fragment");
+	private static _fragment = GroupName.fromName(":fragment");
 	public static get fragment(): GroupName {
 		return GroupName._fragment;
 	}
@@ -88,14 +82,36 @@ export class GroupName extends GroupNamerBase {
 		return GroupName._end;
 	}
 
-	private static _flattened =
-		GroupName.fromName(":flattened");
+	private static _flattened = GroupName.fromName(":flattened");
 	public static get flattened(): GroupName {
 		return GroupName._flattened;
 	}
 
 	public toString(): string {
 		return `${this.name}${this.category ? ":" + this.category : ""}`;
+	}
+}
+
+export class GroupNameSet<TName extends string> {
+	readonly names: readonly TName[];
+	#_nameSet: Map<TName, GroupName>;
+	constructor(names: readonly TName[]) {
+		this.names = names.slice();
+		this.#_nameSet = new Map(
+			this.names.map(name => [name, GroupName.fromName(name)])
+		);
+	}
+
+	static fromNames<TName extends string>(...names: readonly TName[]) {
+		return new GroupNameSet(names);
+	}
+
+	getGroupName(name: TName): GroupName {
+		const group = this.#_nameSet.get(name);
+		if (!group) {
+			throw new Error(`GroupNameSet: No group found for name: ${name}`);
+		}
+		return group;
 	}
 }
 
@@ -106,10 +122,7 @@ export class GroupNamer extends GroupNamerBase {
 	#_names: readonly GroupName[];
 	private _index: number;
 
-	private constructor(
-		mode: GroupNamerMode,
-		names: readonly GroupName[]
-	) {
+	private constructor(mode: GroupNamerMode, names: readonly GroupName[]) {
 		super();
 		this.#_mode = mode;
 		this.#_names = names.slice(); // defensive copy
@@ -138,8 +151,7 @@ export class GroupNamer extends GroupNamerBase {
 				}
 				break;
 			case "modulus":
-				this._index =
-					(this._index + 1) % this.#_names.length;
+				this._index = (this._index + 1) % this.#_names.length;
 				break;
 			default:
 				throw "never";

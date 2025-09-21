@@ -5,6 +5,7 @@ import {
 	GroupMatchOpt,
 	GroupMatchRepeat,
 	GroupName,
+	GroupNameSet,
 	MatchAll,
 	MatchCodePoint,
 	MatchCodePointCategories,
@@ -15,8 +16,36 @@ import {
 } from "@/trex";
 import { ExamplesMenuItem, runExamplesMenu } from "@/utils/examples-menu";
 import { div, log } from "@/utils/log";
-import { logGroups, logGroupsRec } from "./common";
+import { logGroups, logGroupsRec, logResults } from "./common";
 import chalk from "chalk";
+
+const numberGroupSuccessStrings = [
+	"123,12",
+	"12,567",
+	"1,567",
+	"1,567,8",
+	"1,567,89",
+	"1,567,890",
+	"123,567,890",
+	"123,567,890,321",
+	"1,567,890,321",
+	"1,567,890,3",
+	"123",
+	"12",
+	"1",
+];
+
+const numberGroupFailStrings = [
+	"1234",
+	"123,567,890,321,123",
+	"1,567,890,321,123",
+	"123,567,890,321,3",
+	"1,567,890,321,3",
+	"1,",
+	"123,12,",
+	"123,123,",
+	"1234,123",
+];
 
 const doNumberGroupRepeatMatchWithAltFirstLast = () => {
 	const groupSeparatorMatcher = MatchCodePoint.fromString(",");
@@ -68,53 +97,36 @@ const doNumberGroupRepeatMatchWithAltFirstLast = () => {
 		)
 	);
 
-	const navStrings = [
-		"123,12",
-		"12,567",
-		"1,567",
-		"1,567,8",
-		"1,567,89",
-		"1,567,890",
-		"123,567,890",
-		"123,567,890,321",
-		"1,567,890,321",
-		"1,567,890,3",
-		"123",
-		"12",
-		"1",
-		"1234",
-		"123,567,890,321,123",
-		"1,567,890,321,123",
-		"123,567,890,321,3",
-		"1,567,890,321,3",
-		"1,",
-		"123,12,",
-		"123,123,",
-		"1234,123",
-	];
-
-	for (const navString of navStrings) {
-		const nav = MutMatchNav.fromString(navString);
-		const result = numberMatcher.match(nav);
-		div();
-		logGroups(navString, result);
-	}
-	div();
+	logResults(
+		numberGroupSuccessStrings,
+		numberGroupFailStrings,
+		numberMatcher
+	);
 };
 
 const doRecursiveNumberGroupRepeatMatchWithAltFirstLast = () => {
+	const names = GroupNameSet.fromNames(
+		"number",
+		"content-group",
+		"start-group",
+		"end-group",
+		"digit-group",
+		"group-separator",
+		"digit"
+	);
+
 	const groupSeparatorMatcher = GroupMatch.fromNamed(
-		GroupName.fromName("group-separator"),
+		names.getGroupName("group-separator"),
 		MatchCodePoint.fromString(",")
 	);
 
 	const startGroupMatcher = GroupMatchOpt.from(
 		GroupMatchAll.fromNamed(
-			GroupName.fromName("start-group"),
+			names.getGroupName("start-group"),
 			GroupMatchRepeat.from(
-				GroupName.fromName("digit-group"),
+				names.getGroupName("digit-group"),
 				GroupMatch.fromNamed(
-					GroupName.fromName("digit"),
+					names.getGroupName("digit"),
 					MatchCodePointCategories.fromString("Nd")
 				),
 				NumberOfMatches.between(1, 2)
@@ -125,11 +137,11 @@ const doRecursiveNumberGroupRepeatMatchWithAltFirstLast = () => {
 
 	const contentGroupMatcher = GroupMatchOpt.from(
 		GroupMatchAll.fromNamed(
-			GroupName.fromName("content-group"),
+			names.getGroupName("content-group"),
 			GroupMatchRepeat.from(
-				GroupName.fromName("digit-group"),
+				names.getGroupName("digit-group"),
 				GroupMatch.fromNamed(
-					GroupName.fromName("digit"),
+					names.getGroupName("digit"),
 					MatchCodePointCategories.fromString("Nd")
 				),
 				NumberOfMatches.exactly(3)
@@ -139,11 +151,11 @@ const doRecursiveNumberGroupRepeatMatchWithAltFirstLast = () => {
 	);
 
 	const endGroupMatcher = GroupMatchAll.fromNamed(
-		GroupName.fromName("end-group-content"),
+		names.getGroupName("end-group"),
 		GroupMatchRepeat.from(
-			GroupName.fromName("digit-group"),
+			names.getGroupName("digit-group"),
 			GroupMatch.fromNamed(
-				GroupName.fromName("digit"),
+				names.getGroupName("digit"),
 				MatchCodePointCategories.fromString("Nd")
 			),
 			NumberOfMatches.between(1, 3)
@@ -152,7 +164,7 @@ const doRecursiveNumberGroupRepeatMatchWithAltFirstLast = () => {
 	);
 
 	const numberMatcher = GroupMatchRepeat.from(
-		GroupName.fromName("number"),
+		names.getGroupName("number"),
 		contentGroupMatcher,
 		NumberOfMatches.between(1, 4),
 		AltFirstLastGroupMatchers.fromBoth(
@@ -161,42 +173,11 @@ const doRecursiveNumberGroupRepeatMatchWithAltFirstLast = () => {
 		)
 	);
 
-	const navStrings = [
-		"123,12",
-		"12,567",
-		"1,567",
-		"1,567,8",
-		"1,567,89",
-		"1,567,890",
-		"123,567,890",
-		"123,567,890,321",
-		"1,567,890,321",
-		"1,567,890,3",
-		"123",
-		"12",
-		"1",
-		"1234",
-		"123,567,890,321,123",
-		"1,567,890,321,123",
-		"123,567,890,321,3",
-		"1,567,890,321,3",
-		"1,",
-		"123,12,",
-		"123,123,",
-		"1234,123",
-	];
-
-	for (const navString of navStrings) {
-		const nav = MutMatchNav.fromString(navString);
-		const result = numberMatcher.match(nav);
-		div();
-		if (!result) {
-			log(chalk.red("No match for navString: ") + navString);
-			continue;
-		}
-		logGroupsRec(result);
-	}
-	div();
+	logResults(
+		numberGroupSuccessStrings,
+		numberGroupFailStrings,
+		numberMatcher
+	);
 };
 
 const exampleItems: ExamplesMenuItem[] = [

@@ -25,6 +25,7 @@ import {
 } from "./trex-stuff";
 import { matchWordsTest } from "@/examples/trex/word-matching";
 import {
+	GroupName,
 	LookAheadAnyString,
 	MatchAnyString,
 	MatchCodePoint,

@@ -1,5 +1,5 @@
-import { GroupMatchNav } from "@/trex";
-import { log, divs } from "@/utils/log";
+import { GroupMatchBase, GroupMatchNav, MutMatchNav } from "@/trex";
+import { log, divs, div, logh, loghn } from "@/utils/log";
 import chalk from "chalk";
 
 export const logGroups = (
@@ -40,9 +40,10 @@ export const logGroupsRec = (
 	if (!group) {
 		return;
 	}
-	const tab = "   ";
-	const indentStr = tab.repeat(indent);
-	const indexStr = index < 0 ? "" : `[${chalk.cyan(index)}]:`;
+	// const tab = "┣━━";
+	const tab = " ┊ ";
+	const indentStr = chalk.blackBright(tab.repeat(indent));
+	const indexStr = index < 0 ? "" : `[${chalk.cyan(index)}]: `;
 	if (group.groupName.isNotEmpty()) {
 		log(
 			indentStr +
@@ -56,4 +57,53 @@ export const logGroupsRec = (
 	group.children.forEach((child, index) => {
 		logGroupsRec(child, index, indent + 1);
 	});
+};
+
+export const logResults = (
+	successStrings: string[],
+	failStrings: string[],
+	matcher: GroupMatchBase
+) => {
+	const getNavStringView = (navString: string) => {
+		return chalk.white(`'${chalk.green(navString)}'`);
+	};
+
+	logh("Success cases");
+
+	for (const navString of successStrings) {
+		const nav = MutMatchNav.fromString(navString);
+		const result = matcher.match(nav);
+		div();
+		if (!result) {
+			log(
+				chalk.red(
+					`>>> FAILED TO MATCH SUCCESS CASE: ${getNavStringView(navString)} <<< `
+				)
+			);
+			continue;
+		}
+		logGroupsRec(result);
+	}
+	div();
+	logh("Fail cases");
+	for (const navString of failStrings) {
+		const nav = MutMatchNav.fromString(navString);
+		const result = matcher.match(nav);
+		div();
+		if (result) {
+			log(
+				chalk.red(
+					`>>> MATCHED FAIL CASE: ${getNavStringView(navString)} <<< `
+				)
+			);
+			logGroupsRec(result);
+			continue;
+		}
+		log(
+			chalk.cyan(
+				`Failed to match fail case: ${getNavStringView(navString)}`
+			)
+		);
+	}
+	log();
 };
