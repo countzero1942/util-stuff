@@ -23,19 +23,19 @@ import { log } from "console";
 import { logGroups } from "./common";
 
 export const doBasicGroupMatch = () => {
-	const wholeMatcher = GroupMatch.from(
+	const wholeMatcher = GroupMatch.fromNamed(
 		GroupName.fromName("whole-part"),
 		MatchRepeat.from(
 			MatchCodePointCategories.fromString("Nd"),
 			NumberOfMatches.oneOrMore
 		)
 	);
-	const decimalPointMatcher = GroupMatch.from(
+	const decimalPointMatcher = GroupMatch.fromNamed(
 		GroupName.fromName("decimal-point"),
 		MatchOpt.from(MatchCodePoint.fromString("."))
 	);
 
-	const decimalPartMatcher = GroupMatch.from(
+	const decimalPartMatcher = GroupMatch.fromNamed(
 		GroupName.fromName("decimal-part"),
 		MatchAll.fromMatchers(
 			MatchRepeat.from(
@@ -71,13 +71,13 @@ export const doBasicGroupMatch = () => {
 
 const doGroupOptMatch = () => {
 	const signMatcher = GroupMatchOpt.from(
-		GroupMatch.from(
+		GroupMatch.fromNamed(
 			GroupName.fromName("sign"),
 			MatchCodePointSet.fromString("+-")
 		)
 	);
 
-	const digitsMatcher = GroupMatch.from(
+	const digitsMatcher = GroupMatch.fromNamed(
 		GroupName.fromName("digits"),
 		MatchAll.fromMatchers(
 			MatchRepeat.from(
@@ -111,11 +111,10 @@ const doGroupOptMatch = () => {
 };
 
 const doGroupRepeatMatchWithAltFirstLast = () => {
-	const groupSeparatorMatcher =
-		MatchCodePoint.fromString(",");
+	const groupSeparatorMatcher = MatchCodePoint.fromString(",");
 
 	const startGroupMatcher = GroupMatchOpt.from(
-		GroupMatch.from(
+		GroupMatch.fromNamed(
 			GroupName.fromName("start-group"),
 			MatchAll.fromMatchers(
 				MatchRepeat.from(
@@ -128,7 +127,7 @@ const doGroupRepeatMatchWithAltFirstLast = () => {
 	);
 
 	const contentGroupMatcher = GroupMatchOpt.from(
-		GroupMatch.from(
+		GroupMatch.fromNamed(
 			GroupName.fromName("content-group"),
 			MatchAll.fromMatchers(
 				MatchRepeat.from(
@@ -141,7 +140,7 @@ const doGroupRepeatMatchWithAltFirstLast = () => {
 	);
 
 	const endGroupMatcher = GroupMatchOpt.from(
-		GroupMatch.from(
+		GroupMatch.fromNamed(
 			GroupName.fromName("end-group"),
 			MatchAll.fromMatchers(
 				MatchRepeat.from(
@@ -196,12 +195,12 @@ const doGroupRepeatMatchWithAltFirstLast = () => {
 const doBasicSplitter = () => {
 	const splitter = GroupSplitter.from(
 		GroupName.fromName("number"),
-		GroupMatch.from(
+		GroupMatch.fromNamed(
 			GroupName.fromName("decimal-point"),
 			MatchCodePoint.fromString(".")
 		),
 		{
-			endMatcher: GroupMatch.from(
+			endMatcher: GroupMatch.fromNamed(
 				GroupName.fromName("end"),
 				MatchCodePoint.fromString(".")
 			),
@@ -227,12 +226,12 @@ const doBasicSplitter = () => {
 const doSplitterWithEndMatcher = () => {
 	const splitter = GroupSplitter.from(
 		GroupName.fromName("number"),
-		GroupMatch.from(
+		GroupMatch.fromNamed(
 			GroupName.fromName("decimal-point"),
 			MatchCodePoint.fromString(".")
 		),
 		{
-			endMatcher: GroupMatch.from(
+			endMatcher: GroupMatch.fromNamed(
 				GroupName.end,
 				MatchRepeat.from(
 					MatchCodePoint.fromString(" "),
@@ -251,9 +250,7 @@ const doSplitterWithEndMatcher = () => {
 
 		if (!result) break;
 
-		nav = result.wholeMatchNav.copyAndMoveNext(
-			"OptMoveForward"
-		);
+		nav = result.wholeMatchNav.copyAndMoveNext("OptMoveForward");
 	}
 };
 

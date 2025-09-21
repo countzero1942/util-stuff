@@ -4,13 +4,9 @@ import { MutMatchNav } from "./nav";
 import { GroupName } from "./group-name";
 
 export abstract class GroupMatchBase {
-	protected constructor(
-		public readonly groupName: GroupName
-	) {}
+	protected constructor(public readonly groupName: GroupName) {}
 
-	public abstract match(
-		nav: MutMatchNav
-	): GroupMatchNav | null;
+	public abstract match(nav: MutMatchNav): GroupMatchNav | null;
 }
 
 export class GroupMatch extends GroupMatchBase {
@@ -21,11 +17,15 @@ export class GroupMatch extends GroupMatchBase {
 		super(groupName);
 	}
 
-	public static from(
+	public static fromNamed(
 		groupName: GroupName,
 		matcher: MatchBase
 	): GroupMatch {
 		return new GroupMatch(groupName, matcher);
+	}
+
+	public static fromUnnamed(matcher: MatchBase): GroupMatch {
+		return new GroupMatch(GroupName.empty, matcher);
 	}
 
 	public match(nav: MutMatchNav): GroupMatchNav | null {

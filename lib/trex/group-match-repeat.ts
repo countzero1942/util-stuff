@@ -1,14 +1,8 @@
 import { GroupMatchBase } from "./group-match";
-import {
-	GroupMatchAll,
-	GroupMatchAny,
-} from "./group-match-any-all";
+import { GroupMatchAll, GroupMatchAny } from "./group-match-any-all";
 import { GroupMatchNav } from "./group-nav";
 import { GroupName } from "./group-name";
-import {
-	MatchRepeat,
-	NumberOfMatches,
-} from "./match-repeat";
+import { MatchRepeat, NumberOfMatches } from "./match-repeat";
 import { MutMatchNav } from "./nav";
 
 export class AltFirstLastGroupMatchers {
@@ -28,10 +22,7 @@ export class AltFirstLastGroupMatchers {
 		altFirstMatch: GroupMatchBase,
 		altLastMatch: GroupMatchBase
 	): AltFirstLastGroupMatchers {
-		return new AltFirstLastGroupMatchers(
-			altFirstMatch,
-			altLastMatch
-		);
+		return new AltFirstLastGroupMatchers(altFirstMatch, altLastMatch);
 	}
 
 	/**
@@ -43,10 +34,7 @@ export class AltFirstLastGroupMatchers {
 	public static fromAltFirst(
 		altFirstMatch: GroupMatchBase
 	): AltFirstLastGroupMatchers {
-		return new AltFirstLastGroupMatchers(
-			altFirstMatch,
-			null
-		);
+		return new AltFirstLastGroupMatchers(altFirstMatch, null);
 	}
 
 	/**
@@ -58,10 +46,7 @@ export class AltFirstLastGroupMatchers {
 	public static fromAltLast(
 		altLastMatch: GroupMatchBase
 	): AltFirstLastGroupMatchers {
-		return new AltFirstLastGroupMatchers(
-			null,
-			altLastMatch
-		);
+		return new AltFirstLastGroupMatchers(null, altLastMatch);
 	}
 
 	/**
@@ -75,8 +60,7 @@ export class AltFirstLastGroupMatchers {
 		return AltFirstLastGroupMatchers._default;
 	}
 
-	private static _default =
-		new AltFirstLastGroupMatchers();
+	private static _default = new AltFirstLastGroupMatchers();
 }
 
 export class GroupMatchRepeat extends GroupMatchBase {
@@ -115,10 +99,8 @@ export class GroupMatchRepeat extends GroupMatchBase {
 	 * @returns The navigation after matching, or null if no match.
 	 */
 	public match(nav: MutMatchNav): GroupMatchNav | null {
-		const firstMatcher =
-			this.altFirstLastMatchers.altFirstMatch;
-		const lastMatcher =
-			this.altFirstLastMatchers.altLastMatch;
+		const firstMatcher = this.altFirstLastMatchers.altFirstMatch;
+		const lastMatcher = this.altFirstLastMatchers.altLastMatch;
 
 		nav.assertNavIsValid();
 		nav.assertNavIsNew();
@@ -126,7 +108,9 @@ export class GroupMatchRepeat extends GroupMatchBase {
 		let count = 0;
 		const min = this.numberOfMatches.minNumber;
 		const max = this.numberOfMatches.maxNumber;
-		const beyondCount = max + 1;
+		const beyondCount = this.numberOfMatches.doesOverMatchingFail
+			? max + 1
+			: max;
 
 		let firstNav = nav.copy();
 		let currentNav = nav.copy();
@@ -160,9 +144,7 @@ export class GroupMatchRepeat extends GroupMatchBase {
 				);
 			};
 
-			const doAltMatcher = (
-				altMatcher: GroupMatchBase | null
-			) => {
+			const doAltMatcher = (altMatcher: GroupMatchBase | null) => {
 				if (altMatcher) {
 					result = altMatcher.match(currentNav.copy());
 					if (!result) {
@@ -177,9 +159,7 @@ export class GroupMatchRepeat extends GroupMatchBase {
 					doAltMatcher(firstMatcher);
 					break;
 				case "Content Matcher":
-					result = contentMatcher.match(
-						currentNav.copy()
-					);
+					result = contentMatcher.match(currentNav.copy());
 					if (result) {
 						didContentMatch = true;
 					}
@@ -209,43 +189,24 @@ export class GroupMatchRepeat extends GroupMatchBase {
 			// note: result here is only null if altMatcher is null
 			// and no matching took place
 			if (result) {
-				GroupMatchAll.addResultsToSavedNavs(
-					result,
-					savedNavs
-				);
+				GroupMatchAll.addResultsToSavedNavs(result, savedNavs);
 
 				currentNav =
-					result.wholeMatchNav.copyAndMoveNext(
-						"OptMoveForward"
-					);
+					result.wholeMatchNav.copyAndMoveNext("OptMoveForward");
 			}
 		}
 
 		// case: successful match in range
-		if (
-			isFailedMatch === false &&
-			count >= min &&
-			count <= max
-		) {
+		if (isFailedMatch === false && count >= min && count <= max) {
 			return GroupMatchNav.fromChildren(
-				MutMatchNav.fromFirstAndLast(
-					firstNav,
-					currentNav
-				),
+				MutMatchNav.fromFirstAndLast(firstNav, currentNav),
 				this.groupName,
 				savedNavs
 			);
 		}
 		// case: failed match with zero matches allowed
-		else if (
-			isFailedMatch === true &&
-			count === 0 &&
-			min === 0
-		) {
-			return GroupMatchNav.from(
-				nav.copy(),
-				this.groupName
-			);
+		else if (isFailedMatch === true && count === 0 && min === 0) {
+			return GroupMatchNav.from(nav.copy(), this.groupName);
 		}
 		// case: failed match
 		else {

@@ -1,5 +1,5 @@
 import prompts from "prompts";
-import { cls, log, logh } from "./log";
+import { cls, div, log, logh } from "./log";
 import chalk from "chalk";
 
 export type ExamplesMenuItem = {
@@ -21,9 +21,7 @@ export const chooseAnOption = async (
 					? `Option is out of range`
 					: true,
 		});
-		return typeof response.value === "number"
-			? response.value
-			: 0;
+		return typeof response.value === "number" ? response.value : 0;
 	} catch {
 		return 0;
 	}
@@ -39,6 +37,16 @@ export const pressEnterToContinue = async () => {
 	return;
 };
 
+const logMenuItem = (item: ExamplesMenuItem, itemNumber: number) => {
+	log(`${chalk.magentaBright(itemNumber)}: ${chalk.cyan(item.name)}`);
+	log();
+	if (item.description) {
+		for (const line of item.description) {
+			log(`   ${chalk.gray(line)}`);
+		}
+	}
+};
+
 export const writeExamplesMenu = (
 	menuName: string,
 	items: ExamplesMenuItem[]
@@ -47,15 +55,7 @@ export const writeExamplesMenu = (
 	log();
 	let index = 1;
 	for (const item of items) {
-		log(
-			`${chalk.magentaBright(index)}: ${chalk.cyan(item.name)}`
-		);
-		log();
-		if (item.description) {
-			for (const line of item.description) {
-				log(`   ${chalk.gray(line)}`);
-			}
-		}
+		logMenuItem(item, index);
 		log();
 		index++;
 	}
@@ -67,15 +67,16 @@ export const runExamplesMenu = async (
 ) => {
 	while (true) {
 		writeExamplesMenu(menuName, testMenuItems);
-		const index = await chooseAnOption(
-			testMenuItems.length
-		);
-		if (index === 0) {
+		const itemNumber = await chooseAnOption(testMenuItems.length);
+		if (itemNumber === 0) {
 			log("Exiting...\n");
 			break;
 		}
-		const item = testMenuItems[index - 1];
+		const index = itemNumber - 1;
+		const item = testMenuItems[index];
 		log();
+		div();
+		logMenuItem(item, itemNumber);
 		item.func();
 		log();
 		await pressEnterToContinue();
