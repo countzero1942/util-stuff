@@ -4,6 +4,7 @@ import { GroupMatchNav } from "./group-nav";
 import { GroupName } from "./group-name";
 import { MatchRepeat, NumberOfMatches } from "./match-repeat";
 import { MutMatchNav } from "./nav";
+import { addResultToChildrenGroupNavs } from "./group-helper";
 
 export class AltFirstLastGroupMatchers {
 	protected constructor(
@@ -189,7 +190,7 @@ export class GroupMatchRepeat extends GroupMatchBase {
 			// note: result here is only null if altMatcher is null
 			// and no matching took place
 			if (result) {
-				GroupMatchAll.addResultsToSavedNavs(result, savedNavs);
+				addResultToChildrenGroupNavs(result, savedNavs);
 
 				currentNav =
 					result.wholeMatchNav.copyAndMoveNext("OptMoveForward");
@@ -215,14 +216,14 @@ export class GroupMatchRepeat extends GroupMatchBase {
 	}
 
 	/**
-	 * Creates a new MatchRepeat instance.
+	 * Creates a new MatchRepeat instance with a named group.
 	 *
 	 * @param matcher The matcher to repeat.
 	 * @param numberOfMatches The number of times to repeat.
 	 * @param altFirstLastMatchers The altFirst and altLast matchers.
 	 * @returns A new MatchRepeat instance.
 	 */
-	public static from(
+	public static fromNamed(
 		groupName: GroupName,
 		matcher: GroupMatchBase,
 		numberOfMatches: NumberOfMatches = NumberOfMatches.oneOrMore,
@@ -230,6 +231,27 @@ export class GroupMatchRepeat extends GroupMatchBase {
 	): GroupMatchRepeat {
 		return new GroupMatchRepeat(
 			groupName,
+			matcher,
+			numberOfMatches,
+			altFirstLastMatchers
+		);
+	}
+
+	/**
+	 * Creates a new MatchRepeat instance with an empty group name.
+	 *
+	 * @param matcher The matcher to repeat.
+	 * @param numberOfMatches The number of times to repeat.
+	 * @param altFirstLastMatchers The altFirst and altLast matchers.
+	 * @returns A new MatchRepeat instance.
+	 */
+	public static fromUnnamed(
+		matcher: GroupMatchBase,
+		numberOfMatches: NumberOfMatches = NumberOfMatches.oneOrMore,
+		altFirstLastMatchers: AltFirstLastGroupMatchers = AltFirstLastGroupMatchers.default
+	): GroupMatchRepeat {
+		return new GroupMatchRepeat(
+			GroupName.empty,
 			matcher,
 			numberOfMatches,
 			altFirstLastMatchers

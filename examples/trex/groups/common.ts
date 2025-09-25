@@ -44,16 +44,25 @@ export const logGroupsRec = (
 	const tab = " ┊ ";
 	const indentStr = chalk.blackBright(tab.repeat(indent));
 	const indexStr = index < 0 ? "" : `[${chalk.cyan(index)}]: `;
-	if (group.groupName.isNotEmpty()) {
-		log(
-			indentStr +
-				indexStr +
-				group.toString() +
-				`${chalk.gray(" ── ")}` +
-				`[${chalk.cyan(group.noEndMatchNav.startIndex)}` +
-				`..${chalk.cyan(group.noEndMatchNav.captureIndex)}]`
-		);
-	}
+	// if (group.groupName.isNotEmpty()) {
+	// 	log(
+	// 		indentStr +
+	// 			indexStr +
+	// 			group.toString() +
+	// 			`${chalk.gray(" ── ")}` +
+	// 			`[${chalk.cyan(group.noEndMatchNav.startIndex)}` +
+	// 			`..${chalk.cyan(group.noEndMatchNav.captureIndex)}]`
+	// 	);
+	// }
+	log(
+		indentStr +
+			indexStr +
+			group.toString() +
+			`${chalk.gray(" ── ")}` +
+			`[${chalk.cyan(group.noEndMatchNav.startIndex)}` +
+			`..${chalk.cyan(group.noEndMatchNav.captureIndex)}]`
+	);
+
 	group.children.forEach((child, index) => {
 		logGroupsRec(child, index, indent + 1);
 	});
@@ -82,11 +91,13 @@ export const logResults = (
 			);
 			continue;
 		}
+		log(chalk.cyan(`Nav string: ${getNavStringView(navString)}`));
 		logGroupsRec(result);
 	}
 	div();
 	logh("Fail cases");
-	for (const navString of failStrings) {
+	for (const pair of failStrings) {
+		const [navString, msg] = pair.split("->");
 		const nav = MutMatchNav.fromString(navString);
 		const result = matcher.match(nav);
 		div();
@@ -99,9 +110,10 @@ export const logResults = (
 			logGroupsRec(result);
 			continue;
 		}
+		const msgView = msg ? `-> ${chalk.yellow(msg)}` : "";
 		log(
 			chalk.cyan(
-				`Failed to match fail case: ${getNavStringView(navString)}`
+				`Failed to match: ${getNavStringView(navString)} ${msgView}`
 			)
 		);
 	}

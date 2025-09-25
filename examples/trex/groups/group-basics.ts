@@ -152,7 +152,7 @@ const doGroupRepeatMatchWithAltFirstLast = () => {
 		)
 	);
 
-	const numberMatcher = GroupMatchRepeat.from(
+	const numberMatcher = GroupMatchRepeat.fromNamed(
 		GroupName.fromName("number"),
 		contentGroupMatcher,
 		NumberOfMatches.between(1, 4),

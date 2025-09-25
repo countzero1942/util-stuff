@@ -2,6 +2,7 @@ import { GroupMatch, GroupMatchBase } from "./group-match";
 import { GroupMatchNav } from "./group-nav";
 import { GroupName } from "./group-name";
 import { MutMatchNav } from "./nav";
+import { addResultToChildrenGroupNavs } from "./group-helper";
 
 export class GroupMatchAny extends GroupMatchBase {
 	#_matchers: GroupMatchBase[];
@@ -14,7 +15,7 @@ export class GroupMatchAny extends GroupMatchBase {
 		this.#_matchers = matchers.slice(); // defensive copy
 	}
 
-	public static fromUnnamed(
+	public static fromMatchers(
 		...matchers: GroupMatchBase[]
 	): GroupMatchAny {
 		return new GroupMatchAny(GroupName.empty, matchers);
@@ -58,76 +59,6 @@ export class GroupMatchAll extends GroupMatchBase {
 		return new GroupMatchAll(groupName, matchers);
 	}
 
-	public static get flattenedGroupName(): GroupName {
-		return GroupName.flattened;
-	}
-
-	/**
-	 * Creates a flattened GroupMatchAll with flattened group name.
-	 *
-	 * A flattened GroupMatchAll will add all child named matches to its parent's
-	 * children matches.
-	 *
-	 * @param matchers The matchers to use.
-	 * @returns A GroupMatchAll with the flattened group name.
-	 */
-	public static fromFlattened(
-		...matchers: GroupMatchBase[]
-	): GroupMatchAll {
-		return new GroupMatchAll(
-			GroupName.flattened,
-			matchers
-		);
-	}
-
-	public isFlattened(): boolean {
-		return this.#_groupName.isGroupName(
-			GroupName.flattened
-		);
-	}
-
-	/**
-	 * Adds a GroupMatchNav result to the savedNavs array based on the
-	 * result's group name.
-	 *
-	 * If the result has a non-empty group name, it is added to the
-	 * savedNavs array. (Match added to parent.)
-	 *
-	 * If the result has the flattened group name, its children are added
-	 * to the savedNavs array. (Child matches added to parent's children.)
-	 *
-	 * If the result has an empty group name, nothing is added to the
-	 * savedNavs array. (Unnamed group matches are ignored.)
-	 *
-	 * @param result The result to add.
-	 * @param savedNavs The array to add the result to.
-	 */
-	public static addResultsToSavedNavs(
-		result: GroupMatchNav,
-		savedNavs: GroupMatchNav[]
-	): void {
-		// case: named group match: add potential branch
-		if (result.groupName.isNotEmpty()) {
-			savedNavs.push(result);
-			return;
-		}
-		// case: flattened group match: add children to parent's children
-		if (
-			result.groupName.isGroupName(
-				GroupMatchAll.flattenedGroupName
-			)
-		) {
-			for (const child of result.children) {
-				if (child.groupName.isNotEmpty()) {
-					savedNavs.push(child);
-				}
-			}
-			return;
-		}
-		// case: unnamed group match: do not include in savedNavs
-		return;
-	}
-
 	public match(nav: MutMatchNav): GroupMatchNav | null {
 		nav.assertNavIsValid();
 		nav.assertNavIsNew();
@@ -142,14 +73,9 @@ export class GroupMatchAll extends GroupMatchBase {
 				return null;
 			}
 
-			GroupMatchAll.addResultsToSavedNavs(
-				result,
-				savedNavs
-			);
+			addResultToChildrenGroupNavs(result, savedNavs);
 
-			curNav = result.wholeMatchNav
-				.copy()
-				.moveNext("OptMoveForward");
+			curNav = result.wholeMatchNav.copy().moveNext("OptMoveForward");
 		}
 
 		return GroupMatchNav.fromChildren(
@@ -168,9 +94,7 @@ export class GroupMatchOpt extends GroupMatchBase {
 		super(groupName);
 	}
 
-	public static from(
-		matcher: GroupMatchBase
-	): GroupMatchOpt {
+	public static from(matcher: GroupMatchBase): GroupMatchOpt {
 		return new GroupMatchOpt(GroupName.empty, matcher);
 	}
 

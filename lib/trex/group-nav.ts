@@ -23,8 +23,7 @@ import chalk from "chalk";
  * @param children The child group matches.
  */
 export class GroupMatchNav {
-	private static _defaultChildren: readonly GroupMatchNav[] =
-		[];
+	private static _defaultChildren: readonly GroupMatchNav[] = [];
 
 	protected constructor(
 		public readonly groupName: GroupName,
@@ -44,22 +43,22 @@ export class GroupMatchNav {
 		groupName: GroupName,
 		children: readonly GroupMatchNav[]
 	): GroupMatchNav {
-		return new GroupMatchNav(
-			groupName,
-			wholeMatchNav,
-			children
-		);
+		return new GroupMatchNav(groupName, wholeMatchNav, children);
+	}
+
+	public get isLeaf(): boolean {
+		return this.children.length === 0;
+	}
+
+	public get isBranch(): boolean {
+		return this.children.length > 0;
 	}
 
 	public get noEndMatchNav(): MutMatchNav {
 		const length = this.children.length;
 		if (length >= 1) {
 			const potentialEnd = this.children[length - 1];
-			if (
-				potentialEnd.groupName.isGroupName(
-					GroupName.end
-				)
-			) {
+			if (potentialEnd.groupName.isGroupName(GroupName.end)) {
 				return this.wholeMatchNav.copyAndShrinkCapture(
 					potentialEnd.wholeMatchNav.captureLength
 				);

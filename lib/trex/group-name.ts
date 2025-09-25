@@ -82,11 +82,6 @@ export class GroupName extends GroupNamerBase {
 		return GroupName._end;
 	}
 
-	private static _flattened = GroupName.fromName(":flattened");
-	public static get flattened(): GroupName {
-		return GroupName._flattened;
-	}
-
 	public toString(): string {
 		return `${this.name}${this.category ? ":" + this.category : ""}`;
 	}
@@ -106,7 +101,7 @@ export class GroupNameSet<TName extends string> {
 		return new GroupNameSet(names);
 	}
 
-	getGroupName(name: TName): GroupName {
+	getName(name: TName): GroupName {
 		const group = this.#_nameSet.get(name);
 		if (!group) {
 			throw new Error(`GroupNameSet: No group found for name: ${name}`);
