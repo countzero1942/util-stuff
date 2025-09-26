@@ -4,7 +4,11 @@ import { GroupMatchNav } from "./group-nav";
 import { GroupName } from "./group-name";
 import { MatchRepeat, NumberOfMatches } from "./match-repeat";
 import { MutMatchNav } from "./nav";
-import { addResultToChildrenGroupNavs } from "./group-helper";
+import {
+	addResultToChildrenGroupNavs,
+	addResultToParent,
+	addResultToParentB,
+} from "./group-helper";
 
 export class AltFirstLastGroupMatchers {
 	protected constructor(
@@ -99,7 +103,10 @@ export class GroupMatchRepeat extends GroupMatchBase {
 	 * @param nav The navigation to match.
 	 * @returns The navigation after matching, or null if no match.
 	 */
-	public match(nav: MutMatchNav): GroupMatchNav | null {
+	public match(
+		nav: MutMatchNav,
+		parent: GroupMatchNav | null
+	): GroupMatchNav | null {
 		const firstMatcher = this.altFirstLastMatchers.altFirstMatch;
 		const lastMatcher = this.altFirstLastMatchers.altLastMatch;
 
@@ -116,7 +123,13 @@ export class GroupMatchRepeat extends GroupMatchBase {
 		let firstNav = nav.copy();
 		let currentNav = nav.copy();
 
-		const savedNavs: GroupMatchNav[] = [];
+		// const savedNavs: GroupMatchNav[] = [];
+		const parentNav = GroupMatchNav.fromConstructableBranch(
+			this.groupName,
+			parent
+		);
+
+		const firstNamedAncestor = parentNav.getFirstNamedAncestor();
 
 		const contentMatcher = this.matcher;
 
@@ -147,7 +160,11 @@ export class GroupMatchRepeat extends GroupMatchBase {
 
 			const doAltMatcher = (altMatcher: GroupMatchBase | null) => {
 				if (altMatcher) {
-					result = altMatcher.match(currentNav.copy());
+					// result = altMatcher.match(currentNav.copy(), parentNav);
+					result = altMatcher.match(
+						currentNav.copy(),
+						firstNamedAncestor
+					);
 					if (!result) {
 						isFailedMatch = true;
 					}
@@ -160,7 +177,11 @@ export class GroupMatchRepeat extends GroupMatchBase {
 					doAltMatcher(firstMatcher);
 					break;
 				case "Content Matcher":
-					result = contentMatcher.match(currentNav.copy());
+					// result = contentMatcher.match(currentNav.copy(), parentNav);
+					result = contentMatcher.match(
+						currentNav.copy(),
+						firstNamedAncestor
+					);
 					if (result) {
 						didContentMatch = true;
 					}
@@ -190,7 +211,9 @@ export class GroupMatchRepeat extends GroupMatchBase {
 			// note: result here is only null if altMatcher is null
 			// and no matching took place
 			if (result) {
-				addResultToChildrenGroupNavs(result, savedNavs);
+				// addResultToChildrenGroupNavs(result, savedNavs);
+				// addResultToParent(result, parentNav);
+				addResultToParentB(result, firstNamedAncestor);
 
 				currentNav =
 					result.wholeMatchNav.copyAndMoveNext("OptMoveForward");
@@ -199,15 +222,20 @@ export class GroupMatchRepeat extends GroupMatchBase {
 
 		// case: successful match in range
 		if (isFailedMatch === false && count >= min && count <= max) {
-			return GroupMatchNav.fromChildren(
-				MutMatchNav.fromFirstAndLast(firstNav, currentNav),
-				this.groupName,
-				savedNavs
+			// return GroupMatchNav.fromBranch(
+			// 	MutMatchNav.fromFirstAndLast(firstNav, currentNav),
+			// 	this.groupName,
+			// 	savedNavs
+			// );
+			parentNav.seal(
+				MutMatchNav.fromFirstAndLast(firstNav, currentNav)
 			);
+			return parentNav;
 		}
 		// case: failed match with zero matches allowed
 		else if (isFailedMatch === true && count === 0 && min === 0) {
-			return GroupMatchNav.from(nav.copy(), this.groupName);
+			// Note: on failed match the parentNav is discarded
+			return GroupMatchNav.fromLeaf(nav.copy(), this.groupName, parent);
 		}
 		// case: failed match
 		else {

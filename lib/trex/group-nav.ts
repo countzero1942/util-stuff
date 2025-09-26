@@ -1,6 +1,8 @@
 import { MutMatchNav } from "./nav";
 import { GroupName } from "./group-name";
 import chalk from "chalk";
+import { parentPort } from "worker_threads";
+import { GroupMatchBase } from "./group-match";
 
 /**
  * A group navigation node that contains a contiguous match
@@ -23,119 +25,138 @@ import chalk from "chalk";
  * @param children The child group matches.
  */
 export class GroupMatchNav {
-	private static _defaultChildren: readonly GroupMatchNav[] = [];
+	private static _defaultChildren: GroupMatchNav[] = [];
+
+	#_children: GroupMatchNav[];
+	#_isConstructed: boolean;
+	#_wholeMatchNav: MutMatchNav;
+	#_parent: GroupMatchNav | null = null;
 
 	protected constructor(
 		public readonly groupName: GroupName,
-		public readonly wholeMatchNav: MutMatchNav,
-		public readonly children: readonly GroupMatchNav[] = GroupMatchNav._defaultChildren
-	) {}
-
-	public static from(
 		wholeMatchNav: MutMatchNav,
-		groupName: GroupName
-	): GroupMatchNav {
-		return new GroupMatchNav(groupName, wholeMatchNav);
+		parent: GroupMatchNav | null,
+		children: GroupMatchNav[],
+		isConstructed: boolean
+	) {
+		this.#_children = children;
+		this.#_isConstructed = isConstructed;
+		this.#_wholeMatchNav = wholeMatchNav;
+		this.#_parent = parent;
 	}
 
-	public static fromChildren(
+	static fromLeaf(
 		wholeMatchNav: MutMatchNav,
 		groupName: GroupName,
+		parent: GroupMatchNav | null
+	): GroupMatchNav {
+		return new GroupMatchNav(
+			groupName,
+			wholeMatchNav,
+			parent,
+			GroupMatchNav._defaultChildren,
+			true
+		);
+	}
+
+	static fromBranch(
+		wholeMatchNav: MutMatchNav,
+		groupName: GroupName,
+		parent: GroupMatchNav | null,
 		children: readonly GroupMatchNav[]
 	): GroupMatchNav {
-		return new GroupMatchNav(groupName, wholeMatchNav, children);
+		return new GroupMatchNav(
+			groupName,
+			wholeMatchNav,
+			parent,
+			children as GroupMatchNav[],
+			true
+		);
 	}
 
-	public get isLeaf(): boolean {
-		return this.children.length === 0;
+	static fromConstructableBranch(
+		groupName: GroupName,
+		parent: GroupMatchNav | null
+	) {
+		return new GroupMatchNav(
+			groupName,
+			MutMatchNav.fromString(""),
+			parent,
+			[],
+			false
+		);
 	}
 
-	public get isBranch(): boolean {
-		return this.children.length > 0;
+	addChild(child: GroupMatchNav) {
+		if (this.#_isConstructed) {
+			throw new Error(
+				"Cannot add children to a constructed group match nav"
+			);
+		}
+		// child.#_parent = this;
+		this.#_children.push(child);
 	}
 
-	public get noEndMatchNav(): MutMatchNav {
-		const length = this.children.length;
+	seal(wholeMatchNav: MutMatchNav) {
+		if (this.#_isConstructed) {
+			throw new Error("Cannot seal a constructed group match nav");
+		}
+		this.#_wholeMatchNav = wholeMatchNav;
+		this.#_isConstructed = true;
+	}
+
+	getFirstNamedAncestor(): GroupMatchNav {
+		let current: GroupMatchNav = this;
+		while (true) {
+			if (current.groupName.isNotEmpty()) {
+				return current;
+			}
+			if (current.#_parent === null) {
+				return current;
+			}
+			current = current.#_parent;
+		}
+	}
+
+	get isLeaf(): boolean {
+		return this.#_children.length === 0;
+	}
+
+	get isBranch(): boolean {
+		return this.#_children.length > 0;
+	}
+
+	get children(): readonly GroupMatchNav[] {
+		return this.#_children;
+	}
+
+	get parent(): GroupMatchNav | null {
+		return this.#_parent;
+	}
+
+	get wholeMatchNav(): MutMatchNav {
+		return this.#_wholeMatchNav;
+	}
+
+	get noEndMatchNav(): MutMatchNav {
+		const length = this.#_children.length;
 		if (length >= 1) {
-			const potentialEnd = this.children[length - 1];
+			const potentialEnd = this.#_children[length - 1];
 			if (potentialEnd.groupName.isGroupName(GroupName.end)) {
-				return this.wholeMatchNav.copyAndShrinkCapture(
-					potentialEnd.wholeMatchNav.captureLength
+				return this.#_wholeMatchNav.copyAndShrinkCapture(
+					potentialEnd.#_wholeMatchNav.captureLength
 				);
 			}
 		}
-		return this.wholeMatchNav;
+		return this.#_wholeMatchNav;
 	}
 
-	// public copy(): GroupMatchNav {
-	// 	return new GroupMatchNav(
-	// 		this.groupName,
-	// 		this.nav.copy()
-	// 	);
-	// }
-
-	public toString(): string {
+	toString(): string {
 		return (
 			`${chalk.magentaBright("GroupNav: ")}` +
 			`${"<" + chalk.blueBright(this.groupName.toString()) + ">"} ` +
-			`'${chalk.green(this.wholeMatchNav.captureMatch.value)}' ` +
-			`+[${chalk.cyan(this.children.length)}]`
+			`'${chalk.green(this.#_wholeMatchNav.captureMatch.value)}' ` +
+			`+[${chalk.cyan(this.#_children.length)}]`
 		);
 	}
 }
-
-// export class GroupMatchNavList {
-// 	#_navs: GroupMatchNav[];
-// 	#_groupName: GroupName;
-// 	#_wholeNav: MutMatchNav;
-
-// 	private constructor(
-// 		groupName: GroupName,
-// 		navs: GroupMatchNav[],
-// 		wholeMatchNav: MutMatchNav
-// 	) {
-// 		this.#_groupName = groupName;
-// 		this.#_navs = navs.slice(); // defensive copy
-// 		if (wholeMatchNav.isInvalidated) {
-// 			throw new Error(
-// 				"GroupMatchNavList.constructor: wholeMatchNav is invalidated"
-// 			);
-// 		}
-// 		this.#_wholeNav = wholeMatchNav;
-// 	}
-
-// 	public static fromUnnamed(
-// 		navs: GroupMatchNav[],
-// 		wholeMatchNav: MutMatchNav
-// 	): GroupMatchNavList {
-// 		return new GroupMatchNavList(
-// 			GroupName.empty,
-// 			navs,
-// 			wholeMatchNav
-// 		);
-// 	}
-
-// 	public static fromNamed(
-// 		groupName: GroupName,
-// 		navs: GroupMatchNav[],
-// 		wholeMatchNav: MutMatchNav
-// 	): GroupMatchNavList {
-// 		return new GroupMatchNavList(
-// 			groupName,
-// 			navs,
-// 			wholeMatchNav
-// 		);
-// 	}
-
-// 	public get navs(): readonly GroupMatchNav[] {
-// 		return this.#_navs;
-// 	}
-
-// 	public get groupName(): GroupName {
-// 		return this.#_groupName;
-// 	}
-
-// 	public get wholeMatchNav(): MutMatchNav {
-// 		return this.#_wholeNav;
-// 	}
-// }

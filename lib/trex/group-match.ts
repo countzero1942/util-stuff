@@ -6,7 +6,10 @@ import { GroupName } from "./group-name";
 export abstract class GroupMatchBase {
 	protected constructor(public readonly groupName: GroupName) {}
 
-	public abstract match(nav: MutMatchNav): GroupMatchNav | null;
+	public abstract match(
+		nav: MutMatchNav,
+		parent: GroupMatchNav | null
+	): GroupMatchNav | null;
 }
 
 export class GroupMatch extends GroupMatchBase {
@@ -28,11 +31,14 @@ export class GroupMatch extends GroupMatchBase {
 		return new GroupMatch(GroupName.empty, matcher);
 	}
 
-	public match(nav: MutMatchNav): GroupMatchNav | null {
+	public match(
+		nav: MutMatchNav,
+		parent: GroupMatchNav | null
+	): GroupMatchNav | null {
 		nav.assertNavIsValid();
 		const result = this.matcher.match(nav);
 		if (result) {
-			return GroupMatchNav.from(result, this.groupName);
+			return GroupMatchNav.fromLeaf(result, this.groupName, parent);
 		}
 		return null;
 	}

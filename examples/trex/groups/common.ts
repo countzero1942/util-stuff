@@ -81,7 +81,7 @@ export const logResults = (
 
 	for (const navString of successStrings) {
 		const nav = MutMatchNav.fromString(navString);
-		const result = matcher.match(nav);
+		const result = matcher.match(nav, null);
 		div();
 		if (!result) {
 			log(
@@ -99,7 +99,7 @@ export const logResults = (
 	for (const pair of failStrings) {
 		const [navString, msg] = pair.split("->");
 		const nav = MutMatchNav.fromString(navString);
-		const result = matcher.match(nav);
+		const result = matcher.match(nav, null);
 		div();
 		if (result) {
 			log(

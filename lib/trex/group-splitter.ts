@@ -40,10 +40,8 @@ export class GroupSplitter extends GroupMatchBase {
 		const savedNavs: GroupMatchNav[] = [];
 		const endMatcher = this.#_args?.endMatcher;
 
-		const addFragment = (
-			result: GroupMatchNav | null
-		) => {
-			const fragmentMatch = GroupMatchNav.from(
+		const addFragment = (result: GroupMatchNav | null) => {
+			const fragmentMatch = GroupMatchNav.fromLeaf(
 				fragmentNav,
 				GroupName.fragment
 			);
@@ -54,24 +52,16 @@ export class GroupSplitter extends GroupMatchBase {
 					savedNavs.push(result);
 				}
 				fragmentNav =
-					result.wholeMatchNav.copyAndMoveNext(
-						"OptMoveForward"
-					);
+					result.wholeMatchNav.copyAndMoveNext("OptMoveForward");
 			} else {
-				fragmentNav = fragmentNav.copyAndMoveNext(
-					"OptMoveForward"
-				);
+				fragmentNav = fragmentNav.copyAndMoveNext("OptMoveForward");
 			}
 		};
 
 		while (fragmentNav.isNavIndexAtSourceEnd === false) {
-			const curNav = fragmentNav.copyAndMoveNext(
-				"OptMoveForward"
-			);
+			const curNav = fragmentNav.copyAndMoveNext("OptMoveForward");
 
-			const splitResult = this.#_splitter.match(
-				curNav.copy()
-			);
+			const splitResult = this.#_splitter.match(curNav.copy());
 			// case: splitter matched
 			if (splitResult) {
 				addFragment(splitResult);
@@ -79,9 +69,7 @@ export class GroupSplitter extends GroupMatchBase {
 			}
 
 			if (endMatcher) {
-				const endResult = endMatcher.match(
-					curNav.copy()
-				);
+				const endResult = endMatcher.match(curNav.copy());
 				// case: end matcher matched
 				if (endResult) {
 					addFragment(endResult);
@@ -97,11 +85,8 @@ export class GroupSplitter extends GroupMatchBase {
 			addFragment(null);
 		}
 
-		return GroupMatchNav.fromChildren(
-			MutMatchNav.fromFirstAndLast(
-				firstNav,
-				fragmentNav
-			),
+		return GroupMatchNav.fromBranch(
+			MutMatchNav.fromFirstAndLast(firstNav, fragmentNav),
 			this.#_groupName,
 			savedNavs
 		);
