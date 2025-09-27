@@ -14,7 +14,7 @@ export class GroupName extends GroupNamerBase {
 
 	public static fromName(name: string): GroupName {
 		if (name === "") {
-			throw new Error("'name' cannot be empty");
+			return GroupName.empty;
 		}
 		return new GroupName(name, undefined);
 	}
@@ -37,12 +37,16 @@ export class GroupName extends GroupNamerBase {
 		return GroupName._empty;
 	}
 
+	public isSecret(): boolean {
+		return this.name.startsWith("@");
+	}
+
 	public isEmpty(): boolean {
-		return this.name === "";
+		return this.name === "" || this.name.startsWith("@");
 	}
 
 	public isNotEmpty(): boolean {
-		return this.name !== "";
+		return this.name !== "" && !this.name.startsWith("@");
 	}
 
 	public is(

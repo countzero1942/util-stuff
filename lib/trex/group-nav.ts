@@ -93,7 +93,7 @@ export class GroupMatchNav {
 				"Cannot add children to a constructed group match nav"
 			);
 		}
-		// child.#_parent = this;
+		child.#_parent = this;
 		this.#_children.push(child);
 	}
 
@@ -134,6 +134,17 @@ export class GroupMatchNav {
 		return this.#_parent;
 	}
 
+	get isRoot(): boolean {
+		return this.#_parent === null;
+	}
+
+	get isNamed(): boolean {
+		// Note: the root group nav may or may not be named
+		// but it is always included in the navigation tree
+		// so even if unnamed it is considered to be named
+		return this.#_parent === null || this.groupName.isNotEmpty();
+	}
+
 	get wholeMatchNav(): MutMatchNav {
 		return this.#_wholeMatchNav;
 	}
@@ -152,11 +163,21 @@ export class GroupMatchNav {
 	}
 
 	toString(): string {
+		const parentName =
+			this.#_parent === null
+				? ":null"
+				: this.#_parent.groupName.toString();
+
+		const groupName = this.groupName.isSecret()
+			? chalk.gray(this.groupName.toString())
+			: chalk.blueBright(this.groupName.toString());
+
 		return (
 			`${chalk.magentaBright("GroupNav: ")}` +
-			`${"<" + chalk.blueBright(this.groupName.toString()) + ">"} ` +
+			`${"<" + groupName + ">"} ` +
 			`'${chalk.green(this.#_wholeMatchNav.captureMatch.value)}' ` +
-			`+[${chalk.cyan(this.#_children.length)}]`
+			`+[${chalk.cyan(this.#_children.length)}] ` +
+			`<${chalk.gray(parentName)}>`
 		);
 	}
 }

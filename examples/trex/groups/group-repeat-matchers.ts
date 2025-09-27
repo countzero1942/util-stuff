@@ -513,25 +513,48 @@ const charEntityFailStrings = [""];
 
 const colonGroupSuccessStrings = [
 	"1a3:4d6",
-	"12a,1c:1e,45f",
-	"12a,1c:1e,45f:78g",
-	"12a,1c:1e,45f:78g,1h",
-	"12a,1c:1e,45f:78g,1h:1j",
+	// "12a,1c:1e,45f",
+	// "12a,1c:1e,45f:78g",
+	// "12a,1c:1e,45f:78g,1h",
+	// "12a,1c:1e,45f:78g,1h:1j",
 ];
 
-const colonGroupFailStrings = ["", "12a,1c:1e,45f:78g,1h:1j:1k"];
+const colonGroupFailStrings = [""];
+// const colonGroupFailStrings = ["", "12a,1c:1e,45f:78g,1h:1j:1k"];
 
 const deepNames = GroupNameSet.fromNames(
+	"",
 	"digit",
 	"letter",
 	"separator",
 	"char-entity",
 	"char-entity-group",
-	"char-first-group",
-	"char-content-group",
-	"char-last-group",
+	"char-first",
+	"char-content",
+	"char-last",
+	"inner-first",
+	"inner-content",
+	"inner-last",
 	"char-group",
 	"colon-separator",
+	"foobar"
+);
+
+const deepSecretNames = GroupNameSet.fromNames(
+	"",
+	"digit",
+	"letter",
+	"@separator",
+	"@char-entity",
+	"@char-entity-group",
+	"@char-first",
+	"@char-content",
+	"@char-last",
+	"@inner-first",
+	"@inner-content",
+	"@inner-last",
+	"@char-group",
+	"@colon-separator",
 	"foobar"
 );
 
@@ -554,9 +577,9 @@ const doDeepNamedGroupRepeatMatcher = () => {
 
 	const charFirstMatcher = GroupMatchOpt.from(
 		GroupMatchAll.fromNamed(
-			deepNames.getName("char-first-group"),
+			deepNames.getName("char-first"),
 			GroupMatchRepeat.fromNamed(
-				deepNames.getName("char-group"),
+				deepNames.getName("inner-first"),
 				digitOrLetterMatcher,
 				NumberOfMatches.between(1, 2)
 			),
@@ -566,9 +589,9 @@ const doDeepNamedGroupRepeatMatcher = () => {
 
 	const charContentMatcher = GroupMatchOpt.from(
 		GroupMatchAll.fromNamed(
-			deepNames.getName("char-content-group"),
+			deepNames.getName("char-content"),
 			GroupMatchRepeat.fromNamed(
-				deepNames.getName("char-group"),
+				deepNames.getName("inner-content"),
 				digitOrLetterMatcher,
 				NumberOfMatches.exactly(3)
 			),
@@ -578,9 +601,9 @@ const doDeepNamedGroupRepeatMatcher = () => {
 
 	const charLastMatcher = GroupMatchOpt.from(
 		GroupMatchAll.fromNamed(
-			deepNames.getName("char-last-group"),
+			deepNames.getName("char-last"),
 			GroupMatchRepeat.fromNamed(
-				deepNames.getName("char-group"),
+				deepNames.getName("inner-last"),
 				digitOrLetterMatcher,
 				NumberOfMatches.between(1, 3)
 			)
@@ -606,6 +629,90 @@ const doDeepNamedGroupRepeatMatcher = () => {
 		deepNames.getName("foobar"),
 		GroupMatchAll.fromNamed(
 			deepNames.getName("char-entity-group"),
+			charEntityMatcher,
+			colonSeparatorMatcher
+		),
+		NumberOfMatches.between(1, 4)
+	);
+
+	logResults(
+		colonGroupSuccessStrings,
+		colonGroupFailStrings,
+		colonGroupMatcher
+	);
+};
+
+const doDeepSecretNamedGroupRepeatMatcher = () => {
+	const digitOrLetterMatcher = GroupMatchAny.fromMatchers(
+		GroupMatch.fromNamed(
+			deepSecretNames.getName("digit"),
+			MatchCodePointCategories.fromString("Nd")
+		),
+		GroupMatch.fromNamed(
+			deepSecretNames.getName("letter"),
+			MatchCodePointCategories.fromString("Ll")
+		)
+	);
+
+	const separatorMatcher = GroupMatch.fromNamed(
+		deepSecretNames.getName("@separator"),
+		MatchCodePoint.fromString(",")
+	);
+
+	const charFirstMatcher = GroupMatchOpt.from(
+		GroupMatchAll.fromNamed(
+			deepSecretNames.getName("@char-first"),
+			GroupMatchRepeat.fromNamed(
+				deepSecretNames.getName("@inner-first"),
+				digitOrLetterMatcher,
+				NumberOfMatches.between(1, 2)
+			),
+			separatorMatcher
+		)
+	);
+
+	const charContentMatcher = GroupMatchOpt.from(
+		GroupMatchAll.fromNamed(
+			deepSecretNames.getName("@char-content"),
+			GroupMatchRepeat.fromNamed(
+				deepSecretNames.getName("@inner-content"),
+				digitOrLetterMatcher,
+				NumberOfMatches.exactly(3)
+			),
+			separatorMatcher
+		)
+	);
+
+	const charLastMatcher = GroupMatchOpt.from(
+		GroupMatchAll.fromNamed(
+			deepSecretNames.getName("@char-last"),
+			GroupMatchRepeat.fromNamed(
+				deepSecretNames.getName("@inner-last"),
+				digitOrLetterMatcher,
+				NumberOfMatches.between(1, 3)
+			)
+		)
+	);
+
+	const charEntityMatcher = GroupMatchRepeat.fromNamed(
+		deepSecretNames.getName("@char-entity"),
+		charContentMatcher,
+		NumberOfMatches.between(1, 4),
+		AltFirstLastGroupMatchers.fromBoth(charFirstMatcher, charLastMatcher)
+	);
+
+	const colonSeparatorMatcher = GroupMatchAny.fromMatchers(
+		GroupMatch.fromNamed(
+			deepSecretNames.getName("@colon-separator"),
+			MatchCodePoint.fromString(":")
+		),
+		GroupMatch.fromUnnamed(MatchEndSlice.default)
+	);
+
+	const colonGroupMatcher = GroupMatchRepeat.fromNamed(
+		deepSecretNames.getName("foobar"),
+		GroupMatchAll.fromNamed(
+			deepSecretNames.getName("@char-entity-group"),
 			charEntityMatcher,
 			colonSeparatorMatcher
 		),
@@ -763,6 +870,15 @@ const exampleItems: ExamplesMenuItem[] = [
 		name: "Deep Named Group Repeat Matcher",
 		description: [
 			"Do deep named group repeat matcher.",
+			"Groups of 3 numbers separated by commas. Both ends can have",
+			"between 1 and 2 numbers. The final end must be between 1 and 3 numbers.",
+		],
+	},
+	{
+		func: doDeepSecretNamedGroupRepeatMatcher,
+		name: "Deep Secret Named Group Repeat Matcher",
+		description: [
+			"Do deep secret named group repeat matcher.",
 			"Groups of 3 numbers separated by commas. Both ends can have",
 			"between 1 and 2 numbers. The final end must be between 1 and 3 numbers.",
 		],

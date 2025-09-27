@@ -2,11 +2,7 @@ import { GroupMatch, GroupMatchBase } from "./group-match";
 import { GroupMatchNav } from "./group-nav";
 import { GroupName } from "./group-name";
 import { MutMatchNav } from "./nav";
-import {
-	addResultToChildrenGroupNavs,
-	addResultToParent,
-	addResultToParentB,
-} from "./group-helper";
+import { addResultToParent } from "./group-helper";
 
 export class GroupMatchAny extends GroupMatchBase {
 	#_matchers: GroupMatchBase[];
@@ -79,21 +75,19 @@ export class GroupMatchAll extends GroupMatchBase {
 			parent
 		);
 
-		const firstNamedAncestor = parentNav.getFirstNamedAncestor();
-
 		let curNav = nav.copy();
 		const matchersLength = this.#_matchers.length;
 		for (let i = 0; i < matchersLength; i++) {
 			const matcher = this.#_matchers[i];
-			// const result = matcher.match(curNav, parentNav);
-			const result = matcher.match(curNav, firstNamedAncestor);
+			const result = matcher.match(curNav, parentNav);
+			// const result = matcher.match(curNav, firstNamedAncestor);
 			if (!result) {
 				return null;
 			}
 
 			// addResultToChildrenGroupNavs(result, savedNavs);
-			// addResultToParent(result, parentNav);
-			addResultToParent(result, firstNamedAncestor);
+			addResultToParent(result, parentNav);
+			// addResultToParentB(result, firstNamedAncestor);
 
 			curNav = result.wholeMatchNav.copy().moveNext("OptMoveForward");
 		}
