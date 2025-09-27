@@ -21,7 +21,8 @@ import { logGroups, logGroupsRec, logResults } from "./common";
 import chalk from "chalk";
 
 const abcNames = GroupNameSet.fromNames(
-	"group-match",
+	"match-all",
+	"repeat-match",
 	"alt-first",
 	"content",
 	"alt-last"
@@ -29,7 +30,7 @@ const abcNames = GroupNameSet.fromNames(
 
 const doBasicOptRepeatMatcherWithOptAltFirst = () => {
 	const repeatMatcher = GroupMatchRepeat.fromNamed(
-		abcNames.getName("group-match"),
+		abcNames.getName("repeat-match"),
 		GroupMatchOpt.from(
 			GroupMatch.fromNamed(
 				abcNames.getName("content"),
@@ -63,7 +64,7 @@ const doBasicOptRepeatMatcherWithOptAltFirst = () => {
 
 const doBasicOptRepeatMatcherWithOptAltLast = () => {
 	const repeatMatcher = GroupMatchRepeat.fromNamed(
-		abcNames.getName("group-match"),
+		abcNames.getName("repeat-match"),
 		GroupMatchOpt.from(
 			GroupMatch.fromNamed(
 				abcNames.getName("content"),
@@ -104,9 +105,10 @@ const doBasicOptRepeatMatcherWithOptAltLast = () => {
 };
 
 const doBasicFullStringOptRepeatMatcherWithOptAltFirstOptAltLast = () => {
-	const repeatMatcher = GroupMatchAll.fromUnnamed(
+	const repeatMatcher = GroupMatchAll.fromNamed(
+		abcNames.getName("match-all"),
 		GroupMatchRepeat.fromNamed(
-			abcNames.getName("group-match"),
+			abcNames.getName("repeat-match"),
 			GroupMatchOpt.from(
 				GroupMatch.fromNamed(
 					abcNames.getName("content"),
@@ -255,11 +257,12 @@ const doNumberGroupRepeatMatchWithAltFirstLast = () => {
 	logResults(
 		numberGroupSuccessStrings,
 		numberGroupFailStrings,
-		numberMatcher
+		numberMatcher,
+		false
 	);
 };
 
-const doRecursiveNumberGroupRepeatMatchWithAltFirstLast = () => {
+const doDeeplyNamedNumberGroupRepeatMatchWithAltFirstLast = () => {
 	const groupSeparatorMatcher = GroupMatch.fromNamed(
 		numberNames.getName("group-separator"),
 		MatchCodePoint.fromString(",")
@@ -321,7 +324,8 @@ const doRecursiveNumberGroupRepeatMatchWithAltFirstLast = () => {
 	logResults(
 		numberGroupSuccessStrings,
 		numberGroupFailStrings,
-		numberMatcher
+		numberMatcher,
+		false
 	);
 };
 
@@ -378,7 +382,8 @@ const doFlattenedNumberGroupRepeatMatchWithAltFirstLast = () => {
 	logResults(
 		numberGroupSuccessStrings,
 		numberGroupFailStrings,
-		numberMatcher
+		numberMatcher,
+		true
 	);
 };
 
@@ -436,7 +441,8 @@ const doAutoFlattenedNumberGroupRepeatMatchWithAltFirstLast = () => {
 	logResults(
 		numberGroupSuccessStrings,
 		numberGroupFailStrings,
-		numberMatcher
+		numberMatcher,
+		true
 	);
 };
 
@@ -494,7 +500,8 @@ const doAutoFlattenedBNumberGroupRepeatMatchWithAltFirstLast = () => {
 	logResults(
 		numberGroupSuccessStrings,
 		numberGroupFailStrings,
-		numberMatcher
+		numberMatcher,
+		true
 	);
 };
 
@@ -513,14 +520,17 @@ const charEntityFailStrings = [""];
 
 const colonGroupSuccessStrings = [
 	"1a3:4d6",
-	// "12a,1c:1e,45f",
-	// "12a,1c:1e,45f:78g",
-	// "12a,1c:1e,45f:78g,1h",
-	// "12a,1c:1e,45f:78g,1h:1j",
+	"12a,1c:1e,45f",
+	"12a,1c:1e,45f:78g",
+	"12a,1c:1e,45f:78g,1h",
+	"12a,1c:1e,45f:78g,1h:1j",
 ];
 
-const colonGroupFailStrings = [""];
-// const colonGroupFailStrings = ["", "12a,1c:1e,45f:78g,1h:1j:1k"];
+// const colonGroupFailStrings = [""];
+const colonGroupFailStrings = [
+	"",
+	"12a,1c:1e,45f:78g,1h:1j:1k->colon group overmatch",
+];
 
 const deepNames = GroupNameSet.fromNames(
 	"",
@@ -638,7 +648,8 @@ const doDeepNamedGroupRepeatMatcher = () => {
 	logResults(
 		colonGroupSuccessStrings,
 		colonGroupFailStrings,
-		colonGroupMatcher
+		colonGroupMatcher,
+		true
 	);
 };
 
@@ -722,7 +733,8 @@ const doDeepSecretNamedGroupRepeatMatcher = () => {
 	logResults(
 		colonGroupSuccessStrings,
 		colonGroupFailStrings,
-		colonGroupMatcher
+		colonGroupMatcher,
+		true
 	);
 };
 
@@ -791,7 +803,8 @@ const doDeepFlattenedGroupRepeatMatcher = () => {
 	logResults(
 		colonGroupSuccessStrings,
 		colonGroupFailStrings,
-		colonGroupMatcher
+		colonGroupMatcher,
+		true
 	);
 };
 
@@ -800,8 +813,8 @@ const exampleItems: ExamplesMenuItem[] = [
 		func: doBasicOptRepeatMatcherWithOptAltFirst,
 		name: "Basic Opt Repeat Matcher With Opt Alt First",
 		description: [
-			"Match 'B' between 2 and 3 times with 'A' as",
-			"an optional alt first match.",
+			"Match 'B' between 2 and 3 times with 'A'",
+			"as an optional alt-first match.",
 		],
 	},
 	{
@@ -809,87 +822,85 @@ const exampleItems: ExamplesMenuItem[] = [
 		name: "Basic Opt Repeat Matcher With Opt Alt Last",
 		description: [
 			"Match 'B' between 2 and 3 times with 'C' as",
-			"an optional alt last match.",
+			"an optional alt-last match.",
 		],
 	},
 	{
 		func: doBasicFullStringOptRepeatMatcherWithOptAltFirstOptAltLast,
 		name: "Basic Full String Opt Repeat Matcher With Opt Alt First Opt Alt Last",
 		description: [
-			"Match 'B' between 2 and 3 times with 'A' as",
-			"an optional alt first match and 'C' as an optional alt last match.",
+			"Match 'B' between 2 and 3 times with 'A' as an optional",
+			"alt-first match and 'C' as an optional alt-last match.",
+			"Full string match.",
 		],
 	},
 	{
 		func: doNumberGroupRepeatMatchWithAltFirstLast,
-		name: "Number Group Repeat Match With AltFirstLast",
+		name: "Number Group Repeat Match With AltFirst and AltLast",
 		description: [
-			"Do number repeat matcher with alt first and alt last.",
-			"Groups of 3 numbers separated by commas. Both ends can have",
-			"between 1 and 2 numbers. The final end must be between 1 and 3 numbers.",
+			"Do number repeat matcher with alt-first and alt-last.",
+			"Start group has 1 to 2 numbers with comma.",
+			"Content group has exactly 3 numbers with comma.",
+			"End group has 1 to 3 numbers.",
+			"All groups are named.",
 		],
 	},
 	{
-		func: doRecursiveNumberGroupRepeatMatchWithAltFirstLast,
-		name: "Recursive Number Group Repeat Match With AltFirstLast",
+		func: doDeeplyNamedNumberGroupRepeatMatchWithAltFirstLast,
+		name: "Deeply Named Number Group Repeat Match With AltFirstLast",
 		description: [
-			"Do recursive number repeat matcher with alt first and alt last.",
-			"Groups of 3 numbers separated by commas. Both ends can have",
-			"between 1 and 2 numbers. The final end must be between 1 and 3 numbers.",
+			"Comma separated funky numbers.",
+			"All groups are named. Deeper level than previous example.",
 		],
 	},
 	{
 		func: doFlattenedNumberGroupRepeatMatchWithAltFirstLast,
 		name: "Flattened Number Group Repeat Match With AltFirstLast",
 		description: [
-			"Do flattened number repeat matcher with alt first and alt last.",
-			"Groups of 3 numbers separated by commas. Both ends can have",
-			"between 1 and 2 numbers. The final end must be between 1 and 3 numbers.",
+			"Comma separated funky numbers.",
+			"Only root and digits are named.",
 		],
 	},
 	{
 		func: doAutoFlattenedNumberGroupRepeatMatchWithAltFirstLast,
 		name: "Auto Flattened Number Group Repeat Match With AltFirstLast",
 		description: [
-			"Do auto flattened number repeat matcher with alt first and alt last.",
-			"Groups of 3 numbers separated by commas. Both ends can have",
-			"between 1 and 2 numbers. The final end must be between 1 and 3 numbers.",
+			"Comma separated funky numbers.",
+			"Only root and digits are named.",
 		],
 	},
 	{
 		func: doAutoFlattenedBNumberGroupRepeatMatchWithAltFirstLast,
 		name: "Auto Flattened B Number Group Repeat Match With AltFirstLast",
 		description: [
-			"Do auto flattened number repeat matcher with alt first and alt last.",
-			"Groups of 3 numbers separated by commas. Both ends can have",
-			"between 1 and 2 numbers. The final end must be between 1 and 3 numbers.",
+			"Comma separated funky numbers.",
+			"Root is unnamed (but acts like a named group.)",
+			"Digits are named. All other groups are unnamed.",
 		],
 	},
 	{
 		func: doDeepNamedGroupRepeatMatcher,
 		name: "Deep Named Group Repeat Matcher",
 		description: [
-			"Do deep named group repeat matcher.",
-			"Groups of 3 numbers separated by commas. Both ends can have",
-			"between 1 and 2 numbers. The final end must be between 1 and 3 numbers.",
+			"Comma separated funky numbers separated by colons.",
+			"All groups are named.",
 		],
 	},
 	{
 		func: doDeepSecretNamedGroupRepeatMatcher,
 		name: "Deep Secret Named Group Repeat Matcher",
 		description: [
-			"Do deep secret named group repeat matcher.",
-			"Groups of 3 numbers separated by commas. Both ends can have",
-			"between 1 and 2 numbers. The final end must be between 1 and 3 numbers.",
+			"Comma separated funky numbers separated by colons.",
+			"Only root and digits are named.",
+			"But unnamed branches have secret names for debugging.",
 		],
 	},
 	{
 		func: doDeepFlattenedGroupRepeatMatcher,
 		name: "Deep Flattened Group Repeat Matcher",
 		description: [
-			"Do deep flattened group repeat matcher.",
-			"Groups of 3 numbers separated by commas. Both ends can have",
-			"between 1 and 2 numbers. The final end must be between 1 and 3 numbers.",
+			"Comma separated funky numbers separated by colons.",
+			"Only root and digits are named.",
 		],
 	},
 ];

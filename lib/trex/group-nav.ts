@@ -165,8 +165,10 @@ export class GroupMatchNav {
 	toString(): string {
 		const parentName =
 			this.#_parent === null
-				? ":null"
-				: this.#_parent.groupName.toString();
+				? chalk.blueBright(":null")
+				: this.#_parent.groupName.isSecret()
+					? chalk.gray(this.#_parent.groupName.toString())
+					: chalk.cyan(this.#_parent.groupName.toString());
 
 		const groupName = this.groupName.isSecret()
 			? chalk.gray(this.groupName.toString())
@@ -177,7 +179,7 @@ export class GroupMatchNav {
 			`${"<" + groupName + ">"} ` +
 			`'${chalk.green(this.#_wholeMatchNav.captureMatch.value)}' ` +
 			`+[${chalk.cyan(this.#_children.length)}] ` +
-			`<${chalk.gray(parentName)}>`
+			`<${parentName}>`
 		);
 	}
 }

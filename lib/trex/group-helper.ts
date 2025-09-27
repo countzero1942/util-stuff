@@ -45,6 +45,26 @@ export function addResultToParent(
 ): void {
 	// case: unnamed group match
 	if (result.groupName.isEmpty()) {
+		// case: unnamed leaf match: don't add to parent
+		if (result.isLeaf) {
+			return;
+		}
+
+		// case: unnamed branch match: add branch to parent
+		parent.addChild(result);
+		return;
+	}
+
+	// case: named group match: add leaf or branch to parent
+	parent.addChild(result);
+}
+
+export function addResultToParentOld(
+	result: GroupMatchNav,
+	parent: GroupMatchNav
+): void {
+	// case: unnamed group match
+	if (result.groupName.isEmpty()) {
 		// case: unnamed leaf match: don't include in childrenNavs
 		if (result.isLeaf) {
 			return;

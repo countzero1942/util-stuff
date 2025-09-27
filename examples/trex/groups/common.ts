@@ -1,5 +1,5 @@
 import { GroupMatchBase, GroupMatchNav, MutMatchNav } from "@/trex";
-import { log, divs, div, logh, loghn } from "@/utils/log";
+import { log, divs, div, logh, loghn, ddiv } from "@/utils/log";
 import chalk from "chalk";
 
 export const logGroups = (
@@ -57,6 +57,21 @@ export const logGroupsRec = (
 	});
 };
 
+export const hasUnnamedBranches = (group: GroupMatchNav) => {
+	if (group.isNamed) {
+		for (const child of group.children) {
+			if (child.isBranch) {
+				const b = hasUnnamedBranches(child);
+				if (b) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	return true;
+};
+
 export const removeUnnamedBranches = (
 	group: GroupMatchNav,
 	namedAncestor: GroupMatchNav | null
@@ -110,10 +125,17 @@ export const removeUnnamedBranches = (
 export const logResults = (
 	successStrings: string[],
 	failStrings: string[],
-	matcher: GroupMatchBase
+	matcher: GroupMatchBase,
+	showPrunedTree: boolean = false
 ) => {
 	const getNavStringView = (navString: string) => {
 		return chalk.white(`'${chalk.green(navString)}'`);
+	};
+
+	const logUnnamedBranchesView = (group: GroupMatchNav) => {
+		const b = hasUnnamedBranches(group);
+		const bView = b ? chalk.yellow("true") : chalk.green("false");
+		log(chalk.cyan(`Has unnamed branches: ${bView}`));
 	};
 
 	logh("Success cases");
@@ -121,7 +143,8 @@ export const logResults = (
 	for (const navString of successStrings) {
 		const nav = MutMatchNav.fromString(navString);
 		const result = matcher.match(nav, null);
-		div();
+		log();
+		ddiv();
 		if (!result) {
 			log(
 				chalk.red(
@@ -133,10 +156,17 @@ export const logResults = (
 		log(chalk.cyan(`Nav string: ${getNavStringView(navString)}`));
 		logGroupsRec(result);
 		div();
-		log(chalk.cyan(`Nav string: ${getNavStringView(navString)}`));
-		logGroupsRec(removeUnnamedBranches(result, null));
+		logUnnamedBranchesView(result);
+		div();
+		if (showPrunedTree) {
+			log(chalk.cyan(`Nav string: ${getNavStringView(navString)}`));
+			const prunedResult = removeUnnamedBranches(result, null);
+			logGroupsRec(prunedResult);
+			div();
+			logUnnamedBranchesView(prunedResult);
+			div();
+		}
 	}
-	div();
 	logh("Fail cases");
 	for (const pair of failStrings) {
 		const [navString, msg] = pair.split("->");
