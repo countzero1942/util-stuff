@@ -17,10 +17,12 @@ import {
 	GroupMatchOpt,
 	GroupMatchRepeat,
 	AltFirstLastGroupMatchers,
+	logGroupsRec,
 } from "@/trex";
 import { div, divs, logobj } from "@/utils/log";
+import chalk from "chalk";
 import { log } from "console";
-import { logGroups } from "./common";
+import { logNavString } from "./common";
 
 export const doBasicGroupMatch = () => {
 	const wholeMatcher = GroupMatch.fromNamed(
@@ -63,8 +65,13 @@ export const doBasicGroupMatch = () => {
 
 	for (const navString of navStrings) {
 		const nav = MutMatchNav.fromString(navString);
-		const result = numberMatcher.match(nav);
-		logGroups(navString, result);
+		const result = numberMatcher.match(nav, null);
+		logNavString(navString);
+		if (!result) {
+			log(chalk.red(`Failed to match: ${navString}`));
+			continue;
+		}
+		logGroupsRec(result);
 		div();
 	}
 };
@@ -104,8 +111,13 @@ const doGroupOptMatch = () => {
 	];
 	for (const navString of navStrings) {
 		const nav = MutMatchNav.fromString(navString);
-		const result = numberMatcher.match(nav);
-		logGroups(navString, result);
+		const result = numberMatcher.match(nav, null);
+		logNavString(navString);
+		if (!result) {
+			log(chalk.red(`Failed to match: ${navString}`));
+			continue;
+		}
+		logGroupsRec(result);
 		div();
 	}
 };
@@ -185,9 +197,14 @@ const doGroupRepeatMatchWithAltFirstLast = () => {
 
 	for (const navString of navStrings) {
 		const nav = MutMatchNav.fromString(navString);
-		const result = numberMatcher.match(nav);
+		const result = numberMatcher.match(nav, null);
 		div();
-		logGroups(navString, result);
+		logNavString(navString);
+		if (!result) {
+			log(chalk.red(`Failed to match: ${navString}`));
+			continue;
+		}
+		logGroupsRec(result);
 	}
 	div();
 };
@@ -217,8 +234,13 @@ const doBasicSplitter = () => {
 	];
 	for (const navString of navStrings) {
 		const nav = MutMatchNav.fromString(navString);
-		const result = splitter.match(nav);
-		logGroups(navString, result);
+		const result = splitter.match(nav, null);
+		logNavString(navString);
+		if (!result) {
+			log(chalk.red(`Failed to match: ${navString}`));
+			continue;
+		}
+		logGroupsRec(result);
 		div();
 	}
 };
@@ -244,11 +266,14 @@ const doSplitterWithEndMatcher = () => {
 	const navString = "1234.5678 90210  .1234 .1234.5678.";
 	let nav = MutMatchNav.fromString(navString);
 	while (nav.isNavIndexAtSourceEnd === false) {
-		const result = splitter.match(nav);
-		logGroups(navString, result);
+		const result = splitter.match(nav, null);
+		logNavString(navString);
+		if (!result) {
+			log(chalk.red(`Failed to match: ${navString}`));
+			break;
+		}
+		logGroupsRec(result);
 		div();
-
-		if (!result) break;
 
 		nav = result.wholeMatchNav.copyAndMoveNext("OptMoveForward");
 	}

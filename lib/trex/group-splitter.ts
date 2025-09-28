@@ -31,7 +31,10 @@ export class GroupSplitter extends GroupMatchBase {
 		return new GroupSplitter(groupName, splitter, args);
 	}
 
-	public match(nav: MutMatchNav): GroupMatchNav | null {
+	public match(
+		nav: MutMatchNav,
+		parent: GroupMatchNav | null
+	): GroupMatchNav | null {
 		nav.assertNavIsValid();
 		nav.assertNavIsNew();
 		const firstNav = nav.copy();
@@ -43,12 +46,13 @@ export class GroupSplitter extends GroupMatchBase {
 		const addFragment = (result: GroupMatchNav | null) => {
 			const fragmentMatch = GroupMatchNav.fromLeaf(
 				fragmentNav,
-				GroupName.fragment
+				GroupName.fragment,
+				parent
 			);
 			savedNavs.push(fragmentMatch);
 
 			if (result) {
-				if (result.groupName.isNotEmpty()) {
+				if (result.groupName.isNotEmpty) {
 					savedNavs.push(result);
 				}
 				fragmentNav =
@@ -61,7 +65,7 @@ export class GroupSplitter extends GroupMatchBase {
 		while (fragmentNav.isNavIndexAtSourceEnd === false) {
 			const curNav = fragmentNav.copyAndMoveNext("OptMoveForward");
 
-			const splitResult = this.#_splitter.match(curNav.copy());
+			const splitResult = this.#_splitter.match(curNav.copy(), parent);
 			// case: splitter matched
 			if (splitResult) {
 				addFragment(splitResult);
@@ -69,7 +73,7 @@ export class GroupSplitter extends GroupMatchBase {
 			}
 
 			if (endMatcher) {
-				const endResult = endMatcher.match(curNav.copy());
+				const endResult = endMatcher.match(curNav.copy(), parent);
 				// case: end matcher matched
 				if (endResult) {
 					addFragment(endResult);
@@ -88,6 +92,7 @@ export class GroupSplitter extends GroupMatchBase {
 		return GroupMatchNav.fromBranch(
 			MutMatchNav.fromFirstAndLast(firstNav, fragmentNav),
 			this.#_groupName,
+			parent,
 			savedNavs
 		);
 	}

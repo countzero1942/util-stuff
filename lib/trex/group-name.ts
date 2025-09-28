@@ -1,7 +1,7 @@
 export abstract class GroupNamerBase {
-	public abstract copy(): GroupNamerBase;
+	abstract copy(): GroupNamerBase;
 
-	public abstract next(): GroupName;
+	abstract next(): GroupName;
 }
 
 export class GroupName extends GroupNamerBase {
@@ -12,17 +12,14 @@ export class GroupName extends GroupNamerBase {
 		super();
 	}
 
-	public static fromName(name: string): GroupName {
+	static fromName(name: string): GroupName {
 		if (name === "") {
 			return GroupName.empty;
 		}
 		return new GroupName(name, undefined);
 	}
 
-	public static fromNameAndCategory(
-		name: string,
-		category: string
-	): GroupName {
+	static fromNameAndCategory(name: string, category: string): GroupName {
 		if (name === "") {
 			throw new Error("'name' cannot be empty");
 		}
@@ -33,30 +30,27 @@ export class GroupName extends GroupNamerBase {
 	}
 
 	private static _empty: GroupName = new GroupName("", undefined);
-	public static get empty(): GroupName {
+	static get empty(): GroupName {
 		return GroupName._empty;
 	}
 
-	public isSecret(): boolean {
+	get isSecret(): boolean {
 		return this.name.startsWith("@");
 	}
 
-	public isEmpty(): boolean {
+	get isEmpty(): boolean {
 		return this.name === "" || this.name.startsWith("@");
 	}
 
-	public isNotEmpty(): boolean {
+	get isNotEmpty(): boolean {
 		return this.name !== "" && !this.name.startsWith("@");
 	}
 
-	public is(
-		name: string,
-		category: string | undefined = undefined
-	): boolean {
+	is(name: string, category: string | undefined = undefined): boolean {
 		return this.name === name && this.category === category;
 	}
 
-	public isGroupName(groupName: GroupName): boolean {
+	isGroupName(groupName: GroupName): boolean {
 		return (
 			this === groupName ||
 			(this.name === groupName.name &&
@@ -64,29 +58,29 @@ export class GroupName extends GroupNamerBase {
 		);
 	}
 
-	public override copy(): GroupNamerBase {
+	override copy(): GroupNamerBase {
 		// note: GroupName is immutable
 		// so no need to copy
 		return this;
 	}
 
-	public override next(): GroupName {
+	override next(): GroupName {
 		// note: GroupName doesn't change
 		// so next name is always itself
 		return this;
 	}
 
 	private static _fragment = GroupName.fromName(":fragment");
-	public static get fragment(): GroupName {
+	static get fragment(): GroupName {
 		return GroupName._fragment;
 	}
 
 	private static _end = GroupName.fromName(":end");
-	public static get end(): GroupName {
+	static get end(): GroupName {
 		return GroupName._end;
 	}
 
-	public toString(): string {
+	toString(): string {
 		return `${this.name}${this.category ? ":" + this.category : ""}`;
 	}
 }
@@ -128,18 +122,18 @@ export class GroupNamer extends GroupNamerBase {
 		this._index = 0;
 	}
 
-	public static from(
+	static from(
 		mode: GroupNamerMode,
 		names: readonly GroupName[]
 	): GroupNamer {
 		return new GroupNamer(mode, names);
 	}
 
-	public copy(): GroupNamerBase {
+	copy(): GroupNamerBase {
 		return GroupNamer.from(this.#_mode, this.#_names);
 	}
 
-	public next(): GroupName {
+	next(): GroupName {
 		const nextName = this.#_names[this._index];
 
 		switch (this.#_mode) {

@@ -14,6 +14,14 @@ type LogResultsOptions = {
 	autoPrune: boolean;
 };
 
+const getNavStringView = (navString: string) => {
+	return chalk.white(`'${chalk.green(navString)}'`);
+};
+
+export const logNavString = (navString: string) => {
+	log(chalk.cyan(`Nav string: ${getNavStringView(navString)}`));
+};
+
 export const logResults = (
 	successStrings: string[],
 	failStrings: string[],
@@ -23,10 +31,6 @@ export const logResults = (
 		autoPrune: false,
 	}
 ) => {
-	const getNavStringView = (navString: string) => {
-		return chalk.white(`'${chalk.green(navString)}'`);
-	};
-
 	const logHasUnnamedBranchesView = (group: GroupMatchNav) => {
 		const b = hasUnnamedBranches(group);
 		const bView = b ? chalk.yellow("true") : chalk.green("false");
@@ -48,14 +52,14 @@ export const logResults = (
 			);
 			continue;
 		}
-		log(chalk.cyan(`Nav string: ${getNavStringView(navString)}`));
+		logNavString(navString);
 		const modResult = options.autoPrune ? result.prune() : result;
 		logGroupsRec(modResult);
 		div();
 		logHasUnnamedBranchesView(modResult);
 		div();
 		if (options.showPrunedTree) {
-			log(chalk.cyan(`Nav string: ${getNavStringView(navString)}`));
+			logNavString(navString);
 			const prunedResult = result.prune();
 			logGroupsRec(prunedResult);
 			div();

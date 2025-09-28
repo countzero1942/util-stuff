@@ -25,7 +25,7 @@ export function addResultToParent(
 	parent: GroupMatchNav
 ): void {
 	// case: unnamed group match
-	if (result.groupName.isEmpty()) {
+	if (result.groupName.isEmpty) {
 		// case: unnamed leaf match: don't add to parent
 		if (result.isLeaf) {
 			return;

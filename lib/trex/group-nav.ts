@@ -109,7 +109,7 @@ export class GroupMatchNav {
 	getFirstNamedAncestor(): GroupMatchNav {
 		let current: GroupMatchNav = this;
 		while (true) {
-			if (current.groupName.isNotEmpty()) {
+			if (current.groupName.isNotEmpty) {
 				return current;
 			}
 			if (current.#_parent === null) {
@@ -193,7 +193,7 @@ export class GroupMatchNav {
 		// Note: the root group nav may or may not be named
 		// but it is always included in the navigation tree
 		// so even if unnamed it is considered to be named
-		return this.#_parent === null || this.groupName.isNotEmpty();
+		return this.#_parent === null || this.groupName.isNotEmpty;
 	}
 
 	get wholeMatchNav(): MutMatchNav {
@@ -217,11 +217,11 @@ export class GroupMatchNav {
 		const parentName =
 			this.#_parent === null
 				? chalk.blueBright(":null")
-				: this.#_parent.groupName.isSecret()
+				: this.#_parent.groupName.isSecret
 					? chalk.gray(this.#_parent.groupName.toString())
 					: chalk.cyan(this.#_parent.groupName.toString());
 
-		const groupName = this.groupName.isSecret()
+		const groupName = this.groupName.isSecret
 			? chalk.gray(this.groupName.toString())
 			: chalk.blueBright(this.groupName.toString());
 
