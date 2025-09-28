@@ -14,10 +14,11 @@ import {
 	MatchRepeat,
 	MutMatchNav,
 	NumberOfMatches,
+	removeUnnamedBranches,
 } from "@/trex";
 import { ExamplesMenuItem, runExamplesMenu } from "@/utils/examples-menu";
 import { div, log } from "@/utils/log";
-import { logGroups, logGroupsRec, logResults } from "./common";
+import { logResults } from "./common";
 import chalk from "chalk";
 
 const abcNames = GroupNameSet.fromNames(
@@ -258,7 +259,10 @@ const doNumberGroupRepeatMatchWithAltFirstLast = () => {
 		numberGroupSuccessStrings,
 		numberGroupFailStrings,
 		numberMatcher,
-		false
+		{
+			showPrunedTree: false,
+			autoPrune: false,
+		}
 	);
 };
 
@@ -325,7 +329,10 @@ const doDeeplyNamedNumberGroupRepeatMatchWithAltFirstLast = () => {
 		numberGroupSuccessStrings,
 		numberGroupFailStrings,
 		numberMatcher,
-		false
+		{
+			showPrunedTree: false,
+			autoPrune: false,
+		}
 	);
 };
 
@@ -383,7 +390,10 @@ const doFlattenedNumberGroupRepeatMatchWithAltFirstLast = () => {
 		numberGroupSuccessStrings,
 		numberGroupFailStrings,
 		numberMatcher,
-		true
+		{
+			showPrunedTree: true,
+			autoPrune: false,
+		}
 	);
 };
 
@@ -442,7 +452,10 @@ const doAutoFlattenedNumberGroupRepeatMatchWithAltFirstLast = () => {
 		numberGroupSuccessStrings,
 		numberGroupFailStrings,
 		numberMatcher,
-		true
+		{
+			showPrunedTree: true,
+			autoPrune: false,
+		}
 	);
 };
 
@@ -501,7 +514,10 @@ const doAutoFlattenedBNumberGroupRepeatMatchWithAltFirstLast = () => {
 		numberGroupSuccessStrings,
 		numberGroupFailStrings,
 		numberMatcher,
-		true
+		{
+			showPrunedTree: true,
+			autoPrune: false,
+		}
 	);
 };
 
@@ -649,7 +665,10 @@ const doDeepNamedGroupRepeatMatcher = () => {
 		colonGroupSuccessStrings,
 		colonGroupFailStrings,
 		colonGroupMatcher,
-		true
+		{
+			showPrunedTree: true,
+			autoPrune: false,
+		}
 	);
 };
 
@@ -734,11 +753,14 @@ const doDeepSecretNamedGroupRepeatMatcher = () => {
 		colonGroupSuccessStrings,
 		colonGroupFailStrings,
 		colonGroupMatcher,
-		true
+		{
+			showPrunedTree: true,
+			autoPrune: false,
+		}
 	);
 };
 
-const doDeepFlattenedGroupRepeatMatcher = () => {
+const getDeepFlattenedGroupRepeatMatcher = () => {
 	const digitOrLetterMatcher = GroupMatchAny.fromMatchers(
 		GroupMatch.fromNamed(
 			deepNames.getName("digit"),
@@ -799,13 +821,78 @@ const doDeepFlattenedGroupRepeatMatcher = () => {
 		GroupMatchAll.fromUnnamed(charEntityMatcher, colonSeparatorMatcher),
 		NumberOfMatches.between(1, 4)
 	);
+	return colonGroupMatcher;
+};
+
+const colonGroupMatcher = getDeepFlattenedGroupRepeatMatcher();
+
+const doDeepFlattenedGroupRepeatMatcher = () => {
+	logResults(
+		colonGroupSuccessStrings,
+		colonGroupFailStrings,
+		colonGroupMatcher,
+		{
+			showPrunedTree: true,
+			autoPrune: false,
+		}
+	);
+};
+
+const doAutoPruneDeepFlattenedGroupRepeatMatcher = () => {
+	logResults(
+		colonGroupSuccessStrings,
+		colonGroupFailStrings,
+		colonGroupMatcher,
+		{
+			showPrunedTree: false,
+			autoPrune: true,
+		}
+	);
+};
+
+const doTimedDeepFlattenedGroupRepeatMatcher = () => {
+	const navs = colonGroupSuccessStrings.map(s =>
+		MutMatchNav.fromString(s)
+	);
 
 	logResults(
 		colonGroupSuccessStrings,
 		colonGroupFailStrings,
 		colonGroupMatcher,
-		true
+		{
+			showPrunedTree: true,
+			autoPrune: false,
+		}
 	);
+
+	let matchCount = 0;
+	const repeatCount = 10000;
+
+	const start = performance.now();
+	for (let i = 0; i < repeatCount; i++) {
+		for (const nav of navs) {
+			const result = colonGroupMatcher.match(nav.copy(), null);
+			if (!result) {
+				log(
+					chalk.red(
+						`>>> FAILED TO MATCH SUCCESS CASE: ${nav.toString()} <<< `
+					)
+				);
+				break;
+			}
+
+			const prunedResult = removeUnnamedBranches(result, null);
+			// const b = hasUnnamedBranches(prunedResult);
+			// if (b) {
+			// 	log(chalk.red(`>>> FAILED TO REMOVE UNNAMED BRANCHES <<< `));
+			// 	break;
+			// }
+			matchCount++;
+		}
+	}
+	log(chalk.green(`Matched ${matchCount} success cases.`));
+	const end = performance.now();
+	log(chalk.green(`Took ${(end - start).toFixed(2)} ms.`));
 };
 
 const exampleItems: ExamplesMenuItem[] = [
@@ -898,6 +985,23 @@ const exampleItems: ExamplesMenuItem[] = [
 	{
 		func: doDeepFlattenedGroupRepeatMatcher,
 		name: "Deep Flattened Group Repeat Matcher",
+		description: [
+			"Comma separated funky numbers separated by colons.",
+			"Only root and digits are named.",
+		],
+	},
+	{
+		func: doAutoPruneDeepFlattenedGroupRepeatMatcher,
+		name: "Auto Prune Deep Flattened Group Repeat Matcher",
+		description: [
+			"Comma separated funky numbers separated by colons.",
+			"Only root and digits are named.",
+			"Unnamed branches are automatically pruned.",
+		],
+	},
+	{
+		func: doTimedDeepFlattenedGroupRepeatMatcher,
+		name: "Timed Deep Flattened Group Repeat Matcher",
 		description: [
 			"Comma separated funky numbers separated by colons.",
 			"Only root and digits are named.",

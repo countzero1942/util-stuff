@@ -16,23 +16,17 @@ export const getTabIndentString = memoizee(
 	{ maxAge: 5000 }
 );
 
-export const isCodePointLoneSurrogate = (
-	codePoint: number
-) => {
+export const isCodePointLoneSurrogate = (codePoint: number) => {
 	return codePoint >= 0xd800 && codePoint <= 0xdfff;
 };
 
-export const isCodePointValid = (
-	codePoint: number
-): boolean =>
+export const isCodePointValid = (codePoint: number): boolean =>
 	Number.isInteger(codePoint) &&
 	codePoint >= 0 &&
 	codePoint <= 0x10ffff &&
 	!(codePoint >= 0xd800 && codePoint <= 0xdfff);
 
-export const isCodePointWhiteSpace = (
-	codePoint: number
-) => {
+export const isCodePointWhiteSpace = (codePoint: number) => {
 	if (codePoint < 0x1680) {
 		if (codePoint <= 0x20) {
 			switch (codePoint) {
@@ -69,9 +63,7 @@ export const isCodePointWhiteSpace = (
 	}
 };
 
-export const getCodePointCharLength = (
-	codePoint: number
-) => {
+export const getCodePointCharLength = (codePoint: number) => {
 	return codePoint >= 0x10000 ? 2 : 1;
 };
 
@@ -82,10 +74,7 @@ export const getCodePointCharLength = (
  * @param tabSize Number of spaces per tab
  * @returns Converted string
  */
-export const spacesToTabs = (
-	text: string,
-	tabSize: number
-): string => {
+export const spacesToTabs = (text: string, tabSize: number): string => {
 	const pattern = `^( {${tabSize}})+`;
 	const rx = new RegExp(pattern, "gm");
 	const tabbedStr = text.replace(rx, match =>
@@ -183,9 +172,7 @@ export const formatTabsToSymbols = (value: string) => {
  * @param lines The array of strings to clean
  * @returns The array of strings with joined lines
  */
-export const joinConnectedLinesWithoutDash = (
-	lines: string[]
-) => {
+export const joinConnectedLinesWithoutDash = (lines: string[]) => {
 	const newLines: string[] = [];
 
 	let currentLine: string[] = [];
@@ -244,9 +231,7 @@ export const joinConnectedLinesWithoutDash = (
  * @returns The cleaned string
  */
 export const cleanLineOfMultipleSpaces = (line: string) => {
-	const doMultipleSpacesExistInLine = (
-		text: string
-	): boolean => {
+	const doMultipleSpacesExistInLine = (text: string): boolean => {
 		return /\s{2,}/g.test(text);
 	};
 
@@ -271,10 +256,7 @@ export const wordWrapLinesToMaxChars = (
 	lines: string[],
 	maxChars: number
 ) => {
-	const wrapLine = (
-		line: string,
-		wrappedLines: string[]
-	) => {
+	const wrapLine = (line: string, wrappedLines: string[]) => {
 		const words = line.split(" ");
 		let currentLine: {
 			words: string[];
@@ -307,10 +289,7 @@ export const wordWrapLinesToMaxChars = (
 		resetCurrentLine();
 
 		for (const word of words) {
-			if (
-				currentLine.charLength + word.length >
-				maxChars
-			) {
+			if (currentLine.charLength + word.length > maxChars) {
 				wrappedLines.push(joinCurrentLine());
 				resetCurrentLine();
 			}
@@ -322,9 +301,7 @@ export const wordWrapLinesToMaxChars = (
 	const wrappedLines: string[] = [];
 	let i = 0;
 	while (i < lines.length) {
-		const line = cleanLineOfMultipleSpaces(
-			lines[i] as string
-		);
+		const line = cleanLineOfMultipleSpaces(lines[i] as string);
 		if (line.length <= maxChars) {
 			wrappedLines.push(line);
 		} else {
@@ -346,9 +323,7 @@ export const wordWrapLinesToMaxChars = (
  * @returns The array of strings with empty lines removed
  * from the start and end
  */
-export const removeEmptyLinesFromStartAndEnd = (
-	lines: string[]
-) => {
+export const removeEmptyLinesFromStartAndEnd = (lines: string[]) => {
 	let start = 0;
 	while (start < lines.length && lines[start] === "") {
 		start++;
@@ -381,8 +356,7 @@ export const cleanJSDocDescription = (
 ) => {
 	const cleanLineOfCommentTags = (line: string) => {
 		switch (true) {
-			case eliminateParams &&
-				line.startsWith("* @param"):
+			case eliminateParams && line.startsWith("* @param"):
 				return "";
 			case line.startsWith("/**"):
 				return line.slice(3).trim();
@@ -444,25 +418,16 @@ export const getMinTabCharsCount = (
 	let tabCharMismatchCount = 0;
 	for (const line of lines) {
 		if (line === "") continue;
-		const tabCharsCount = getRepeatingMatchesCount(
-			line,
-			tabString
-		);
+		const tabCharsCount = getRepeatingMatchesCount(line, tabString);
 		if (tabCharsCount === 0) {
 			if (isTabIndented && line.startsWith(" ")) {
 				tabCharMismatchCount++;
-			} else if (
-				isSpaceIndented &&
-				line.startsWith("\t")
-			) {
+			} else if (isSpaceIndented && line.startsWith("\t")) {
 				tabCharMismatchCount++;
 			}
 		}
 
-		minTabCharsCount = Math.min(
-			minTabCharsCount,
-			tabCharsCount
-		);
+		minTabCharsCount = Math.min(minTabCharsCount, tabCharsCount);
 	}
 	return {
 		minTabCharsCount:
@@ -513,8 +478,10 @@ export const cleanMultiLineArray = (
 
 	lines = removeEmptyLinesFromStartAndEnd(lines);
 
-	const { minTabCharsCount, tabCharMismatchCount } =
-		getMinTabCharsCount(lines, tabString);
+	const { minTabCharsCount, tabCharMismatchCount } = getMinTabCharsCount(
+		lines,
+		tabString
+	);
 
 	if (tabCharMismatchCount > 0) {
 		return [
@@ -524,22 +491,16 @@ export const cleanMultiLineArray = (
 
 	lines = lines.map(line => {
 		if (line === "") return "";
-		const tabCharsCount = getRepeatingMatchesCount(
-			line,
-			tabString
-		);
+		const tabCharsCount = getRepeatingMatchesCount(line, tabString);
 
 		if (tabCharsCount >= minTabCharsCount) {
-			return line
-				.slice(minTabCharsCount * tabString.length)
-				.trimEnd();
+			return line.slice(minTabCharsCount * tabString.length).trimEnd();
 		}
 		return line.trimEnd();
 	});
 
 	if (extraIndents > 0) {
-		const extraIndentString =
-			tabString.repeat(extraIndents);
+		const extraIndentString = tabString.repeat(extraIndents);
 		lines = lines.map(line => {
 			return `${extraIndentString}${line}`;
 		});
@@ -566,9 +527,7 @@ export const cleanMultiLineString = (
 	multiLineString: string,
 	options?: CleanMultiLineOptions
 ) => {
-	let lines = multiLineString
-		.split("\n")
-		.map(line => line.trimEnd());
+	let lines = multiLineString.split("\n").map(line => line.trimEnd());
 
 	lines = cleanMultiLineArray(lines, options) as string[];
 
@@ -593,11 +552,35 @@ export const cleanMultiLineStringToArray = (
 	multiLineString: string,
 	options?: CleanMultiLineOptions
 ): readonly string[] => {
-	let lines = multiLineString
-		.split("\n")
-		.map(line => line.trimEnd());
+	let lines = multiLineString.split("\n").map(line => line.trimEnd());
 
 	lines = cleanMultiLineArray(lines, options) as string[];
 
 	return lines as readonly string[];
 };
+
+export class TabCacher {
+	#_tab: string;
+	#_tabCache: Map<number, string>;
+	private constructor(tab: string = " ┊ ") {
+		this.#_tab = tab;
+		this.#_tabCache = new Map();
+	}
+
+	getTab(indent: number) {
+		let tab = this.#_tabCache.get(indent);
+		if (!tab) {
+			tab = this.#_tab.repeat(indent);
+			this.#_tabCache.set(indent, tab);
+		}
+		return tab;
+	}
+
+	static get default() {
+		return new TabCacher();
+	}
+
+	static fromTab(tab: string) {
+		return new TabCacher(tab);
+	}
+}

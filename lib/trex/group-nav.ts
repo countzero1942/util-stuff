@@ -3,6 +3,7 @@ import { GroupName } from "./group-name";
 import chalk from "chalk";
 import { parentPort } from "worker_threads";
 import { GroupMatchBase } from "./group-match";
+import { removeUnnamedBranches } from "./group-helper";
 
 /**
  * A group navigation node that contains a contiguous match
@@ -39,10 +40,10 @@ export class GroupMatchNav {
 		children: GroupMatchNav[],
 		isConstructed: boolean
 	) {
-		this.#_children = children;
-		this.#_isConstructed = isConstructed;
 		this.#_wholeMatchNav = wholeMatchNav;
 		this.#_parent = parent;
+		this.#_children = children;
+		this.#_isConstructed = isConstructed;
 	}
 
 	static fromLeaf(
@@ -116,6 +117,56 @@ export class GroupMatchNav {
 			}
 			current = current.#_parent;
 		}
+	}
+
+	prune(): GroupMatchNav {
+		return removeUnnamedBranches(this, null);
+	}
+
+	forEach(
+		fn: (group: GroupMatchNav, index: number, indent: number) => void
+	) {
+		const enumerateGroupsRec = (
+			group: GroupMatchNav,
+			groupIndex: number,
+			indent: number
+		) => {
+			fn(group, groupIndex, indent);
+			group.children.forEach((child, childIndex) => {
+				enumerateGroupsRec(child, childIndex, indent + 1);
+			});
+		};
+
+		enumerateGroupsRec(this, 0, 0);
+	}
+
+	private static *genRec(args: {
+		group: GroupMatchNav;
+		index: number;
+		indent: number;
+	}): Generator<{ group: GroupMatchNav; index: number; indent: number }> {
+		yield args;
+		let index = 0;
+		for (const child of args.group.children) {
+			yield* GroupMatchNav.genRec({
+				group: child,
+				index,
+				indent: args.indent + 1,
+			});
+			index++;
+		}
+	}
+
+	*[Symbol.iterator](): Generator<{
+		group: GroupMatchNav;
+		index: number;
+		indent: number;
+	}> {
+		yield* GroupMatchNav.genRec({
+			group: this,
+			index: 0,
+			indent: 0,
+		});
 	}
 
 	get isLeaf(): boolean {
