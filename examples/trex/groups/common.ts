@@ -57,6 +57,15 @@ export const logResults = (
 		logGroupsRec(modResult);
 		div();
 		logHasUnnamedBranchesView(modResult);
+		if (options.autoPrune) {
+			log(
+				chalk.cyan(
+					`Auto-prune Result: was tree rebuilt?: ${chalk.green(
+						modResult !== result
+					)}`
+				)
+			);
+		}
 		div();
 		if (options.showPrunedTree) {
 			logNavString(navString);
@@ -64,6 +73,13 @@ export const logResults = (
 			logGroupsRec(prunedResult);
 			div();
 			logHasUnnamedBranchesView(prunedResult);
+			log(
+				chalk.cyan(
+					`Prune Result: was tree rebuilt?: ${chalk.green(
+						prunedResult !== result
+					)}`
+				)
+			);
 			div();
 		}
 	}

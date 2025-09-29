@@ -205,7 +205,7 @@ const numberGroupFailStrings = [
 	"123,1234->sub group overmatch",
 ];
 
-const doNumberGroupRepeatMatchWithAltFirstLast = () => {
+const getNumberGroupRepeatMatcher = () => {
 	const groupSeparatorMatcher = MatchCodePoint.fromString(",");
 
 	const startGroupMatcher = GroupMatchOpt.from(
@@ -254,7 +254,66 @@ const doNumberGroupRepeatMatchWithAltFirstLast = () => {
 			endGroupMatcher
 		)
 	);
+	return numberMatcher;
+};
 
+const numberMatcher = getNumberGroupRepeatMatcher();
+
+const getNumberDigitGroupRepeatMatcher = () => {
+	const groupSeparatorMatcher = GroupMatch.fromUnnamed(
+		MatchCodePoint.fromString(",")
+	);
+
+	const startGroupMatcher = GroupMatchOpt.from(
+		GroupMatchAll.fromUnnamed(
+			GroupMatchRepeat.fromNamed(
+				numberNames.getName("digit-group"),
+				GroupMatch.fromUnnamed(
+					MatchCodePointCategories.fromString("Nd")
+				),
+				NumberOfMatches.between(1, 2)
+			),
+			groupSeparatorMatcher
+		)
+	);
+
+	const contentGroupMatcher = GroupMatchOpt.from(
+		GroupMatchAll.fromUnnamed(
+			GroupMatchRepeat.fromNamed(
+				numberNames.getName("digit-group"),
+				GroupMatch.fromUnnamed(
+					MatchCodePointCategories.fromString("Nd")
+				),
+				NumberOfMatches.exactly(3)
+			),
+			groupSeparatorMatcher
+		)
+	);
+
+	const endGroupMatcher = GroupMatchAll.fromUnnamed(
+		GroupMatchRepeat.fromNamed(
+			numberNames.getName("digit-group"),
+			GroupMatch.fromUnnamed(MatchCodePointCategories.fromString("Nd")),
+			NumberOfMatches.between(1, 3)
+		),
+		GroupMatch.fromUnnamed(MatchEndSlice.default)
+	);
+
+	const numberMatcher = GroupMatchRepeat.fromNamed(
+		numberNames.getName("number"),
+		contentGroupMatcher,
+		NumberOfMatches.between(1, 4),
+		AltFirstLastGroupMatchers.fromBoth(
+			startGroupMatcher,
+			endGroupMatcher
+		)
+	);
+	return numberMatcher;
+};
+
+const numberDigitGroupMatcher = getNumberDigitGroupRepeatMatcher();
+
+const doNumberGroupRepeatMatchWithAltFirstLast = () => {
 	logResults(
 		numberGroupSuccessStrings,
 		numberGroupFailStrings,
@@ -667,7 +726,7 @@ const doDeepNamedGroupRepeatMatcher = () => {
 		colonGroupMatcher,
 		{
 			showPrunedTree: true,
-			autoPrune: false,
+			autoPrune: true,
 		}
 	);
 };
@@ -850,6 +909,119 @@ const doAutoPruneDeepFlattenedGroupRepeatMatcher = () => {
 	);
 };
 
+const logTime = (matchCount: number, time: number) => {
+	const timePerMatch = (time / matchCount) * 1000;
+	log(chalk.green(`Matched ${chalk.cyan(matchCount)} success cases.`));
+	log(chalk.green(`Took ${chalk.cyan(time.toFixed(2))} ms.`));
+	log(
+		chalk.green(
+			`Time per match: ${chalk.cyan(timePerMatch.toFixed(2))} µs.`
+		)
+	);
+};
+
+const timeColonNumbersUnprunedTree = (
+	navs: MutMatchNav[],
+	repeatCount: number
+) => {
+	let matchCount = 0;
+	const start = performance.now();
+	for (let i = 0; i < repeatCount; i++) {
+		for (const nav of navs) {
+			const result = colonGroupMatcher.match(nav.copy(), null);
+			if (!result) {
+				log(
+					chalk.red(
+						`>>> FAILED TO MATCH SUCCESS CASE: ${nav.toString()} <<< `
+					)
+				);
+				break;
+			}
+
+			matchCount++;
+		}
+	}
+	const end = performance.now();
+	logTime(matchCount, end - start);
+};
+
+const timeColonNumbersPrunedTree = (
+	navs: MutMatchNav[],
+	repeatCount: number
+) => {
+	let matchCount = 0;
+	const start = performance.now();
+	for (let i = 0; i < repeatCount; i++) {
+		for (const nav of navs) {
+			const result = colonGroupMatcher.match(nav.copy(), null);
+			if (!result) {
+				log(
+					chalk.red(
+						`>>> FAILED TO MATCH SUCCESS CASE: ${nav.toString()} <<< `
+					)
+				);
+				break;
+			}
+
+			const prunedResult = result.prune();
+			if (prunedResult.hasUnnamedBranches) {
+				log(chalk.red(`>>> FAILED TO REMOVE UNNAMED BRANCHES <<< `));
+				break;
+			}
+			matchCount++;
+		}
+	}
+	const end = performance.now();
+	logTime(matchCount, end - start);
+};
+
+const timeNumberTree = (navs: MutMatchNav[], repeatCount: number) => {
+	let matchCount = 0;
+	const start = performance.now();
+	for (let i = 0; i < repeatCount; i++) {
+		for (const nav of navs) {
+			const result = numberMatcher.match(nav.copy(), null);
+			if (!result) {
+				log(
+					chalk.red(
+						`>>> FAILED TO MATCH SUCCESS CASE: ${nav.toString()} <<< `
+					)
+				);
+				break;
+			}
+
+			matchCount++;
+		}
+	}
+	const end = performance.now();
+	logTime(matchCount, end - start);
+};
+
+const timeDigitGroupNumberTree = (
+	navs: MutMatchNav[],
+	repeatCount: number
+) => {
+	let matchCount = 0;
+	const start = performance.now();
+	for (let i = 0; i < repeatCount; i++) {
+		for (const nav of navs) {
+			const result = numberDigitGroupMatcher.match(nav.copy(), null);
+			if (!result) {
+				log(
+					chalk.red(
+						`>>> FAILED TO MATCH SUCCESS CASE: ${nav.toString()} <<< `
+					)
+				);
+				break;
+			}
+
+			matchCount++;
+		}
+	}
+	const end = performance.now();
+	logTime(matchCount, end - start);
+};
+
 const doTimedDeepFlattenedGroupRepeatMatcher = () => {
 	const navs = colonGroupSuccessStrings.map(s =>
 		MutMatchNav.fromString(s)
@@ -865,34 +1037,74 @@ const doTimedDeepFlattenedGroupRepeatMatcher = () => {
 		}
 	);
 
-	let matchCount = 0;
 	const repeatCount = 10000;
 
-	const start = performance.now();
-	for (let i = 0; i < repeatCount; i++) {
-		for (const nav of navs) {
-			const result = colonGroupMatcher.match(nav.copy(), null);
-			if (!result) {
-				log(
-					chalk.red(
-						`>>> FAILED TO MATCH SUCCESS CASE: ${nav.toString()} <<< `
-					)
-				);
-				break;
-			}
+	div();
+	log(chalk.yellow("Timing unpruned colon-number tree operations..."));
+	timeColonNumbersUnprunedTree(navs, repeatCount);
+	div();
+	log(chalk.yellow("Timing pruned colon-number tree operations..."));
+	timeColonNumbersPrunedTree(navs, repeatCount);
+};
 
-			const prunedResult = removeUnnamedBranches(result, null);
-			// const b = hasUnnamedBranches(prunedResult);
-			// if (b) {
-			// 	log(chalk.red(`>>> FAILED TO REMOVE UNNAMED BRANCHES <<< `));
-			// 	break;
-			// }
-			matchCount++;
+const doTimedNumberGroupRepeatMatcher = () => {
+	const numberNavs = numberGroupSuccessStrings.map(s =>
+		MutMatchNav.fromString(s)
+	);
+
+	const colonNumberNavs = colonGroupSuccessStrings.map(s =>
+		MutMatchNav.fromString(s)
+	);
+
+	logResults(
+		numberGroupSuccessStrings,
+		numberGroupFailStrings,
+		numberMatcher,
+		{
+			showPrunedTree: false,
+			autoPrune: false,
 		}
-	}
-	log(chalk.green(`Matched ${matchCount} success cases.`));
-	const end = performance.now();
-	log(chalk.green(`Took ${(end - start).toFixed(2)} ms.`));
+	);
+
+	const repeatCount = 10000;
+
+	div();
+	log(chalk.yellow("Timing simple number tree operations..."));
+	timeNumberTree(numberNavs, repeatCount);
+	div();
+	log(chalk.yellow("Timing pruned colon-number tree operations..."));
+	timeColonNumbersPrunedTree(colonNumberNavs, repeatCount);
+};
+
+const doTimedDigitGroupNumberGroupRepeatMatcher = () => {
+	const numberNavs = numberGroupSuccessStrings.map(s =>
+		MutMatchNav.fromString(s)
+	);
+	const colonNumberNavs = colonGroupSuccessStrings.map(s =>
+		MutMatchNav.fromString(s)
+	);
+
+	logResults(
+		numberGroupSuccessStrings,
+		numberGroupFailStrings,
+		numberDigitGroupMatcher,
+		{
+			showPrunedTree: false,
+			autoPrune: true,
+		}
+	);
+
+	const repeatCount = 10000;
+
+	div();
+	log(chalk.yellow("Timing simple number tree operations..."));
+	timeNumberTree(numberNavs, repeatCount);
+	div();
+	log(chalk.yellow("Timing digit-group number tree operations..."));
+	timeDigitGroupNumberTree(numberNavs, repeatCount);
+	div();
+	log(chalk.yellow("Timing pruned colon-number tree operations..."));
+	timeColonNumbersPrunedTree(colonNumberNavs, repeatCount);
 };
 
 const exampleItems: ExamplesMenuItem[] = [
@@ -1002,6 +1214,22 @@ const exampleItems: ExamplesMenuItem[] = [
 	{
 		func: doTimedDeepFlattenedGroupRepeatMatcher,
 		name: "Timed Deep Flattened Group Repeat Matcher",
+		description: [
+			"Comma separated funky numbers separated by colons.",
+			"Only root and digits are named.",
+		],
+	},
+	{
+		func: doTimedNumberGroupRepeatMatcher,
+		name: "Timed Number Group Repeat Matcher",
+		description: [
+			"Comma separated funky numbers separated by colons.",
+			"Only root and digits are named.",
+		],
+	},
+	{
+		func: doTimedDigitGroupNumberGroupRepeatMatcher,
+		name: "Timed Digit Group Number Group Repeat Matcher",
 		description: [
 			"Comma separated funky numbers separated by colons.",
 			"Only root and digits are named.",

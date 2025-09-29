@@ -3,7 +3,7 @@ import { GroupName } from "./group-name";
 import chalk from "chalk";
 import { parentPort } from "worker_threads";
 import { GroupMatchBase } from "./group-match";
-import { removeUnnamedBranches } from "./group-helper";
+import { hasUnnamedBranches, removeUnnamedBranches } from "./group-helper";
 
 /**
  * A group navigation node that contains a contiguous match
@@ -119,8 +119,14 @@ export class GroupMatchNav {
 		}
 	}
 
+	get hasUnnamedBranches(): boolean {
+		return hasUnnamedBranches(this);
+	}
+
 	prune(): GroupMatchNav {
-		return removeUnnamedBranches(this, null);
+		return this.hasUnnamedBranches
+			? removeUnnamedBranches(this, null)
+			: this;
 	}
 
 	forEach(
