@@ -56,7 +56,8 @@ import { testAreEqualAndSafeAddAcrossExponents } from "@/my-tests/math/areEqual-
 import { runRepeatMatcherExamples } from "@/examples/trex/matchers/repeat-matchers";
 import { doStepNavTest } from "@/examples/utils/operations-stuff";
 import chalk from "chalk";
-import { runGroupRepeatMatcherExamples } from "@/examples/trex/groups/group-repeat-matchers";
+import { runGroupRepeatMatcherExamples } from "@/examples/trex/groups/group-repeat-egs";
+import { runGroupSplitterExamples } from "@/examples/trex/groups/group-splitter-egs";
 
 // logGeneratePassword();
 
@@ -69,4 +70,5 @@ import { runGroupRepeatMatcherExamples } from "@/examples/trex/groups/group-repe
 
 // await runRepeatMatcherExamples();
 // await doGroupBasicsExamplesMenu();
-await runGroupRepeatMatcherExamples();
+// await runGroupRepeatMatcherExamples();
+await runGroupSplitterExamples();

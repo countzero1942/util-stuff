@@ -2,6 +2,7 @@ import { GroupMatchBase } from "./group-match";
 import { GroupMatchNav } from "./group-nav";
 import { GroupName } from "./group-name";
 import { MutMatchNav } from "./nav";
+import { addResultToParent } from "./group-helper";
 
 export type GroupSplitterArgs = {
 	endMatcher?: GroupMatchBase;
@@ -40,20 +41,26 @@ export class GroupSplitter extends GroupMatchBase {
 		const firstNav = nav.copy();
 		let fragmentNav = nav.copy();
 		let isLastFragmentAdded = false;
-		const savedNavs: GroupMatchNav[] = [];
+		// const savedNavs: GroupMatchNav[] = [];
+		const parentNav = GroupMatchNav.fromConstructableBranch(
+			this.#_groupName,
+			parent
+		);
 		const endMatcher = this.#_args?.endMatcher;
 
 		const addFragment = (result: GroupMatchNav | null) => {
 			const fragmentMatch = GroupMatchNav.fromLeaf(
 				fragmentNav,
 				GroupName.fragment,
-				parent
+				parentNav
 			);
-			savedNavs.push(fragmentMatch);
+			// savedNavs.push(fragmentMatch);
+			addResultToParent(fragmentMatch, parentNav);
 
 			if (result) {
 				if (result.groupName.isNotEmpty) {
-					savedNavs.push(result);
+					// savedNavs.push(result);
+					addResultToParent(result, parentNav);
 				}
 				fragmentNav =
 					result.wholeMatchNav.copyAndMoveNext("OptMoveForward");
@@ -89,11 +96,13 @@ export class GroupSplitter extends GroupMatchBase {
 			addFragment(null);
 		}
 
-		return GroupMatchNav.fromBranch(
-			MutMatchNav.fromFirstAndLast(firstNav, fragmentNav),
-			this.#_groupName,
-			parent,
-			savedNavs
-		);
+		// return GroupMatchNav.fromBranch(
+		// 	MutMatchNav.fromFirstAndLast(firstNav, fragmentNav),
+		// 	this.#_groupName,
+		// 	parent,
+		// 	savedNavs
+		// );
+		parentNav.seal(MutMatchNav.fromFirstAndLast(firstNav, fragmentNav));
+		return parentNav;
 	}
 }

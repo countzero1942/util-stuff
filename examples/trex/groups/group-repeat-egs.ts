@@ -1238,5 +1238,5 @@ const exampleItems: ExamplesMenuItem[] = [
 ];
 
 export const runGroupRepeatMatcherExamples = async () => {
-	await runExamplesMenu("Group Repeat Matchers", exampleItems);
+	await runExamplesMenu("Group Repeat Examples", exampleItems);
 };
