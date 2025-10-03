@@ -9,6 +9,7 @@ import {
 	logGroupsRec,
 	MatchRepeat,
 	NumberOfMatches,
+	GroupValidatorError,
 } from "@/trex";
 import chalk from "chalk";
 import { ExamplesMenuItem, runExamplesMenu } from "@/utils/examples-menu";
@@ -86,7 +87,7 @@ const doSplitterWithEndMatcher = () => {
 	while (nav.isNavIndexAtSourceEnd === false) {
 		const result = splitter.match(nav, null);
 		logNavString(navString);
-		if (!result) {
+		if (result instanceof GroupValidatorError) {
 			log(chalk.red(`Failed to match: ${navString}`));
 			break;
 		}

@@ -70,5 +70,5 @@ import { runGroupSplitterExamples } from "@/examples/trex/groups/group-splitter-
 
 // await runRepeatMatcherExamples();
 // await doGroupBasicsExamplesMenu();
-// await runGroupRepeatMatcherExamples();
-await runGroupSplitterExamples();
+await runGroupRepeatMatcherExamples();
+// await runGroupSplitterExamples();

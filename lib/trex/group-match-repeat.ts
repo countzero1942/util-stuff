@@ -5,6 +5,7 @@ import { GroupName } from "./group-name";
 import { MatchRepeat, NumberOfMatches } from "./match-repeat";
 import { MutMatchNav } from "./nav";
 import { addResultToParent } from "./group-helper";
+import { GroupValidatorError } from "./group-validator-error";
 
 export class AltFirstLastGroupMatchers {
 	protected constructor(
@@ -102,7 +103,7 @@ export class GroupMatchRepeat extends GroupMatchBase {
 	public match(
 		nav: MutMatchNav,
 		parent: GroupMatchNav | null
-	): GroupMatchNav | null {
+	): GroupMatchNav | GroupValidatorError {
 		const firstMatcher = this.altFirstLastMatchers.altFirstMatch;
 		const lastMatcher = this.altFirstLastMatchers.altLastMatch;
 
@@ -142,10 +143,11 @@ export class GroupMatchRepeat extends GroupMatchBase {
 			 * Will be null if firstMatcher or lastMatcher is null.
 			 * So it is not a reliable indicator of failed match.
 			 */
-			let result: GroupMatchNav | null = null;
+			let result: GroupMatchNav | GroupValidatorError =
+				GroupValidatorError.GenericError;
 
 			const isCurrentMatchEmpty = () => {
-				if (result === null) {
+				if (result instanceof GroupValidatorError) {
 					return true;
 				}
 				return (
@@ -157,7 +159,7 @@ export class GroupMatchRepeat extends GroupMatchBase {
 			const doAltMatcher = (altMatcher: GroupMatchBase | null) => {
 				if (altMatcher) {
 					result = altMatcher.match(currentNav.copy(), parentNav);
-					if (!result) {
+					if (result instanceof GroupValidatorError) {
 						isFailedMatch = true;
 					}
 				}
@@ -170,10 +172,13 @@ export class GroupMatchRepeat extends GroupMatchBase {
 					break;
 				case "Content Matcher":
 					result = contentMatcher.match(currentNav.copy(), parentNav);
-					if (result) {
+					if (result instanceof GroupMatchNav) {
 						didContentMatch = true;
 					}
-					if (!result && didContentMatch === false) {
+					if (
+						result instanceof GroupValidatorError &&
+						didContentMatch === false
+					) {
 						isFailedMatch = true;
 					}
 					if (isCurrentMatchEmpty()) {
@@ -198,7 +203,7 @@ export class GroupMatchRepeat extends GroupMatchBase {
 
 			// note: result here is only null if altMatcher is null
 			// and no matching took place
-			if (result) {
+			if (result instanceof GroupMatchNav) {
 				// addResultToChildrenGroupNavs(result, savedNavs);
 				addResultToParent(result, parentNav);
 
@@ -226,7 +231,8 @@ export class GroupMatchRepeat extends GroupMatchBase {
 		}
 		// case: failed match
 		else {
-			return nav.invalidate();
+			nav.invalidate();
+			return GroupValidatorError.GenericError;
 		}
 	}
 

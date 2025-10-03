@@ -1,6 +1,7 @@
 import {
 	GroupMatchBase,
 	GroupMatchNav,
+	GroupValidatorError,
 	hasUnnamedBranches,
 	logGroupsRec,
 	MutMatchNav,
@@ -44,7 +45,7 @@ export const logResults = (
 		const result = matcher.match(nav, null);
 		log();
 		ddiv();
-		if (!result) {
+		if (result instanceof GroupValidatorError) {
 			log(
 				chalk.red(
 					`>>> FAILED TO MATCH SUCCESS CASE: ${getNavStringView(navString)} <<< `
@@ -91,7 +92,7 @@ export const logResults = (
 			const nav = MutMatchNav.fromString(navString);
 			const result = matcher.match(nav, null);
 			div();
-			if (result) {
+			if (result instanceof GroupMatchNav) {
 				log(
 					chalk.red(
 						`>>> MATCHED FAIL CASE: ${getNavStringView(navString)} <<< `

@@ -2,6 +2,7 @@ import { GroupMatchNav } from "./group-nav";
 import { MatchBase } from "./match-base";
 import { MutMatchNav } from "./nav";
 import { GroupName } from "./group-name";
+import { GroupValidatorError } from "./group-validator-error";
 
 export abstract class GroupMatchBase {
 	protected constructor(public readonly groupName: GroupName) {}
@@ -9,7 +10,7 @@ export abstract class GroupMatchBase {
 	public abstract match(
 		nav: MutMatchNav,
 		parent: GroupMatchNav | null
-	): GroupMatchNav | null;
+	): GroupMatchNav | GroupValidatorError;
 }
 
 export class GroupMatch extends GroupMatchBase {
@@ -34,12 +35,12 @@ export class GroupMatch extends GroupMatchBase {
 	public match(
 		nav: MutMatchNav,
 		parent: GroupMatchNav | null
-	): GroupMatchNav | null {
+	): GroupMatchNav | GroupValidatorError {
 		nav.assertNavIsValid();
 		const result = this.matcher.match(nav);
 		if (result) {
 			return GroupMatchNav.fromLeaf(result, this.groupName, parent);
 		}
-		return null;
+		return GroupValidatorError.GenericError;
 	}
 }

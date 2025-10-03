@@ -1,8 +1,9 @@
-import { GroupMatch, GroupMatchBase } from "./group-match";
+import { GroupMatchBase } from "./group-match";
 import { GroupMatchNav } from "./group-nav";
 import { GroupName } from "./group-name";
 import { MutMatchNav } from "./nav";
 import { addResultToParent } from "./group-helper";
+import { GroupValidatorError } from "./group-validator-error";
 
 export class GroupMatchAny extends GroupMatchBase {
 	#_matchers: GroupMatchBase[];
@@ -24,15 +25,15 @@ export class GroupMatchAny extends GroupMatchBase {
 	public match(
 		nav: MutMatchNav,
 		parent: GroupMatchNav | null
-	): GroupMatchNav | null {
+	): GroupMatchNav | GroupValidatorError {
 		nav.assertNavIsValid();
 		for (const matcher of this.#_matchers) {
 			const result = matcher.match(nav.copy(), parent);
-			if (result) {
+			if (result instanceof GroupMatchNav) {
 				return result;
 			}
 		}
-		return null;
+		return GroupValidatorError.GenericError;
 	}
 }
 
@@ -65,7 +66,7 @@ export class GroupMatchAll extends GroupMatchBase {
 	public match(
 		nav: MutMatchNav,
 		parent: GroupMatchNav | null
-	): GroupMatchNav | null {
+	): GroupMatchNav | GroupValidatorError {
 		nav.assertNavIsValid();
 		nav.assertNavIsNew();
 		const firstNav = nav.copy();
@@ -80,15 +81,11 @@ export class GroupMatchAll extends GroupMatchBase {
 		for (let i = 0; i < matchersLength; i++) {
 			const matcher = this.#_matchers[i];
 			const result = matcher.match(curNav, parentNav);
-			// const result = matcher.match(curNav, firstNamedAncestor);
-			if (!result) {
-				return null;
+			if (result instanceof GroupValidatorError) {
+				return result;
 			}
 
-			// addResultToChildrenGroupNavs(result, savedNavs);
 			addResultToParent(result, parentNav);
-			// addResultToParentB(result, firstNamedAncestor);
-
 			curNav = result.wholeMatchNav.copy().moveNext("OptMoveForward");
 		}
 
@@ -118,11 +115,11 @@ export class GroupMatchOpt extends GroupMatchBase {
 	public match(
 		nav: MutMatchNav,
 		parent: GroupMatchNav | null
-	): GroupMatchNav | null {
+	): GroupMatchNav | GroupValidatorError {
 		nav.assertNavIsValid();
 		const savedNav = nav.copy();
 		const result = this.matcher.match(nav, parent);
-		if (result) {
+		if (result instanceof GroupMatchNav) {
 			return result;
 		}
 		return GroupMatchNav.fromLeaf(savedNav, GroupName.empty, parent);

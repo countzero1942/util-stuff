@@ -3,11 +3,9 @@ import { GroupMatchNav } from "./group-nav";
 import { GroupName } from "./group-name";
 import { MutMatchNav } from "./nav";
 import { addResultToParent } from "./group-helper";
-import {
-	GroupRepeatValidator,
-	GroupValidatorResult,
-	GroupValidatorBase,
-} from "./validator-repeat";
+import { GroupValidatorBase } from "./validator-repeat";
+import { GroupValidatorResult } from "./group-validator-result";
+import { GroupValidatorError } from "./group-validator-error";
 
 export type GroupSplitterArgs = {
 	endMatcher?: GroupMatchBase;
@@ -52,13 +50,13 @@ export class GroupSplitter extends GroupMatchBase {
 				}
 			});
 		}
-		return GroupValidatorResult.Ok();
+		return GroupValidatorResult.Ok;
 	}
 
 	match(
 		nav: MutMatchNav,
 		parent: GroupMatchNav | null
-	): GroupMatchNav | null {
+	): GroupMatchNav | GroupValidatorError {
 		nav.assertNavIsValid();
 		nav.assertNavIsNew();
 		const firstNav = nav.copy();
@@ -80,7 +78,7 @@ export class GroupSplitter extends GroupMatchBase {
 			// savedNavs.push(fragmentMatch);
 			addResultToParent(fragmentMatch, parentNav);
 
-			if (result) {
+			if (result instanceof GroupMatchNav) {
 				if (result.groupName.isNotEmpty) {
 					// savedNavs.push(result);
 					addResultToParent(result, parentNav);
@@ -97,7 +95,7 @@ export class GroupSplitter extends GroupMatchBase {
 
 			const splitResult = this.#_splitter.match(curNav.copy(), parent);
 			// case: splitter matched
-			if (splitResult) {
+			if (splitResult instanceof GroupMatchNav) {
 				addFragment(splitResult);
 				continue;
 			}
@@ -105,7 +103,7 @@ export class GroupSplitter extends GroupMatchBase {
 			if (endMatcher) {
 				const endResult = endMatcher.match(curNav.copy(), parent);
 				// case: end matcher matched
-				if (endResult) {
+				if (endResult instanceof GroupMatchNav) {
 					addFragment(endResult);
 					isLastFragmentAdded = true;
 					break;

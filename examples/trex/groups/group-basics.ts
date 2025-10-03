@@ -18,6 +18,7 @@ import {
 	GroupMatchRepeat,
 	AltFirstLastGroupMatchers,
 	logGroupsRec,
+	GroupValidatorError,
 } from "@/trex";
 import { div, divs, logobj } from "@/utils/log";
 import chalk from "chalk";
@@ -67,7 +68,7 @@ export const doBasicGroupMatch = () => {
 		const nav = MutMatchNav.fromString(navString);
 		const result = numberMatcher.match(nav, null);
 		logNavString(navString);
-		if (!result) {
+		if (result instanceof GroupValidatorError) {
 			log(chalk.red(`Failed to match: ${navString}`));
 			continue;
 		}
@@ -113,7 +114,7 @@ const doGroupOptMatch = () => {
 		const nav = MutMatchNav.fromString(navString);
 		const result = numberMatcher.match(nav, null);
 		logNavString(navString);
-		if (!result) {
+		if (result instanceof GroupValidatorError) {
 			log(chalk.red(`Failed to match: ${navString}`));
 			continue;
 		}
@@ -200,7 +201,7 @@ const doGroupRepeatMatchWithAltFirstLast = () => {
 		const result = numberMatcher.match(nav, null);
 		div();
 		logNavString(navString);
-		if (!result) {
+		if (result instanceof GroupValidatorError) {
 			log(chalk.red(`Failed to match: ${navString}`));
 			continue;
 		}
@@ -236,7 +237,7 @@ const doBasicSplitter = () => {
 		const nav = MutMatchNav.fromString(navString);
 		const result = splitter.match(nav, null);
 		logNavString(navString);
-		if (!result) {
+		if (result instanceof GroupValidatorError) {
 			log(chalk.red(`Failed to match: ${navString}`));
 			continue;
 		}
@@ -268,7 +269,7 @@ const doSplitterWithEndMatcher = () => {
 	while (nav.isNavIndexAtSourceEnd === false) {
 		const result = splitter.match(nav, null);
 		logNavString(navString);
-		if (!result) {
+		if (result instanceof GroupValidatorError) {
 			log(chalk.red(`Failed to match: ${navString}`));
 			break;
 		}

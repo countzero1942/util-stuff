@@ -7,6 +7,7 @@ import {
 	GroupMatchRepeat,
 	GroupName,
 	GroupNameSet,
+	GroupValidatorError,
 	MatchAll,
 	MatchCodePoint,
 	MatchCodePointCategories,
@@ -937,7 +938,7 @@ const timeColonNumbersPrunedTree = (
 	for (let i = 0; i < repeatCount; i++) {
 		for (const nav of navs) {
 			const result = colonGroupMatcher.match(nav.copy(), null);
-			if (!result) {
+			if (result instanceof GroupValidatorError) {
 				log(
 					chalk.red(
 						`>>> FAILED TO MATCH SUCCESS CASE: ${nav.toString()} <<< `
@@ -964,7 +965,7 @@ const timeNumberTree = (navs: MutMatchNav[], repeatCount: number) => {
 	for (let i = 0; i < repeatCount; i++) {
 		for (const nav of navs) {
 			const result = numberMatcher.match(nav.copy(), null);
-			if (!result) {
+			if (result instanceof GroupValidatorError) {
 				log(
 					chalk.red(
 						`>>> FAILED TO MATCH SUCCESS CASE: ${nav.toString()} <<< `
@@ -989,7 +990,7 @@ const timeDigitGroupNumberTree = (
 	for (let i = 0; i < repeatCount; i++) {
 		for (const nav of navs) {
 			const result = numberDigitGroupMatcher.match(nav.copy(), null);
-			if (!result) {
+			if (result instanceof GroupValidatorError) {
 				log(
 					chalk.red(
 						`>>> FAILED TO MATCH SUCCESS CASE: ${nav.toString()} <<< `
