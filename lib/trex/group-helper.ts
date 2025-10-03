@@ -14,8 +14,8 @@ export const logGroupsRec = (rootGroup: GroupMatchNav) => {
 				indexStr +
 				group.toString() +
 				`${chalk.gray(" ── ")}` +
-				`[${chalk.cyan(group.noEndMatchNav.startIndex)}` +
-				`..${chalk.cyan(group.noEndMatchNav.captureIndex)}]`
+				`[${chalk.cyan(group.contentMatchNav.startIndex)}` +
+				`..${chalk.cyan(group.contentMatchNav.captureIndex)}]`
 		);
 	}
 };

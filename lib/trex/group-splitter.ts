@@ -3,9 +3,15 @@ import { GroupMatchNav } from "./group-nav";
 import { GroupName } from "./group-name";
 import { MutMatchNav } from "./nav";
 import { addResultToParent } from "./group-helper";
+import {
+	GroupRepeatValidator,
+	GroupValidatorResult,
+	GroupValidatorBase,
+} from "./validator-repeat";
 
 export type GroupSplitterArgs = {
 	endMatcher?: GroupMatchBase;
+	validator?: GroupValidatorBase;
 };
 
 export class GroupSplitter extends GroupMatchBase {
@@ -24,7 +30,7 @@ export class GroupSplitter extends GroupMatchBase {
 		this.#_args = args;
 	}
 
-	public static from(
+	static from(
 		groupName: GroupName,
 		splitter: GroupMatchBase,
 		args?: GroupSplitterArgs
@@ -32,7 +38,24 @@ export class GroupSplitter extends GroupMatchBase {
 		return new GroupSplitter(groupName, splitter, args);
 	}
 
-	public match(
+	private validate(nav: GroupMatchNav): GroupValidatorResult {
+		const validator = this.#_args?.validator;
+		if (validator) {
+			const checkNavs: GroupMatchNav[] = nav.filter(group =>
+				group.groupName.isGroupName(validator.targetName)
+			);
+
+			checkNavs.forEach(groupNav => {
+				const result = validator.validate(groupNav.wholeMatchNav);
+				if (result.isError) {
+					return GroupValidatorResult.FromError(result.message);
+				}
+			});
+		}
+		return GroupValidatorResult.Ok();
+	}
+
+	match(
 		nav: MutMatchNav,
 		parent: GroupMatchNav | null
 	): GroupMatchNav | null {
@@ -103,6 +126,9 @@ export class GroupSplitter extends GroupMatchBase {
 		// 	savedNavs
 		// );
 		parentNav.seal(MutMatchNav.fromFirstAndLast(firstNav, fragmentNav));
+
+		this.validate(parentNav);
+
 		return parentNav;
 	}
 }

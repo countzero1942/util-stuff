@@ -83,27 +83,30 @@ export const logResults = (
 			div();
 		}
 	}
-	logh("Fail cases");
-	for (const pair of failStrings) {
-		const [navString, msg] = pair.split("->");
-		const nav = MutMatchNav.fromString(navString);
-		const result = matcher.match(nav, null);
-		div();
-		if (result) {
+	if (failStrings.length > 0) {
+		logh("Fail cases");
+
+		for (const pair of failStrings) {
+			const [navString, msg] = pair.split("->");
+			const nav = MutMatchNav.fromString(navString);
+			const result = matcher.match(nav, null);
+			div();
+			if (result) {
+				log(
+					chalk.red(
+						`>>> MATCHED FAIL CASE: ${getNavStringView(navString)} <<< `
+					)
+				);
+				logGroupsRec(result);
+				continue;
+			}
+			const msgView = msg ? `-> ${chalk.yellow(msg)}` : "";
 			log(
-				chalk.red(
-					`>>> MATCHED FAIL CASE: ${getNavStringView(navString)} <<< `
+				chalk.cyan(
+					`Failed to match: ${getNavStringView(navString)} ${msgView}`
 				)
 			);
-			logGroupsRec(result);
-			continue;
 		}
-		const msgView = msg ? `-> ${chalk.yellow(msg)}` : "";
-		log(
-			chalk.cyan(
-				`Failed to match: ${getNavStringView(navString)} ${msgView}`
-			)
-		);
+		log();
 	}
-	log();
 };

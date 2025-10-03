@@ -129,6 +129,16 @@ export class GroupMatchNav {
 			: this;
 	}
 
+	filter(fn: (group: GroupMatchNav) => boolean): GroupMatchNav[] {
+		const filteredGroups: GroupMatchNav[] = [];
+		this.forEach(group => {
+			if (fn(group)) {
+				filteredGroups.push(group);
+			}
+		});
+		return filteredGroups;
+	}
+
 	forEach(
 		fn: (group: GroupMatchNav, index: number, indent: number) => void
 	) {
@@ -206,7 +216,16 @@ export class GroupMatchNav {
 		return this.#_wholeMatchNav;
 	}
 
-	get noEndMatchNav(): MutMatchNav {
+	/**
+	 * Returns whole match nav without the `:end` group match nav.
+	 * If there is no `:end` group match nav, returns the whole match nav.
+	 *
+	 * When using `GroupSplitter`, the `:end` group match nav is used to
+	 * collect a delimiter. And so it is not desirable to be included in the content.
+	 *
+	 * @returns The content match nav.
+	 */
+	get contentMatchNav(): MutMatchNav {
 		const length = this.#_children.length;
 		if (length >= 1) {
 			const potentialEnd = this.#_children[length - 1];
@@ -234,7 +253,7 @@ export class GroupMatchNav {
 		return (
 			`${chalk.magentaBright("GroupNav: ")}` +
 			`${"<" + groupName + ">"} ` +
-			`'${chalk.green(this.#_wholeMatchNav.captureMatch.value)}' ` +
+			`'${chalk.green(this.contentMatchNav.captureMatch.value)}' ` +
 			`+[${chalk.cyan(this.#_children.length)}] ` +
 			`<${parentName}>`
 		);

@@ -20,6 +20,11 @@ import { ExamplesMenuItem, runExamplesMenu } from "@/utils/examples-menu";
 import { div, log } from "@/utils/log";
 import { logResults } from "./common";
 import chalk from "chalk";
+import { fixedRound } from "@/utils/math";
+import {
+	numberGroupSuccessStrings,
+	numberGroupFailStrings,
+} from "./common-data";
 
 const abcNames = GroupNameSet.fromNames(
 	"match-all",
@@ -176,34 +181,6 @@ const numberNames = GroupNameSet.fromNames(
 	"group-separator",
 	"digit"
 );
-
-const numberGroupSuccessStrings = [
-	"123,12",
-	"12,567",
-	"1,567",
-	"1,567,8",
-	"1,567,89",
-	"1,567,890",
-	"123,567,890",
-	"123,567,890,321",
-	"1,567,890,321",
-	"1,567,890,3",
-	"123",
-	"12",
-	"1",
-];
-
-const numberGroupFailStrings = [
-	"1234->unhandled case",
-	"123,567,890,321,123->over match",
-	"1,567,890,321,123->over match",
-	"123,567,890,321,3->over match",
-	"1,567,890,321,3->over match",
-	"123,12,->incomplete match",
-	"123,123,->incomplete match",
-	"1234,123->sub group overmatch",
-	"123,1234->sub group overmatch",
-];
 
 const getNumberGroupRepeatMatcher = () => {
 	const groupSeparatorMatcher = MatchCodePoint.fromString(",");
@@ -911,11 +888,17 @@ const doAutoPruneDeepFlattenedGroupRepeatMatcher = () => {
 
 const logTime = (matchCount: number, time: number) => {
 	const timePerMatch = (time / matchCount) * 1000;
+	const opsPerSecond = fixedRound((matchCount / time) * 1000, -2);
 	log(chalk.green(`Matched ${chalk.cyan(matchCount)} success cases.`));
 	log(chalk.green(`Took ${chalk.cyan(time.toFixed(2))} ms.`));
 	log(
 		chalk.green(
 			`Time per match: ${chalk.cyan(timePerMatch.toFixed(2))} µs.`
+		)
+	);
+	log(
+		chalk.green(
+			`Operations per second: ${chalk.cyan(opsPerSecond.toLocaleString())} ops/s.`
 		)
 	);
 };
