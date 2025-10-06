@@ -5,7 +5,7 @@ import {
 	GroupName,
 	GroupMatch,
 	MatchCodePoint,
-	MutMatchNav,
+	MatchNav,
 	logGroupsRec,
 	MatchRepeat,
 	NumberOfMatches,
@@ -86,8 +86,8 @@ const doSplitterWithEndMatcher = () => {
 	);
 
 	const navString = "1234.5678 90210  .1234 .1234.5678.";
-	let nav = MutMatchNav.fromString(navString);
-	while (nav.isNavIndexAtSourceEnd === false) {
+	let nav = MatchNav.fromString(navString);
+	while (nav.isCaptureIndexAtSourceEnd === false) {
 		const result = splitter.match(nav, null);
 		logNavString(navString);
 		if (result instanceof GroupValidatorError) {
@@ -97,7 +97,7 @@ const doSplitterWithEndMatcher = () => {
 		logGroupsRec(result);
 		div();
 
-		nav = result.wholeMatchNav.copyAndMoveNext("OptMoveForward");
+		nav = result.wholeMatchNav.moveNext("OptMoveForward");
 	}
 };
 
@@ -143,7 +143,7 @@ export const trySplitterValidation = () => {
 	const navStrings = ["123,5555,123"];
 
 	for (const navString of navStrings) {
-		const nav = MutMatchNav.fromString(navString);
+		const nav = MatchNav.fromString(navString);
 		const result = splitter.match(nav, null);
 		logNavString(navString);
 		if (result instanceof GroupValidatorError) {

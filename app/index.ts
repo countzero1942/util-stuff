@@ -29,7 +29,7 @@ import {
 	LookAheadAnyString,
 	MatchAnyString,
 	MatchCodePoint,
-	MutMatchNav,
+	MatchNav,
 } from "@/trex";
 import { getError, getErrorMessage } from "@/utils/error";
 import { ArraySeq, MathProdSeq, Range, Seq } from "@/utils/seq";

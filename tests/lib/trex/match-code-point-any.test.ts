@@ -4,7 +4,7 @@ import {
 	MatchCodePointSet,
 	MatchCodePointCategories,
 } from "@/trex";
-import { MutMatchNav } from "@/trex";
+import { MatchNav } from "@/trex";
 
 describe("MatchCodePointAny", () => {
 	describe("constructor", () => {
@@ -23,12 +23,8 @@ describe("MatchCodePointAny", () => {
 				MatchCodePointCategories.fromString("Lu")
 			);
 			expect(matcher.matchers).toHaveLength(3);
-			expect(matcher.matchers[0]).toBeInstanceOf(
-				MatchCodePoint
-			);
-			expect(matcher.matchers[1]).toBeInstanceOf(
-				MatchCodePointSet
-			);
+			expect(matcher.matchers[0]).toBeInstanceOf(MatchCodePoint);
+			expect(matcher.matchers[1]).toBeInstanceOf(MatchCodePointSet);
 			expect(matcher.matchers[2]).toBeInstanceOf(
 				MatchCodePointCategories
 			);
@@ -37,9 +33,7 @@ describe("MatchCodePointAny", () => {
 		test("throws if no matchers are provided", () => {
 			expect(() => {
 				MatchCodePointAny.from();
-			}).toThrow(
-				"MatchCodePointAny: No matchers provided"
-			);
+			}).toThrow("MatchCodePointAny: No matchers provided");
 		});
 	});
 
@@ -48,39 +42,24 @@ describe("MatchCodePointAny", () => {
 			const matcher = MatchCodePointAny.from(
 				MatchCodePoint.fromString("a")
 			);
-			expect(
-				matcher.matchCodePoint("a".codePointAt(0)!)
-			).toBe(true);
-			expect(
-				matcher.matchCodePoint("b".codePointAt(0)!)
-			).toBe(false);
+			expect(matcher.matchCodePoint("a".codePointAt(0)!)).toBe(true);
+			expect(matcher.matchCodePoint("b".codePointAt(0)!)).toBe(false);
 		});
 
 		test("matches with multiple MatchCodePointBase instances", () => {
 			const set = MatchCodePointSet.fromString("ab");
-			const cat =
-				MatchCodePointCategories.fromString("Lu");
+			const cat = MatchCodePointCategories.fromString("Lu");
 			const matcher = MatchCodePointAny.from(
 				MatchCodePoint.fromString("c"),
 				set,
 				cat
 			);
-			expect(
-				matcher.matchCodePoint("a".codePointAt(0)!)
-			).toBe(true); // in set
-			expect(
-				matcher.matchCodePoint("b".codePointAt(0)!)
-			).toBe(true); // in set
-			expect(
-				matcher.matchCodePoint("c".codePointAt(0)!)
-			).toBe(true); // direct
+			expect(matcher.matchCodePoint("a".codePointAt(0)!)).toBe(true); // in set
+			expect(matcher.matchCodePoint("b".codePointAt(0)!)).toBe(true); // in set
+			expect(matcher.matchCodePoint("c".codePointAt(0)!)).toBe(true); // direct
 			// Use an uppercase letter for category
-			expect(
-				matcher.matchCodePoint("D".codePointAt(0)!)
-			).toBe(true);
-			expect(
-				matcher.matchCodePoint("z".codePointAt(0)!)
-			).toBe(false);
+			expect(matcher.matchCodePoint("D".codePointAt(0)!)).toBe(true);
+			expect(matcher.matchCodePoint("z".codePointAt(0)!)).toBe(false);
 		});
 
 		test("returns false if no matchers match", () => {
@@ -88,21 +67,15 @@ describe("MatchCodePointAny", () => {
 				MatchCodePoint.fromString("x"),
 				MatchCodePointSet.fromString("y")
 			);
-			expect(
-				matcher.matchCodePoint("a".codePointAt(0)!)
-			).toBe(false);
+			expect(matcher.matchCodePoint("a".codePointAt(0)!)).toBe(false);
 		});
 
 		test("is immutable to external mutation", () => {
 			const arr = [MatchCodePoint.fromString("a")];
 			const matcher = MatchCodePointAny.from(...arr);
 			arr[0] = MatchCodePoint.fromString("b");
-			expect(
-				matcher.matchCodePoint("a".codePointAt(0)!)
-			).toBe(true);
-			expect(
-				matcher.matchCodePoint("b".codePointAt(0)!)
-			).toBe(false);
+			expect(matcher.matchCodePoint("a".codePointAt(0)!)).toBe(true);
+			expect(matcher.matchCodePoint("b".codePointAt(0)!)).toBe(false);
 		});
 	});
 
@@ -111,7 +84,7 @@ describe("MatchCodePointAny", () => {
 			const matcher = MatchCodePointAny.from(
 				MatchCodePoint.fromString("a")
 			);
-			const nav = MutMatchNav.fromString("abc");
+			const nav = MatchNav.fromString("abc");
 			const result = matcher.match(nav);
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(1);
@@ -124,7 +97,7 @@ describe("MatchCodePointAny", () => {
 				MatchCodePointSet.fromString("ab"),
 				MatchCodePointCategories.fromString("Lu")
 			);
-			const nav = MutMatchNav.fromString("aBz");
+			const nav = MatchNav.fromString("aBz");
 
 			const result1 = matcher.match(nav);
 			expect(result1).not.toBeNull();
@@ -154,7 +127,7 @@ describe("MatchCodePointAny", () => {
 					MatchCodePointCategories.fromString("Nd")
 				)
 			);
-			const nav = MutMatchNav.fromString("123");
+			const nav = MatchNav.fromString("123");
 			const result = matcher.match(nav);
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(3);
@@ -167,7 +140,7 @@ describe("MatchCodePointAny", () => {
 				MatchCodePointSet.fromString("y"),
 				MatchCodePointCategories.fromString("Nd")
 			);
-			const nav = MutMatchNav.fromString("abc");
+			const nav = MatchNav.fromString("abc");
 			const result = matcher.match(nav);
 			expect(result).toBeNull();
 		});

@@ -1,6 +1,6 @@
 import { MatchBase } from "./match-base";
 import { MatchAny } from "./match-any-all-opt";
-import { MutMatchNav } from "./nav";
+import { MatchNav } from "./nav";
 import { log } from "console";
 import { StepNav } from "@/utils/operations";
 import chalk from "chalk";
@@ -236,16 +236,7 @@ export class MatchRepeat extends MatchBase {
 		"Last Matcher"
 	);
 
-	/**
-	 * Returns a new copy of the match repeat step nav.
-	 */
-	static getMatchRepeatStepNav() {
-		return this.#_matchRepeatStepNav.copyNew();
-	}
-
-	matchContentOnly(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsValid();
-
+	matchContentOnly(nav: MatchNav): MatchNav | null {
 		let count = 0;
 		const min = this.numberOfMatches.minNumber;
 		const max = this.numberOfMatches.maxNumber;
@@ -253,7 +244,7 @@ export class MatchRepeat extends MatchBase {
 			? max + 1
 			: max;
 
-		let currentNav = nav.copy();
+		let currentNav = nav;
 
 		const contentMatcher = this.matcher;
 
@@ -265,7 +256,7 @@ export class MatchRepeat extends MatchBase {
 				return result.captureIndex === currentNav.captureIndex;
 			};
 
-			const result = contentMatcher.match(currentNav.copy());
+			const result = contentMatcher.match(currentNav);
 			if (isCurrentMatchEmpty()) {
 				break;
 			}
@@ -280,9 +271,16 @@ export class MatchRepeat extends MatchBase {
 		if (count >= min && count <= max) {
 			return currentNav;
 		} else {
-			return nav.invalidate();
+			return null;
 		}
 	} // match
+
+	/**
+	 * Returns a new copy of the match repeat step nav.
+	 */
+	static getMatchRepeatStepNav() {
+		return this.#_matchRepeatStepNav.copyNew();
+	}
 
 	/**
 	 * Matches the repeat matcher according to the numberOfMatches
@@ -297,20 +295,18 @@ export class MatchRepeat extends MatchBase {
 	 * A succesful match will move the nav capture forward by the length of
 	 * the match.
 	 *
-	 * If the match fails, the nav is invalidated and null returned.
+	 * If the match fails, null is returned.
 	 *
 	 * @param nav The navigation to match.
 	 * @returns The navigation after matching, or null if no match.
 	 */
-	match(nav: MutMatchNav): MutMatchNav | null {
+	match(nav: MatchNav): MatchNav | null {
 		const firstMatcher = this.altFirstLastMatchers.altFirstMatch;
 		const lastMatcher = this.altFirstLastMatchers.altLastMatch;
 
 		if (!firstMatcher && !lastMatcher) {
 			return this.matchContentOnly(nav);
 		}
-
-		nav.assertNavIsValid();
 
 		const contentMatcher = this.matcher;
 
@@ -321,7 +317,7 @@ export class MatchRepeat extends MatchBase {
 			? max + 1
 			: max;
 
-		let currentNav = nav.copy();
+		let currentNav = nav;
 
 		const stepNav = MatchRepeat.getMatchRepeatStepNav();
 
@@ -336,7 +332,7 @@ export class MatchRepeat extends MatchBase {
 			 * Will be null if firstMatcher or lastMatcher is null.
 			 * So it is not a reliable indicator of a failed match.
 			 */
-			let result: MutMatchNav | null = null;
+			let result: MatchNav | null = null;
 
 			const isCurrentMatchEmpty = () => {
 				if (result === null) {
@@ -347,7 +343,7 @@ export class MatchRepeat extends MatchBase {
 
 			const doAltMatcher = (altMatcher: MatchBase | null) => {
 				if (altMatcher) {
-					result = altMatcher.match(currentNav.copy());
+					result = altMatcher.match(currentNav);
 					if (!result) {
 						isFailedMatch = true;
 					}
@@ -360,7 +356,7 @@ export class MatchRepeat extends MatchBase {
 					doAltMatcher(firstMatcher);
 					break;
 				case "Content Matcher":
-					result = contentMatcher.match(currentNav.copy());
+					result = contentMatcher.match(currentNav);
 					if (result) {
 						didContentMatch = true;
 					}
@@ -404,7 +400,7 @@ export class MatchRepeat extends MatchBase {
 		}
 		// case: failed match
 		else {
-			return nav.invalidate();
+			return null;
 		}
 	} // match
 }

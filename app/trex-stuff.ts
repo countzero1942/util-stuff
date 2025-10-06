@@ -20,7 +20,7 @@ import { StrSlice } from "@/utils/slice";
 import {
 	CodePointRange,
 	MatchAll,
-	MutMatchNav,
+	MatchNav,
 	MatchCodePoint,
 	MatchAnyString,
 	LookAheadAnyString,
@@ -138,14 +138,14 @@ export const doTRexStuff = () => {
 	const matcher = LookAheadAnyString.from(anyStringMatcher);
 
 	{
-		const nav = MutMatchNav.fromNew(source);
+		const nav = MatchNav.fromNew(source);
 		const result = matcher.match(nav);
 		log(`'${result?.captureMatch.value}'`);
 		div();
 	}
 
 	{
-		let nav: MutMatchNav | null = MutMatchNav.fromNew(source);
+		let nav: MatchNav | null = MatchNav.fromNew(source);
 		nav = anyStringMatcher.match(nav);
 		logobj(`'${nav?.captureMatch.value}'`);
 		if (nav) {
@@ -166,7 +166,7 @@ export const codePointSetArgs = () => {
 
 	const matcher = MatchRepeat.from(matchSet);
 
-	const nav = MutMatchNav.fromString("abc123!@#😀ABC");
+	const nav = MatchNav.fromString("abc123!@#😀ABC");
 	const result = matcher.match(nav);
 	logobj(result);
 	div();

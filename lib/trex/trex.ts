@@ -1,5 +1,5 @@
 import { StrSlice } from "@/utils/slice";
-import { MatchBase, MutMatchNav } from "@/trex";
+import { MatchBase, MatchNav } from "@/trex";
 import { log } from "console";
 
 /**
@@ -23,7 +23,7 @@ export class NavToken<
 	constructor(
 		public readonly category: TCategory,
 		public readonly kind: TKind,
-		public readonly matchNav: MutMatchNav
+		public readonly matchNav: MatchNav
 	) {}
 
 	/**
@@ -59,11 +59,11 @@ export type FindResult = {
 	/**
 	 * Navigator for the matched portion, or null if no match
 	 */
-	matchNav: MutMatchNav | null;
+	matchNav: MatchNav | null;
 	/**
 	 * Navigator for the fragment before the match
 	 */
-	fragmentNav: MutMatchNav;
+	fragmentNav: MatchNav;
 };
 
 /**
@@ -120,14 +120,14 @@ export class TRex {
 	 * @returns A FindResult object containing the match navigator and fragment navigator.
 	 */
 	public find(source: StrSlice, start: number = 0): FindResult {
-		let nav = MutMatchNav.fromNew(source, start);
-		const originalNav = nav.copy();
+		let nav = MatchNav.fromStart(source, start);
+		const originalNav = nav;
 
 		// const str =
 		// 	"abc def xxx hij yyy lmn opq xxx yyz xxx yyy mmm cba xxxyyy yyyxxx yyy";
 		//     01234567890123456789012345678901234567890123456789012345678901234567890
-		while (!nav.isNavIndexAtSourceEnd) {
-			const result = this.matcher.match(nav.copy());
+		while (!nav.isCaptureIndexAtSourceEnd) {
+			const result = this.matcher.match(nav);
 			if (result) {
 				const matchNav = result;
 				const fragmentNav = originalNav.moveCaptureForward(
@@ -141,7 +141,7 @@ export class TRex {
 			nav = nav.moveNextOneCodePoint();
 		}
 
-		const matchNav = nav.invalidate();
+		const matchNav = null;
 		const fragmentNav = originalNav.moveCaptureToSourceEnd();
 
 		return {

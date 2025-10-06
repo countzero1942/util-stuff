@@ -1,15 +1,12 @@
 import { StrSlice } from "@/utils/slice";
-import { MutMatchNav } from "@/trex/nav";
-import {
-	MatchStartSlice,
-	MatchEndSlice,
-} from "@/trex/match-position";
+import { MatchNav } from "@/trex/nav";
+import { MatchStartSlice, MatchEndSlice } from "@/trex/match-position";
 
 describe("MatchStartSlice", () => {
 	beforeEach(() => {});
 
 	test("matches at the beginning of the slice", () => {
-		const nav = MutMatchNav.fromString("test string");
+		const nav = MatchNav.fromString("test string");
 
 		const result = MatchStartSlice.default.match(nav);
 
@@ -18,7 +15,7 @@ describe("MatchStartSlice", () => {
 	});
 
 	test("does not match when not at the beginning of the slice", () => {
-		const nav = MutMatchNav.fromString("test string", 3);
+		const nav = MatchNav.fromString("test string", 3);
 
 		const result = MatchStartSlice.default.match(nav);
 
@@ -26,7 +23,7 @@ describe("MatchStartSlice", () => {
 	});
 
 	test("works with empty string", () => {
-		const nav = MutMatchNav.fromString("");
+		const nav = MatchNav.fromString("");
 
 		const result = MatchStartSlice.default.match(nav);
 
@@ -35,7 +32,7 @@ describe("MatchStartSlice", () => {
 	});
 
 	test("does not mutate the navigation state on success", () => {
-		const nav = MutMatchNav.fromString("test string");
+		const nav = MatchNav.fromString("test string");
 		const originalNavIndex = nav.captureIndex;
 
 		const result = MatchStartSlice.default.match(nav);
@@ -49,7 +46,7 @@ describe("MatchEndSlice", () => {
 	beforeEach(() => {});
 
 	test("matches at the end of the slice", () => {
-		const nav = MutMatchNav.fromString("test string", 11);
+		const nav = MatchNav.fromString("test string", 11);
 		//                                  01234567890
 		const result = MatchEndSlice.default.match(nav);
 
@@ -58,7 +55,7 @@ describe("MatchEndSlice", () => {
 	});
 
 	test("does not match when not at the end of the slice", () => {
-		const nav = MutMatchNav.fromString("test string", 3);
+		const nav = MatchNav.fromString("test string", 3);
 
 		const result = MatchEndSlice.default.match(nav);
 
@@ -66,7 +63,7 @@ describe("MatchEndSlice", () => {
 	});
 
 	test("works with empty string", () => {
-		const nav = MutMatchNav.fromString("");
+		const nav = MatchNav.fromString("");
 
 		const result = MatchEndSlice.default.match(nav);
 
@@ -75,7 +72,7 @@ describe("MatchEndSlice", () => {
 	});
 
 	test("does not mutate the navigation state on success", () => {
-		const nav = MutMatchNav.fromString("test string", 11);
+		const nav = MatchNav.fromString("test string", 11);
 		//                                  01234567890
 		const originalNavIndex = nav.captureIndex;
 

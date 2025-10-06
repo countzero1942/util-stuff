@@ -1,13 +1,10 @@
-import {
-	MatchBase,
-	MatchCodePointBase,
-} from "./match-base";
-import { MutMatchNav } from "./nav";
+import { MatchBase, MatchCodePointBase } from "./match-base";
+import { MatchNav } from "./nav";
 
 /**
  * Matches the given matcher at the current nav position.
  *
- * If the matcher matches, the nav is invalidated and null returned.
+ * If the matcher matches, null is returned.
  *
  * This is for general matchers. Code-point matchers should use
  * MatchNotCodePoint instead.
@@ -24,9 +21,7 @@ export class MatchNot extends MatchBase {
 	 * @param matcher The matcher to match.
 	 * @returns A new MatchNot instance.
 	 */
-	protected constructor(
-		public readonly matcher: MatchBase
-	) {
+	protected constructor(public readonly matcher: MatchBase) {
 		super();
 		if (matcher instanceof MatchCodePointBase) {
 			throw new Error(
@@ -42,21 +37,10 @@ export class MatchNot extends MatchBase {
 		}
 	}
 
-	/**
-	 * Matches the given matcher at the current nav position.
-	 *
-	 * If the matcher matches, the nav is invalidated and null returned.
-	 *
-	 * If the matcher does not match, the nav is returned unaltered.
-	 *
-	 * @param nav The navigation to match.
-	 * @returns The navigation after matching, or null if no match.
-	 */
-	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsValid();
-		const result = this.matcher.match(nav.copy());
+	public match(nav: MatchNav): MatchNav | null {
+		const result = this.matcher.match(nav);
 		if (result) {
-			return nav.invalidate();
+			return null;
 		}
 
 		return nav;

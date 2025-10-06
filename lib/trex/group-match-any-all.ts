@@ -1,7 +1,7 @@
 import { GroupMatchBase } from "./group-match";
 import { GroupMatchNav } from "./group-nav";
 import { GroupName } from "./group-name";
-import { MutMatchNav } from "./nav";
+import { MatchNav } from "./nav";
 import { addResultToParent } from "./group-helper";
 import { GroupValidatorError } from "./group-validator-error";
 
@@ -23,12 +23,11 @@ export class GroupMatchAny extends GroupMatchBase {
 	}
 
 	public match(
-		nav: MutMatchNav,
+		nav: MatchNav,
 		parent: GroupMatchNav | null
 	): GroupMatchNav | GroupValidatorError {
-		nav.assertNavIsValid();
 		for (const matcher of this.#_matchers) {
-			const result = matcher.match(nav.copy(), parent);
+			const result = matcher.match(nav, parent);
 			if (result instanceof GroupMatchNav) {
 				return result;
 			}
@@ -64,19 +63,18 @@ export class GroupMatchAll extends GroupMatchBase {
 	}
 
 	public match(
-		nav: MutMatchNav,
+		nav: MatchNav,
 		parent: GroupMatchNav | null
 	): GroupMatchNav | GroupValidatorError {
-		nav.assertNavIsValid();
 		nav.assertNavIsNew();
-		const firstNav = nav.copy();
+		const firstNav = nav;
 		// const savedNavs: GroupMatchNav[] = [];
 		const parentNav = GroupMatchNav.fromConstructableBranch(
 			this.#_groupName,
 			parent
 		);
 
-		let curNav = nav.copy();
+		let curNav = nav;
 		const matchersLength = this.#_matchers.length;
 		for (let i = 0; i < matchersLength; i++) {
 			const matcher = this.#_matchers[i];
@@ -86,7 +84,7 @@ export class GroupMatchAll extends GroupMatchBase {
 			}
 
 			addResultToParent(result, parentNav);
-			curNav = result.wholeMatchNav.copy().moveNext("OptMoveForward");
+			curNav = result.wholeMatchNav.moveNext("OptMoveForward");
 		}
 
 		// return GroupMatchNav.fromBranch(
@@ -95,7 +93,7 @@ export class GroupMatchAll extends GroupMatchBase {
 		// 	savedNavs
 		// );
 
-		parentNav.seal(MutMatchNav.fromFirstAndLast(firstNav, curNav));
+		parentNav.seal(MatchNav.fromFirstAndLast(firstNav, curNav));
 		return parentNav;
 	}
 }
@@ -113,11 +111,11 @@ export class GroupMatchOpt extends GroupMatchBase {
 	}
 
 	public match(
-		nav: MutMatchNav,
+		nav: MatchNav,
 		parent: GroupMatchNav | null
 	): GroupMatchNav | GroupValidatorError {
-		nav.assertNavIsValid();
-		const savedNav = nav.copy();
+		nav.assertNavIsNew();
+		const savedNav = nav;
 		const result = this.matcher.match(nav, parent);
 		if (result instanceof GroupMatchNav) {
 			return result;

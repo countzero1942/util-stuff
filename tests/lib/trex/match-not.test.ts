@@ -1,6 +1,6 @@
 import { StrSlice } from "@/utils/slice";
 import {
-	MutMatchNav,
+	MatchNav,
 	MatchNot,
 	MatchAll,
 	MatchAny,
@@ -23,21 +23,17 @@ describe("MatchNot", () => {
 
 	describe("with MatchAll", () => {
 		test("returns null and invalidates nav when MatchAll matches", () => {
-			const matcher = MatchAll.fromMatchers(
-				MatchStartSlice.default
-			);
+			const matcher = MatchAll.fromMatchers(MatchStartSlice.default);
 			const not = MatchNot.from(matcher);
-			const nav = MutMatchNav.fromString("");
+			const nav = MatchNav.fromString("");
 			const result = not.match(nav);
 			expect(result).toBeNull();
 			expect(nav.isInvalidated).toBe(true);
 		});
 		test("returns nav (same instance, unmutated) when MatchAll does not match", () => {
-			const matcher = MatchAll.fromMatchers(
-				MatchEndSlice.default
-			);
+			const matcher = MatchAll.fromMatchers(MatchEndSlice.default);
 			const not = MatchNot.from(matcher);
-			const nav = MutMatchNav.fromString("abc");
+			const nav = MatchNav.fromString("abc");
 			const navCopy = nav.copy();
 			const result = not.match(nav);
 			expect(result).toBe(nav); // instance identity
@@ -48,21 +44,17 @@ describe("MatchNot", () => {
 
 	describe("with MatchAny", () => {
 		test("returns null when MatchAny matches", () => {
-			const matcher = MatchAny.fromMatchers(
-				MatchStartSlice.default
-			);
+			const matcher = MatchAny.fromMatchers(MatchStartSlice.default);
 			const not = MatchNot.from(matcher);
-			const nav = MutMatchNav.fromString("");
+			const nav = MatchNav.fromString("");
 			const result = not.match(nav);
 			expect(result).toBeNull();
 			expect(nav.isInvalidated).toBe(true);
 		});
 		test("returns nav (same instance, unmutated) when MatchAny does not match", () => {
-			const matcher = MatchAny.fromMatchers(
-				MatchEndSlice.default
-			);
+			const matcher = MatchAny.fromMatchers(MatchEndSlice.default);
 			const not = MatchNot.from(matcher);
-			const nav = MutMatchNav.fromString("abc");
+			const nav = MatchNav.fromString("abc");
 			const result = not.match(nav);
 			expect(result).not.toBeNull();
 			expect(result?.isInvalidated).toBe(false);
@@ -71,21 +63,17 @@ describe("MatchNot", () => {
 
 	describe("with MatchOpt", () => {
 		test("returns null when MatchOpt matches", () => {
-			const matcher = MatchOpt.from(
-				MatchStartSlice.default
-			);
+			const matcher = MatchOpt.from(MatchStartSlice.default);
 			const not = MatchNot.from(matcher);
-			const nav = MutMatchNav.fromString("");
+			const nav = MatchNav.fromString("");
 			const result = not.match(nav);
 			expect(result).toBeNull();
 			expect(nav.isInvalidated).toBe(true);
 		});
 		test("returns null always on MatchOpt, because MatchOpt always returns true", () => {
-			const matcher = MatchOpt.from(
-				MatchEndSlice.default
-			);
+			const matcher = MatchOpt.from(MatchEndSlice.default);
 			const not = MatchNot.from(matcher);
-			const nav = MutMatchNav.fromString("abc");
+			const nav = MatchNav.fromString("abc");
 			const result = not.match(nav);
 			expect(result).toBeNull();
 			expect(nav.isInvalidated).toBe(true);
@@ -99,7 +87,7 @@ describe("MatchNot", () => {
 				NumberOfMatches.exactly(2)
 			);
 			const not = MatchNot.from(matcher);
-			const nav = MutMatchNav.fromString("aa");
+			const nav = MatchNav.fromString("aa");
 			const result = not.match(nav);
 			expect(result).toBeNull();
 			expect(nav.isInvalidated).toBe(true);
@@ -110,7 +98,7 @@ describe("MatchNot", () => {
 				NumberOfMatches.exactly(2)
 			);
 			const not = MatchNot.from(matcher);
-			const nav = MutMatchNav.fromString("ab");
+			const nav = MatchNav.fromString("ab");
 			const navCopy = nav.copy();
 			const result = not.match(nav);
 			expect(result).toBe(nav);
@@ -123,7 +111,7 @@ describe("MatchNot", () => {
 		test("returns null when MatchAnyString matches", () => {
 			const matcher = MatchAnyString.fromStrings("abc");
 			const not = MatchNot.from(matcher);
-			const nav = MutMatchNav.fromString("abc");
+			const nav = MatchNav.fromString("abc");
 			const result = not.match(nav);
 			expect(result).toBeNull();
 			expect(nav.isInvalidated).toBe(true);
@@ -131,7 +119,7 @@ describe("MatchNot", () => {
 		test("returns nav (same instance, unmutated) when MatchAnyString does not match", () => {
 			const matcher = MatchAnyString.fromStrings("xyz");
 			const not = MatchNot.from(matcher);
-			const nav = MutMatchNav.fromString("abc");
+			const nav = MatchNav.fromString("abc");
 			const navCopy = nav.copy();
 			const result = not.match(nav);
 			expect(result).toBe(nav);
@@ -146,7 +134,7 @@ describe("MatchNot", () => {
 				MatchAnyString.fromStrings("a")
 			);
 			const not = MatchNot.from(matcher);
-			const nav = MutMatchNav.fromString("ba", 0); // position after 'b'
+			const nav = MatchNav.fromString("ba", 0); // position after 'b'
 			nav.moveCaptureForwardOneCodePoint();
 			const navCopy = nav.copy();
 			const result = not.match(nav);
@@ -160,7 +148,7 @@ describe("MatchNot", () => {
 				MatchAnyString.fromStrings("b")
 			);
 			const not = MatchNot.from(matcher);
-			const nav = MutMatchNav.fromString("ba", 0);
+			const nav = MatchNav.fromString("ba", 0);
 			nav.moveCaptureForwardOneCodePoint();
 			const result = not.match(nav);
 			expect(result).toBeNull();
@@ -172,7 +160,7 @@ describe("MatchNot", () => {
 		test("returns null when MatchStartSlice matches", () => {
 			const matcher = MatchStartSlice.default;
 			const not = MatchNot.from(matcher);
-			const nav = MutMatchNav.fromString("");
+			const nav = MatchNav.fromString("");
 			const result = not.match(nav);
 			expect(result).toBeNull();
 			expect(nav.isInvalidated).toBe(true);
@@ -180,7 +168,7 @@ describe("MatchNot", () => {
 		test("returns nav (same instance, unmutated) when MatchStartSlice does not match", () => {
 			const matcher = MatchStartSlice.default;
 			const not = MatchNot.from(matcher);
-			const nav = MutMatchNav.fromString("abc", 1);
+			const nav = MatchNav.fromString("abc", 1);
 			const navCopy = nav.copy();
 			const result = not.match(nav);
 			expect(result).toBe(nav);
@@ -193,7 +181,7 @@ describe("MatchNot", () => {
 		test("returns null when MatchEndSlice matches", () => {
 			const matcher = MatchEndSlice.default;
 			const not = MatchNot.from(matcher);
-			const nav = MutMatchNav.fromString("", 0);
+			const nav = MatchNav.fromString("", 0);
 			const result = not.match(nav);
 			expect(result).toBeNull();
 			expect(nav.isInvalidated).toBe(true);
@@ -201,7 +189,7 @@ describe("MatchNot", () => {
 		test("returns nav (same instance, unmutated) when MatchEndSlice does not match", () => {
 			const matcher = MatchEndSlice.default;
 			const not = MatchNot.from(matcher);
-			const nav = MutMatchNav.fromString("abc", 1);
+			const nav = MatchNav.fromString("abc", 1);
 			const navCopy = nav.copy();
 			const result = not.match(nav);
 			expect(result).toBe(nav);
@@ -214,7 +202,7 @@ describe("MatchNot", () => {
 		test("returns null when MatchNotStartSlice matches", () => {
 			const matcher = MatchNotStartSlice.default;
 			const not = MatchNot.from(matcher);
-			const nav = MutMatchNav.fromString("abc", 1);
+			const nav = MatchNav.fromString("abc", 1);
 			const result = not.match(nav);
 			expect(result).toBeNull();
 			expect(nav.isInvalidated).toBe(true);
@@ -222,7 +210,7 @@ describe("MatchNot", () => {
 		test("returns nav (same instance, unmutated) when MatchNotStartSlice does not match", () => {
 			const matcher = MatchNotStartSlice.default;
 			const not = MatchNot.from(matcher);
-			const nav = MutMatchNav.fromString("abc", 0);
+			const nav = MatchNav.fromString("abc", 0);
 			const navCopy = nav.copy();
 			const result = not.match(nav);
 			expect(result).toBe(nav);
@@ -235,7 +223,7 @@ describe("MatchNot", () => {
 		test("returns null when MatchNotEndSlice matches", () => {
 			const matcher = MatchNotEndSlice.default;
 			const not = MatchNot.from(matcher);
-			const nav = MutMatchNav.fromString("abc", 1);
+			const nav = MatchNav.fromString("abc", 1);
 			const result = not.match(nav);
 			expect(result).toBeNull();
 			expect(nav.isInvalidated).toBe(true);
@@ -243,7 +231,7 @@ describe("MatchNot", () => {
 		test("returns nav (same instance, unmutated) when MatchNotEndSlice does not match", () => {
 			const matcher = MatchNotEndSlice.default;
 			const not = MatchNot.from(matcher);
-			const nav = MutMatchNav.fromString("abc", 3);
+			const nav = MatchNav.fromString("abc", 3);
 			const navCopy = nav.copy();
 			const result = not.match(nav);
 			expect(result).toBe(nav);
@@ -261,9 +249,7 @@ describe("MatchNot", () => {
 			);
 		});
 		test("throws when trying to create MatchNot with MatchNot", () => {
-			const matcher = MatchNot.from(
-				MatchAnyString.fromStrings("abc")
-			);
+			const matcher = MatchNot.from(MatchAnyString.fromStrings("abc"));
 			expect(() => MatchNot.from(matcher)).toThrow(
 				"MatchNot: Invalid matcher type: MatchNot. " +
 					"Recursion not supported."
@@ -281,13 +267,13 @@ describe("MatchNot", () => {
 		} as any;
 		test("returns null if inner matcher matches", () => {
 			const not = MatchNot.from(alwaysPassMatcher);
-			const nav = MutMatchNav.fromString("A");
+			const nav = MatchNav.fromString("A");
 			const result = not.match(nav);
 			expect(result).toBeNull();
 		});
 		test("returns nav if inner matcher does not match", () => {
 			const not = MatchNot.from(alwaysFailMatcher);
-			const nav = MutMatchNav.fromString("A");
+			const nav = MatchNav.fromString("A");
 			const result = not.match(nav);
 			expect(result).not.toBeNull();
 		});

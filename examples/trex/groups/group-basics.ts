@@ -1,6 +1,6 @@
 import {
 	GroupMatchNav,
-	MutMatchNav,
+	MatchNav,
 	GroupMatch,
 	GroupName,
 	MatchRepeat,
@@ -65,7 +65,7 @@ export const doBasicGroupMatch = () => {
 	];
 
 	for (const navString of navStrings) {
-		const nav = MutMatchNav.fromString(navString);
+		const nav = MatchNav.fromString(navString);
 		const result = numberMatcher.match(nav, null);
 		logNavString(navString);
 		if (result instanceof GroupValidatorError) {
@@ -111,7 +111,7 @@ const doGroupOptMatch = () => {
 		"+",
 	];
 	for (const navString of navStrings) {
-		const nav = MutMatchNav.fromString(navString);
+		const nav = MatchNav.fromString(navString);
 		const result = numberMatcher.match(nav, null);
 		logNavString(navString);
 		if (result instanceof GroupValidatorError) {
@@ -197,7 +197,7 @@ const doGroupRepeatMatchWithAltFirstLast = () => {
 	];
 
 	for (const navString of navStrings) {
-		const nav = MutMatchNav.fromString(navString);
+		const nav = MatchNav.fromString(navString);
 		const result = numberMatcher.match(nav, null);
 		div();
 		logNavString(navString);
@@ -234,7 +234,7 @@ const doBasicSplitter = () => {
 		"1234",
 	];
 	for (const navString of navStrings) {
-		const nav = MutMatchNav.fromString(navString);
+		const nav = MatchNav.fromString(navString);
 		const result = splitter.match(nav, null);
 		logNavString(navString);
 		if (result instanceof GroupValidatorError) {
@@ -265,8 +265,8 @@ const doSplitterWithEndMatcher = () => {
 	);
 
 	const navString = "1234.5678 90210  .1234 .1234.5678.";
-	let nav = MutMatchNav.fromString(navString);
-	while (nav.isNavIndexAtSourceEnd === false) {
+	let nav = MatchNav.fromString(navString);
+	while (nav.isCaptureIndexAtSourceEnd === false) {
 		const result = splitter.match(nav, null);
 		logNavString(navString);
 		if (result instanceof GroupValidatorError) {
@@ -276,7 +276,7 @@ const doSplitterWithEndMatcher = () => {
 		logGroupsRec(result);
 		div();
 
-		nav = result.wholeMatchNav.copyAndMoveNext("OptMoveForward");
+		nav = result.wholeMatchNav.moveNext("OptMoveForward");
 	}
 };
 

@@ -4,7 +4,7 @@ import {
 	GroupValidatorError,
 	hasUnnamedBranches,
 	logGroupsRec,
-	MutMatchNav,
+	MatchNav,
 	removeUnnamedBranches,
 } from "@/trex";
 import { log, div, logh, ddiv } from "@/utils/log";
@@ -41,7 +41,7 @@ export const logResults = (
 	logh("Success cases");
 
 	for (const navString of successStrings) {
-		const nav = MutMatchNav.fromString(navString);
+		const nav = MatchNav.fromString(navString);
 		const result = matcher.match(nav, null);
 		log();
 		ddiv();
@@ -89,7 +89,7 @@ export const logResults = (
 
 		for (const pair of failStrings) {
 			const [navString, msg] = pair.split("->");
-			const nav = MutMatchNav.fromString(navString);
+			const nav = MatchNav.fromString(navString);
 			const result = matcher.match(nav, null);
 			div();
 			if (result instanceof GroupMatchNav) {

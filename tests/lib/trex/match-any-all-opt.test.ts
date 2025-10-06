@@ -1,6 +1,6 @@
 import { StrSlice } from "@/utils/slice";
 import {
-	MutMatchNav,
+	MatchNav,
 	MatchAny,
 	MatchAll,
 	MatchOpt,
@@ -33,12 +33,12 @@ describe("MatchAny", () => {
 			const matcherB = MatchCodePoint.fromString("B");
 			const anyMatcher = MatchAny.fromMatchers(matcherA, matcherB);
 
-			const navA = MutMatchNav.fromNew(new StrSlice("ABC"));
+			const navA = MatchNav.fromNew(new StrSlice("ABC"));
 			const resultA = anyMatcher.match(navA);
 			expect(resultA).not.toBeNull();
 			expect(resultA?.captureMatch.value).toBe("A");
 
-			const navB = MutMatchNav.fromNew(new StrSlice("BCD"));
+			const navB = MatchNav.fromNew(new StrSlice("BCD"));
 			const resultB = anyMatcher.match(navB);
 			expect(resultB).not.toBeNull();
 			expect(resultB?.captureMatch.value).toBe("B");
@@ -49,7 +49,7 @@ describe("MatchAny", () => {
 			const matcherB = MatchCodePoint.fromString("B");
 			const anyMatcher = MatchAny.fromMatchers(matcherA, matcherB);
 
-			const nav = MutMatchNav.fromNew(new StrSlice("XYZ"));
+			const nav = MatchNav.fromNew(new StrSlice("XYZ"));
 			const result = anyMatcher.match(nav);
 
 			expect(result).toBeNull();
@@ -61,7 +61,7 @@ describe("MatchAny", () => {
 			const anyMatcher = MatchAny.fromMatchers(matcherA, matcherB);
 
 			// Both A and B could match, but A should be chosen as it's first
-			const nav = MutMatchNav.fromNew(new StrSlice("ABC"));
+			const nav = MatchNav.fromNew(new StrSlice("ABC"));
 			const result = anyMatcher.match(nav);
 
 			expect(result).not.toBeNull();
@@ -72,7 +72,7 @@ describe("MatchAny", () => {
 			const matcherA = MatchCodePoint.fromString("A");
 			const anyMatcher = MatchAny.fromMatchers(matcherA);
 
-			const nav = MutMatchNav.fromNew(new StrSlice("XYZ"));
+			const nav = MatchNav.fromNew(new StrSlice("XYZ"));
 			nav.invalidate();
 			expect(() => anyMatcher.match(nav)).toThrow(
 				"Illegal use of invalidated navigator"
@@ -100,7 +100,7 @@ describe("MatchAll", () => {
 			const matcherB = MatchCodePoint.fromString("B");
 			const allMatcher = MatchAll.fromMatchers(matcherA, matcherB);
 
-			const nav = MutMatchNav.fromNew(new StrSlice("ABC"));
+			const nav = MatchNav.fromNew(new StrSlice("ABC"));
 			const result = allMatcher.match(nav);
 
 			expect(result).not.toBeNull();
@@ -119,7 +119,7 @@ describe("MatchAll", () => {
 			);
 
 			// First two match but third doesn't
-			const nav = MutMatchNav.fromNew(new StrSlice("ABX"));
+			const nav = MatchNav.fromNew(new StrSlice("ABX"));
 			const result = allMatcher.match(nav);
 
 			expect(result).toBeNull();
@@ -135,7 +135,7 @@ describe("MatchAll", () => {
 				matcherC
 			);
 
-			const nav = MutMatchNav.fromNew(new StrSlice("ABCD"));
+			const nav = MatchNav.fromNew(new StrSlice("ABCD"));
 			const result = allMatcher.match(nav);
 
 			expect(result).not.toBeNull();
@@ -146,7 +146,7 @@ describe("MatchAll", () => {
 		test("works with an empty matchers array", () => {
 			const allMatcher = MatchAll.fromMatchers();
 
-			const nav = MutMatchNav.fromNew(new StrSlice("ABC"));
+			const nav = MatchNav.fromNew(new StrSlice("ABC"));
 			const result = allMatcher.match(nav);
 
 			expect(result).not.toBeNull();
@@ -170,7 +170,7 @@ describe("MatchOpt", () => {
 			const innerMatcher = MatchCodePoint.fromString("A");
 			const optMatcher = MatchOpt.from(innerMatcher);
 
-			const nav = MutMatchNav.fromNew(new StrSlice("ABC"));
+			const nav = MatchNav.fromNew(new StrSlice("ABC"));
 			const result = optMatcher.match(nav);
 
 			expect(result).not.toBeNull();
@@ -181,7 +181,7 @@ describe("MatchOpt", () => {
 			const innerMatcher = MatchCodePoint.fromString("X");
 			const optMatcher = MatchOpt.from(innerMatcher);
 
-			const nav = MutMatchNav.fromNew(new StrSlice("ABC"));
+			const nav = MatchNav.fromNew(new StrSlice("ABC"));
 			const originalNavIndex = nav.captureIndex;
 			const result = optMatcher.match(nav);
 
@@ -194,7 +194,7 @@ describe("MatchOpt", () => {
 			const innerMatcher = MatchCodePoint.fromString("X");
 			const optMatcher = MatchOpt.from(innerMatcher);
 
-			const nav = MutMatchNav.fromNew(new StrSlice("ABC"));
+			const nav = MatchNav.fromNew(new StrSlice("ABC"));
 			const result = optMatcher.match(nav);
 
 			expect(result).not.toBeNull();

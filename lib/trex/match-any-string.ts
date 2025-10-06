@@ -1,8 +1,5 @@
-import {
-	MatchBase,
-	MatchStringBase,
-} from "@/trex/match-base";
-import { MutMatchNav } from "@/trex/nav";
+import { MatchBase, MatchStringBase } from "@/trex/match-base";
+import { MatchNav } from "@/trex/nav";
 import { CodePointPrefixIndex } from "@/trex/prefix-index";
 
 export class MatchAnyString extends MatchStringBase {
@@ -12,34 +9,23 @@ export class MatchAnyString extends MatchStringBase {
 		super();
 	}
 
-	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsValid();
-
+	public match(nav: MatchNav): MatchNav | null {
 		// Get the first code point from the current position
-		const codePoint = nav.source.codePointAt(
-			nav.captureIndex
-		);
-		if (codePoint === undefined) return nav.invalidate();
+		const codePoint = nav.source.codePointAt(nav.captureIndex);
+		if (codePoint === undefined) return null;
 
 		// Use the index to find potential matches
-		const candidates =
-			this.index.getElementsByCodePoint(codePoint);
-		if (candidates.length === 0) return nav.invalidate();
+		const candidates = this.index.getElementsByCodePoint(codePoint);
+		if (candidates.length === 0) return null;
 
 		// Check each candidate string
 		for (const matchValue of candidates) {
-			if (
-				nav.source.startsWith(
-					matchValue,
-					nav.captureIndex
-				)
-			) {
-				nav.moveCaptureForward(matchValue.length);
-				return nav;
+			if (nav.source.startsWith(matchValue, nav.captureIndex)) {
+				return nav.moveCaptureForward(matchValue.length);
 			}
 		}
 
-		return nav.invalidate();
+		return null;
 	}
 
 	public matchString(string: string): boolean {
@@ -49,11 +35,8 @@ export class MatchAnyString extends MatchStringBase {
 	/**
 	 * Factory method to create a MatchAnyString from an array of strings
 	 */
-	public static fromStrings(
-		...matchValues: string[]
-	): MatchAnyString {
-		const index =
-			CodePointPrefixIndex.fromStrings(matchValues);
+	public static fromStrings(...matchValues: string[]): MatchAnyString {
+		const index = CodePointPrefixIndex.fromStrings(matchValues);
 		return new MatchAnyString(index);
 	}
 }

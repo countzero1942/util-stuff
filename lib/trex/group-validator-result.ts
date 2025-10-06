@@ -1,12 +1,12 @@
 import { GroupValidatorError } from "./group-validator-error";
-import { MutMatchNav } from "./nav";
+import { MatchNav } from "./nav";
 
 export class GroupValidatorResult {
 	private constructor(
 		public readonly isValid: boolean,
 		public readonly message: string,
-		public readonly errorNav: MutMatchNav | null = null,
-		public readonly parentNav: MutMatchNav | null = null
+		public readonly errorNav: MatchNav | null = null,
+		public readonly parentNav: MatchNav | null = null
 	) {}
 
 	get isError(): boolean {
@@ -19,16 +19,11 @@ export class GroupValidatorResult {
 	}
 
 	static FromError(
-		errorNav: MutMatchNav,
-		parentNav: MutMatchNav,
+		errorNav: MatchNav,
+		parentNav: MatchNav,
 		msg: string
 	): GroupValidatorResult {
-		return new GroupValidatorResult(
-			false,
-			msg,
-			errorNav.copy(),
-			parentNav.copy()
-		);
+		return new GroupValidatorResult(false, msg, errorNav, parentNav);
 	}
 
 	toError(): GroupValidatorError {

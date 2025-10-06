@@ -1,35 +1,27 @@
-import { MutMatchNav } from "./nav";
+import { MatchNav } from "./nav";
 
 export class GroupValidatorError {
 	private constructor(
-		public readonly errorNav: MutMatchNav,
-		public readonly parentNav: MutMatchNav,
+		public readonly errorNav: MatchNav,
+		public readonly parentNav: MatchNav,
 		public readonly message: string
 	) {}
 
 	static from(
-		errorNav: MutMatchNav,
-		parentNav: MutMatchNav,
+		errorNav: MatchNav,
+		parentNav: MatchNav,
 		message: string = "Unexpected"
 	): GroupValidatorError {
-		return new GroupValidatorError(
-			errorNav.copy(),
-			parentNav.copy(),
-			message
-		);
+		return new GroupValidatorError(errorNav, parentNav, message);
 	}
 
-	static fromDefault(errorNav: MutMatchNav): GroupValidatorError {
-		return GroupValidatorError.from(
-			errorNav.copy(),
-			errorNav.copy(),
-			"Unexpected"
-		);
+	static fromDefault(errorNav: MatchNav): GroupValidatorError {
+		return GroupValidatorError.from(errorNav, errorNav, "Unexpected");
 	}
 
 	static #_empty: GroupValidatorError = new GroupValidatorError(
-		MutMatchNav.fromString(""),
-		MutMatchNav.fromString(""),
+		MatchNav.fromString(""),
+		MatchNav.fromString(""),
 		"Unexpected"
 	);
 	static get empty(): GroupValidatorError {

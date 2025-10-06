@@ -3,14 +3,14 @@ import { GroupMatchRepeat } from "./group-match-repeat";
 import { GroupName } from "./group-name";
 import { GroupValidatorError } from "./group-validator-error";
 import { GroupValidatorResult } from "./group-validator-result";
-import { MutMatchNav } from "./nav";
+import { MatchNav } from "./nav";
 
 export abstract class GroupValidatorBase {
 	constructor(public readonly targetName: GroupName) {}
 
 	abstract validate(
-		testNav: MutMatchNav,
-		parentNav: MutMatchNav
+		testNav: MatchNav,
+		parentNav: MatchNav
 	): GroupValidatorResult;
 }
 
@@ -38,10 +38,7 @@ export class GroupRepeatValidator extends GroupValidatorBase {
 		return new GroupRepeatValidator(targetName, contentMatcher);
 	}
 
-	validate(
-		testNav: MutMatchNav,
-		parentNav: MutMatchNav
-	): GroupValidatorResult {
+	validate(testNav: MatchNav, parentNav: MatchNav): GroupValidatorResult {
 		const result = this.contentMatcher.match(testNav.copy(), null);
 		if (result instanceof GroupValidatorError) {
 			return GroupValidatorResult.FromError(

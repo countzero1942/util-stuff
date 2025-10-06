@@ -11,7 +11,7 @@ import {
 	MatchNot,
 	MatchOpt,
 	MatchRepeat,
-	MutMatchNav,
+	MatchNav,
 	NumberOfMatches,
 } from "@/trex";
 import { div, logh, loghn } from "@/utils/log";
@@ -30,7 +30,7 @@ const matchSuccessfulNavStrings = (
 	logh("Success cases");
 	for (const pair of navStrings) {
 		const [navStr, expected] = pair.split("->");
-		const nav = MutMatchNav.fromString(navStr);
+		const nav = MatchNav.fromString(navStr);
 		const result = matcher.match(nav);
 		if (!result) {
 			log(chalk.red(">>> UNEXPECTED NO MATCH <<<"));
@@ -57,7 +57,7 @@ const matchFailedNavStrings = (
 	logh("Failure cases");
 	for (const pair of navStrings) {
 		const [navStr, msg] = pair.split("->");
-		const nav = MutMatchNav.fromString(navStr);
+		const nav = MatchNav.fromString(navStr);
 		const result = matcher.match(nav);
 
 		const msgStr = msg ? `-> '${chalk.cyan(msg)}'` : "";
@@ -519,7 +519,7 @@ const doNoOvermatchingError = () => {
 
 	logh("Success cases");
 	for (const tab of tabs) {
-		const nav = MutMatchNav.fromString(tab);
+		const nav = MatchNav.fromString(tab);
 		const result = repeatMatcher.match(nav);
 		if (!result) {
 			log(
@@ -533,7 +533,7 @@ const doNoOvermatchingError = () => {
 
 	logh("Failed cases");
 	for (const tab of failedTabs) {
-		const nav = MutMatchNav.fromString(tab);
+		const nav = MatchNav.fromString(tab);
 		const result = repeatMatcher.match(nav);
 		if (result) {
 			log(
@@ -571,20 +571,20 @@ const doTimedRepeatMatcherTestContentOnlyEfficiency = () => {
 	const failedNavStrings = [...failedNavStringsA, ...failedNavStringsB];
 
 	const succesfulNavs = succesfulNavStrings.map(navStr =>
-		MutMatchNav.fromString(navStr)
+		MatchNav.fromString(navStr)
 	);
 
 	const failedNavs = failedNavStrings.map(navStr =>
-		MutMatchNav.fromString(navStr)
+		MatchNav.fromString(navStr)
 	);
 
 	const checkResults = (
 		title: string,
-		matchfn: (nav: MutMatchNav) => MutMatchNav | null
+		matchfn: (nav: MatchNav) => MatchNav | null
 	) => {
 		loghn(title);
 		for (const nav of succesfulNavs) {
-			const result = matchfn(nav.copy());
+			const result = matchfn(nav);
 			if (!result) {
 				log(chalk.red(`No match for navString: ${nav}`));
 				continue;
@@ -601,7 +601,7 @@ const doTimedRepeatMatcherTestContentOnlyEfficiency = () => {
 		}
 
 		for (const nav of failedNavs) {
-			const result = matchfn(nav.copy());
+			const result = matchfn(nav);
 			if (result) {
 				log(chalk.red(`Should not match navString: ${nav}`));
 				continue;
@@ -619,7 +619,7 @@ const doTimedRepeatMatcherTestContentOnlyEfficiency = () => {
 
 	const doRepeatMatch = (
 		title: string,
-		matchfn: (nav: MutMatchNav) => MutMatchNav | null
+		matchfn: (nav: MatchNav) => MatchNav | null
 	) => {
 		loghn(title);
 
@@ -627,13 +627,13 @@ const doTimedRepeatMatcherTestContentOnlyEfficiency = () => {
 
 		for (let i = 0; i < repeatCount; i++) {
 			for (const nav of succesfulNavs) {
-				const result = matchfn(nav.copy());
+				const result = matchfn(nav);
 				if (!result) throw "never";
 				else if (result.captureLength !== nav.source.length)
 					throw "never";
 			}
 			for (const nav of failedNavs) {
-				const result = matchfn(nav.copy());
+				const result = matchfn(nav);
 				if (result) throw "never";
 			}
 		}

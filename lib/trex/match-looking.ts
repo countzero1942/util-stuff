@@ -1,9 +1,6 @@
-import {
-	MatchBase,
-	MatchCodePointBase,
-} from "./match-base";
+import { MatchBase, MatchCodePointBase } from "./match-base";
 import { MatchAnyString } from "./match-any-string";
-import { MutMatchNav } from "./nav";
+import { MatchNav } from "./nav";
 
 /**
  * Matches the code-point-based matcher at the position before
@@ -16,9 +13,7 @@ export class LookBehindCodePoint extends MatchBase {
 	 * @param matcher The matcher to match.
 	 * @returns A new LookBehindCodePoint instance.
 	 */
-	protected constructor(
-		public readonly matcher: MatchCodePointBase
-	) {
+	protected constructor(public readonly matcher: MatchCodePointBase) {
 		super();
 	}
 
@@ -27,16 +22,12 @@ export class LookBehindCodePoint extends MatchBase {
 	 * the current nav position.
 	 *
 	 * If the lookbehind match is successful, the nav is returned unaltered.
-	 *
-	 * If the lookbehind match is not successful, the nav is invalidated
-	 * and null returned.
+	 * Otherwise null is returned.
 	 *
 	 * @param nav The navigation to match.
 	 * @returns The navigation after matching, or null if no match.
 	 */
-	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsValid();
-
+	public match(nav: MatchNav): MatchNav | null {
 		const behindCodePoint = nav.peekBehindCodePoint();
 		if (
 			behindCodePoint !== undefined &&
@@ -45,7 +36,7 @@ export class LookBehindCodePoint extends MatchBase {
 			return nav;
 		}
 
-		return nav.invalidate();
+		return null;
 	}
 
 	/**
@@ -54,9 +45,7 @@ export class LookBehindCodePoint extends MatchBase {
 	 * @param matcher The matcher to match.
 	 * @returns A new LookBehindCodePoint instance.
 	 */
-	public static from(
-		matcher: MatchCodePointBase
-	): LookBehindCodePoint {
+	public static from(matcher: MatchCodePointBase): LookBehindCodePoint {
 		return new LookBehindCodePoint(matcher);
 	}
 }
@@ -66,17 +55,13 @@ export class LookBehindCodePoint extends MatchBase {
  * current nav position.
  *
  * If the lookbehind match is successful, the nav is returned unaltered.
- *
- * If the lookbehind match is not successful, the nav is invalidated
- * and null returned.
+ * Otherwise null is returned.
  *
  * @param nav The navigation to match.
  * @returns The navigation after matching, or null if no match.
  */
 export class LookBehindAnyString extends MatchBase {
-	protected constructor(
-		public readonly matcher: MatchAnyString
-	) {
+	protected constructor(public readonly matcher: MatchAnyString) {
 		super();
 	}
 
@@ -89,23 +74,18 @@ export class LookBehindAnyString extends MatchBase {
 	 * back each length and uses prefix index to check if the string exists.
 	 *
 	 * If the lookbehind match is successful, the nav is returned unaltered.
-	 *
-	 * If the lookbehind match is not successful, the nav is invalidated
-	 * and null returned.
+ 	 * Otherwise null is returned.
 	 *
 	 * @param nav The navigation to match.
 	 * @returns The navigation after matching, or null if no match.
 	 */
-	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsValid();
-
+	public match(nav: MatchNav): MatchNav | null {
 		const prefixIndex = this.matcher.index;
 
 		const keyLengths = prefixIndex.getAllKeyLengths();
 
 		for (const keyLength of keyLengths) {
-			const behindSlice =
-				nav.peekBehindSliceByLength(keyLength);
+			const behindSlice = nav.peekBehindSliceByLength(keyLength);
 			if (
 				behindSlice !== undefined &&
 				prefixIndex.hasSlice(behindSlice)
@@ -114,7 +94,7 @@ export class LookBehindAnyString extends MatchBase {
 			}
 		}
 
-		return nav.invalidate();
+		return null;
 	}
 
 	/**
@@ -123,9 +103,7 @@ export class LookBehindAnyString extends MatchBase {
 	 * @param matcher The matcher to match.
 	 * @returns A new LookBehindAnyString instance.
 	 */
-	public static from(
-		matcher: MatchAnyString
-	): LookBehindAnyString {
+	public static from(matcher: MatchAnyString): LookBehindAnyString {
 		return new LookBehindAnyString(matcher);
 	}
 }
@@ -134,18 +112,14 @@ export class LookBehindAnyString extends MatchBase {
  * Matches the given code-point-based matcher at the position after the
  * current nav position.
  *
- * If the lookbehind match is successful, the nav is returned unaltered.
- *
- * If the lookbehind match is not successful, the nav is invalidated
- * and null returned.
+ * If the lookahead match is successful, the nav is returned unaltered.
+ * Otherwise null is returned.
  *
  * @param nav The navigation to match.
  * @returns The navigation after matching, or null if no match.
  */
 export class LookAheadCodePoint extends MatchBase {
-	protected constructor(
-		public readonly matcher: MatchCodePointBase
-	) {
+	protected constructor(public readonly matcher: MatchCodePointBase) {
 		super();
 	}
 
@@ -153,17 +127,13 @@ export class LookAheadCodePoint extends MatchBase {
 	 * Matches the given code-point-based matcher at the position after the
 	 * current nav position.
 	 *
-	 * If the lookbehind match is successful, the nav is returned unaltered.
-	 *
-	 * If the lookbehind match is not successful, the nav is invalidated
-	 * and null returned.
+	 * If the lookahead match is successful, the nav is returned unaltered.
+	 * Otherwise null is returned.
 	 *
 	 * @param nav The navigation to match.
 	 * @returns The navigation after matching, or null if no match.
 	 */
-	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsValid();
-
+	public match(nav: MatchNav): MatchNav | null {
 		const aheadCodePoint = nav.peekAheadCodePoint();
 		if (
 			aheadCodePoint !== undefined &&
@@ -172,51 +142,30 @@ export class LookAheadCodePoint extends MatchBase {
 			return nav;
 		}
 
-		return nav.invalidate();
+		return null;
 	}
 
-	public static from(
-		matcher: MatchCodePointBase
-	): LookAheadCodePoint {
+	public static from(matcher: MatchCodePointBase): LookAheadCodePoint {
 		return new LookAheadCodePoint(matcher);
 	}
 }
 
 /**
  * Matches the given string-based matcher at the position after the
- * current nav position.
- *
- * If the lookbehind match is successful, the nav is returned unaltered.
- *
- * If the lookbehind match is not successful, the nav is invalidated
- * and null returned.
+ * current nav position. Uses prefix index for O(1) lookups.
  *
  * @param nav The navigation to match.
  * @returns The navigation after matching, or null if no match.
  */
 export class LookAheadAnyString extends MatchBase {
-	protected constructor(
-		public readonly matcher: MatchAnyString
-	) {
+	protected constructor(public readonly matcher: MatchAnyString) {
 		super();
 	}
 
-	/**
-	 * Matches the given string-based matcher at the position after the
-	 * current nav position. Uses prefix index for O(1) lookups.
-	 *
-	 * @param nav The navigation to match.
-	 * @returns The navigation after matching, or null if no match.
-	 */
-	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsValid();
-
-		const aheadNav = nav.copyAndMoveNext(
-			"OptMoveForward"
-		);
+	public match(nav: MatchNav): MatchNav | null {
+		const aheadNav = nav.moveNext("OptMoveForward");
 		const result = this.matcher.match(aheadNav);
-
-		return result ? nav : nav.invalidate();
+		return result ? nav : null;
 	}
 
 	/**
@@ -225,9 +174,7 @@ export class LookAheadAnyString extends MatchBase {
 	 * @param matcher The matcher to match.
 	 * @returns A new LookAheadAnyString instance.
 	 */
-	public static from(
-		matcher: MatchAnyString
-	): LookAheadAnyString {
+	public static from(matcher: MatchAnyString): LookAheadAnyString {
 		return new LookAheadAnyString(matcher);
 	}
 }

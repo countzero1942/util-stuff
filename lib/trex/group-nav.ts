@@ -1,4 +1,4 @@
-import { MutMatchNav } from "./nav";
+import { MatchNav } from "./nav";
 import { GroupName } from "./group-name";
 import chalk from "chalk";
 import { parentPort } from "worker_threads";
@@ -30,12 +30,12 @@ export class GroupMatchNav {
 
 	#_children: GroupMatchNav[];
 	#_isConstructed: boolean;
-	#_wholeMatchNav: MutMatchNav;
+	#_wholeMatchNav: MatchNav;
 	#_parent: GroupMatchNav | null = null;
 
 	protected constructor(
 		public readonly groupName: GroupName,
-		wholeMatchNav: MutMatchNav,
+		wholeMatchNav: MatchNav,
 		parent: GroupMatchNav | null,
 		children: GroupMatchNav[],
 		isConstructed: boolean
@@ -47,7 +47,7 @@ export class GroupMatchNav {
 	}
 
 	static fromLeaf(
-		wholeMatchNav: MutMatchNav,
+		wholeMatchNav: MatchNav,
 		groupName: GroupName,
 		parent: GroupMatchNav | null
 	): GroupMatchNav {
@@ -61,7 +61,7 @@ export class GroupMatchNav {
 	}
 
 	static fromBranch(
-		wholeMatchNav: MutMatchNav,
+		wholeMatchNav: MatchNav,
 		groupName: GroupName,
 		parent: GroupMatchNav | null,
 		children: readonly GroupMatchNav[]
@@ -81,7 +81,7 @@ export class GroupMatchNav {
 	) {
 		return new GroupMatchNav(
 			groupName,
-			MutMatchNav.fromString(""),
+			MatchNav.fromString(""),
 			parent,
 			[],
 			false
@@ -98,7 +98,7 @@ export class GroupMatchNav {
 		this.#_children.push(child);
 	}
 
-	seal(wholeMatchNav: MutMatchNav) {
+	seal(wholeMatchNav: MatchNav) {
 		if (this.#_isConstructed) {
 			throw new Error("Cannot seal a constructed group match nav");
 		}
@@ -212,7 +212,7 @@ export class GroupMatchNav {
 		return this.#_parent === null || this.groupName.isNotEmpty;
 	}
 
-	get wholeMatchNav(): MutMatchNav {
+	get wholeMatchNav(): MatchNav {
 		return this.#_wholeMatchNav;
 	}
 
@@ -225,12 +225,12 @@ export class GroupMatchNav {
 	 *
 	 * @returns The content match nav.
 	 */
-	get contentMatchNav(): MutMatchNav {
+	get contentMatchNav(): MatchNav {
 		const length = this.#_children.length;
 		if (length >= 1) {
 			const potentialEnd = this.#_children[length - 1];
 			if (potentialEnd.groupName.isGroupName(GroupName.end)) {
-				return this.#_wholeMatchNav.copyAndShrinkCapture(
+				return this.#_wholeMatchNav.shrinkCapture(
 					potentialEnd.#_wholeMatchNav.captureLength
 				);
 			}

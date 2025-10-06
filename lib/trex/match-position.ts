@@ -1,5 +1,5 @@
 import { MatchPositionBase } from "@/trex/match-base";
-import { MutMatchNav } from "@/trex/nav";
+import { MatchNav } from "@/trex/nav";
 
 /**
  * Matches if the nav is at the start of the source StrSlice.
@@ -29,17 +29,13 @@ export class MatchStartSlice extends MatchPositionBase {
 	 * Matches if the nav is at the start of the source StrSlice.
 	 *
 	 * If the nav is at the start, the nav is returned unaltered.
-	 *
-	 * If the nav is not at the start, the nav is invalidated and null returned.
+	 * Otherwise null is returned.
 	 *
 	 * @param nav The navigation to match.
 	 * @returns The navigation after matching, or null if no match.
 	 */
-	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsValid();
-		return nav.captureIndex === 0
-			? nav
-			: nav.invalidate();
+	public match(nav: MatchNav): MatchNav | null {
+		return nav.captureIndex === 0 ? nav : null;
 	}
 }
 
@@ -71,17 +67,13 @@ export class MatchEndSlice extends MatchPositionBase {
 	 * Matches if the nav is at the end of the source StrSlice.
 	 *
 	 * If the nav is at the end, the nav is returned unaltered.
-	 *
-	 * If the nav is not at the end, the nav is invalidated and null returned.
+	 * Otherwise null is returned.
 	 *
 	 * @param nav The navigation to match.
 	 * @returns The navigation after matching, or null if no match.
 	 */
-	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsValid();
-		return nav.captureIndex === nav.source.length
-			? nav
-			: nav.invalidate();
+	public match(nav: MatchNav): MatchNav | null {
+		return nav.captureIndex === nav.source.length ? nav : null;
 	}
 }
 
@@ -113,17 +105,13 @@ export class MatchNotStartSlice extends MatchPositionBase {
 	 * Matches if the nav is NOT at the start of the source StrSlice.
 	 *
 	 * If the nav is NOT at the start, the nav is returned unaltered.
-	 *
-	 * If the nav is at the start, the nav is invalidated and null returned.
+	 * Otherwise null is returned.
 	 *
 	 * @param nav The navigation to match.
 	 * @returns The navigation after matching, or null if no match.
 	 */
-	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsValid();
-		return nav.captureIndex !== 0
-			? nav
-			: nav.invalidate();
+	public match(nav: MatchNav): MatchNav | null {
+		return nav.captureIndex !== 0 ? nav : null;
 	}
 }
 
@@ -155,16 +143,12 @@ export class MatchNotEndSlice extends MatchPositionBase {
 	 * Matches if the nav is NOT at the end of the source StrSlice.
 	 *
 	 * If the nav is NOT at the end, the nav is returned unaltered.
-	 *
-	 * If the nav is at the end, the nav is invalidated and null returned.
+	 * Otherwise null is returned.
 	 *
 	 * @param nav The navigation to match.
 	 * @returns The navigation after matching, or null if no match.
 	 */
-	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsValid();
-		return nav.captureIndex !== nav.source.length
-			? nav
-			: nav.invalidate();
+	public match(nav: MatchNav): MatchNav | null {
+		return nav.captureIndex !== nav.source.length ? nav : null;
 	}
 }

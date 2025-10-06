@@ -1,12 +1,9 @@
 import unicode from "unicode-properties";
 
 import { CodePointSeq } from "@/utils/seq";
-import {
-	getCodePointCharLength,
-	isCodePointValid,
-} from "@/utils/string";
+import { getCodePointCharLength, isCodePointValid } from "@/utils/string";
 import { MatchCodePointBase } from "@/trex/match-base";
-import { MutMatchNav } from "@/trex/nav";
+import { MatchNav } from "@/trex/nav";
 import { getType } from "@/utils/types";
 
 /**
@@ -15,9 +12,7 @@ import { getType } from "@/utils/types";
  * @param codePoint Code point to convert
  * @returns String representation of the code point
  */
-const getCodePointStringForErrorMsg = (
-	codePoint: number
-) =>
+const getCodePointStringForErrorMsg = (codePoint: number) =>
 	codePoint < 0
 		? codePoint.toString()
 		: `0x${codePoint.toString(16).toUpperCase()}`;
@@ -44,9 +39,7 @@ export class MatchCodePoint extends MatchCodePointBase {
 	 * @param matchValue Code point to match
 	 * @returns A new MatchCodePoint instance
 	 */
-	public static fromNumber(
-		matchValue: number
-	): MatchCodePoint {
+	public static fromNumber(matchValue: number): MatchCodePoint {
 		if (!isCodePointValid(matchValue)) {
 			throw new Error(
 				`MatchCodePoint.fromNumber: Invalid code point: ${getCodePointStringForErrorMsg(matchValue)}`
@@ -61,14 +54,11 @@ export class MatchCodePoint extends MatchCodePointBase {
 	 * @param matchValue String to match
 	 * @returns A new MatchCodePoint instance
 	 */
-	public static fromString(
-		matchValue: string
-	): MatchCodePoint {
+	public static fromString(matchValue: string): MatchCodePoint {
 		const codePoint = matchValue.codePointAt(0);
 		if (
 			codePoint === undefined ||
-			getCodePointCharLength(codePoint) !==
-				matchValue.length
+			getCodePointCharLength(codePoint) !== matchValue.length
 		) {
 			throw new Error(
 				`MatchCodePoint.fromString: Invalid code point string: '${matchValue}'`
@@ -81,24 +71,17 @@ export class MatchCodePoint extends MatchCodePointBase {
 	 * Attempt to match code point at nav index position. If successful,
 	 * nav capture is moved forward by the length of the matched code point.
 	 *
-	 * Otherwise nav is invalidated and null returned.
+	 * Otherwise null is returned.
 	 *
 	 * @param nav Navigation state to use for matching
-	 * @returns Navr captures code point if successful, or nav.invalidate() if no match
+	 * @returns MatchNav capturing the code point if successful, or null if no match
 	 */
-	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsValid();
+	public match(nav: MatchNav): MatchNav | null {
 		const codePoint = nav.peekCodePoint();
-		if (
-			codePoint !== undefined &&
-			codePoint === this.matchValue
-		) {
-			nav.moveCaptureForward(
-				getCodePointCharLength(codePoint)
-			);
-			return nav;
+		if (codePoint !== undefined && codePoint === this.matchValue) {
+			return nav.moveCaptureForward(getCodePointCharLength(codePoint));
 		}
-		return nav.invalidate();
+		return null;
 	}
 
 	/**
@@ -108,10 +91,7 @@ export class MatchCodePoint extends MatchCodePointBase {
 	 * @returns True if the code point matches the matcher, otherwise false
 	 */
 	public matchCodePoint(codePoint: number): boolean {
-		if (
-			codePoint !== undefined &&
-			codePoint === this.matchValue
-		) {
+		if (codePoint !== undefined && codePoint === this.matchValue) {
 			return true;
 		}
 		return false;
@@ -152,24 +132,17 @@ export class MatchCodePointLambda extends MatchCodePointBase {
 	 * Attempt to match code point at nav index position. If successful,
 	 * nav capture is moved forward by the length of the matched code point.
 	 *
-	 * Otherwise nav is invalidated and null returned.
+	 * Otherwise null is returned.
 	 *
 	 * @param nav Navigation state to use for matching
-	 * @returns Navr captures code point if successful, or nav.invalidate() if no match
+	 * @returns MatchNav capturing the code point if successful, or null if no match
 	 */
-	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsValid();
+	public match(nav: MatchNav): MatchNav | null {
 		const codePoint = nav.peekCodePoint();
-		if (
-			codePoint !== undefined &&
-			this.lambda(codePoint)
-		) {
-			nav.moveCaptureForward(
-				getCodePointCharLength(codePoint)
-			);
-			return nav;
+		if (codePoint !== undefined && this.lambda(codePoint)) {
+			return nav.moveCaptureForward(getCodePointCharLength(codePoint));
 		}
-		return nav.invalidate();
+		return null;
 	}
 
 	/**
@@ -235,9 +208,7 @@ export class CodePointRange {
 			codepoints.length !== 3 ||
 			codepoints[1].element !== dashCodePoint
 		) {
-			throw new Error(
-				`Invalid code point range: '${range}'`
-			);
+			throw new Error(`Invalid code point range: '${range}'`);
 		}
 
 		return new CodePointRange(
@@ -257,10 +228,7 @@ export class CodePointRange {
 		startCodePoint: number,
 		endCodePoint: number
 	): CodePointRange {
-		return new CodePointRange(
-			startCodePoint,
-			endCodePoint
-		);
+		return new CodePointRange(startCodePoint, endCodePoint);
 	}
 
 	/**
@@ -270,9 +238,7 @@ export class CodePointRange {
 	 * @returns True if the code point is in the range, otherwise false
 	 */
 	public contains(codePoint: number): boolean {
-		return (
-			codePoint >= this.start && codePoint <= this.end
-		);
+		return codePoint >= this.start && codePoint <= this.end;
 	}
 
 	/**
@@ -282,11 +248,7 @@ export class CodePointRange {
 	 */
 	public *codePoints(): Generator<number> {
 		const end = this.end;
-		for (
-			let codePoint = this.start;
-			codePoint <= end;
-			codePoint++
-		) {
+		for (let codePoint = this.start; codePoint <= end; codePoint++) {
 			yield codePoint;
 		}
 	}
@@ -313,9 +275,7 @@ export class CodePointRange {
 	 */
 	public toExpandedString(): string {
 		const codePoints = this.codePoints().toArray();
-		const fullString = String.fromCodePoint(
-			...codePoints
-		);
+		const fullString = String.fromCodePoint(...codePoints);
 		return fullString;
 	}
 }
@@ -331,9 +291,7 @@ export class MatchCodePointSet extends MatchCodePointBase {
 	protected constructor(codePointSet: Set<number>) {
 		super();
 		if (codePointSet.size === 0) {
-			throw new Error(
-				"MatchCodePointSet: empty code point set"
-			);
+			throw new Error("MatchCodePointSet: empty code point set");
 		}
 		this.#codePointSet = codePointSet;
 	}
@@ -353,9 +311,7 @@ export class MatchCodePointSet extends MatchCodePointBase {
 	 * @param codePoints String of code points to match
 	 * @returns A new MatchCodePointSet instance
 	 */
-	public static fromString(
-		codePoints: string
-	): MatchCodePointSet {
+	public static fromString(codePoints: string): MatchCodePointSet {
 		if (codePoints.length === 0) {
 			throw new Error(
 				"MatchCodePointSet.fromString: empty code points string"
@@ -382,11 +338,7 @@ export class MatchCodePointSet extends MatchCodePointBase {
 	 * @returns A new MatchCodePointSet instance
 	 */
 	public static fromArgs(
-		...args: readonly (
-			| CodePointRange
-			| MatchCodePointSet
-			| string
-		)[]
+		...args: readonly (CodePointRange | MatchCodePointSet | string)[]
 	): MatchCodePointSet {
 		const codePointSet = new Set<number>();
 		for (const arg of args) {
@@ -402,9 +354,7 @@ export class MatchCodePointSet extends MatchCodePointBase {
 							"MatchCodePointSet.fromArgs: empty code points string"
 						);
 					}
-					const codePointSeq = new CodePointSeq(
-						arg as string
-					);
+					const codePointSeq = new CodePointSeq(arg as string);
 					codePointSeq.foreach(codePoint => {
 						codePointSet.add(codePoint.element);
 					});
@@ -433,10 +383,7 @@ export class MatchCodePointSet extends MatchCodePointBase {
 	public static fromNumbers(
 		...codePoints: readonly number[]
 	): MatchCodePointSet {
-		if (
-			codePoints === undefined ||
-			codePoints.length === 0
-		) {
+		if (codePoints === undefined || codePoints.length === 0) {
 			throw new Error(
 				"MatchCodePointSet.fromNumbers: empty code points array"
 			);
@@ -459,9 +406,7 @@ export class MatchCodePointSet extends MatchCodePointBase {
 	 * @param codePointSet Set of code points to match
 	 * @returns A new MatchCodePointSet instance
 	 */
-	public static fromSet(
-		codePointSet: Set<number>
-	): MatchCodePointSet {
+	public static fromSet(codePointSet: Set<number>): MatchCodePointSet {
 		return new MatchCodePointSet(new Set(codePointSet));
 	}
 
@@ -469,24 +414,17 @@ export class MatchCodePointSet extends MatchCodePointBase {
 	 * Attempt to match code point at nav index position. If successful,
 	 * nav capture is moved forward by the length of the matched code point.
 	 *
-	 * Otherwise nav is invalidated and null returned.
+	 * Otherwise null is returned.
 	 *
 	 * @param nav Navigation state to use for matching
-	 * @returns Navr captures code point if successful, or nav.invalidate() if no match
+	 * @returns MatchNav capturing the code point if successful, or null if no match
 	 */
-	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsValid();
+	public match(nav: MatchNav): MatchNav | null {
 		const codePoint = nav.peekCodePoint();
-		if (
-			codePoint !== undefined &&
-			this.#codePointSet.has(codePoint)
-		) {
-			nav.moveCaptureForward(
-				getCodePointCharLength(codePoint)
-			);
-			return nav;
+		if (codePoint !== undefined && this.#codePointSet.has(codePoint)) {
+			return nav.moveCaptureForward(getCodePointCharLength(codePoint));
 		}
-		return nav.invalidate();
+		return null;
 	}
 
 	/**
@@ -535,8 +473,7 @@ const initializeAllUnicodeCategories = (): Set<string> => {
 	return categoriesSet;
 };
 
-export const allUnicodeCategories =
-	initializeAllUnicodeCategories();
+export const allUnicodeCategories = initializeAllUnicodeCategories();
 
 /**
  * MatchCodePointCategories: a unicode-category-based set matcher
@@ -571,26 +508,20 @@ export class MatchCodePointCategories extends MatchCodePointBase {
 	 * Attempt to match code point at nav index position. If successful,
 	 * nav capture is moved forward by the length of the matched code point.
 	 *
-	 * Otherwise nav is invalidated and null returned.
+	 * Otherwise null is returned.
 	 *
 	 * @param nav Navigation state to use for matching
-	 * @returns Navr captures code point if successful, or nav.invalidate() if no match
+	 * @returns MatchNav capturing the code point if successful, or null if no match
 	 */
-	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsValid();
+	public match(nav: MatchNav): MatchNav | null {
 		const codePoint = nav.peekCodePoint();
 		if (
 			codePoint !== undefined &&
-			this.#categories.has(
-				unicode.getCategory(codePoint)
-			)
+			this.#categories.has(unicode.getCategory(codePoint))
 		) {
-			nav.moveCaptureForward(
-				getCodePointCharLength(codePoint)
-			);
-			return nav;
+			return nav.moveCaptureForward(getCodePointCharLength(codePoint));
 		}
-		return nav.invalidate();
+		return null;
 	}
 
 	/**
@@ -600,9 +531,7 @@ export class MatchCodePointCategories extends MatchCodePointBase {
 	 * @returns True if the code point is in the set, otherwise false
 	 */
 	public matchCodePoint(codePoint: number): boolean {
-		return this.#categories.has(
-			unicode.getCategory(codePoint)
-		);
+		return this.#categories.has(unicode.getCategory(codePoint));
 	}
 
 	/**
@@ -611,15 +540,11 @@ export class MatchCodePointCategories extends MatchCodePointBase {
 	 * @param categories String of categories to match
 	 * @returns A new MatchCodePointCategories instance
 	 */
-	public static fromString(
-		categories: string
-	): MatchCodePointCategories {
+	public static fromString(categories: string): MatchCodePointCategories {
 		const categoriesSet = new Set<string>();
 		for (const category of categories.split(" ")) {
 			if (!allUnicodeCategories.has(category)) {
-				throw new Error(
-					`Invalid Unicode category: ${category}`
-				);
+				throw new Error(`Invalid Unicode category: ${category}`);
 			}
 			categoriesSet.add(category);
 		}
@@ -633,9 +558,7 @@ export class MatchCodePointCategories extends MatchCodePointBase {
  * @param range Range of code points to match
  */
 export class MatchCodePointRange extends MatchCodePointBase {
-	protected constructor(
-		public readonly range: CodePointRange
-	) {
+	protected constructor(public readonly range: CodePointRange) {
 		super();
 		// note: ranges are validated in constructor
 	}
@@ -644,26 +567,17 @@ export class MatchCodePointRange extends MatchCodePointBase {
 	 * Attempt to match code point at nav index position. If successful,
 	 * nav capture is moved forward by the length of the matched code point.
 	 *
-	 * Otherwise nav is invalidated and null returned.
+	 * Otherwise null is returned.
 	 *
 	 * @param nav Navigation state to use for matching
-	 * @returns Navr captures code point if successful, or nav.invalidate() if no match
+	 * @returns MatchNav capturing the code point if successful, or null if no match
 	 */
-	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsValid();
-		const codePoint = nav.source.codePointAt(
-			nav.captureIndex
-		);
-		if (
-			codePoint !== undefined &&
-			this.range.contains(codePoint)
-		) {
-			nav.moveCaptureForward(
-				getCodePointCharLength(codePoint)
-			);
-			return nav;
+	public match(nav: MatchNav): MatchNav | null {
+		const codePoint = nav.peekCodePoint();
+		if (codePoint !== undefined && this.range.contains(codePoint)) {
+			return nav.moveCaptureForward(getCodePointCharLength(codePoint));
 		}
-		return nav.invalidate();
+		return null;
 	}
 
 	/**
@@ -684,12 +598,8 @@ export class MatchCodePointRange extends MatchCodePointBase {
 	 * @param range String of code points to match
 	 * @returns A new MatchCodePointRange instance
 	 */
-	public static fromString(
-		range: string
-	): MatchCodePointRange {
-		return new MatchCodePointRange(
-			CodePointRange.fromString(range)
-		);
+	public static fromString(range: string): MatchCodePointRange {
+		return new MatchCodePointRange(CodePointRange.fromString(range));
 	}
 
 	/**
@@ -698,9 +608,7 @@ export class MatchCodePointRange extends MatchCodePointBase {
 	 * @param range CodePointRange to match
 	 * @returns A new MatchCodePointRange instance
 	 */
-	public static fromRange(
-		range: CodePointRange
-	): MatchCodePointRange {
+	public static fromRange(range: CodePointRange): MatchCodePointRange {
 		return new MatchCodePointRange(range);
 	}
 }
@@ -724,9 +632,7 @@ export class MatchCodePointRanges extends MatchCodePointBase {
 		super();
 		// note: ranges are validated in constructor
 		if (ranges.length === 0) {
-			throw new Error(
-				"MatchCodePointRanges: empty ranges array"
-			);
+			throw new Error("MatchCodePointRanges: empty ranges array");
 		}
 		this.#_ranges = ranges.slice(); // defensive copy
 	}
@@ -739,13 +645,9 @@ export class MatchCodePointRanges extends MatchCodePointBase {
 	 * @param ranges Array of ranges to match
 	 * @returns A new MatchCodePointRanges instance
 	 */
-	public static fromStrings(
-		...ranges: string[]
-	): MatchCodePointRanges {
+	public static fromStrings(...ranges: string[]): MatchCodePointRanges {
 		return new MatchCodePointRanges(
-			ranges.map(range =>
-				CodePointRange.fromString(range)
-			)
+			ranges.map(range => CodePointRange.fromString(range))
 		);
 	}
 
@@ -765,28 +667,20 @@ export class MatchCodePointRanges extends MatchCodePointBase {
 	 * Attempt to match code point at nav index position. If successful,
 	 * nav capture is moved forward by the length of the matched code point.
 	 *
-	 * Otherwise nav is invalidated and null returned.
+	 * Otherwise null is returned.
 	 *
 	 * @param nav Navigation state to use for matching
-	 * @returns Navr captures code point if successful, or nav.invalidate() if no match
+	 * @returns MatchNav capturing the code point if successful, or null if no match
 	 */
-	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsValid();
-		const codePoint = nav.source.codePointAt(
-			nav.captureIndex
-		);
+	public match(nav: MatchNav): MatchNav | null {
+		const codePoint = nav.peekCodePoint();
 		if (
 			codePoint !== undefined &&
-			this.ranges.some(range =>
-				range.contains(codePoint)
-			)
+			this.ranges.some(range => range.contains(codePoint))
 		) {
-			nav.moveCaptureForward(
-				getCodePointCharLength(codePoint)
-			);
-			return nav;
+			return nav.moveCaptureForward(getCodePointCharLength(codePoint));
 		}
-		return nav.invalidate();
+		return null;
 	}
 
 	/**
@@ -796,9 +690,7 @@ export class MatchCodePointRanges extends MatchCodePointBase {
 	 * @returns True if the code point is in any of the ranges, otherwise false
 	 */
 	public matchCodePoint(codePoint: number): boolean {
-		return this.ranges.some(range =>
-			range.contains(codePoint)
-		);
+		return this.ranges.some(range => range.contains(codePoint));
 	}
 
 	/**
@@ -823,9 +715,7 @@ export class MatchNotCodePoint extends MatchCodePointBase {
 	 * @param matcher Matcher to negate
 	 * @returns A new MatchNotCodePoint instance
 	 */
-	protected constructor(
-		public readonly matcher: MatchCodePointBase
-	) {
+	protected constructor(public readonly matcher: MatchCodePointBase) {
 		super();
 		if (!(matcher instanceof MatchCodePointBase)) {
 			throw new Error(
@@ -845,24 +735,20 @@ export class MatchNotCodePoint extends MatchCodePointBase {
 	 * Attempt to match code point at nav index position. If successful, nav
 	 * capture is moved forward by the length of the matched code point.
 	 *
-	 * Otherwise nav is invalidated and null returned.
+	 * Otherwise null is returned.
 	 *
 	 * @param nav Navigation state to use for matching
-	 * @returns Navr captures code point if successful, or nav.invalidate() if no match
+	 * @returns MatchNav capturing the code point if successful, or null if no match
 	 */
-	public match(nav: MutMatchNav): MutMatchNav | null {
-		nav.assertNavIsValid();
+	public match(nav: MatchNav): MatchNav | null {
 		const codePoint = nav.peekCodePoint();
 		if (
 			codePoint !== undefined &&
 			!this.matcher.matchCodePoint(codePoint)
 		) {
-			nav.moveCaptureForward(
-				getCodePointCharLength(codePoint)
-			);
-			return nav;
+			return nav.moveCaptureForward(getCodePointCharLength(codePoint));
 		}
-		return nav.invalidate();
+		return null;
 	}
 
 	/**
@@ -881,9 +767,7 @@ export class MatchNotCodePoint extends MatchCodePointBase {
 	 * @param matcher Code-point-based matcher to negate
 	 * @returns A new MatchNotCodePoint instance
 	 */
-	public static from(
-		matcher: MatchCodePointBase
-	): MatchNotCodePoint {
+	public static from(matcher: MatchCodePointBase): MatchNotCodePoint {
 		return new MatchNotCodePoint(matcher);
 	}
 }

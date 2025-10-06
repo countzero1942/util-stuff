@@ -1,9 +1,7 @@
-import { MutMatchNav } from "@/trex/nav";
+import { MatchNav } from "@/trex/nav";
 
 export abstract class MatchBase {
-	public abstract match(
-		nav: MutMatchNav
-	): MutMatchNav | null;
+	public abstract match(nav: MatchNav): MatchNav | null;
 }
 
 export abstract class MatchCodePointBase extends MatchBase {
@@ -11,9 +9,7 @@ export abstract class MatchCodePointBase extends MatchBase {
 		super();
 	}
 
-	public abstract matchCodePoint(
-		codePoint: number
-	): boolean;
+	public abstract matchCodePoint(codePoint: number): boolean;
 }
 
 export abstract class MatchStringBase extends MatchBase {

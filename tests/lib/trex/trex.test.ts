@@ -1,5 +1,5 @@
 import { StrSlice } from "@/utils/slice";
-import { MutMatchNav } from "@/trex/nav";
+import { MatchNav } from "@/trex/nav";
 import { NavToken, FindNavToken, FindAllResult, TRex } from "@/trex/trex";
 import { MatchAnyString } from "@/trex/match-any-string";
 import {
@@ -23,7 +23,7 @@ import exp from "constants";
 
 describe("NavToken", () => {
 	test("stores category, kind, and matchNav", () => {
-		const matchNav = MutMatchNav.fromString("test");
+		const matchNav = MatchNav.fromString("test");
 		matchNav.moveCaptureForward(4); // Capture the whole string
 
 		const token = new NavToken("category", "kind", matchNav);
@@ -35,7 +35,7 @@ describe("NavToken", () => {
 	});
 
 	test("formats toString correctly", () => {
-		const matchNav = MutMatchNav.fromString("test");
+		const matchNav = MatchNav.fromString("test");
 		matchNav.moveCaptureForward(4); // Capture the whole string
 
 		const token = new NavToken(":category", ":kind", matchNav);
@@ -45,7 +45,7 @@ describe("NavToken", () => {
 
 describe("FindToken and FindNavToken", () => {
 	test("FindNavToken extends NavToken with correct type parameters", () => {
-		const matchNav = MutMatchNav.fromString("test");
+		const matchNav = MatchNav.fromString("test");
 		matchNav.moveCaptureForward(4); // Capture the whole string
 
 		const token = new FindNavToken(":find", ":match", matchNav);
@@ -62,10 +62,10 @@ describe("FindAllResult", () => {
 		// Create a sample FindResult with a fragment and a match
 		const source = StrSlice.from("abc xxx def");
 
-		const fragmentNav = MutMatchNav.fromNew(source, 0);
+		const fragmentNav = MatchNav.fromNew(source, 0);
 		fragmentNav.moveCaptureForward(4); // Capture "abc "
 
-		const matchNav = MutMatchNav.fromNew(source, 4);
+		const matchNav = MatchNav.fromNew(source, 4);
 		matchNav.moveCaptureForward(3); // Capture "xxx"
 
 		const findResult = {
@@ -92,10 +92,10 @@ describe("FindAllResult", () => {
 		// Create a sample FindResult with an empty fragment and a match
 		const source = StrSlice.from("xxx def");
 
-		const fragmentNav = MutMatchNav.fromNew(source);
+		const fragmentNav = MatchNav.fromNew(source);
 		fragmentNav.moveCaptureForward(0); // Empty capture
 
-		const matchNav = MutMatchNav.fromNew(source);
+		const matchNav = MatchNav.fromNew(source);
 		matchNav.moveCaptureForward(3); // Capture "xxx"
 
 		const findResult = {
@@ -114,7 +114,7 @@ describe("FindAllResult", () => {
 		// Create a sample FindResult with a fragment but no match
 		const source = StrSlice.from("abc def");
 
-		const fragmentNav = MutMatchNav.fromNew(source, 0);
+		const fragmentNav = MatchNav.fromNew(source, 0);
 		fragmentNav.moveCaptureForward(7); // Capture the whole string
 
 		const findResult = {
@@ -220,7 +220,7 @@ describe("TRex", () => {
 			const source = StrSlice.from("abc def ghi");
 			// Create a matcher that produces an empty match
 			const emptyMatcher = {
-				match: (nav: MutMatchNav) => {
+				match: (nav: MatchNav) => {
 					nav.assertNavIsValid();
 					return nav; // Return without moving capture forward
 				},

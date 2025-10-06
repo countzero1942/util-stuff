@@ -13,7 +13,7 @@ import {
 	MatchCodePointCategories,
 	MatchEndSlice,
 	MatchRepeat,
-	MutMatchNav,
+	MatchNav,
 	NumberOfMatches,
 	removeUnnamedBranches,
 } from "@/trex";
@@ -905,14 +905,14 @@ const logTime = (matchCount: number, time: number) => {
 };
 
 const timeColonNumbersUnprunedTree = (
-	navs: MutMatchNav[],
+	navs: MatchNav[],
 	repeatCount: number
 ) => {
 	let matchCount = 0;
 	const start = performance.now();
 	for (let i = 0; i < repeatCount; i++) {
 		for (const nav of navs) {
-			const result = colonGroupMatcher.match(nav.copy(), null);
+			const result = colonGroupMatcher.match(nav, null);
 			if (!result) {
 				log(
 					chalk.red(
@@ -930,14 +930,14 @@ const timeColonNumbersUnprunedTree = (
 };
 
 const timeColonNumbersPrunedTree = (
-	navs: MutMatchNav[],
+	navs: MatchNav[],
 	repeatCount: number
 ) => {
 	let matchCount = 0;
 	const start = performance.now();
 	for (let i = 0; i < repeatCount; i++) {
 		for (const nav of navs) {
-			const result = colonGroupMatcher.match(nav.copy(), null);
+			const result = colonGroupMatcher.match(nav, null);
 			if (result instanceof GroupValidatorError) {
 				log(
 					chalk.red(
@@ -959,12 +959,12 @@ const timeColonNumbersPrunedTree = (
 	logTime(matchCount, end - start);
 };
 
-const timeNumberTree = (navs: MutMatchNav[], repeatCount: number) => {
+const timeNumberTree = (navs: MatchNav[], repeatCount: number) => {
 	let matchCount = 0;
 	const start = performance.now();
 	for (let i = 0; i < repeatCount; i++) {
 		for (const nav of navs) {
-			const result = numberMatcher.match(nav.copy(), null);
+			const result = numberMatcher.match(nav, null);
 			if (result instanceof GroupValidatorError) {
 				log(
 					chalk.red(
@@ -982,14 +982,14 @@ const timeNumberTree = (navs: MutMatchNav[], repeatCount: number) => {
 };
 
 const timeDigitGroupNumberTree = (
-	navs: MutMatchNav[],
+	navs: MatchNav[],
 	repeatCount: number
 ) => {
 	let matchCount = 0;
 	const start = performance.now();
 	for (let i = 0; i < repeatCount; i++) {
 		for (const nav of navs) {
-			const result = numberDigitGroupMatcher.match(nav.copy(), null);
+			const result = numberDigitGroupMatcher.match(nav, null);
 			if (result instanceof GroupValidatorError) {
 				log(
 					chalk.red(
@@ -1007,9 +1007,7 @@ const timeDigitGroupNumberTree = (
 };
 
 const doTimedDeepFlattenedGroupRepeatMatcher = () => {
-	const navs = colonGroupSuccessStrings.map(s =>
-		MutMatchNav.fromString(s)
-	);
+	const navs = colonGroupSuccessStrings.map(s => MatchNav.fromString(s));
 
 	logResults(
 		colonGroupSuccessStrings,
@@ -1033,11 +1031,11 @@ const doTimedDeepFlattenedGroupRepeatMatcher = () => {
 
 const doTimedNumberGroupRepeatMatcher = () => {
 	const numberNavs = numberGroupSuccessStrings.map(s =>
-		MutMatchNav.fromString(s)
+		MatchNav.fromString(s)
 	);
 
 	const colonNumberNavs = colonGroupSuccessStrings.map(s =>
-		MutMatchNav.fromString(s)
+		MatchNav.fromString(s)
 	);
 
 	logResults(
@@ -1062,10 +1060,10 @@ const doTimedNumberGroupRepeatMatcher = () => {
 
 const doTimedDigitGroupNumberGroupRepeatMatcher = () => {
 	const numberNavs = numberGroupSuccessStrings.map(s =>
-		MutMatchNav.fromString(s)
+		MatchNav.fromString(s)
 	);
 	const colonNumberNavs = colonGroupSuccessStrings.map(s =>
-		MutMatchNav.fromString(s)
+		MatchNav.fromString(s)
 	);
 
 	logResults(

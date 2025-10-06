@@ -17,13 +17,7 @@ import chalk from "chalk";
  */
 export type NavMoveMode = "MustMoveForward" | "OptMoveForward";
 
-export class MutMatchNav {
-	/** Starting position of the current match attempt */
-	protected _startIndex: number;
-
-	/** Position up to which text has been successfully captured */
-	protected _captureIndex: number;
-
+export class MatchNav {
 	/**
 	 * Creates a new navigation state for parsing
 	 *
@@ -32,94 +26,105 @@ export class MutMatchNav {
 	 */
 	protected constructor(
 		/**
-		 * The source text being navigated
+		 * The source string view being navigated
 		 */
 		public readonly source: StrSlice,
-		/**
-		 * Starting position in the source (default: 0)
-		 */
-		startIndex: number,
-		captureIndex: number
+		public readonly startIndex: number,
+		public readonly captureIndex: number
 	) {
 		this.validateIndex(startIndex, "startIndex");
-		this._startIndex = startIndex;
-		this._captureIndex = captureIndex;
+		this.validateIndex(captureIndex, "captureIndex");
 	}
 
 	/**
 	 * Creates a new navigation state for parsing
 	 *
+	 * Sets both start and capture indices to 0.
+	 *
 	 * @param source The source text to navigate through
-	 * @param startIndex Starting position in the source (default: 0)
 	 */
-	public static fromNew(
-		source: StrSlice,
-		startIndex: number = 0
-	): MutMatchNav {
-		return new MutMatchNav(source, 0, 0);
+	public static fromNew(source: StrSlice): MatchNav {
+		return new MatchNav(source, 0, 0);
 	}
 
+	/**
+	 * Creates a new navigation state for parsing
+	 *
+	 * Sets the start and capture indices to the given start index.
+	 *
+	 * @param source The source text to navigate through
+	 * @param startIndex Starting position in the source
+	 */
 	public static fromStart(
 		source: StrSlice,
 		startIndex: number
-	): MutMatchNav {
-		return new MutMatchNav(source, startIndex, startIndex);
+	): MatchNav {
+		return new MatchNav(source, startIndex, startIndex);
 	}
 
+	/**
+	 * Creates a new navigation state for parsing
+	 *
+	 * Sets the start index to the given start index
+	 * and the capture index to the given capture index.
+	 *
+	 * @param source The source text to navigate through
+	 * @param startIndex Starting position in the source
+	 * @param captureIndex Capture position in the source
+	 */
 	public static fromCapture(
 		source: StrSlice,
 		startIndex: number,
 		captureIndex: number
-	): MutMatchNav {
-		return new MutMatchNav(source, startIndex, captureIndex);
+	): MatchNav {
+		return new MatchNav(source, startIndex, captureIndex);
 	}
 
 	/**
 	 * Creates a new navigation state for parsing from a first and last navigator
 	 *
+	 * Sets the start index to the start index of the first navigator
+	 * and the capture index to the capture index of the last navigator.
+	 *
 	 * @param first The first navigator
 	 * @param last The last navigator
-	 * @returns A new MutMatchNav with the same source and capture index as the first navigator
+	 * @returns A new MatchNav with the same source and capture index as the first navigator
 	 */
 	public static fromFirstAndLast(
-		first: MutMatchNav,
-		last: MutMatchNav
-	): MutMatchNav {
-		first.assertNavIsValid();
-		last.assertNavIsValid();
+		first: MatchNav,
+		last: MatchNav
+	): MatchNav {
 		if (first.source !== last.source) {
 			throw new Error(
-				"MutMatchNav.fromFirstAndLast: sources do not match"
+				"MatchNav.fromFirstAndLast: sources do not match"
 			);
 		}
-		const nav = new MutMatchNav(first.source, first._startIndex);
-		nav._captureIndex = last.captureIndex;
-		return nav;
+		return MatchNav.fromCapture(
+			first.source,
+			first.startIndex,
+			last.captureIndex
+		);
 	}
 
 	/**
 	 * Creates a new navigation state for parsing from a string
 	 *
 	 * @param source The source text to navigate through
-	 * @param startIndex Starting position in the source (default: 0)
+	 * @param start Starting position in the source (default: 0)
 	 */
-	public static fromString(
-		source: string,
-		start: number = 0
-	): MutMatchNav {
-		return new MutMatchNav(StrSlice.from(source), start);
+	public static fromString(source: string, start: number = 0): MatchNav {
+		return MatchNav.fromStart(StrSlice.from(source), start);
 	}
 
 	/**
 	 * Advances both navigation and capture indices by one code point
 	 * Used when a single code point has been successfully matched
 	 *
-	 * Throws if code point is undefined (beyond end of source)
+	 * @throws Error if code point is undefined (beyond end of source)
 	 *
-	 * @returns This navigator instance for method chaining
+	 * @returns A new MatchNav advanced by one code point
 	 */
-	public moveCaptureForwardOneCodePoint(): MutMatchNav {
-		this.assertNavIsValid();
+	public moveCaptureForwardOneCodePoint(): MatchNav {
 		const currentCodePoint = this.peekCodePoint();
 		if (currentCodePoint === undefined) {
 			throw new Error(
@@ -127,171 +132,145 @@ export class MutMatchNav {
 			);
 		}
 		const length = getCodePointCharLength(currentCodePoint);
-		this._captureIndex += length;
-		return this;
+		return MatchNav.fromCapture(
+			this.source,
+			this.startIndex,
+			this.captureIndex + length
+		);
 	}
 
 	/**
-	 * Advances both navigation and capture indices by the specified length
+	 * Advances capture index by the specified length
 	 * Used when a string of known length has been successfully matched
 	 *
-	 * Throws if length goes beyond end of source
+	 * @throws Error if length goes beyond end of source
+	 * @throws Error if length is negative
 	 *
 	 * @param length Number of characters to advance
-	 * @returns This navigator instance for method chaining
+	 * @returns A new MatchNav with advanced capture index
 	 */
-	public moveCaptureForward(length: number): MutMatchNav {
-		this.assertNavIsValid();
+	public moveCaptureForward(length: number): MatchNav {
 		if (length < 0) {
 			throw new Error("moveCaptureForward: length cannot be negative");
 		}
-		this._captureIndex += length;
-		if (this._captureIndex > this.source.length) {
-			throw new Error("moveCaptureForward: beyond end of source");
+		const newCaptureIndex = this.captureIndex + length;
+		if (newCaptureIndex > this.source.length) {
+			throw new Error(
+				"moveCaptureForward: capture index beyond end of source"
+			);
 		}
-		return this;
+		return MatchNav.fromCapture(
+			this.source,
+			this.startIndex,
+			newCaptureIndex
+		);
 	}
 
 	/**
-	 * Moves both navigation and capture indices to the end of the source
-	 * Used to consume all remaining input
+	 * Moves capture to the end of the source
 	 *
-	 * No throw
-	 *
-	 * @returns This navigator instance for method chaining
+	 * @returns A new MatchNav at source end
 	 */
-	public moveCaptureToSourceEnd(): MutMatchNav {
-		this.assertNavIsValid();
-		this._captureIndex = this.source.length;
-		return this;
+	public moveCaptureToSourceEnd(): MatchNav {
+		return MatchNav.fromCapture(
+			this.source,
+			this.startIndex,
+			this.source.length
+		);
 	}
 
 	/**
-	 * Advances the start index and resets both navigation and capture indices
-	 * Used when committing a match and starting a new match attempt
+	 * Advances start and capture by one code point (commit one code point)
 	 *
-	 * Throws if code point is undefined (beyond end of source)
+	 * @throws Error if code point is undefined (beyond end of source)
 	 *
-	 * @returns This navigator instance for method chaining
+	 * @returns A new MatchNav advanced by one code point for both indices
 	 */
-	public moveNextOneCodePoint(): MutMatchNav {
-		this.assertNavIsValid();
+	public moveNextOneCodePoint(): MatchNav {
 		const currentCodePoint = this.peekCodePoint();
 		if (currentCodePoint === undefined) {
 			throw new Error("moveNextOneCodePoint: beyond end of source");
 		}
 		const length = getCodePointCharLength(currentCodePoint);
-		this._startIndex += length;
-		this._captureIndex = this._startIndex;
-		return this;
+		return MatchNav.fromCapture(
+			this.source,
+			this.startIndex + length,
+			this.captureIndex + length
+		);
 	}
 
 	/**
-	 * Moves both navigation and capture indices to the end of the source
+	 * Moves both start and capture to the end of the source
 	 *
-	 * @returns This navigator instance for method chaining
+	 * @returns A new MatchNav at source end
 	 */
-	public moveNextToSourceEnd(): MutMatchNav {
-		this.assertNavIsValid();
-		this._startIndex = this.source.length;
-		this._captureIndex = this.source.length;
-		return this;
+	public moveNextToSourceEnd(): MatchNav {
+		return MatchNav.fromCapture(
+			this.source,
+			this.source.length,
+			this.source.length
+		);
 	}
 
 	/**
-	 * Moves the start index to the navigation index
+	 * Commits the current capture (start = capture)
 	 *
-	 * @returns This navigator instance for method chaining
+	 * @throws Error if navigation is caught in an infinite loop
+	 * depending on NavMoveMode ("MustMoveForward" or "OptMoveForward")
+	 *
+	 * @param moveMode Move mode (defaults to "MustMoveForward")
+	 * @returns A new MatchNav with start set to capture
 	 */
-	public moveNext(
-		moveMode: NavMoveMode = "MustMoveForward"
-	): MutMatchNav {
-		this.assertNavIsValid();
+	public moveNext(moveMode: NavMoveMode = "MustMoveForward"): MatchNav {
 		this.assertIsMovable(moveMode);
-		this._startIndex = this._captureIndex;
-		return this;
+		return MatchNav.fromCapture(
+			this.source,
+			this.captureIndex,
+			this.captureIndex
+		);
 	}
 
 	/**
-	 * Creates a copy of this navigator with the capture index shrunk by the specified length
+	 * Creates a copy of this navigator with the capture index
+	 * shrunk by the specified length
 	 *
 	 * @throws Error if the capture index would become less than the start index
-	 
+	 * @throws Error if the length is negative
+	 *
 	 * @param length Number of characters to shrink the capture index by
-	 * @returns A new MutMatchNav with the capture index shrunk
- */
-	public copyAndShrinkCapture(length: number): MutMatchNav {
-		this.assertNavIsValid();
-		const nav = new MutMatchNav(this.source, this._startIndex);
-		nav._captureIndex = this._captureIndex - length;
-		if (nav._captureIndex < nav._startIndex) {
+	 * @returns A new MatchNav with the capture index shrunk
+	 */
+	public shrinkCapture(length: number): MatchNav {
+		if (length < 0) {
 			throw new Error(
-				"MutMatchNav.copyAndShrinkCapture: capture index cannot be less than start index"
+				"MatchNav.shrinkCapture: length cannot be negative"
 			);
 		}
-		return nav;
-	}
 
-	/**
-	 * Creates a deep copy of this navigation state
-	 * Used for backtracking when a match attempt fails
-	 *
-	 * @returns A new MutMatchNav with the same state as this one
-	 */
-	public copy(): MutMatchNav {
-		this.assertNavIsValid();
-		const nav = new MutMatchNav(this.source, this._startIndex);
-		nav._captureIndex = this._captureIndex;
-		return nav;
-	}
-
-	/**
-	 * Creates a new navigation state starting at the current capture index
-	 * Used when committing a partial match and starting a new match attempt
-	 *
-	 * @returns A fresh MutMatchNav starting at the current capture index
-	 */
-	public copyAndMoveNext(
-		moveMode: NavMoveMode = "MustMoveForward"
-	): MutMatchNav {
-		this.assertNavIsValid();
-		this.assertIsMovable(moveMode);
-		return new MutMatchNav(this.source, this._captureIndex);
-	}
-
-	/**
-	 * Marks this navigation state as invalid and returns null
-	 * Used to signal a failed match attempt
-	 *
-	 * @returns Always null, to be returned by the calling matcher
-	 */
-	public invalidate(): null {
-		this._startIndex = -1;
-		return null;
-	}
-
-	/**
-	 * Ensures this navigation state is valid for looking
-	 * at match results
-	 *
-	 * @throws Error if the navigation state is invalid
-	 */
-	public assertNavIsValid(): void {
-		if (this._startIndex === -1) {
-			throw new Error("Illegal use of invalidated navigator");
+		const newCaptureIndex = this.captureIndex - length;
+		if (newCaptureIndex < this.startIndex) {
+			throw new Error(
+				"MatchNav.shrinkCapture: capture index cannot be less than start index"
+			);
 		}
+
+		return MatchNav.fromCapture(
+			this.source,
+			this.startIndex,
+			newCaptureIndex
+		);
 	}
 
 	/**
-	 * Verifies the navigation is at its starting position
+	 * Verifies the capture index is equal to start index
 	 *
 	 * Used to ensure a matcher is being applied to a fresh navigation state
 	 *
-	 * @throws Error if the navigation has been moved from its start position
+	 * @throws Error if the nav holds a capture
 	 */
 	public assertNavIsNew(): void {
-		if (this._captureIndex !== this._startIndex) {
-			throw new Error("Navigator is not new: it contains a match");
+		if (this.captureIndex !== this.startIndex) {
+			throw new Error("Navigator is not new: it contains a capture");
 		}
 	}
 
@@ -309,7 +288,7 @@ export class MutMatchNav {
 	public assertIsMovable(moveMode: NavMoveMode): void {
 		switch (moveMode) {
 			case "MustMoveForward":
-				if (this._startIndex === this._captureIndex) {
+				if (this.startIndex === this.captureIndex) {
 					throw new Error(
 						"move-next infinite loop error: startIndex equals captureIndex " +
 							"so it can never move forward!"
@@ -320,7 +299,7 @@ export class MutMatchNav {
 				return;
 			default:
 				throw new Error(
-					`MutMatchNav.assertIsMovable: Invalid move mode: ${moveMode}`
+					`MatchNav.assertIsMovable: Invalid move mode: ${moveMode}`
 				);
 		}
 	}
@@ -332,11 +311,11 @@ export class MutMatchNav {
 	 */
 	protected validateIndex(index: number, indexName: string): void {
 		if (index < 0) {
-			throw new Error(`MutMatchNav: ${indexName} cannot be negative`);
+			throw new Error(`MatchNav: ${indexName} cannot be negative`);
 		}
 		if (index > this.source.length) {
 			throw new Error(
-				`MutMatchNav: ${indexName} cannot be beyond end of source`
+				`MatchNav: ${indexName} cannot be beyond end of source`
 			);
 		}
 	}
@@ -347,8 +326,7 @@ export class MutMatchNav {
 	 * @returns The code point at the current navigation position, or undefined if at end
 	 */
 	public peekCodePoint(): number | undefined {
-		this.assertNavIsValid();
-		return this.source.codePointAt(this._captureIndex);
+		return this.source.codePointAt(this.captureIndex);
 	}
 
 	/**
@@ -358,11 +336,10 @@ export class MutMatchNav {
 	 * @returns The code point before the current position, or undefined if at start
 	 */
 	public peekBehindCodePoint(): number | undefined {
-		this.assertNavIsValid();
 		// this looks backwards to extract the code point
 		// before the current position; navigating back at most 2 times
-		let index = this._captureIndex - 1;
-		let minIndex = this._captureIndex - 2;
+		let index = this.captureIndex - 1;
+		let minIndex = this.captureIndex - 2;
 		while (index >= 0 && index >= minIndex) {
 			const codePoint = this.source.codePointAt(index);
 			if (
@@ -385,10 +362,9 @@ export class MutMatchNav {
 	 * @returns A StrSlice containing the characters before the current position, or undefined if at start
 	 */
 	public peekBehindSliceByLength(length: number): StrSlice | undefined {
-		this.assertNavIsValid();
-		const index = this._captureIndex - length;
+		const index = this.captureIndex - length;
 		if (index < 0) return undefined;
-		return this.source.slice(index, this._captureIndex);
+		return this.source.slice(index, this.captureIndex);
 	}
 
 	/**
@@ -398,76 +374,47 @@ export class MutMatchNav {
 	 * @returns The code point after the current position, or undefined if at end
 	 */
 	public peekAheadCodePoint(): number | undefined {
-		this.assertNavIsValid();
-		return this.source.codePointAt(this._captureIndex);
-	}
-
-	/**
-	 * Gets the starting position of the current match attempt
-	 */
-	public get startIndex(): number {
-		this.assertNavIsValid();
-		return this._startIndex;
-	}
-
-	/**
-	 * Checks if this navigation state has been invalidated
-	 */
-	public get isInvalidated(): boolean {
-		return this._startIndex === -1;
+		return this.source.codePointAt(this.captureIndex);
 	}
 
 	/**
 	 * Checks if nav index is at the beginning of the source slice
 	 */
-	public get isNavIndexAtSourceStart(): boolean {
-		this.assertNavIsValid();
-		return this._captureIndex === 0;
+	public get isCaptureIndexAtSourceStart(): boolean {
+		return this.captureIndex === 0;
 	}
 
 	/**
 	 * Checks if at the end of the source text
 	 */
-	public get isNavIndexAtSourceEnd(): boolean {
-		this.assertNavIsValid();
-		return this._captureIndex === this.source.length;
-	}
-
-	/**
-	 * Gets the position up to which text has been successfully captured
-	 */
-	public get captureIndex(): number {
-		this.assertNavIsValid();
-		return this._captureIndex;
+	public get isCaptureIndexAtSourceEnd(): boolean {
+		return this.captureIndex === this.source.length;
 	}
 
 	/**
 	 * Gets the length of the current match (from start to capture position)
 	 */
 	public get captureLength(): number {
-		this.assertNavIsValid();
-		return this._captureIndex - this._startIndex;
+		return this.captureIndex - this.startIndex;
 	}
 
 	/**
 	 * Gets the successfully matched portion of the source text
 	 */
 	public get captureMatch(): StrSlice {
-		this.assertNavIsValid();
-		return this.source.slice(this._startIndex, this._captureIndex);
+		return this.source.slice(this.startIndex, this.captureIndex);
 	}
 
 	/**
 	 * Checks if the current match is empty
 	 */
 	public get isEmptyMatch(): boolean {
-		this.assertNavIsValid();
-		return this._startIndex === this._captureIndex;
+		return this.startIndex === this.captureIndex;
 	}
 
-	static #_empty: MutMatchNav = MutMatchNav.fromString("");
-	static get empty(): MutMatchNav {
-		return MutMatchNav.#_empty;
+	static #_empty: MatchNav = MatchNav.fromString("");
+	static get empty(): MatchNav {
+		return MatchNav.#_empty;
 	}
 
 	/**
@@ -475,10 +422,10 @@ export class MutMatchNav {
 	 */
 	public toString(): string {
 		const navStr = chalk.magentaBright("Nav");
-		return this.isInvalidated
-			? `${navStr}: ${chalk.red("INVALIDATED")}`
-			: `${navStr}: [${chalk.cyan(this._startIndex)}` +
-					`..${chalk.cyan(this._captureIndex)}], ` +
-					`'${chalk.green(this.captureMatch.value)}'`;
+		return (
+			`${navStr}: [${chalk.cyan(this.startIndex)}` +
+			`..${chalk.cyan(this.captureIndex)}], ` +
+			`'${chalk.green(this.captureMatch.value)}'`
+		);
 	}
 }

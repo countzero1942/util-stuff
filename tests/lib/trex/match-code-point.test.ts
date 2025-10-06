@@ -1,5 +1,5 @@
 import { StrSlice } from "@/utils/slice";
-import { MutMatchNav } from "@/trex/nav";
+import { MatchNav } from "@/trex/nav";
 import {
 	MatchPositionBase,
 	MatchStartSlice,
@@ -70,7 +70,7 @@ describe("MatchCodePoint", () => {
 	describe("match", () => {
 		test("matches a single code point and advances the navigator", () => {
 			const matcher = MatchCodePoint.fromNumber(65); // 'A'
-			const nav = MutMatchNav.fromNew(new StrSlice("ABC"));
+			const nav = MatchNav.fromNew(new StrSlice("ABC"));
 
 			const result = matcher.match(nav);
 
@@ -81,7 +81,7 @@ describe("MatchCodePoint", () => {
 
 		test("returns null if the code point does not match", () => {
 			const matcher = MatchCodePoint.fromNumber(65); // 'A'
-			const nav = MutMatchNav.fromNew(new StrSlice("XYZ"));
+			const nav = MatchNav.fromNew(new StrSlice("XYZ"));
 
 			const result = matcher.match(nav);
 
@@ -92,7 +92,7 @@ describe("MatchCodePoint", () => {
 			// Emoji '😀' (U+1F600) is represented as surrogate pair '\uD83D\uDE00'
 			const codePoint = 0x1f600;
 			const matcher = MatchCodePoint.fromNumber(codePoint);
-			const nav = MutMatchNav.fromNew(new StrSlice("😀BC"));
+			const nav = MatchNav.fromNew(new StrSlice("😀BC"));
 
 			const result = matcher.match(nav);
 
@@ -129,7 +129,7 @@ describe("MatchCodePointLambda", () => {
 			const matcher = MatchCodePointLambda.from(
 				cp => cp >= 65 && cp <= 90
 			); // A-Z
-			const nav = MutMatchNav.fromNew(new StrSlice("ABC"));
+			const nav = MatchNav.fromNew(new StrSlice("ABC"));
 
 			const result = matcher.match(nav);
 
@@ -142,7 +142,7 @@ describe("MatchCodePointLambda", () => {
 			const matcher = MatchCodePointLambda.from(
 				cp => cp >= 65 && cp <= 90
 			); // A-Z
-			const nav = MutMatchNav.fromNew(new StrSlice("abc"));
+			const nav = MatchNav.fromNew(new StrSlice("abc"));
 
 			const result = matcher.match(nav);
 
@@ -185,7 +185,7 @@ describe("MatchCodePointSet", () => {
 	describe("match", () => {
 		test("matches a code point in the set and advances the navigator", () => {
 			const matcher = MatchCodePointSet.fromString("ABC");
-			const nav = MutMatchNav.fromNew(new StrSlice("ABC"));
+			const nav = MatchNav.fromNew(new StrSlice("ABC"));
 
 			const result = matcher.match(nav);
 
@@ -198,7 +198,7 @@ describe("MatchCodePointSet", () => {
 			// Emoji '😀' (U+1F600) is represented as surrogate pair '\uD83D\uDE00'
 			const matcher = MatchCodePointSet.fromString("A😀C");
 
-			const nav = MutMatchNav.fromNew(new StrSlice("😀BC"));
+			const nav = MatchNav.fromNew(new StrSlice("😀BC"));
 
 			const result = matcher.match(nav);
 
@@ -209,7 +209,7 @@ describe("MatchCodePointSet", () => {
 
 		test("returns null if the code point is not in the set", () => {
 			const matcher = MatchCodePointSet.fromString("ABC");
-			const nav = MutMatchNav.fromNew(new StrSlice("XYZ"));
+			const nav = MatchNav.fromNew(new StrSlice("XYZ"));
 
 			const result = matcher.match(nav);
 
@@ -346,7 +346,7 @@ describe("MatchCodePointSet", () => {
 
 			const matcher = MatchRepeat.from(matchSet);
 
-			const nav = MutMatchNav.fromString("abz 129\t!@#\r\n😀ABC");
+			const nav = MatchNav.fromString("abz 129\t!@#\r\n😀ABC");
 			const result = matcher.match(nav);
 			expect(result).not.toBeNull();
 			expect(result?.captureMatch.value).toBe("abz 129\t!@#\r\n😀");
@@ -364,7 +364,7 @@ describe("MatchCodePointSet", () => {
 
 			const matcher = MatchRepeat.from(matchSet);
 
-			const nav = MutMatchNav.fromString("abz 129\t!@#\r\n😀ABC");
+			const nav = MatchNav.fromString("abz 129\t!@#\r\n😀ABC");
 			const result = matcher.match(nav);
 			expect(result).not.toBeNull();
 			expect(result?.captureMatch.value).toBe("abz 129\t!@#\r\n😀");
@@ -537,7 +537,7 @@ describe("MatchCodePointCategories", () => {
 	describe("match", () => {
 		test("matches a code point in the specified categories and advances the navigator", () => {
 			const matcher = MatchCodePointCategories.fromString("Lu"); // Uppercase letters
-			const nav = MutMatchNav.fromString("ABC");
+			const nav = MatchNav.fromString("ABC");
 
 			const result = matcher.match(nav);
 
@@ -547,7 +547,7 @@ describe("MatchCodePointCategories", () => {
 
 		test("returns null if the code point is not in the specified categories", () => {
 			const matcher = MatchCodePointCategories.fromString("Ll"); // Lowercase letters
-			const nav = MutMatchNav.fromString("ABC");
+			const nav = MatchNav.fromString("ABC");
 
 			const result = matcher.match(nav);
 
@@ -698,7 +698,7 @@ describe("MatchCodePointRange", () => {
 			const matcher = MatchCodePointRange.fromRange(
 				CodePointRange.fromNumbers(65, 90)
 			); // A-Z
-			const nav = MutMatchNav.fromString("ABC");
+			const nav = MatchNav.fromString("ABC");
 
 			const result = matcher.match(nav);
 
@@ -711,7 +711,7 @@ describe("MatchCodePointRange", () => {
 			const matcher = MatchCodePointRange.fromRange(
 				CodePointRange.fromNumbers(65, 90)
 			); // A-Z
-			const nav = MutMatchNav.fromString("abc");
+			const nav = MatchNav.fromString("abc");
 
 			const result = matcher.match(nav);
 
@@ -779,14 +779,14 @@ describe("MatchCodePointRanges", () => {
 			);
 
 			// Test uppercase
-			let nav = MutMatchNav.fromString("ABC");
+			let nav = MatchNav.fromString("ABC");
 			let result = matcher.match(nav);
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(1);
 			expect(result?.captureMatch.value).toBe("A");
 
 			// Test lowercase
-			nav = MutMatchNav.fromString("abc");
+			nav = MatchNav.fromString("abc");
 			result = matcher.match(nav);
 			expect(result).not.toBeNull();
 			expect(result?.captureIndex).toBe(1);
@@ -798,7 +798,7 @@ describe("MatchCodePointRanges", () => {
 				CodePointRange.fromNumbers(65, 90), // A-Z
 				CodePointRange.fromNumbers(97, 122) // a-z
 			);
-			const nav = MutMatchNav.fromString("123");
+			const nav = MatchNav.fromString("123");
 
 			const result = matcher.match(nav);
 
@@ -852,7 +852,7 @@ describe("MatchNotCodePoint", () => {
 		test("should match when inner matcher doesn't match and advance the navigator", () => {
 			const innerMatcher = MatchCodePoint.fromNumber(65); // A
 			const matcher = MatchNotCodePoint.from(innerMatcher);
-			const nav = MutMatchNav.fromString("XYZ");
+			const nav = MatchNav.fromString("XYZ");
 
 			const result = matcher.match(nav);
 
@@ -864,7 +864,7 @@ describe("MatchNotCodePoint", () => {
 		test("should return null when inner matcher matches", () => {
 			const innerMatcher = MatchCodePoint.fromNumber(65); // A
 			const matcher = MatchNotCodePoint.from(innerMatcher);
-			const nav = MutMatchNav.fromString("ABC");
+			const nav = MatchNav.fromString("ABC");
 
 			const result = matcher.match(nav);
 
