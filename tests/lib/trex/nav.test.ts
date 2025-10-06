@@ -3,7 +3,8 @@ import { StrSlice } from "@/utils/slice";
 
 // Local helper to strip ANSI color codes from strings produced by chalk or similar
 // This keeps tests robust regardless of whether coloring is enabled.
-const stripAnsi = (s: string): string => s.replace(/\u001B\[[0-9;]*m/g, "");
+const stripAnsi = (s: string): string =>
+	s.replace(/\u001B\[[0-9;]*m/g, "");
 
 describe("MutMatchNav", () => {
 	// Helper function to create a nav with a given source text
@@ -13,10 +14,7 @@ describe("MutMatchNav", () => {
 
 	describe("Constructor and Basic Properties", () => {
 		test("initializes with correct indices", () => {
-			const nav = MutMatchNav.fromString(
-				"test string",
-				2
-			);
+			const nav = MutMatchNav.fromString("test string", 2);
 			expect(nav.startIndex).toBe(2);
 			expect(nav.captureIndex).toBe(2);
 			expect(nav.isInvalidated).toBe(false);
@@ -24,15 +22,13 @@ describe("MutMatchNav", () => {
 
 		test("initializes with StrSlice", () => {
 			{
-				const nav = MutMatchNav.from(
-					StrSlice.from("test string")
-				);
+				const nav = MutMatchNav.fromNew(StrSlice.from("test string"));
 				expect(nav.startIndex).toBe(0);
 				expect(nav.captureIndex).toBe(0);
 				expect(nav.isInvalidated).toBe(false);
 			}
 			{
-				const nav = MutMatchNav.from(
+				const nav = MutMatchNav.fromNew(
 					StrSlice.from("test string"),
 					2
 				);
@@ -63,17 +59,13 @@ describe("MutMatchNav", () => {
 		});
 
 		test("throws if start index is beyond end of source", () => {
-			expect(() =>
-				MutMatchNav.fromString("test", 5)
-			).toThrow(
+			expect(() => MutMatchNav.fromString("test", 5)).toThrow(
 				"MutMatchNav: startIndex cannot be beyond end of source"
 			);
 		});
 
 		test("throws if start index is negative", () => {
-			expect(() =>
-				MutMatchNav.fromString("test", -1)
-			).toThrow(
+			expect(() => MutMatchNav.fromString("test", -1)).toThrow(
 				"MutMatchNav: startIndex cannot be negative"
 			);
 		});
@@ -97,20 +89,14 @@ describe("MutMatchNav", () => {
 
 		test("throws if moveCaptureForwardOneCodePoint goes beyond end of source", () => {
 			const nav = MutMatchNav.fromString("test", 3);
-			expect(() =>
-				nav.moveCaptureForwardOneCodePoint()
-			).not.toThrow();
-			expect(() =>
-				nav.moveCaptureForwardOneCodePoint()
-			).toThrow();
+			expect(() => nav.moveCaptureForwardOneCodePoint()).not.toThrow();
+			expect(() => nav.moveCaptureForwardOneCodePoint()).toThrow();
 
 			const emojiNav = MutMatchNav.fromString("ab😊", 2);
 			expect(() =>
 				emojiNav.moveCaptureForwardOneCodePoint()
 			).not.toThrow();
-			expect(() =>
-				emojiNav.moveCaptureForwardOneCodePoint()
-			).toThrow();
+			expect(() => emojiNav.moveCaptureForwardOneCodePoint()).toThrow();
 		});
 
 		test("moveCaptureForward advances by specified length", () => {
@@ -161,21 +147,12 @@ describe("MutMatchNav", () => {
 
 		test("throws if moveStartForwardOneCodePoint goes beyond end of source", () => {
 			const nav = MutMatchNav.fromString("test", 3);
-			expect(() =>
-				nav.moveNextOneCodePoint()
-			).not.toThrow();
+			expect(() => nav.moveNextOneCodePoint()).not.toThrow();
 			expect(() => nav.moveNextOneCodePoint()).toThrow();
 
-			const emojiNav = MutMatchNav.fromString(
-				"abc😊",
-				3
-			);
-			expect(() =>
-				emojiNav.moveNextOneCodePoint()
-			).not.toThrow();
-			expect(() =>
-				emojiNav.moveNextOneCodePoint()
-			).toThrow();
+			const emojiNav = MutMatchNav.fromString("abc😊", 3);
+			expect(() => emojiNav.moveNextOneCodePoint()).not.toThrow();
+			expect(() => emojiNav.moveNextOneCodePoint()).toThrow();
 		});
 
 		test("moveStartToEnd moves start, nav, and capture indices to end", () => {
@@ -195,9 +172,7 @@ describe("MutMatchNav", () => {
 			expect(nav.captureIndex).toBe(5);
 			expect(nav.captureLength).toBe(0);
 			expect(nav.captureMatch.value).toBe("");
-			expect(nav.peekAheadCodePoint()).toBe(
-				"s".codePointAt(0)
-			);
+			expect(nav.peekAheadCodePoint()).toBe("s".codePointAt(0));
 		});
 	});
 
@@ -210,9 +185,7 @@ describe("MutMatchNav", () => {
 			const copy = nav.copy();
 			expect(copy.startIndex).toBe(nav.startIndex);
 			expect(copy.captureIndex).toBe(nav.captureIndex);
-			expect(copy.captureMatch.value).toBe(
-				nav.captureMatch.value
-			);
+			expect(copy.captureMatch.value).toBe(nav.captureMatch.value);
 
 			// Modifying copy should not affect original
 			copy.moveNext();
@@ -316,9 +289,7 @@ describe("MutMatchNav", () => {
 		test("peekBehindCodePoint handles surrogate pairs", () => {
 			const nav = MutMatchNav.fromString("😊test", 2);
 			const emojiCodePoint = "😊".codePointAt(0);
-			expect(nav.peekBehindCodePoint()).toBe(
-				emojiCodePoint
-			);
+			expect(nav.peekBehindCodePoint()).toBe(emojiCodePoint);
 		});
 
 		test("peekBeforeCodePoint returns undefined at start", () => {
@@ -331,9 +302,7 @@ describe("MutMatchNav", () => {
 				const nav = MutMatchNav.fromString("test");
 				nav.moveCaptureForward(1);
 				const eCodePoint = "e".codePointAt(0);
-				expect(nav.peekAheadCodePoint()).toBe(
-					eCodePoint
-				);
+				expect(nav.peekAheadCodePoint()).toBe(eCodePoint);
 			});
 
 			test("handles surrogate pairs", () => {
@@ -342,9 +311,7 @@ describe("MutMatchNav", () => {
 				// So we need to check what's after 't', which should be the emoji
 				nav.moveCaptureForward(1);
 				const emojiCodePoint = "😊".codePointAt(0);
-				expect(nav.peekAheadCodePoint()).toBe(
-					emojiCodePoint
-				);
+				expect(nav.peekAheadCodePoint()).toBe(emojiCodePoint);
 			});
 
 			test("handles surrogate pairs", () => {
@@ -352,25 +319,18 @@ describe("MutMatchNav", () => {
 				// peekAfterCodePoint returns the code point after the current code point
 				// So we need to check what's after 't', which should be the emoji
 				const emojiCodePoint = "😊".codePointAt(0);
-				expect(nav.peekAheadCodePoint()).toBe(
-					emojiCodePoint
-				);
+				expect(nav.peekAheadCodePoint()).toBe(emojiCodePoint);
 			});
 
 			test("returns undefined at end", () => {
 				const nav = MutMatchNav.fromString("test", 4);
-				expect(
-					nav.peekAheadCodePoint()
-				).toBeUndefined();
+				expect(nav.peekAheadCodePoint()).toBeUndefined();
 			});
 		});
 
 		describe("peekBeforeSliceByLength", () => {
 			test("returns the correct slice", () => {
-				const nav = MutMatchNav.fromString(
-					"test string",
-					4
-				);
+				const nav = MutMatchNav.fromString("test string", 4);
 				// peekBeforeSliceByLength returns a slice of the specified length before the current position
 				// So for position 4 ("test string") and length 3, we should get "est"
 				const slice = nav.peekBehindSliceByLength(3);
@@ -387,8 +347,7 @@ describe("MutMatchNav", () => {
 		describe("Result Extraction", () => {
 			describe("accumulatedMatch", () => {
 				test("returns the captured portion", () => {
-					const nav =
-						MutMatchNav.fromString("test string");
+					const nav = MutMatchNav.fromString("test string");
 					nav.moveCaptureForward(4);
 					const match = nav.captureMatch;
 					expect(match.value).toBe("test");
@@ -408,23 +367,17 @@ describe("MutMatchNav", () => {
 				// Surrogate pairs are characters that require two UTF-16 code units
 				const nav = MutMatchNav.fromString("😊😎🚀");
 				const emoji1CodePoint = "😊".codePointAt(0);
-				expect(nav.peekCodePoint()).toBe(
-					emoji1CodePoint
-				);
+				expect(nav.peekCodePoint()).toBe(emoji1CodePoint);
 
 				nav.moveCaptureForwardOneCodePoint();
 				expect(nav.captureIndex).toBe(2);
 				const emoji2CodePoint = "😎".codePointAt(0);
-				expect(nav.peekCodePoint()).toBe(
-					emoji2CodePoint
-				);
+				expect(nav.peekCodePoint()).toBe(emoji2CodePoint);
 
 				nav.moveCaptureForwardOneCodePoint();
 				expect(nav.captureIndex).toBe(4);
 				const emoji3CodePoint = "🚀".codePointAt(0);
-				expect(nav.peekCodePoint()).toBe(
-					emoji3CodePoint
-				);
+				expect(nav.peekCodePoint()).toBe(emoji3CodePoint);
 			});
 		});
 
@@ -434,39 +387,33 @@ describe("MutMatchNav", () => {
 				expect(nav.captureMatch.value).toBe("");
 				expect(stripAnsi(nav.toString())).toBe("Nav: [2..2], ''");
 			});
-			
+
 			test("returns correct string after advancing capture and nav", () => {
 				const nav = MutMatchNav.fromString("abcdef");
 				nav.moveCaptureForward(3); // navIndex and captureIndex now 3
 				expect(nav.captureMatch.value).toBe("abc");
-				expect(stripAnsi(nav.toString())).toBe(
-					"Nav: [0..3], 'abc'"
-				);
+				expect(stripAnsi(nav.toString())).toBe("Nav: [0..3], 'abc'");
 			});
-			
+
 			test("returns correct string at end of source", () => {
 				const nav = MutMatchNav.fromString("abc");
 				nav.moveCaptureToSourceEnd();
 				expect(nav.captureMatch.value).toBe("abc");
-				expect(stripAnsi(nav.toString())).toBe(
-					"Nav: [0..3], 'abc'"
-				);
+				expect(stripAnsi(nav.toString())).toBe("Nav: [0..3], 'abc'");
 			});
-			
+
 			test("returns correct string for empty source", () => {
 				const nav = MutMatchNav.fromString("");
 				expect(stripAnsi(nav.toString())).toBe("Nav: [0..0], ''");
 			});
-			
+
 			test("returns correct string for ghost capture at end", () => {
 				const nav = MutMatchNav.fromString("abc, def");
 				nav.moveCaptureForward(3);
 				expect(nav.captureMatch.value).toBe("abc");
-				expect(stripAnsi(nav.toString())).toBe(
-					"Nav: [0..3], 'abc'"
-				);
+				expect(stripAnsi(nav.toString())).toBe("Nav: [0..3], 'abc'");
 			});
-			
+
 			test("returns correct string for invalidated navigator", () => {
 				const nav = MutMatchNav.fromString("test");
 				nav.invalidate();

@@ -37,10 +37,10 @@ export class GroupMatch extends GroupMatchBase {
 		parent: GroupMatchNav | null
 	): GroupMatchNav | GroupValidatorError {
 		nav.assertNavIsValid();
-		const result = this.matcher.match(nav);
+		const result = this.matcher.match(nav.copy());
 		if (result) {
 			return GroupMatchNav.fromLeaf(result, this.groupName, parent);
 		}
-		return GroupValidatorError.GenericError;
+		return GroupValidatorError.fromDefault(nav.copy());
 	}
 }

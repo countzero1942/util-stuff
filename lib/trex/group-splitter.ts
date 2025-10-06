@@ -6,6 +6,7 @@ import { addResultToParent } from "./group-helper";
 import { GroupValidatorBase } from "./validator-repeat";
 import { GroupValidatorResult } from "./group-validator-result";
 import { GroupValidatorError } from "./group-validator-error";
+import { log } from "console";
 
 export type GroupSplitterArgs = {
 	endMatcher?: GroupMatchBase;
@@ -43,12 +44,15 @@ export class GroupSplitter extends GroupMatchBase {
 				group.groupName.isGroupName(validator.targetName)
 			);
 
-			checkNavs.forEach(groupNav => {
-				const result = validator.validate(groupNav.wholeMatchNav);
+			for (const checkNav of checkNavs) {
+				const result = validator.validate(
+					checkNav.wholeMatchNav.copy(),
+					nav.wholeMatchNav
+				);
 				if (result.isError) {
-					return GroupValidatorResult.FromError(result.message);
+					return result;
 				}
-			});
+			}
 		}
 		return GroupValidatorResult.Ok;
 	}
@@ -125,7 +129,18 @@ export class GroupSplitter extends GroupMatchBase {
 		// );
 		parentNav.seal(MutMatchNav.fromFirstAndLast(firstNav, fragmentNav));
 
-		this.validate(parentNav);
+		const validationResult = this.validate(parentNav);
+
+		if (validationResult.isValid) {
+			log(
+				`>>> Validation passed for ${parentNav.wholeMatchNav.captureMatch.value}`
+			);
+		} else {
+			const error = validationResult.toError();
+			log(`>>> Validation failed: ${error.message}`);
+			log(`>>> '${error.parentNav.captureMatch.value}'`);
+			log(`>>> '${error.errorNav.captureMatch.value}'`);
+		}
 
 		return parentNav;
 	}

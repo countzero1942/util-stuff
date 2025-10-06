@@ -10,6 +10,9 @@ import {
 	MatchRepeat,
 	NumberOfMatches,
 	GroupValidatorError,
+	GroupRepeatValidator,
+	GroupMatchRepeat,
+	MatchCodePointCategories,
 } from "@/trex";
 import chalk from "chalk";
 import { ExamplesMenuItem, runExamplesMenu } from "@/utils/examples-menu";
@@ -116,6 +119,44 @@ const exampleItems: ExamplesMenuItem[] = [
 	},
 ];
 
+export const trySplitterValidation = () => {
+	const validator = GroupRepeatValidator.from(
+		GroupName.fragment,
+		GroupMatchRepeat.fromNamed(
+			GroupName.fromName("digit"),
+			GroupMatch.fromUnnamed(MatchCodePointCategories.fromString("Nd")),
+			NumberOfMatches.exactly(3)
+		)
+	);
+
+	const splitter = GroupSplitter.from(
+		GroupName.fromName("number"),
+		GroupMatch.fromNamed(
+			GroupName.fromName("decimal-point"),
+			MatchCodePoint.fromString(",")
+		),
+		{
+			validator,
+		}
+	);
+
+	const navStrings = ["123,5555,123"];
+
+	for (const navString of navStrings) {
+		const nav = MutMatchNav.fromString(navString);
+		const result = splitter.match(nav, null);
+		logNavString(navString);
+		if (result instanceof GroupValidatorError) {
+			log(chalk.red(`Failed to match: ${navString}`));
+			continue;
+		}
+		logGroupsRec(result);
+		div();
+	}
+};
+
 export const runGroupSplitterExamples = async () => {
-	await runExamplesMenu("Group Splitter Examples", exampleItems);
+	// await runExamplesMenu("Group Splitter Examples", exampleItems);
+
+	trySplitterValidation();
 };

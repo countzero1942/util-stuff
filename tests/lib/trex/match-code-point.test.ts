@@ -22,8 +22,7 @@ describe("MatchCodePoint", () => {
 	describe("factory constructor", () => {
 		test("creates a matcher with the specified code point by number", () => {
 			const codePoint = 65; // 'A'
-			const matcher =
-				MatchCodePoint.fromNumber(codePoint);
+			const matcher = MatchCodePoint.fromNumber(codePoint);
 			expect(matcher.matchValue).toBe(codePoint);
 		});
 
@@ -36,9 +35,7 @@ describe("MatchCodePoint", () => {
 		test("throws errors on invalid code points", () => {
 			expect(() => {
 				MatchCodePoint.fromNumber(-1);
-			}).toThrow(
-				"MatchCodePoint.fromNumber: Invalid code point: -1"
-			);
+			}).toThrow("MatchCodePoint.fromNumber: Invalid code point: -1");
 			expect(() => {
 				MatchCodePoint.fromNumber(0x110001);
 			}).toThrow(
@@ -73,7 +70,7 @@ describe("MatchCodePoint", () => {
 	describe("match", () => {
 		test("matches a single code point and advances the navigator", () => {
 			const matcher = MatchCodePoint.fromNumber(65); // 'A'
-			const nav = MutMatchNav.from(new StrSlice("ABC"));
+			const nav = MutMatchNav.fromNew(new StrSlice("ABC"));
 
 			const result = matcher.match(nav);
 
@@ -84,7 +81,7 @@ describe("MatchCodePoint", () => {
 
 		test("returns null if the code point does not match", () => {
 			const matcher = MatchCodePoint.fromNumber(65); // 'A'
-			const nav = MutMatchNav.from(new StrSlice("XYZ"));
+			const nav = MutMatchNav.fromNew(new StrSlice("XYZ"));
 
 			const result = matcher.match(nav);
 
@@ -94,9 +91,8 @@ describe("MatchCodePoint", () => {
 		test("handles surrogate pairs correctly", () => {
 			// Emoji '😀' (U+1F600) is represented as surrogate pair '\uD83D\uDE00'
 			const codePoint = 0x1f600;
-			const matcher =
-				MatchCodePoint.fromNumber(codePoint);
-			const nav = MutMatchNav.from(new StrSlice("😀BC"));
+			const matcher = MatchCodePoint.fromNumber(codePoint);
+			const nav = MutMatchNav.fromNew(new StrSlice("😀BC"));
 
 			const result = matcher.match(nav);
 
@@ -122,8 +118,7 @@ describe("MatchCodePoint", () => {
 describe("MatchCodePointLambda", () => {
 	describe("constructor", () => {
 		test("creates a matcher with the specified lambda function", () => {
-			const lambda = (cp: number) =>
-				cp >= 65 && cp <= 90;
+			const lambda = (cp: number) => cp >= 65 && cp <= 90;
 			const matcher = MatchCodePointLambda.from(lambda);
 			expect(matcher.lambda).toBe(lambda);
 		});
@@ -134,7 +129,7 @@ describe("MatchCodePointLambda", () => {
 			const matcher = MatchCodePointLambda.from(
 				cp => cp >= 65 && cp <= 90
 			); // A-Z
-			const nav = MutMatchNav.from(new StrSlice("ABC"));
+			const nav = MutMatchNav.fromNew(new StrSlice("ABC"));
 
 			const result = matcher.match(nav);
 
@@ -147,7 +142,7 @@ describe("MatchCodePointLambda", () => {
 			const matcher = MatchCodePointLambda.from(
 				cp => cp >= 65 && cp <= 90
 			); // A-Z
-			const nav = MutMatchNav.from(new StrSlice("abc"));
+			const nav = MutMatchNav.fromNew(new StrSlice("abc"));
 
 			const result = matcher.match(nav);
 
@@ -176,27 +171,21 @@ describe("MatchCodePointSet", () => {
 	describe("constructor", () => {
 		test("creates a matcher that matches specified code point set", () => {
 			const codePointSet = new Set([65, 66, 67]); // A, B, C
-			const matcher =
-				MatchCodePointSet.fromString("ABC");
-			expect(Array.from(matcher)).toEqual(
-				Array.from(codePointSet)
-			);
+			const matcher = MatchCodePointSet.fromString("ABC");
+			expect(Array.from(matcher)).toEqual(Array.from(codePointSet));
 		});
 
 		test("throws error if code point set is empty", () => {
 			expect(() => {
 				MatchCodePointSet.fromSet(new Set());
-			}).toThrow(
-				"MatchCodePointSet: empty code point set"
-			);
+			}).toThrow("MatchCodePointSet: empty code point set");
 		});
 	});
 
 	describe("match", () => {
 		test("matches a code point in the set and advances the navigator", () => {
-			const matcher =
-				MatchCodePointSet.fromString("ABC");
-			const nav = MutMatchNav.from(new StrSlice("ABC"));
+			const matcher = MatchCodePointSet.fromString("ABC");
+			const nav = MutMatchNav.fromNew(new StrSlice("ABC"));
 
 			const result = matcher.match(nav);
 
@@ -207,10 +196,9 @@ describe("MatchCodePointSet", () => {
 
 		test("handles surrogate pairs correctly", () => {
 			// Emoji '😀' (U+1F600) is represented as surrogate pair '\uD83D\uDE00'
-			const matcher =
-				MatchCodePointSet.fromString("A😀C");
+			const matcher = MatchCodePointSet.fromString("A😀C");
 
-			const nav = MutMatchNav.from(new StrSlice("😀BC"));
+			const nav = MutMatchNav.fromNew(new StrSlice("😀BC"));
 
 			const result = matcher.match(nav);
 
@@ -220,9 +208,8 @@ describe("MatchCodePointSet", () => {
 		});
 
 		test("returns null if the code point is not in the set", () => {
-			const matcher =
-				MatchCodePointSet.fromString("ABC");
-			const nav = MutMatchNav.from(new StrSlice("XYZ"));
+			const matcher = MatchCodePointSet.fromString("ABC");
+			const nav = MutMatchNav.fromNew(new StrSlice("XYZ"));
 
 			const result = matcher.match(nav);
 
@@ -263,8 +250,7 @@ describe("MatchCodePointSet", () => {
 
 		test("handles repeating code points", () => {
 			// Emoji '😀' (U+1F600) is represented as surrogate pair '\uD83D\uDE00'
-			const matcher =
-				MatchCodePointSet.fromArgs("AA😀😀CC");
+			const matcher = MatchCodePointSet.fromArgs("AA😀😀CC");
 
 			expect(matcher.matchCodePoint(65)).toBe(true); // A
 			expect(matcher.matchCodePoint(0x1f600)).toBe(true); // 😀
@@ -290,11 +276,7 @@ describe("MatchCodePointSet", () => {
 
 	describe("fromNumbers", () => {
 		test("creates a matcher from an array of code points", () => {
-			const matcher = MatchCodePointSet.fromNumbers(
-				65,
-				66,
-				67
-			); // A, B, C
+			const matcher = MatchCodePointSet.fromNumbers(65, 66, 67); // A, B, C
 
 			expect(matcher.matchCodePoint(65)).toBe(true);
 			expect(matcher.matchCodePoint(66)).toBe(true);
@@ -324,14 +306,11 @@ describe("MatchCodePointSet", () => {
 
 		test("exhaustively checks for all entries in the set", () => {
 			const numArray = [
-				0x20, 0x0d, 0x0a, 0x09, 0x0c, 0x0b, 0xa0,
-				0x1680, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004,
-				0x2005, 0x2006, 0x2007, 0x2008, 0x2009, 0x200a,
-				0x2028, 0x2029, 0x202f, 0x205f, 0x3000, 0xfeff,
+				0x20, 0x0d, 0x0a, 0x09, 0x0c, 0x0b, 0xa0, 0x1680, 0x2000,
+				0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006, 0x2007, 0x2008,
+				0x2009, 0x200a, 0x2028, 0x2029, 0x202f, 0x205f, 0x3000, 0xfeff,
 			];
-			const matcher = MatchCodePointSet.fromNumbers(
-				...numArray
-			);
+			const matcher = MatchCodePointSet.fromNumbers(...numArray);
 			for (const num of numArray) {
 				expect(matcher.matchCodePoint(num)).toBe(true);
 			}
@@ -367,21 +346,14 @@ describe("MatchCodePointSet", () => {
 
 			const matcher = MatchRepeat.from(matchSet);
 
-			const nav = MutMatchNav.fromString(
-				"abz 129\t!@#\r\n😀ABC"
-			);
+			const nav = MutMatchNav.fromString("abz 129\t!@#\r\n😀ABC");
 			const result = matcher.match(nav);
 			expect(result).not.toBeNull();
-			expect(result?.captureMatch.value).toBe(
-				"abz 129\t!@#\r\n😀"
-			);
+			expect(result?.captureMatch.value).toBe("abz 129\t!@#\r\n😀");
 		});
 
 		test("creates a matcher from an array of CodePointRanges, string, and MatchCodePointSet", () => {
-			const ranges = MatchCodePointRanges.fromStrings(
-				"a-z",
-				"0-9"
-			);
+			const ranges = MatchCodePointRanges.fromStrings("a-z", "0-9");
 
 			const matchSet = MatchCodePointSet.fromArgs(
 				...ranges.ranges,
@@ -392,14 +364,10 @@ describe("MatchCodePointSet", () => {
 
 			const matcher = MatchRepeat.from(matchSet);
 
-			const nav = MutMatchNav.fromString(
-				"abz 129\t!@#\r\n😀ABC"
-			);
+			const nav = MutMatchNav.fromString("abz 129\t!@#\r\n😀ABC");
 			const result = matcher.match(nav);
 			expect(result).not.toBeNull();
-			expect(result?.captureMatch.value).toBe(
-				"abz 129\t!@#\r\n😀"
-			);
+			expect(result?.captureMatch.value).toBe("abz 129\t!@#\r\n😀");
 		});
 
 		test("exhaustively checks for all code points added to the set 'fromArgs'", () => {
@@ -410,8 +378,7 @@ describe("MatchCodePointSet", () => {
 			const str1: string = "!@#$%^&*()_+";
 			const str2: string = "😀";
 
-			const rangeMatcher2 =
-				MatchCodePointRange.fromString(range2);
+			const rangeMatcher2 = MatchCodePointRange.fromString(range2);
 			const matchSet = MatchCodePointSet.fromArgs(
 				CodePointRange.fromString(range1),
 				rangeMatcher2.range,
@@ -421,8 +388,7 @@ describe("MatchCodePointSet", () => {
 			);
 
 			const rangeToString = (range: string) => {
-				const codePointRange =
-					CodePointRange.fromString(range);
+				const codePointRange = CodePointRange.fromString(range);
 				return codePointRange.toExpandedString();
 			};
 
@@ -430,8 +396,7 @@ describe("MatchCodePointSet", () => {
 				const seq = new CodePointSeq(str);
 				seq.codePoints().forEach(codePoint => {
 					checkCount++;
-					const isMatch =
-						matchSet.matchCodePoint(codePoint);
+					const isMatch = matchSet.matchCodePoint(codePoint);
 					const isInSet = matchSet.has(codePoint);
 					expect(isMatch).toBe(true);
 					expect(isInSet).toBe(true);
@@ -445,8 +410,7 @@ describe("MatchCodePointSet", () => {
 			const checkSet = (set: MatchCodePointSet) => {
 				for (const codePoint of set) {
 					checkCount++;
-					const isMatch =
-						set.matchCodePoint(codePoint);
+					const isMatch = set.matchCodePoint(codePoint);
 					const isInSet = set.has(codePoint);
 					expect(isMatch).toBe(true);
 					expect(isInSet).toBe(true);
@@ -484,8 +448,7 @@ describe("MatchCodePointSet", () => {
 			);
 
 			const rangeToString = (range: string) => {
-				const codePointRange =
-					CodePointRange.fromString(range);
+				const codePointRange = CodePointRange.fromString(range);
 				return codePointRange.toExpandedString();
 			};
 
@@ -493,8 +456,7 @@ describe("MatchCodePointSet", () => {
 				const seq = new CodePointSeq(str);
 				seq.codePoints().forEach(codePoint => {
 					checkCount++;
-					const isMatch =
-						matchSet.matchCodePoint(codePoint);
+					const isMatch = matchSet.matchCodePoint(codePoint);
 					const isInSet = matchSet.has(codePoint);
 					expect(isMatch).toBe(true);
 					expect(isInSet).toBe(true);
@@ -508,8 +470,7 @@ describe("MatchCodePointSet", () => {
 			const checkSet = (set: MatchCodePointSet) => {
 				for (const codePoint of set) {
 					checkCount++;
-					const isMatch =
-						set.matchCodePoint(codePoint);
+					const isMatch = set.matchCodePoint(codePoint);
 					const isInSet = set.has(codePoint);
 					expect(isMatch).toBe(true);
 					expect(isInSet).toBe(true);
@@ -561,29 +522,21 @@ describe("MatchCodePointCategories", () => {
 	describe("constructor", () => {
 		test("creates a matcher with the specified categories", () => {
 			const categories = new Set(["Lu", "Ll"]); // Uppercase and lowercase letters
-			const matcher =
-				MatchCodePointCategories.fromString("Lu Ll");
-			expect(Array.from(matcher)).toEqual(
-				Array.from(categories)
-			);
+			const matcher = MatchCodePointCategories.fromString("Lu Ll");
+			expect(Array.from(matcher)).toEqual(Array.from(categories));
 		});
 
 		test("handles duplicate entries", () => {
 			const categories = new Set(["Lu", "Ll"]); // Uppercase and lowercase letters
 			const matcher =
-				MatchCodePointCategories.fromString(
-					"Lu Lu Ll Ll"
-				);
-			expect(Array.from(matcher)).toEqual(
-				Array.from(categories)
-			);
+				MatchCodePointCategories.fromString("Lu Lu Ll Ll");
+			expect(Array.from(matcher)).toEqual(Array.from(categories));
 		});
 	});
 
 	describe("match", () => {
 		test("matches a code point in the specified categories and advances the navigator", () => {
-			const matcher =
-				MatchCodePointCategories.fromString("Lu"); // Uppercase letters
+			const matcher = MatchCodePointCategories.fromString("Lu"); // Uppercase letters
 			const nav = MutMatchNav.fromString("ABC");
 
 			const result = matcher.match(nav);
@@ -593,8 +546,7 @@ describe("MatchCodePointCategories", () => {
 		});
 
 		test("returns null if the code point is not in the specified categories", () => {
-			const matcher =
-				MatchCodePointCategories.fromString("Ll"); // Lowercase letters
+			const matcher = MatchCodePointCategories.fromString("Ll"); // Lowercase letters
 			const nav = MutMatchNav.fromString("ABC");
 
 			const result = matcher.match(nav);
@@ -605,22 +557,19 @@ describe("MatchCodePointCategories", () => {
 
 	describe("matchCodePoint", () => {
 		test("returns true for code point in the specified categories", () => {
-			const matcher =
-				MatchCodePointCategories.fromString("Lu"); // Uppercase letters
+			const matcher = MatchCodePointCategories.fromString("Lu"); // Uppercase letters
 			expect(matcher.matchCodePoint(65)).toBe(true); // 'A'
 		});
 
 		test("returns false for code point not in the specified categories", () => {
-			const matcher =
-				MatchCodePointCategories.fromString("Ll"); // Lowercase letters
+			const matcher = MatchCodePointCategories.fromString("Ll"); // Lowercase letters
 			expect(matcher.matchCodePoint(65)).toBe(false); // 'A'
 		});
 	});
 
 	describe("fromString", () => {
 		test("creates a matcher from a space-separated string of categories", () => {
-			const matcher =
-				MatchCodePointCategories.fromString("Lu Ll");
+			const matcher = MatchCodePointCategories.fromString("Lu Ll");
 
 			expect(matcher.matchCodePoint(65)).toBe(true); // 'A' (Lu)
 			expect(matcher.matchCodePoint(97)).toBe(true); // 'a' (Ll)
@@ -629,12 +578,8 @@ describe("MatchCodePointCategories", () => {
 
 		test("throws an error for invalid category", () => {
 			expect(() => {
-				MatchCodePointCategories.fromString(
-					"Lu InvalidCategory"
-				);
-			}).toThrow(
-				"Invalid Unicode category: InvalidCategory"
-			);
+				MatchCodePointCategories.fromString("Lu InvalidCategory");
+			}).toThrow("Invalid Unicode category: InvalidCategory");
 		});
 	});
 });
@@ -651,25 +596,19 @@ describe("CodePointRange", () => {
 		test("throws an error if start > end", () => {
 			expect(() => {
 				CodePointRange.fromNumbers(90, 65);
-			}).toThrow(
-				"Invalid code point range: start > end (0x5A > 0x41)"
-			);
+			}).toThrow("Invalid code point range: start > end (0x5A > 0x41)");
 		});
 
 		test("throws an error if start is not a valid code point", () => {
 			expect(() => {
 				CodePointRange.fromNumbers(-1, 90);
-			}).toThrow(
-				"Invalid code point range: start is invalid (-1)"
-			);
+			}).toThrow("Invalid code point range: start is invalid (-1)");
 		});
 
 		test("throws an error if end is not a valid code point", () => {
 			expect(() => {
 				CodePointRange.fromNumbers(65, 0x110001);
-			}).toThrow(
-				"Invalid code point range: end is invalid (0x110001)"
-			);
+			}).toThrow("Invalid code point range: end is invalid (0x110001)");
 		});
 	});
 
@@ -740,8 +679,7 @@ describe("MatchCodePointRange", () => {
 	describe("constructor", () => {
 		test("creates a matcher with the specified range", () => {
 			const range = CodePointRange.fromNumbers(65, 90); // A-Z
-			const matcher =
-				MatchCodePointRange.fromRange(range);
+			const matcher = MatchCodePointRange.fromRange(range);
 
 			expect(matcher.range).toBe(range);
 		});
@@ -751,9 +689,7 @@ describe("MatchCodePointRange", () => {
 				MatchCodePointRange.fromRange(
 					CodePointRange.fromNumbers(-1, 90)
 				);
-			}).toThrow(
-				"Invalid code point range: start is invalid (-1)"
-			);
+			}).toThrow("Invalid code point range: start is invalid (-1)");
 		});
 	});
 
@@ -806,8 +742,7 @@ describe("MatchCodePointRange", () => {
 
 	describe("fromString", () => {
 		test("creates a matcher from a string in format 'start-end'", () => {
-			const matcher =
-				MatchCodePointRange.fromString("A-Z");
+			const matcher = MatchCodePointRange.fromString("A-Z");
 
 			expect(matcher.matchCodePoint(65)).toBe(true); // A
 			expect(matcher.matchCodePoint(77)).toBe(true); // M
@@ -824,9 +759,7 @@ describe("MatchCodePointRanges", () => {
 				CodePointRange.fromNumbers(65, 90), // A-Z
 				CodePointRange.fromNumbers(97, 122), // a-z
 			];
-			const matcher = MatchCodePointRanges.fromRanges(
-				...ranges
-			);
+			const matcher = MatchCodePointRanges.fromRanges(...ranges);
 
 			expect(matcher.ranges).toStrictEqual(ranges);
 		});
@@ -834,9 +767,7 @@ describe("MatchCodePointRanges", () => {
 		test("throws error on empty ranges array", () => {
 			expect(() => {
 				MatchCodePointRanges.fromRanges();
-			}).toThrow(
-				"MatchCodePointRanges: empty ranges array"
-			);
+			}).toThrow("MatchCodePointRanges: empty ranges array");
 		});
 	});
 
@@ -898,10 +829,7 @@ describe("MatchCodePointRanges", () => {
 
 	describe("fromStrings", () => {
 		test("creates a matcher from an array of strings in format 'start-end'", () => {
-			const matcher = MatchCodePointRanges.fromStrings(
-				"A-Z",
-				"a-z"
-			);
+			const matcher = MatchCodePointRanges.fromStrings("A-Z", "a-z");
 
 			expect(matcher.matchCodePoint(65)).toBe(true); // A
 			expect(matcher.matchCodePoint(97)).toBe(true); // a
@@ -914,8 +842,7 @@ describe("MatchNotCodePoint", () => {
 	describe("constructor", () => {
 		test("should create a matcher with the specified matcher to negate", () => {
 			const innerMatcher = MatchCodePoint.fromNumber(65); // A
-			const matcher =
-				MatchNotCodePoint.from(innerMatcher);
+			const matcher = MatchNotCodePoint.from(innerMatcher);
 
 			expect(matcher.matcher).toBe(innerMatcher);
 		});
@@ -924,8 +851,7 @@ describe("MatchNotCodePoint", () => {
 	describe("match with MatchCodePointBase", () => {
 		test("should match when inner matcher doesn't match and advance the navigator", () => {
 			const innerMatcher = MatchCodePoint.fromNumber(65); // A
-			const matcher =
-				MatchNotCodePoint.from(innerMatcher);
+			const matcher = MatchNotCodePoint.from(innerMatcher);
 			const nav = MutMatchNav.fromString("XYZ");
 
 			const result = matcher.match(nav);
@@ -937,8 +863,7 @@ describe("MatchNotCodePoint", () => {
 
 		test("should return null when inner matcher matches", () => {
 			const innerMatcher = MatchCodePoint.fromNumber(65); // A
-			const matcher =
-				MatchNotCodePoint.from(innerMatcher);
+			const matcher = MatchNotCodePoint.from(innerMatcher);
 			const nav = MutMatchNav.fromString("ABC");
 
 			const result = matcher.match(nav);
@@ -950,16 +875,14 @@ describe("MatchNotCodePoint", () => {
 	describe("matchCodePoint", () => {
 		test("should return true when inner matcher returns false", () => {
 			const innerMatcher = MatchCodePoint.fromNumber(65); // A
-			const matcher =
-				MatchNotCodePoint.from(innerMatcher);
+			const matcher = MatchNotCodePoint.from(innerMatcher);
 
 			expect(matcher.matchCodePoint(66)).toBe(true); // B
 		});
 
 		test("should return false when inner matcher returns true", () => {
 			const innerMatcher = MatchCodePoint.fromNumber(65); // A
-			const matcher =
-				MatchNotCodePoint.from(innerMatcher);
+			const matcher = MatchNotCodePoint.from(innerMatcher);
 
 			expect(matcher.matchCodePoint(65)).toBe(false); // A
 		});

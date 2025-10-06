@@ -49,10 +49,7 @@ export type FindKind = ":match" | ":fragment";
 /**
  * A default token returned from a find operation.
  */
-export class FindNavToken extends NavToken<
-	FindCategory,
-	FindKind
-> {}
+export class FindNavToken extends NavToken<FindCategory, FindKind> {}
 
 /**
  * Result of a split operation containing both the matched portion
@@ -93,22 +90,14 @@ export class FindAllResult {
 			// Add fragment token if not empty
 			if (result.fragmentNav.captureMatch.length > 0) {
 				navTokens.push(
-					new FindNavToken(
-						":find",
-						":fragment",
-						result.fragmentNav
-					)
+					new FindNavToken(":find", ":fragment", result.fragmentNav)
 				);
 			}
 
 			// Add match token if match exists
 			if (result.matchNav !== null) {
 				navTokens.push(
-					new FindNavToken(
-						":find",
-						":match",
-						result.matchNav
-					)
+					new FindNavToken(":find", ":match", result.matchNav)
 				);
 			}
 		}
@@ -130,11 +119,8 @@ export class TRex {
 	 * @param start The starting position in the source text.
 	 * @returns A FindResult object containing the match navigator and fragment navigator.
 	 */
-	public find(
-		source: StrSlice,
-		start: number = 0
-	): FindResult {
-		let nav = MutMatchNav.from(source, start);
+	public find(source: StrSlice, start: number = 0): FindResult {
+		let nav = MutMatchNav.fromNew(source, start);
 		const originalNav = nav.copy();
 
 		// const str =
@@ -144,10 +130,9 @@ export class TRex {
 			const result = this.matcher.match(nav.copy());
 			if (result) {
 				const matchNav = result;
-				const fragmentNav =
-					originalNav.moveCaptureForward(
-						result.startIndex - originalNav.startIndex
-					);
+				const fragmentNav = originalNav.moveCaptureForward(
+					result.startIndex - originalNav.startIndex
+				);
 				return {
 					matchNav,
 					fragmentNav,
@@ -157,8 +142,7 @@ export class TRex {
 		}
 
 		const matchNav = nav.invalidate();
-		const fragmentNav =
-			originalNav.moveCaptureToSourceEnd();
+		const fragmentNav = originalNav.moveCaptureToSourceEnd();
 
 		return {
 			matchNav,

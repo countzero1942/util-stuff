@@ -108,7 +108,7 @@ export class GroupMatchRepeat extends GroupMatchBase {
 		const lastMatcher = this.altFirstLastMatchers.altLastMatch;
 
 		nav.assertNavIsValid();
-		nav.assertNavIsNew();
+		// nav.assertNavIsNew();
 
 		let count = 0;
 		const min = this.numberOfMatches.minNumber;
@@ -126,8 +126,6 @@ export class GroupMatchRepeat extends GroupMatchBase {
 			parent
 		);
 
-		const firstNamedAncestor = parentNav.getFirstNamedAncestor();
-
 		const contentMatcher = this.matcher;
 
 		const stepNav = MatchRepeat.getMatchRepeatStepNav();
@@ -144,7 +142,7 @@ export class GroupMatchRepeat extends GroupMatchBase {
 			 * So it is not a reliable indicator of failed match.
 			 */
 			let result: GroupMatchNav | GroupValidatorError =
-				GroupValidatorError.GenericError;
+				GroupValidatorError.empty;
 
 			const isCurrentMatchEmpty = () => {
 				if (result instanceof GroupValidatorError) {
@@ -231,8 +229,12 @@ export class GroupMatchRepeat extends GroupMatchBase {
 		}
 		// case: failed match
 		else {
+			const error = GroupValidatorError.from(
+				nav.copy(),
+				MutMatchNav.fromFirstAndLast(firstNav, currentNav)
+			);
 			nav.invalidate();
-			return GroupValidatorError.GenericError;
+			return error;
 		}
 	}
 

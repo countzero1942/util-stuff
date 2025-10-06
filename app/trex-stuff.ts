@@ -134,24 +134,18 @@ import { CodePointSeq } from "@/utils/seq";
 
 export const doTRexStuff = () => {
 	const source = StrSlice.from("abcdef");
-	const anyStringMatcher = MatchAnyString.fromStrings(
-		"abc",
-		"def"
-	);
-	const matcher = LookAheadAnyString.from(
-		anyStringMatcher
-	);
+	const anyStringMatcher = MatchAnyString.fromStrings("abc", "def");
+	const matcher = LookAheadAnyString.from(anyStringMatcher);
 
 	{
-		const nav = MutMatchNav.from(source);
+		const nav = MutMatchNav.fromNew(source);
 		const result = matcher.match(nav);
 		log(`'${result?.captureMatch.value}'`);
 		div();
 	}
 
 	{
-		let nav: MutMatchNav | null =
-			MutMatchNav.from(source);
+		let nav: MutMatchNav | null = MutMatchNav.fromNew(source);
 		nav = anyStringMatcher.match(nav);
 		logobj(`'${nav?.captureMatch.value}'`);
 		if (nav) {
@@ -197,8 +191,7 @@ export const codePointSetArgsTestExaustiveCheck = () => {
 	);
 
 	const rangeToString = (range: string) => {
-		const codePointRange =
-			CodePointRange.fromString(range);
+		const codePointRange = CodePointRange.fromString(range);
 		return codePointRange.toExpandedString();
 	};
 
@@ -208,9 +201,7 @@ export const codePointSetArgsTestExaustiveCheck = () => {
 		isInSet: boolean
 	) => {
 		const codePointStr =
-			codePoint >= 0x20
-				? String.fromCodePoint(codePoint)
-				: " ";
+			codePoint >= 0x20 ? String.fromCodePoint(codePoint) : " ";
 		log(
 			`codePoint: '${codePointStr}' 0x${codePoint.toString(16)}, ` +
 				`isMatch: ${isMatch}, isInSet: ${isInSet}`
@@ -246,9 +237,7 @@ export const codePointSetArgsTestExaustiveCheck = () => {
 	}
 
 	logh("checkCount");
-	log(
-		`checkCount: ${checkCount}, setCount: ${matchSet.size}`
-	);
+	log(`checkCount: ${checkCount}, setCount: ${matchSet.size}`);
 	log();
 };
 

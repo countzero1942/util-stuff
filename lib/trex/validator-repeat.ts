@@ -1,16 +1,22 @@
 import { GroupMatchBase } from "./group-match";
 import { GroupMatchRepeat } from "./group-match-repeat";
 import { GroupName } from "./group-name";
+import { GroupValidatorError } from "./group-validator-error";
 import { GroupValidatorResult } from "./group-validator-result";
 import { MutMatchNav } from "./nav";
 
 export abstract class GroupValidatorBase {
 	constructor(public readonly targetName: GroupName) {}
 
-	abstract validate(nav: MutMatchNav): GroupValidatorResult;
+	abstract validate(
+		testNav: MutMatchNav,
+		parentNav: MutMatchNav
+	): GroupValidatorResult;
 }
 
 export class GroupRepeatValidator extends GroupValidatorBase {
+	#_errorMessage: string;
+
 	constructor(
 		targetName: GroupName,
 		public readonly contentMatcher: GroupMatchRepeat,
@@ -20,15 +26,29 @@ export class GroupRepeatValidator extends GroupValidatorBase {
 		) => GroupMatchRepeat | null = () => null
 	) {
 		super(targetName);
+		this.#_errorMessage =
+			`Expected ${this.contentMatcher.numberOfMatches.minNumber} ` +
+			`to ${this.contentMatcher.numberOfMatches.maxNumber} matches.`;
 	}
 
-	validate(nav: MutMatchNav): GroupValidatorResult {
-		const result = this.contentMatcher.match(nav, null);
-		if (result === null) {
-			const msg =
-				`Expected ${this.contentMatcher.numberOfMatches.minNumber} ` +
-				`to ${this.contentMatcher.numberOfMatches.maxNumber} matches.`;
-			return GroupValidatorResult.FromError(msg);
+	static from(
+		targetName: GroupName,
+		contentMatcher: GroupMatchRepeat
+	): GroupRepeatValidator {
+		return new GroupRepeatValidator(targetName, contentMatcher);
+	}
+
+	validate(
+		testNav: MutMatchNav,
+		parentNav: MutMatchNav
+	): GroupValidatorResult {
+		const result = this.contentMatcher.match(testNav.copy(), null);
+		if (result instanceof GroupValidatorError) {
+			return GroupValidatorResult.FromError(
+				testNav,
+				parentNav,
+				this.#_errorMessage
+			);
 		}
 
 		return GroupValidatorResult.Ok;

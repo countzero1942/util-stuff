@@ -1,11 +1,6 @@
 import { StrSlice } from "@/utils/slice";
 import { MutMatchNav } from "@/trex/nav";
-import {
-	NavToken,
-	FindNavToken,
-	FindAllResult,
-	TRex,
-} from "@/trex/trex";
+import { NavToken, FindNavToken, FindAllResult, TRex } from "@/trex/trex";
 import { MatchAnyString } from "@/trex/match-any-string";
 import {
 	MatchCodePoint,
@@ -31,17 +26,11 @@ describe("NavToken", () => {
 		const matchNav = MutMatchNav.fromString("test");
 		matchNav.moveCaptureForward(4); // Capture the whole string
 
-		const token = new NavToken(
-			"category",
-			"kind",
-			matchNav
-		);
+		const token = new NavToken("category", "kind", matchNav);
 
 		expect(token.category).toBe("category");
 		expect(token.kind).toBe("kind");
-		expect(token.matchNav.captureMatch.value).toBe(
-			"test"
-		);
+		expect(token.matchNav.captureMatch.value).toBe("test");
 		expect(token.matchNav).toBe(matchNav);
 	});
 
@@ -49,14 +38,8 @@ describe("NavToken", () => {
 		const matchNav = MutMatchNav.fromString("test");
 		matchNav.moveCaptureForward(4); // Capture the whole string
 
-		const token = new NavToken(
-			":category",
-			":kind",
-			matchNav
-		);
-		expect(token.toString()).toBe(
-			":category:kind 'test'"
-		);
+		const token = new NavToken(":category", ":kind", matchNav);
+		expect(token.toString()).toBe(":category:kind 'test'");
 	});
 });
 
@@ -65,11 +48,7 @@ describe("FindToken and FindNavToken", () => {
 		const matchNav = MutMatchNav.fromString("test");
 		matchNav.moveCaptureForward(4); // Capture the whole string
 
-		const token = new FindNavToken(
-			":find",
-			":match",
-			matchNav
-		);
+		const token = new FindNavToken(":find", ":match", matchNav);
 
 		expect(token).toBeInstanceOf(NavToken);
 		expect(token.category).toBe(":find");
@@ -83,10 +62,10 @@ describe("FindAllResult", () => {
 		// Create a sample FindResult with a fragment and a match
 		const source = StrSlice.from("abc xxx def");
 
-		const fragmentNav = MutMatchNav.from(source, 0);
+		const fragmentNav = MutMatchNav.fromNew(source, 0);
 		fragmentNav.moveCaptureForward(4); // Capture "abc "
 
-		const matchNav = MutMatchNav.from(source, 4);
+		const matchNav = MutMatchNav.fromNew(source, 4);
 		matchNav.moveCaptureForward(3); // Capture "xxx"
 
 		const findResult = {
@@ -101,26 +80,22 @@ describe("FindAllResult", () => {
 		expect(navTokens[0]).toBeInstanceOf(FindNavToken);
 		expect(navTokens[0].category).toBe(":find");
 		expect(navTokens[0].kind).toBe(":fragment");
-		expect(navTokens[0].matchNav.captureMatch.value).toBe(
-			"abc "
-		);
+		expect(navTokens[0].matchNav.captureMatch.value).toBe("abc ");
 
 		expect(navTokens[1]).toBeInstanceOf(FindNavToken);
 		expect(navTokens[1].category).toBe(":find");
 		expect(navTokens[1].kind).toBe(":match");
-		expect(navTokens[1].matchNav.captureMatch.value).toBe(
-			"xxx"
-		);
+		expect(navTokens[1].matchNav.captureMatch.value).toBe("xxx");
 	});
 
 	test("getNavTokens skips empty fragments", () => {
 		// Create a sample FindResult with an empty fragment and a match
 		const source = StrSlice.from("xxx def");
 
-		const fragmentNav = MutMatchNav.from(source);
+		const fragmentNav = MutMatchNav.fromNew(source);
 		fragmentNav.moveCaptureForward(0); // Empty capture
 
-		const matchNav = MutMatchNav.from(source);
+		const matchNav = MutMatchNav.fromNew(source);
 		matchNav.moveCaptureForward(3); // Capture "xxx"
 
 		const findResult = {
@@ -139,7 +114,7 @@ describe("FindAllResult", () => {
 		// Create a sample FindResult with a fragment but no match
 		const source = StrSlice.from("abc def");
 
-		const fragmentNav = MutMatchNav.from(source, 0);
+		const fragmentNav = MutMatchNav.fromNew(source, 0);
 		fragmentNav.moveCaptureForward(7); // Capture the whole string
 
 		const findResult = {
@@ -152,9 +127,7 @@ describe("FindAllResult", () => {
 
 		expect(navTokens).toHaveLength(1);
 		expect(navTokens[0].kind).toBe(":fragment");
-		expect(navTokens[0].matchNav.captureMatch.value).toBe(
-			"abc def"
-		);
+		expect(navTokens[0].matchNav.captureMatch.value).toBe("abc def");
 	});
 });
 
@@ -168,12 +141,8 @@ describe("TRex", () => {
 			const result = trex.find(source);
 
 			expect(result.matchNav).not.toBeNull();
-			expect(result.matchNav?.captureMatch.value).toBe(
-				"xxx"
-			);
-			expect(result.fragmentNav.captureMatch.value).toBe(
-				"abc "
-			);
+			expect(result.matchNav?.captureMatch.value).toBe("xxx");
+			expect(result.fragmentNav.captureMatch.value).toBe("abc ");
 		});
 
 		test("returns null matchNav when no match is found", () => {
@@ -184,9 +153,7 @@ describe("TRex", () => {
 			const result = trex.find(source);
 
 			expect(result.matchNav).toBeNull();
-			expect(result.fragmentNav.captureMatch.value).toBe(
-				"abc def"
-			);
+			expect(result.fragmentNav.captureMatch.value).toBe("abc def");
 		});
 
 		test("finds a match starting from a specific position", () => {
@@ -197,12 +164,8 @@ describe("TRex", () => {
 			const result = trex.find(source, 4); // Start after the first "xxx"
 
 			expect(result.matchNav).not.toBeNull();
-			expect(result.matchNav?.captureMatch.value).toBe(
-				"xxx"
-			);
-			expect(result.fragmentNav.captureMatch.value).toBe(
-				"abc "
-			);
+			expect(result.matchNav?.captureMatch.value).toBe("xxx");
+			expect(result.fragmentNav.captureMatch.value).toBe("abc ");
 		});
 
 		test("handles surrogate pairs correctly", () => {
@@ -213,20 +176,14 @@ describe("TRex", () => {
 			const result = trex.find(source);
 
 			expect(result.matchNav).not.toBeNull();
-			expect(result.matchNav?.captureMatch.value).toBe(
-				"😀"
-			);
-			expect(result.fragmentNav.captureMatch.value).toBe(
-				"abc "
-			);
+			expect(result.matchNav?.captureMatch.value).toBe("😀");
+			expect(result.fragmentNav.captureMatch.value).toBe("abc ");
 		});
 	});
 
 	describe("findAll", () => {
 		test("finds all matches in the source string", () => {
-			const source = StrSlice.from(
-				"abc xxx def xxx ghi"
-			);
+			const source = StrSlice.from("abc xxx def xxx ghi");
 			const matcher = MatchAnyString.fromStrings("xxx");
 			const trex = new TRex(matcher);
 
@@ -235,25 +192,15 @@ describe("TRex", () => {
 
 			expect(tokens).toHaveLength(5);
 			expect(tokens[0].kind).toBe(":fragment");
-			expect(tokens[0].matchNav.captureMatch.value).toBe(
-				"abc "
-			);
+			expect(tokens[0].matchNav.captureMatch.value).toBe("abc ");
 			expect(tokens[1].kind).toBe(":match");
-			expect(tokens[1].matchNav.captureMatch.value).toBe(
-				"xxx"
-			);
+			expect(tokens[1].matchNav.captureMatch.value).toBe("xxx");
 			expect(tokens[2].kind).toBe(":fragment");
-			expect(tokens[2].matchNav.captureMatch.value).toBe(
-				" def "
-			);
+			expect(tokens[2].matchNav.captureMatch.value).toBe(" def ");
 			expect(tokens[3].kind).toBe(":match");
-			expect(tokens[3].matchNav.captureMatch.value).toBe(
-				"xxx"
-			);
+			expect(tokens[3].matchNav.captureMatch.value).toBe("xxx");
 			expect(tokens[4].kind).toBe(":fragment");
-			expect(tokens[4].matchNav.captureMatch.value).toBe(
-				" ghi"
-			);
+			expect(tokens[4].matchNav.captureMatch.value).toBe(" ghi");
 		});
 
 		test("handles case with no matches", () => {
@@ -266,9 +213,7 @@ describe("TRex", () => {
 
 			expect(tokens).toHaveLength(1);
 			expect(tokens[0].kind).toBe(":fragment");
-			expect(tokens[0].matchNav.captureMatch.value).toBe(
-				"abc def ghi"
-			);
+			expect(tokens[0].matchNav.captureMatch.value).toBe("abc def ghi");
 		});
 
 		test("throws error on empty match", () => {
@@ -282,9 +227,7 @@ describe("TRex", () => {
 			};
 			const trex = new TRex(emptyMatcher);
 
-			expect(() => trex.findAll(source)).toThrow(
-				"Empty match found"
-			);
+			expect(() => trex.findAll(source)).toThrow("Empty match found");
 		});
 	});
 });

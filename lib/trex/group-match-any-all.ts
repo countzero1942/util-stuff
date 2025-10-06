@@ -33,7 +33,7 @@ export class GroupMatchAny extends GroupMatchBase {
 				return result;
 			}
 		}
-		return GroupValidatorError.GenericError;
+		return GroupValidatorError.from(nav, nav, "Unexpected");
 	}
 }
 
