@@ -23,20 +23,19 @@ import exp from "constants";
 
 describe("NavToken", () => {
 	test("stores category, kind, and matchNav", () => {
-		const matchNav = MatchNav.fromString("test");
-		matchNav.moveCaptureForward(4); // Capture the whole string
+		let matchNav = MatchNav.fromString("test");
+		matchNav = matchNav.moveCaptureForward(4); // Capture the whole string
 
 		const token = new NavToken("category", "kind", matchNav);
 
 		expect(token.category).toBe("category");
 		expect(token.kind).toBe("kind");
 		expect(token.matchNav.captureMatch.value).toBe("test");
-		expect(token.matchNav).toBe(matchNav);
 	});
 
 	test("formats toString correctly", () => {
-		const matchNav = MatchNav.fromString("test");
-		matchNav.moveCaptureForward(4); // Capture the whole string
+		let matchNav = MatchNav.fromString("test");
+		matchNav = matchNav.moveCaptureForward(4); // Capture the whole string
 
 		const token = new NavToken(":category", ":kind", matchNav);
 		expect(token.toString()).toBe(":category:kind 'test'");
@@ -45,15 +44,14 @@ describe("NavToken", () => {
 
 describe("FindToken and FindNavToken", () => {
 	test("FindNavToken extends NavToken with correct type parameters", () => {
-		const matchNav = MatchNav.fromString("test");
-		matchNav.moveCaptureForward(4); // Capture the whole string
+		let matchNav = MatchNav.fromString("test");
+		matchNav = matchNav.moveCaptureForward(4); // Capture the whole string
 
 		const token = new FindNavToken(":find", ":match", matchNav);
 
 		expect(token).toBeInstanceOf(NavToken);
 		expect(token.category).toBe(":find");
 		expect(token.kind).toBe(":match");
-		expect(token.matchNav).toBe(matchNav);
 	});
 });
 
@@ -62,11 +60,11 @@ describe("FindAllResult", () => {
 		// Create a sample FindResult with a fragment and a match
 		const source = StrSlice.from("abc xxx def");
 
-		const fragmentNav = MatchNav.fromNew(source, 0);
-		fragmentNav.moveCaptureForward(4); // Capture "abc "
+		let fragmentNav = MatchNav.fromNew(source);
+		fragmentNav = fragmentNav.moveCaptureForward(4); // Capture "abc "
 
-		const matchNav = MatchNav.fromNew(source, 4);
-		matchNav.moveCaptureForward(3); // Capture "xxx"
+		let matchNav = MatchNav.fromStart(source, 4);
+		matchNav = matchNav.moveCaptureForward(3); // Capture "xxx"
 
 		const findResult = {
 			fragmentNav,
@@ -92,11 +90,11 @@ describe("FindAllResult", () => {
 		// Create a sample FindResult with an empty fragment and a match
 		const source = StrSlice.from("xxx def");
 
-		const fragmentNav = MatchNav.fromNew(source);
-		fragmentNav.moveCaptureForward(0); // Empty capture
+		let fragmentNav = MatchNav.fromNew(source);
+		fragmentNav = fragmentNav.moveCaptureForward(0); // Empty capture
 
-		const matchNav = MatchNav.fromNew(source);
-		matchNav.moveCaptureForward(3); // Capture "xxx"
+		let matchNav = MatchNav.fromNew(source);
+		matchNav = matchNav.moveCaptureForward(3); // Capture "xxx"
 
 		const findResult = {
 			fragmentNav,
@@ -114,8 +112,8 @@ describe("FindAllResult", () => {
 		// Create a sample FindResult with a fragment but no match
 		const source = StrSlice.from("abc def");
 
-		const fragmentNav = MatchNav.fromNew(source, 0);
-		fragmentNav.moveCaptureForward(7); // Capture the whole string
+		let fragmentNav = MatchNav.fromNew(source);
+		fragmentNav = fragmentNav.moveCaptureForward(7); // Capture the whole string
 
 		const findResult = {
 			fragmentNav,
@@ -221,7 +219,6 @@ describe("TRex", () => {
 			// Create a matcher that produces an empty match
 			const emptyMatcher = {
 				match: (nav: MatchNav) => {
-					nav.assertNavIsValid();
 					return nav; // Return without moving capture forward
 				},
 			};

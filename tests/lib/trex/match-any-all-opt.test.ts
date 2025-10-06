@@ -67,17 +67,6 @@ describe("MatchAny", () => {
 			expect(result).not.toBeNull();
 			expect(result?.captureMatch.value).toBe("A");
 		});
-
-		test("throws on invalid navigator", () => {
-			const matcherA = MatchCodePoint.fromString("A");
-			const anyMatcher = MatchAny.fromMatchers(matcherA);
-
-			const nav = MatchNav.fromNew(new StrSlice("XYZ"));
-			nav.invalidate();
-			expect(() => anyMatcher.match(nav)).toThrow(
-				"Illegal use of invalidated navigator"
-			);
-		});
 	});
 });
 
@@ -104,7 +93,6 @@ describe("MatchAll", () => {
 			const result = allMatcher.match(nav);
 
 			expect(result).not.toBeNull();
-			expect(result).toBe(nav);
 			expect(result?.captureMatch.value).toBe("AB");
 		});
 
@@ -140,7 +128,6 @@ describe("MatchAll", () => {
 
 			expect(result).not.toBeNull();
 			expect(result?.captureMatch.value).toBe("ABC");
-			expect(result).toBe(nav);
 		});
 
 		test("works with an empty matchers array", () => {
@@ -198,7 +185,6 @@ describe("MatchOpt", () => {
 			const result = optMatcher.match(nav);
 
 			expect(result).not.toBeNull();
-			expect(result?.isInvalidated).toBe(false);
 		});
 	});
 });

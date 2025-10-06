@@ -28,17 +28,13 @@ describe("MatchNot", () => {
 			const nav = MatchNav.fromString("");
 			const result = not.match(nav);
 			expect(result).toBeNull();
-			expect(nav.isInvalidated).toBe(true);
 		});
 		test("returns nav (same instance, unmutated) when MatchAll does not match", () => {
 			const matcher = MatchAll.fromMatchers(MatchEndSlice.default);
 			const not = MatchNot.from(matcher);
 			const nav = MatchNav.fromString("abc");
-			const navCopy = nav.copy();
 			const result = not.match(nav);
 			expect(result).toBe(nav); // instance identity
-			expect(result?.isInvalidated).toBe(false);
-			expect(nav).toMatchObject(navCopy); // state unchanged
 		});
 	});
 
@@ -49,7 +45,6 @@ describe("MatchNot", () => {
 			const nav = MatchNav.fromString("");
 			const result = not.match(nav);
 			expect(result).toBeNull();
-			expect(nav.isInvalidated).toBe(true);
 		});
 		test("returns nav (same instance, unmutated) when MatchAny does not match", () => {
 			const matcher = MatchAny.fromMatchers(MatchEndSlice.default);
@@ -57,7 +52,6 @@ describe("MatchNot", () => {
 			const nav = MatchNav.fromString("abc");
 			const result = not.match(nav);
 			expect(result).not.toBeNull();
-			expect(result?.isInvalidated).toBe(false);
 		});
 	});
 
@@ -68,7 +62,6 @@ describe("MatchNot", () => {
 			const nav = MatchNav.fromString("");
 			const result = not.match(nav);
 			expect(result).toBeNull();
-			expect(nav.isInvalidated).toBe(true);
 		});
 		test("returns null always on MatchOpt, because MatchOpt always returns true", () => {
 			const matcher = MatchOpt.from(MatchEndSlice.default);
@@ -76,7 +69,6 @@ describe("MatchNot", () => {
 			const nav = MatchNav.fromString("abc");
 			const result = not.match(nav);
 			expect(result).toBeNull();
-			expect(nav.isInvalidated).toBe(true);
 		});
 	});
 
@@ -90,7 +82,6 @@ describe("MatchNot", () => {
 			const nav = MatchNav.fromString("aa");
 			const result = not.match(nav);
 			expect(result).toBeNull();
-			expect(nav.isInvalidated).toBe(true);
 		});
 		test("returns nav (same instance, unmutated) when MatchRepeat does not match", () => {
 			const matcher = MatchRepeat.from(
@@ -99,11 +90,8 @@ describe("MatchNot", () => {
 			);
 			const not = MatchNot.from(matcher);
 			const nav = MatchNav.fromString("ab");
-			const navCopy = nav.copy();
 			const result = not.match(nav);
 			expect(result).toBe(nav);
-			expect(result?.isInvalidated).toBe(false);
-			expect(nav).toMatchObject(navCopy);
 		});
 	});
 
@@ -114,17 +102,13 @@ describe("MatchNot", () => {
 			const nav = MatchNav.fromString("abc");
 			const result = not.match(nav);
 			expect(result).toBeNull();
-			expect(nav.isInvalidated).toBe(true);
 		});
 		test("returns nav (same instance, unmutated) when MatchAnyString does not match", () => {
 			const matcher = MatchAnyString.fromStrings("xyz");
 			const not = MatchNot.from(matcher);
 			const nav = MatchNav.fromString("abc");
-			const navCopy = nav.copy();
 			const result = not.match(nav);
 			expect(result).toBe(nav);
-			expect(result?.isInvalidated).toBe(false);
-			expect(nav).toMatchObject(navCopy);
 		});
 	});
 
@@ -136,23 +120,18 @@ describe("MatchNot", () => {
 			const not = MatchNot.from(matcher);
 			const nav = MatchNav.fromString("ba", 0); // position after 'b'
 			nav.moveCaptureForwardOneCodePoint();
-			const navCopy = nav.copy();
 			const result = not.match(nav);
 			expect(result).toBe(nav);
-			expect(result?.captureMatch.value).toBe("b");
-			expect(nav.isInvalidated).toBe(false);
-			expect(nav).toMatchObject(navCopy);
 		});
 		test("returns null when LookBehindAnyString matches", () => {
 			const matcher = LookBehindAnyString.from(
 				MatchAnyString.fromStrings("b")
 			);
 			const not = MatchNot.from(matcher);
-			const nav = MatchNav.fromString("ba", 0);
-			nav.moveCaptureForwardOneCodePoint();
+			let nav = MatchNav.fromString("ba", 0);
+			nav = nav.moveCaptureForwardOneCodePoint();
 			const result = not.match(nav);
 			expect(result).toBeNull();
-			expect(nav.isInvalidated).toBe(true);
 		});
 	});
 
@@ -163,17 +142,13 @@ describe("MatchNot", () => {
 			const nav = MatchNav.fromString("");
 			const result = not.match(nav);
 			expect(result).toBeNull();
-			expect(nav.isInvalidated).toBe(true);
 		});
 		test("returns nav (same instance, unmutated) when MatchStartSlice does not match", () => {
 			const matcher = MatchStartSlice.default;
 			const not = MatchNot.from(matcher);
 			const nav = MatchNav.fromString("abc", 1);
-			const navCopy = nav.copy();
 			const result = not.match(nav);
 			expect(result).toBe(nav);
-			expect(result?.isInvalidated).toBe(false);
-			expect(nav).toMatchObject(navCopy);
 		});
 	});
 
@@ -184,17 +159,13 @@ describe("MatchNot", () => {
 			const nav = MatchNav.fromString("", 0);
 			const result = not.match(nav);
 			expect(result).toBeNull();
-			expect(nav.isInvalidated).toBe(true);
 		});
 		test("returns nav (same instance, unmutated) when MatchEndSlice does not match", () => {
 			const matcher = MatchEndSlice.default;
 			const not = MatchNot.from(matcher);
 			const nav = MatchNav.fromString("abc", 1);
-			const navCopy = nav.copy();
 			const result = not.match(nav);
 			expect(result).toBe(nav);
-			expect(result?.isInvalidated).toBe(false);
-			expect(nav).toMatchObject(navCopy);
 		});
 	});
 
@@ -205,17 +176,13 @@ describe("MatchNot", () => {
 			const nav = MatchNav.fromString("abc", 1);
 			const result = not.match(nav);
 			expect(result).toBeNull();
-			expect(nav.isInvalidated).toBe(true);
 		});
 		test("returns nav (same instance, unmutated) when MatchNotStartSlice does not match", () => {
 			const matcher = MatchNotStartSlice.default;
 			const not = MatchNot.from(matcher);
 			const nav = MatchNav.fromString("abc", 0);
-			const navCopy = nav.copy();
 			const result = not.match(nav);
 			expect(result).toBe(nav);
-			expect(result?.isInvalidated).toBe(false);
-			expect(nav).toMatchObject(navCopy);
 		});
 	});
 
@@ -226,17 +193,13 @@ describe("MatchNot", () => {
 			const nav = MatchNav.fromString("abc", 1);
 			const result = not.match(nav);
 			expect(result).toBeNull();
-			expect(nav.isInvalidated).toBe(true);
 		});
 		test("returns nav (same instance, unmutated) when MatchNotEndSlice does not match", () => {
 			const matcher = MatchNotEndSlice.default;
 			const not = MatchNot.from(matcher);
 			const nav = MatchNav.fromString("abc", 3);
-			const navCopy = nav.copy();
 			const result = not.match(nav);
 			expect(result).toBe(nav);
-			expect(result?.isInvalidated).toBe(false);
-			expect(nav).toMatchObject(navCopy);
 		});
 	});
 

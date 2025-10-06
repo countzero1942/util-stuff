@@ -37,8 +37,6 @@ describe("MatchAnyString", () => {
 			const nav = MatchNav.fromString("bazqux");
 			const result = matcher.match(nav);
 			expect(result).toBeNull();
-			// nav should be invalidated
-			expect(nav.isInvalidated).toBe(true);
 		});
 
 		test("matches only at the correct position", () => {
@@ -90,9 +88,9 @@ describe("MatchAnyString", () => {
 
 		test("matches after advancing nav index", () => {
 			const matcher = MatchAnyString.fromStrings("foo", "bar");
-			const nav = MatchNav.fromString("xxfoo");
+			let nav = MatchNav.fromString("xxfoo");
 			// Advance both nav and capture indices to 2 (no ghost capture)
-			nav.moveCaptureForward(2);
+			nav = nav.moveCaptureForward(2);
 			const result = matcher.match(nav);
 			expect(result).not.toBeNull();
 		});

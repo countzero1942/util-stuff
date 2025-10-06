@@ -24,8 +24,8 @@ describe("LookBehindCodePoint", () => {
 	});
 
 	test("matches when the previous code point matches: capture", () => {
-		const nav = MatchNav.fromString("abc"); // zero-width lookbehind
-		nav.moveCaptureForward(1);
+		let nav = MatchNav.fromString("abc"); // zero-width lookbehind
+		nav = nav.moveCaptureForward(1);
 		const matcher = LookBehindCodePoint.from(
 			MatchCodePoint.fromString("a")
 		);
@@ -71,8 +71,8 @@ describe("LookBehindCodePoint", () => {
 	});
 
 	test("matches correctly with surrogate pairs: capture", () => {
-		const nav = MatchNav.fromString("a😀b"); // zero-width lookbehind
-		nav.moveCaptureForward(3);
+		let nav = MatchNav.fromString("a😀b"); // zero-width lookbehind
+		nav = nav.moveCaptureForward(3);
 		const matcher = LookBehindCodePoint.from(
 			MatchCodePoint.fromString("😀")
 		);
@@ -97,8 +97,8 @@ describe("LookBehindAnyString", () => {
 	});
 
 	test("matches when the previous string is in the set: capture", () => {
-		const nav = MatchNav.fromString("abcdef"); // zero-width lookbehind
-		nav.moveCaptureForward(3);
+		let nav = MatchNav.fromString("abcdef"); // zero-width lookbehind
+		nav = nav.moveCaptureForward(3);
 		const anyString = MatchAnyString.fromStrings("abc", "def");
 		const matcher = LookBehindAnyString.from(anyString);
 
@@ -122,7 +122,7 @@ describe("LookBehindAnyString", () => {
 // ------------------ LookAheadCodePoint ------------------
 describe("LookAheadCodePoint", () => {
 	test("matches when the next code point matches", () => {
-		const nav = MatchNav.fromString("abc", 0); // zero-width lookahead
+		let nav = MatchNav.fromString("abc"); // zero-width lookahead
 		const matcher = LookAheadCodePoint.from(
 			MatchCodePoint.fromString("a")
 		);
@@ -132,7 +132,7 @@ describe("LookAheadCodePoint", () => {
 	});
 
 	test("does not match when the next code point does not match", () => {
-		const nav = MatchNav.fromString("abc", 0); // zero-width lookahead
+		const nav = MatchNav.fromString("abc"); // zero-width lookahead
 		const matcher = LookAheadCodePoint.from(
 			MatchCodePoint.fromString("b")
 		);
@@ -141,7 +141,7 @@ describe("LookAheadCodePoint", () => {
 	});
 
 	test("does not match at the end of the string", () => {
-		const nav = MatchNav.fromString("abc", 0); // zero-width lookahead
+		const nav = MatchNav.fromString("abc"); // zero-width lookahead
 		const matcher = LookAheadCodePoint.from(
 			MatchCodePoint.fromString("d")
 		);
@@ -150,8 +150,8 @@ describe("LookAheadCodePoint", () => {
 	});
 
 	test("matches correctly with surrogate pairs", () => {
-		const nav = MatchNav.fromString("a😀b", 0); // zero-width lookahead
-		nav.moveCaptureForward(1);
+		let nav = MatchNav.fromString("a😀b"); // zero-width lookahead
+		nav = nav.moveCaptureForward(1);
 		const matcher = LookAheadCodePoint.from(
 			MatchCodePoint.fromString("😀")
 		);
@@ -202,7 +202,7 @@ describe("LookAheadAnyString", () => {
 	test("does not match beyond slice bounds", () => {
 		const source = StrSlice.from("xxxabcdef").slice(3, 6);
 		expect(source.value).toBe("abc");
-		let nav: MatchNav | null = MatchNav.fromNew(source, 0); // zero-width lookahead
+		let nav: MatchNav | null = MatchNav.fromStart(source, 0); // zero-width lookahead
 		const anyStringMatcher = MatchAnyString.fromStrings("abc", "def");
 		const matcher = LookAheadAnyString.from(anyStringMatcher);
 		nav = anyStringMatcher.match(nav); // capture is "abc", next should NOT be "def"
