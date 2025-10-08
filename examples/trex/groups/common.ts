@@ -5,7 +5,7 @@ import {
 	hasUnnamedBranches,
 	logGroupsRec,
 	MatchNav,
-	removeUnnamedBranches,
+	removeUnnamedBranchesAlt,
 } from "@/trex";
 import { log, div, logh, ddiv } from "@/utils/log";
 import chalk from "chalk";
@@ -42,7 +42,7 @@ export const logResults = (
 
 	for (const navString of successStrings) {
 		const nav = MatchNav.fromString(navString);
-		const result = matcher.match(nav, null);
+		const result = matcher.match(nav);
 		log();
 		ddiv();
 		if (result instanceof GroupValidatorError) {
@@ -90,7 +90,7 @@ export const logResults = (
 		for (const pair of failStrings) {
 			const [navString, msg] = pair.split("->");
 			const nav = MatchNav.fromString(navString);
-			const result = matcher.match(nav, null);
+			const result = matcher.match(nav);
 			div();
 			if (result instanceof GroupMatchNav) {
 				log(

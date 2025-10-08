@@ -3,7 +3,10 @@ import { GroupName } from "./group-name";
 import chalk from "chalk";
 import { parentPort } from "worker_threads";
 import { GroupMatchBase } from "./group-match";
-import { hasUnnamedBranches, removeUnnamedBranches } from "./group-helper";
+import {
+	hasUnnamedBranches,
+	removeUnnamedBranchesAlt,
+} from "./group-helper";
 
 /**
  * A group navigation node that contains a contiguous match
@@ -28,95 +31,39 @@ import { hasUnnamedBranches, removeUnnamedBranches } from "./group-helper";
 export class GroupMatchNav {
 	private static _defaultChildren: GroupMatchNav[] = [];
 
-	#_children: GroupMatchNav[];
-	#_isConstructed: boolean;
-	#_wholeMatchNav: MatchNav;
-	#_parent: GroupMatchNav | null = null;
+	protected _children: GroupMatchNav[];
+	protected _wholeMatchNav: MatchNav;
 
 	protected constructor(
 		public readonly groupName: GroupName,
 		wholeMatchNav: MatchNav,
-		parent: GroupMatchNav | null,
-		children: GroupMatchNav[],
-		isConstructed: boolean
+		children: GroupMatchNav[]
 	) {
-		this.#_wholeMatchNav = wholeMatchNav;
-		this.#_parent = parent;
-		this.#_children = children;
-		this.#_isConstructed = isConstructed;
+		this._wholeMatchNav = wholeMatchNav;
+		this._children = children;
 	}
 
 	static fromLeaf(
 		wholeMatchNav: MatchNav,
-		groupName: GroupName,
-		parent: GroupMatchNav | null
+		groupName: GroupName
 	): GroupMatchNav {
 		return new GroupMatchNav(
 			groupName,
 			wholeMatchNav,
-			parent,
-			GroupMatchNav._defaultChildren,
-			true
+			GroupMatchNav._defaultChildren
 		);
 	}
 
 	static fromBranch(
 		wholeMatchNav: MatchNav,
 		groupName: GroupName,
-		parent: GroupMatchNav | null,
 		children: readonly GroupMatchNav[]
 	): GroupMatchNav {
 		return new GroupMatchNav(
 			groupName,
 			wholeMatchNav,
-			parent,
-			children as GroupMatchNav[],
-			true
+			children as GroupMatchNav[]
 		);
-	}
-
-	static fromConstructableBranch(
-		groupName: GroupName,
-		parent: GroupMatchNav | null
-	) {
-		return new GroupMatchNav(
-			groupName,
-			MatchNav.fromString(""),
-			parent,
-			[],
-			false
-		);
-	}
-
-	addChild(child: GroupMatchNav) {
-		if (this.#_isConstructed) {
-			throw new Error(
-				"Cannot add children to a constructed group match nav"
-			);
-		}
-		child.#_parent = this;
-		this.#_children.push(child);
-	}
-
-	seal(wholeMatchNav: MatchNav) {
-		if (this.#_isConstructed) {
-			throw new Error("Cannot seal a constructed group match nav");
-		}
-		this.#_wholeMatchNav = wholeMatchNav;
-		this.#_isConstructed = true;
-	}
-
-	getFirstNamedAncestor(): GroupMatchNav {
-		let current: GroupMatchNav = this;
-		while (true) {
-			if (current.groupName.isNotEmpty) {
-				return current;
-			}
-			if (current.#_parent === null) {
-				return current;
-			}
-			current = current.#_parent;
-		}
 	}
 
 	get hasUnnamedBranches(): boolean {
@@ -125,7 +72,7 @@ export class GroupMatchNav {
 
 	prune(): GroupMatchNav {
 		return this.hasUnnamedBranches
-			? removeUnnamedBranches(this, null)
+			? removeUnnamedBranchesAlt(this)
 			: this;
 	}
 
@@ -186,34 +133,19 @@ export class GroupMatchNav {
 	}
 
 	get isLeaf(): boolean {
-		return this.#_children.length === 0;
+		return this._children.length === 0;
 	}
 
 	get isBranch(): boolean {
-		return this.#_children.length > 0;
+		return this._children.length > 0;
 	}
 
 	get children(): readonly GroupMatchNav[] {
-		return this.#_children;
-	}
-
-	get parent(): GroupMatchNav | null {
-		return this.#_parent;
-	}
-
-	get isRoot(): boolean {
-		return this.#_parent === null;
-	}
-
-	get isNamed(): boolean {
-		// Note: the root group nav may or may not be named
-		// but it is always included in the navigation tree
-		// so even if unnamed it is considered to be named
-		return this.#_parent === null || this.groupName.isNotEmpty;
+		return this._children;
 	}
 
 	get wholeMatchNav(): MatchNav {
-		return this.#_wholeMatchNav;
+		return this._wholeMatchNav;
 	}
 
 	/**
@@ -226,26 +158,19 @@ export class GroupMatchNav {
 	 * @returns The content match nav.
 	 */
 	get contentMatchNav(): MatchNav {
-		const length = this.#_children.length;
+		const length = this._children.length;
 		if (length >= 1) {
-			const potentialEnd = this.#_children[length - 1];
+			const potentialEnd = this._children[length - 1];
 			if (potentialEnd.groupName.isGroupName(GroupName.end)) {
-				return this.#_wholeMatchNav.shrinkCapture(
-					potentialEnd.#_wholeMatchNav.captureLength
+				return this._wholeMatchNav.shrinkCapture(
+					potentialEnd._wholeMatchNav.captureLength
 				);
 			}
 		}
-		return this.#_wholeMatchNav;
+		return this._wholeMatchNav;
 	}
 
 	toString(): string {
-		const parentName =
-			this.#_parent === null
-				? chalk.blueBright(":null")
-				: this.#_parent.groupName.isSecret
-					? chalk.gray(this.#_parent.groupName.toString())
-					: chalk.cyan(this.#_parent.groupName.toString());
-
 		const groupName = this.groupName.isSecret
 			? chalk.gray(this.groupName.toString())
 			: chalk.blueBright(this.groupName.toString());
@@ -254,8 +179,7 @@ export class GroupMatchNav {
 			`${chalk.magentaBright("GroupNav: ")}` +
 			`${"<" + groupName + ">"} ` +
 			`'${chalk.green(this.contentMatchNav.captureMatch.value)}' ` +
-			`+[${chalk.cyan(this.#_children.length)}] ` +
-			`<${parentName}>`
+			`+[${chalk.cyan(this._children.length)}]`
 		);
 	}
 }

@@ -39,7 +39,10 @@ export class GroupRepeatValidator extends GroupValidatorBase {
 	}
 
 	validate(testNav: MatchNav, parentNav: MatchNav): GroupValidatorResult {
-		const result = this.contentMatcher.match(testNav, null);
+		const validatorNav = testNav.toValidatorNav();
+		const validatorSource = validatorNav.source.value;
+
+		const result = this.contentMatcher.match(validatorNav);
 		if (result instanceof GroupValidatorError) {
 			return GroupValidatorResult.FromError(
 				testNav,

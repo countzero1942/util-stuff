@@ -88,7 +88,7 @@ const doSplitterWithEndMatcher = () => {
 	const navString = "1234.5678 90210  .1234 .1234.5678.";
 	let nav = MatchNav.fromString(navString);
 	while (nav.isCaptureIndexAtSourceEnd === false) {
-		const result = splitter.match(nav, null);
+		const result = splitter.match(nav);
 		logNavString(navString);
 		if (result instanceof GroupValidatorError) {
 			log(chalk.red(`Failed to match: ${navString}`));
@@ -144,7 +144,7 @@ export const trySplitterValidation = () => {
 
 	for (const navString of navStrings) {
 		const nav = MatchNav.fromString(navString);
-		const result = splitter.match(nav, null);
+		const result = splitter.match(nav);
 		logNavString(navString);
 		if (result instanceof GroupValidatorError) {
 			log(chalk.red(`Failed to match: ${navString}`));

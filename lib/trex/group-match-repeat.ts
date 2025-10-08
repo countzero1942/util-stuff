@@ -100,10 +100,7 @@ export class GroupMatchRepeat extends GroupMatchBase {
 	 * @param nav The navigation to match.
 	 * @returns The navigation after matching, or null if no match.
 	 */
-	public match(
-		nav: MatchNav,
-		parent: GroupMatchNav | null
-	): GroupMatchNav | GroupValidatorError {
+	public match(nav: MatchNav): GroupMatchNav | GroupValidatorError {
 		const firstMatcher = this.altFirstLastMatchers.altFirstMatch;
 		const lastMatcher = this.altFirstLastMatchers.altLastMatch;
 
@@ -119,11 +116,11 @@ export class GroupMatchRepeat extends GroupMatchBase {
 		let firstNav = nav;
 		let currentNav = nav;
 
-		// const savedNavs: GroupMatchNav[] = [];
-		const parentNav = GroupMatchNav.fromConstructableBranch(
-			this.groupName,
-			parent
-		);
+		const savedNavs: GroupMatchNav[] = [];
+		// const parentNav = GroupMatchNav.fromConstructableBranch(
+		// 	this.groupName,
+		// 	parent
+		// );
 
 		const contentMatcher = this.matcher;
 
@@ -155,7 +152,7 @@ export class GroupMatchRepeat extends GroupMatchBase {
 
 			const doAltMatcher = (altMatcher: GroupMatchBase | null) => {
 				if (altMatcher) {
-					result = altMatcher.match(currentNav, parentNav);
+					result = altMatcher.match(currentNav);
 					if (result instanceof GroupValidatorError) {
 						isFailedMatch = true;
 					}
@@ -168,7 +165,7 @@ export class GroupMatchRepeat extends GroupMatchBase {
 					doAltMatcher(firstMatcher);
 					break;
 				case "Content Matcher":
-					result = contentMatcher.match(currentNav, parentNav);
+					result = contentMatcher.match(currentNav);
 					if (result instanceof GroupMatchNav) {
 						didContentMatch = true;
 					}
@@ -202,7 +199,7 @@ export class GroupMatchRepeat extends GroupMatchBase {
 			// and no matching took place
 			if (result instanceof GroupMatchNav) {
 				// addResultToChildrenGroupNavs(result, savedNavs);
-				addResultToParent(result, parentNav);
+				addResultToParent(result, savedNavs);
 
 				currentNav = result.wholeMatchNav.moveNext("OptMoveForward");
 			}
@@ -210,18 +207,18 @@ export class GroupMatchRepeat extends GroupMatchBase {
 
 		// case: successful match in range
 		if (isFailedMatch === false && count >= min && count <= max) {
-			// return GroupMatchNav.fromBranch(
-			// 	MatchNav.fromFirstAndLast(firstNav, currentNav),
-			// 	this.groupName,
-			// 	savedNavs
-			// );
-			parentNav.seal(MatchNav.fromFirstAndLast(firstNav, currentNav));
-			return parentNav;
+			return GroupMatchNav.fromBranch(
+				MatchNav.fromFirstAndLast(firstNav, currentNav),
+				this.groupName,
+				savedNavs
+			);
+			// parentNav.seal(MatchNav.fromFirstAndLast(firstNav, currentNav));
+			// return parentNav;
 		}
 		// case: failed match with zero matches allowed
 		else if (isFailedMatch === true && count === 0 && min === 0) {
 			// Note: on failed match the parentNav is discarded
-			return GroupMatchNav.fromLeaf(nav, this.groupName, parent);
+			return GroupMatchNav.fromLeaf(nav, this.groupName);
 		}
 		// case: failed match
 		else {

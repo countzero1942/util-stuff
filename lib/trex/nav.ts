@@ -418,6 +418,17 @@ export class MatchNav {
 	}
 
 	/**
+	 * Creates a new navigation state for validation.
+	 *
+	 * Uses the capture match as the source slice for a new navigation state.
+	 *
+	 * @returns A new MatchNav with the same source and capture index
+	 */
+	toValidatorNav(): MatchNav {
+		return MatchNav.fromNew(this.captureMatch);
+	}
+
+	/**
 	 * Gets a string representation of the navigation state
 	 */
 	public toString(): string {

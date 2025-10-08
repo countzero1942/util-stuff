@@ -8,8 +8,7 @@ export abstract class GroupMatchBase {
 	protected constructor(public readonly groupName: GroupName) {}
 
 	public abstract match(
-		nav: MatchNav,
-		parent: GroupMatchNav | null
+		nav: MatchNav
 	): GroupMatchNav | GroupValidatorError;
 }
 
@@ -32,13 +31,10 @@ export class GroupMatch extends GroupMatchBase {
 		return new GroupMatch(GroupName.empty, matcher);
 	}
 
-	public match(
-		nav: MatchNav,
-		parent: GroupMatchNav | null
-	): GroupMatchNav | GroupValidatorError {
+	public match(nav: MatchNav): GroupMatchNav | GroupValidatorError {
 		const result = this.matcher.match(nav);
 		if (result) {
-			return GroupMatchNav.fromLeaf(result, this.groupName, parent);
+			return GroupMatchNav.fromLeaf(result, this.groupName);
 		}
 		return GroupValidatorError.fromDefault(nav);
 	}

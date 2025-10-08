@@ -57,34 +57,30 @@ export class GroupSplitter extends GroupMatchBase {
 		return GroupValidatorResult.Ok;
 	}
 
-	match(
-		nav: MatchNav,
-		parent: GroupMatchNav | null
-	): GroupMatchNav | GroupValidatorError {
+	match(nav: MatchNav): GroupMatchNav | GroupValidatorError {
 		nav.assertNavIsNew();
 		const firstNav = nav;
 		let fragmentNav = nav;
 		let isLastFragmentAdded = false;
-		// const savedNavs: GroupMatchNav[] = [];
-		const parentNav = GroupMatchNav.fromConstructableBranch(
-			this.#_groupName,
-			parent
-		);
+		const savedNavs: GroupMatchNav[] = [];
+		// const parentNav = GroupMatchNav.fromConstructableBranch(
+		// 	this.#_groupName,
+		// 	parent
+		// );
 		const endMatcher = this.#_args?.endMatcher;
 
 		const addFragment = (result: GroupMatchNav | null) => {
 			const fragmentMatch = GroupMatchNav.fromLeaf(
 				fragmentNav,
-				GroupName.fragment,
-				parentNav
+				GroupName.fragment
 			);
 			// savedNavs.push(fragmentMatch);
-			addResultToParent(fragmentMatch, parentNav);
+			addResultToParent(fragmentMatch, savedNavs);
 
 			if (result instanceof GroupMatchNav) {
 				if (result.groupName.isNotEmpty) {
 					// savedNavs.push(result);
-					addResultToParent(result, parentNav);
+					addResultToParent(result, savedNavs);
 				}
 				fragmentNav = result.wholeMatchNav.moveNext("OptMoveForward");
 			} else {
@@ -95,7 +91,7 @@ export class GroupSplitter extends GroupMatchBase {
 		while (fragmentNav.isCaptureIndexAtSourceEnd === false) {
 			const curNav = fragmentNav.moveNext("OptMoveForward");
 
-			const splitResult = this.#_splitter.match(curNav, parent);
+			const splitResult = this.#_splitter.match(curNav);
 			// case: splitter matched
 			if (splitResult instanceof GroupMatchNav) {
 				addFragment(splitResult);
@@ -103,7 +99,7 @@ export class GroupSplitter extends GroupMatchBase {
 			}
 
 			if (endMatcher) {
-				const endResult = endMatcher.match(curNav, parent);
+				const endResult = endMatcher.match(curNav);
 				// case: end matcher matched
 				if (endResult instanceof GroupMatchNav) {
 					addFragment(endResult);
@@ -112,20 +108,19 @@ export class GroupSplitter extends GroupMatchBase {
 				}
 			}
 
-			fragmentNav.moveCaptureForwardOneCodePoint();
+			fragmentNav = fragmentNav.moveCaptureForwardOneCodePoint();
 		} // while (fragmentNav.isNavIndexAtSourceEnd === false)
 
 		if (isLastFragmentAdded === false) {
 			addFragment(null);
 		}
 
-		// return GroupMatchNav.fromBranch(
-		// 	MutMatchNav.fromFirstAndLast(firstNav, fragmentNav),
-		// 	this.#_groupName,
-		// 	parent,
-		// 	savedNavs
-		// );
-		parentNav.seal(MatchNav.fromFirstAndLast(firstNav, fragmentNav));
+		const parentNav = GroupMatchNav.fromBranch(
+			MatchNav.fromFirstAndLast(firstNav, fragmentNav),
+			this.#_groupName,
+			savedNavs
+		);
+		// parentNav.seal(MatchNav.fromFirstAndLast(firstNav, fragmentNav));
 
 		const validationResult = this.validate(parentNav);
 

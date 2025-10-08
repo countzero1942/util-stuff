@@ -15,7 +15,6 @@ import {
 	MatchRepeat,
 	MatchNav,
 	NumberOfMatches,
-	removeUnnamedBranches,
 } from "@/trex";
 import { ExamplesMenuItem, runExamplesMenu } from "@/utils/examples-menu";
 import { div, log } from "@/utils/log";
@@ -912,7 +911,7 @@ const timeColonNumbersUnprunedTree = (
 	const start = performance.now();
 	for (let i = 0; i < repeatCount; i++) {
 		for (const nav of navs) {
-			const result = colonGroupMatcher.match(nav, null);
+			const result = colonGroupMatcher.match(nav);
 			if (!result) {
 				log(
 					chalk.red(
@@ -937,7 +936,7 @@ const timeColonNumbersPrunedTree = (
 	const start = performance.now();
 	for (let i = 0; i < repeatCount; i++) {
 		for (const nav of navs) {
-			const result = colonGroupMatcher.match(nav, null);
+			const result = colonGroupMatcher.match(nav);
 			if (result instanceof GroupValidatorError) {
 				log(
 					chalk.red(
@@ -964,7 +963,7 @@ const timeNumberTree = (navs: MatchNav[], repeatCount: number) => {
 	const start = performance.now();
 	for (let i = 0; i < repeatCount; i++) {
 		for (const nav of navs) {
-			const result = numberMatcher.match(nav, null);
+			const result = numberMatcher.match(nav);
 			if (result instanceof GroupValidatorError) {
 				log(
 					chalk.red(
@@ -989,7 +988,7 @@ const timeDigitGroupNumberTree = (
 	const start = performance.now();
 	for (let i = 0; i < repeatCount; i++) {
 		for (const nav of navs) {
-			const result = numberDigitGroupMatcher.match(nav, null);
+			const result = numberDigitGroupMatcher.match(nav);
 			if (result instanceof GroupValidatorError) {
 				log(
 					chalk.red(

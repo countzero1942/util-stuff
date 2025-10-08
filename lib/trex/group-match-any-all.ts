@@ -22,12 +22,9 @@ export class GroupMatchAny extends GroupMatchBase {
 		return new GroupMatchAny(GroupName.empty, matchers);
 	}
 
-	public match(
-		nav: MatchNav,
-		parent: GroupMatchNav | null
-	): GroupMatchNav | GroupValidatorError {
+	public match(nav: MatchNav): GroupMatchNav | GroupValidatorError {
 		for (const matcher of this.#_matchers) {
-			const result = matcher.match(nav, parent);
+			const result = matcher.match(nav);
 			if (result instanceof GroupMatchNav) {
 				return result;
 			}
@@ -62,39 +59,36 @@ export class GroupMatchAll extends GroupMatchBase {
 		return new GroupMatchAll(groupName, matchers);
 	}
 
-	public match(
-		nav: MatchNav,
-		parent: GroupMatchNav | null
-	): GroupMatchNav | GroupValidatorError {
+	public match(nav: MatchNav): GroupMatchNav | GroupValidatorError {
 		nav.assertNavIsNew();
 		const firstNav = nav;
-		// const savedNavs: GroupMatchNav[] = [];
-		const parentNav = GroupMatchNav.fromConstructableBranch(
-			this.#_groupName,
-			parent
-		);
+		const savedNavs: GroupMatchNav[] = [];
+		// const parentNav = GroupMatchNav.fromConstructableBranch(
+		// 	this.#_groupName,
+		// 	parent
+		// );
 
 		let curNav = nav;
 		const matchersLength = this.#_matchers.length;
 		for (let i = 0; i < matchersLength; i++) {
 			const matcher = this.#_matchers[i];
-			const result = matcher.match(curNav, parentNav);
+			const result = matcher.match(curNav);
 			if (result instanceof GroupValidatorError) {
 				return result;
 			}
 
-			addResultToParent(result, parentNav);
+			addResultToParent(result, savedNavs);
 			curNav = result.wholeMatchNav.moveNext("OptMoveForward");
 		}
 
-		// return GroupMatchNav.fromBranch(
-		// 	MutMatchNav.fromFirstAndLast(firstNav, curNav),
-		// 	this.#_groupName,
-		// 	savedNavs
-		// );
+		return GroupMatchNav.fromBranch(
+			MatchNav.fromFirstAndLast(firstNav, curNav),
+			this.#_groupName,
+			savedNavs
+		);
 
-		parentNav.seal(MatchNav.fromFirstAndLast(firstNav, curNav));
-		return parentNav;
+		// parentNav.seal(MatchNav.fromFirstAndLast(firstNav, curNav));
+		// return parentNav;
 	}
 }
 
@@ -110,16 +104,12 @@ export class GroupMatchOpt extends GroupMatchBase {
 		return new GroupMatchOpt(GroupName.empty, matcher);
 	}
 
-	public match(
-		nav: MatchNav,
-		parent: GroupMatchNav | null
-	): GroupMatchNav | GroupValidatorError {
+	public match(nav: MatchNav): GroupMatchNav | GroupValidatorError {
 		nav.assertNavIsNew();
-		const savedNav = nav;
-		const result = this.matcher.match(nav, parent);
+		const result = this.matcher.match(nav);
 		if (result instanceof GroupMatchNav) {
 			return result;
 		}
-		return GroupMatchNav.fromLeaf(savedNav, GroupName.empty, parent);
+		return GroupMatchNav.fromLeaf(nav, GroupName.empty);
 	}
 }
