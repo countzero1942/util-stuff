@@ -81,11 +81,11 @@ export class GroupMatchAll extends GroupMatchBase {
 			curNav = result.wholeMatchNav.moveNext("OptMoveForward");
 		}
 
-		return GroupMatchNav.fromBranch(
-			MatchNav.fromFirstAndLast(firstNav, curNav),
-			this.#_groupName,
-			savedNavs
-		);
+		const whole = MatchNav.fromFirstAndLast(firstNav, curNav);
+		if (savedNavs.length === 0) {
+			return GroupMatchNav.fromLeaf(whole, this.#_groupName);
+		}
+		return GroupMatchNav.fromBranch(whole, this.#_groupName, savedNavs);
 
 		// parentNav.seal(MatchNav.fromFirstAndLast(firstNav, curNav));
 		// return parentNav;

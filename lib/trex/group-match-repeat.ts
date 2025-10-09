@@ -1,5 +1,5 @@
 import { GroupMatchBase } from "./group-match";
-import { GroupMatchAll, GroupMatchAny } from "./group-match-any-all";
+import { GroupMatchAll, GroupMatchAny } from "./group-match-any-all-opt";
 import { GroupMatchNav } from "./group-nav";
 import { GroupName } from "./group-name";
 import { MatchRepeat, NumberOfMatches } from "./match-repeat";
@@ -207,18 +207,15 @@ export class GroupMatchRepeat extends GroupMatchBase {
 
 		// case: successful match in range
 		if (isFailedMatch === false && count >= min && count <= max) {
-			return GroupMatchNav.fromBranch(
-				MatchNav.fromFirstAndLast(firstNav, currentNav),
-				this.groupName,
-				savedNavs
-			);
-			// parentNav.seal(MatchNav.fromFirstAndLast(firstNav, currentNav));
-			// return parentNav;
+			const whole = MatchNav.fromFirstAndLast(firstNav, currentNav);
+			if (savedNavs.length === 0) {
+				return GroupMatchNav.fromLeaf(whole, this.groupName);
+			}
+			return GroupMatchNav.fromBranch(whole, this.groupName, savedNavs);
 		}
-		// case: failed match with zero matches allowed
+		// case: failed match with zero matches allowed: optional match
 		else if (isFailedMatch === true && count === 0 && min === 0) {
-			// Note: on failed match the parentNav is discarded
-			return GroupMatchNav.fromLeaf(nav, this.groupName);
+			return GroupMatchNav.fromLeaf(nav, GroupName.empty);
 		}
 		// case: failed match
 		else {

@@ -3,10 +3,12 @@ import { GroupName } from "./group-name";
 import chalk from "chalk";
 import { parentPort } from "worker_threads";
 import { GroupMatchBase } from "./group-match";
+import { removeUnnamedBranches } from "./group-helper";
 import {
-	hasUnnamedBranches,
-	removeUnnamedBranchesAlt,
-} from "./group-helper";
+	filterNav,
+	hasUnnamedBranchesNav,
+	type GroupNavLike,
+} from "./group-nav-like";
 
 /**
  * A group navigation node that contains a contiguous match
@@ -28,7 +30,7 @@ import {
  * @param wholeMatchNav The whole contiguous match.
  * @param children The child group matches.
  */
-export class GroupMatchNav {
+export class GroupMatchNav implements GroupNavLike<GroupMatchNav> {
 	private static _defaultChildren: GroupMatchNav[] = [];
 
 	protected _children: GroupMatchNav[];
@@ -66,41 +68,19 @@ export class GroupMatchNav {
 		);
 	}
 
+	// get hasUnnamedBranches(): boolean {
+	// 	return hasUnnamedBranches(this);
+	// }
 	get hasUnnamedBranches(): boolean {
-		return hasUnnamedBranches(this);
+		return hasUnnamedBranchesNav<GroupMatchNav>(this);
 	}
 
 	prune(): GroupMatchNav {
-		return this.hasUnnamedBranches
-			? removeUnnamedBranchesAlt(this)
-			: this;
+		return this.hasUnnamedBranches ? removeUnnamedBranches(this) : this;
 	}
 
 	filter(fn: (group: GroupMatchNav) => boolean): GroupMatchNav[] {
-		const filteredGroups: GroupMatchNav[] = [];
-		this.forEach(group => {
-			if (fn(group)) {
-				filteredGroups.push(group);
-			}
-		});
-		return filteredGroups;
-	}
-
-	forEach(
-		fn: (group: GroupMatchNav, index: number, indent: number) => void
-	) {
-		const enumerateGroupsRec = (
-			group: GroupMatchNav,
-			groupIndex: number,
-			indent: number
-		) => {
-			fn(group, groupIndex, indent);
-			group.children.forEach((child, childIndex) => {
-				enumerateGroupsRec(child, childIndex, indent + 1);
-			});
-		};
-
-		enumerateGroupsRec(this, 0, 0);
+		return filterNav<GroupMatchNav>(this, fn);
 	}
 
 	private static *genRec(args: {

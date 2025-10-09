@@ -6,13 +6,13 @@ import {
 	GroupMatch,
 	MatchCodePoint,
 	MatchNav,
-	logGroupsRec,
 	MatchRepeat,
 	NumberOfMatches,
 	GroupValidatorError,
 	GroupRepeatValidator,
 	GroupMatchRepeat,
 	MatchCodePointCategories,
+	logGroupsRecNav,
 } from "@/trex";
 import chalk from "chalk";
 import { ExamplesMenuItem, runExamplesMenu } from "@/utils/examples-menu";
@@ -94,7 +94,7 @@ const doSplitterWithEndMatcher = () => {
 			log(chalk.red(`Failed to match: ${navString}`));
 			break;
 		}
-		logGroupsRec(result);
+		logGroupsRecNav(result);
 		div();
 
 		nav = result.wholeMatchNav.moveNext("OptMoveForward");
@@ -150,7 +150,7 @@ export const trySplitterValidation = () => {
 			log(chalk.red(`Failed to match: ${navString}`));
 			continue;
 		}
-		logGroupsRec(result);
+		logGroupsRecNav(result);
 		div();
 	}
 };

@@ -602,6 +602,10 @@ const deepNames = GroupNameSet.fromNames(
 	"foobar"
 );
 
+const getDeepName = (name: (typeof deepNames)["names"][number]) => {
+	return deepNames.getName(name);
+};
+
 const deepSecretNames = GroupNameSet.fromNames(
 	"",
 	"digit",
@@ -796,7 +800,9 @@ const doDeepSecretNamedGroupRepeatMatcher = () => {
 	);
 };
 
-const getDeepFlattenedGroupRepeatMatcher = () => {
+const getDeepFlattenedGroupRepeatMatcher = (
+	rootName: (typeof deepNames)["names"][number]
+) => {
 	const digitOrLetterMatcher = GroupMatchAny.fromMatchers(
 		GroupMatch.fromNamed(
 			deepNames.getName("digit"),
@@ -853,20 +859,34 @@ const getDeepFlattenedGroupRepeatMatcher = () => {
 	);
 
 	const colonGroupMatcher = GroupMatchRepeat.fromNamed(
-		deepNames.getName("foobar"),
+		deepNames.getName(rootName),
 		GroupMatchAll.fromUnnamed(charEntityMatcher, colonSeparatorMatcher),
 		NumberOfMatches.between(1, 4)
 	);
 	return colonGroupMatcher;
 };
 
-const colonGroupMatcher = getDeepFlattenedGroupRepeatMatcher();
+const colonGroupMatcher = getDeepFlattenedGroupRepeatMatcher("foobar");
+const unnamedRootColonGroupMatcher =
+	getDeepFlattenedGroupRepeatMatcher("");
 
 const doDeepFlattenedGroupRepeatMatcher = () => {
 	logResults(
 		colonGroupSuccessStrings,
 		colonGroupFailStrings,
 		colonGroupMatcher,
+		{
+			showPrunedTree: true,
+			autoPrune: false,
+		}
+	);
+};
+
+const doDeepFlattenedUnnamedRootGroupRepeatMatcher = () => {
+	logResults(
+		colonGroupSuccessStrings,
+		colonGroupFailStrings,
+		unnamedRootColonGroupMatcher,
 		{
 			showPrunedTree: true,
 			autoPrune: false,
@@ -1151,7 +1171,7 @@ const exampleItems: ExamplesMenuItem[] = [
 	},
 	{
 		func: doAutoFlattenedBNumberGroupRepeatMatchWithAltFirstLast,
-		name: "Auto Flattened B Number Group Repeat Match With AltFirstLast",
+		name: "Auto Flattened Unnamed Root Number Group Repeat Match With AltFirstLast",
 		description: [
 			"Comma separated funky numbers.",
 			"Root is unnamed (but acts like a named group.)",
@@ -1181,6 +1201,15 @@ const exampleItems: ExamplesMenuItem[] = [
 		description: [
 			"Comma separated funky numbers separated by colons.",
 			"Only root and digits are named.",
+		],
+	},
+	{
+		func: doDeepFlattenedUnnamedRootGroupRepeatMatcher,
+		name: "Deep Flattened Unnamed Root Group Repeat Matcher",
+		description: [
+			"Comma separated funky numbers separated by colons.",
+			"Root is unnamed (but acts like a named group.)",
+			"Digits are named. All other groups are unnamed.",
 		],
 	},
 	{

@@ -2,10 +2,8 @@ import {
 	GroupMatchBase,
 	GroupMatchNav,
 	GroupValidatorError,
-	hasUnnamedBranches,
-	logGroupsRec,
+	logGroupsRecNav,
 	MatchNav,
-	removeUnnamedBranchesAlt,
 } from "@/trex";
 import { log, div, logh, ddiv } from "@/utils/log";
 import chalk from "chalk";
@@ -33,7 +31,7 @@ export const logResults = (
 	}
 ) => {
 	const logHasUnnamedBranchesView = (group: GroupMatchNav) => {
-		const b = hasUnnamedBranches(group);
+		const b = group.hasUnnamedBranches;
 		const bView = b ? chalk.yellow("true") : chalk.green("false");
 		log(chalk.cyan(`Has unnamed branches: ${bView}`));
 	};
@@ -55,7 +53,7 @@ export const logResults = (
 		}
 		logNavString(navString);
 		const modResult = options.autoPrune ? result.prune() : result;
-		logGroupsRec(modResult);
+		logGroupsRecNav(modResult);
 		div();
 		logHasUnnamedBranchesView(modResult);
 		if (options.autoPrune) {
@@ -71,7 +69,7 @@ export const logResults = (
 		if (options.showPrunedTree) {
 			logNavString(navString);
 			const prunedResult = result.prune();
-			logGroupsRec(prunedResult);
+			logGroupsRecNav(prunedResult);
 			div();
 			logHasUnnamedBranchesView(prunedResult);
 			log(
@@ -98,7 +96,7 @@ export const logResults = (
 						`>>> MATCHED FAIL CASE: ${getNavStringView(navString)} <<< `
 					)
 				);
-				logGroupsRec(result);
+				logGroupsRecNav(result);
 				continue;
 			}
 			const msgView = msg ? `-> ${chalk.yellow(msg)}` : "";

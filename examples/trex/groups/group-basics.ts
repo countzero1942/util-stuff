@@ -17,8 +17,8 @@ import {
 	GroupMatchOpt,
 	GroupMatchRepeat,
 	AltFirstLastGroupMatchers,
-	logGroupsRec,
 	GroupValidatorError,
+	logGroupsRecNav,
 } from "@/trex";
 import { div, divs, logobj } from "@/utils/log";
 import chalk from "chalk";
@@ -72,7 +72,7 @@ export const doBasicGroupMatch = () => {
 			log(chalk.red(`Failed to match: ${navString}`));
 			continue;
 		}
-		logGroupsRec(result);
+		logGroupsRecNav(result);
 		div();
 	}
 };
@@ -118,7 +118,7 @@ const doGroupOptMatch = () => {
 			log(chalk.red(`Failed to match: ${navString}`));
 			continue;
 		}
-		logGroupsRec(result);
+		logGroupsRecNav(result);
 		div();
 	}
 };
@@ -205,7 +205,7 @@ const doGroupRepeatMatchWithAltFirstLast = () => {
 			log(chalk.red(`Failed to match: ${navString}`));
 			continue;
 		}
-		logGroupsRec(result);
+		logGroupsRecNav(result);
 	}
 	div();
 };
@@ -241,7 +241,7 @@ const doBasicSplitter = () => {
 			log(chalk.red(`Failed to match: ${navString}`));
 			continue;
 		}
-		logGroupsRec(result);
+		logGroupsRecNav(result);
 		div();
 	}
 };
@@ -273,7 +273,7 @@ const doSplitterWithEndMatcher = () => {
 			log(chalk.red(`Failed to match: ${navString}`));
 			break;
 		}
-		logGroupsRec(result);
+		logGroupsRecNav(result);
 		div();
 
 		nav = result.wholeMatchNav.moveNext("OptMoveForward");

@@ -115,11 +115,11 @@ export class GroupSplitter extends GroupMatchBase {
 			addFragment(null);
 		}
 
-		const parentNav = GroupMatchNav.fromBranch(
-			MatchNav.fromFirstAndLast(firstNav, fragmentNav),
-			this.#_groupName,
-			savedNavs
-		);
+		const whole = MatchNav.fromFirstAndLast(firstNav, fragmentNav);
+		const parentNav =
+			savedNavs.length === 0
+				? GroupMatchNav.fromLeaf(whole, this.#_groupName)
+				: GroupMatchNav.fromBranch(whole, this.#_groupName, savedNavs);
 		// parentNav.seal(MatchNav.fromFirstAndLast(firstNav, fragmentNav));
 
 		const validationResult = this.validate(parentNav);
