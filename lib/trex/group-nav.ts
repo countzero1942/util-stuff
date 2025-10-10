@@ -31,7 +31,7 @@ import {
  * @param children The child group matches.
  */
 export class GroupMatchNav implements GroupNavLike<GroupMatchNav> {
-	private static _defaultChildren: GroupMatchNav[] = [];
+	private static readonly _defaultChildren: GroupMatchNav[] = [];
 
 	protected _children: GroupMatchNav[];
 	protected _wholeMatchNav: MatchNav;
@@ -56,21 +56,31 @@ export class GroupMatchNav implements GroupNavLike<GroupMatchNav> {
 		);
 	}
 
+	/**
+	 * Creates a new GroupMatchNav instance with the given wholeMatchNav,
+	 * groupName, and children.
+	 *
+	 * If children array is empty, canonicalizes empty children to a shared array.
+	 *
+	 * @param wholeMatchNav The whole match navigation.
+	 * @param groupName The name of the group.
+	 * @param children The child group matches.
+	 * @returns A new GroupMatchNav instance.
+	 */
 	static fromBranch(
 		wholeMatchNav: MatchNav,
 		groupName: GroupName,
 		children: readonly GroupMatchNav[]
 	): GroupMatchNav {
+		const valChildren =
+			children.length > 0 ? children : GroupMatchNav._defaultChildren;
 		return new GroupMatchNav(
 			groupName,
 			wholeMatchNav,
-			children as GroupMatchNav[]
+			valChildren as GroupMatchNav[]
 		);
 	}
 
-	// get hasUnnamedBranches(): boolean {
-	// 	return hasUnnamedBranches(this);
-	// }
 	get hasUnnamedBranches(): boolean {
 		return hasUnnamedBranchesNav<GroupMatchNav>(this);
 	}

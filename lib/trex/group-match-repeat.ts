@@ -207,11 +207,11 @@ export class GroupMatchRepeat extends GroupMatchBase {
 
 		// case: successful match in range
 		if (isFailedMatch === false && count >= min && count <= max) {
-			const whole = MatchNav.fromFirstAndLast(firstNav, currentNav);
-			if (savedNavs.length === 0) {
-				return GroupMatchNav.fromLeaf(whole, this.groupName);
-			}
-			return GroupMatchNav.fromBranch(whole, this.groupName, savedNavs);
+			return GroupMatchNav.fromBranch(
+				MatchNav.fromFirstAndLast(firstNav, currentNav),
+				this.groupName,
+				savedNavs
+			);
 		}
 		// case: failed match with zero matches allowed: optional match
 		else if (isFailedMatch === true && count === 0 && min === 0) {

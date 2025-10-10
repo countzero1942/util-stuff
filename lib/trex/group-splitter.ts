@@ -63,10 +63,7 @@ export class GroupSplitter extends GroupMatchBase {
 		let fragmentNav = nav;
 		let isLastFragmentAdded = false;
 		const savedNavs: GroupMatchNav[] = [];
-		// const parentNav = GroupMatchNav.fromConstructableBranch(
-		// 	this.#_groupName,
-		// 	parent
-		// );
+
 		const endMatcher = this.#_args?.endMatcher;
 
 		const addFragment = (result: GroupMatchNav | null) => {
@@ -74,12 +71,10 @@ export class GroupSplitter extends GroupMatchBase {
 				fragmentNav,
 				GroupName.fragment
 			);
-			// savedNavs.push(fragmentMatch);
 			addResultToParent(fragmentMatch, savedNavs);
 
 			if (result instanceof GroupMatchNav) {
 				if (result.groupName.isNotEmpty) {
-					// savedNavs.push(result);
 					addResultToParent(result, savedNavs);
 				}
 				fragmentNav = result.wholeMatchNav.moveNext("OptMoveForward");
@@ -115,12 +110,11 @@ export class GroupSplitter extends GroupMatchBase {
 			addFragment(null);
 		}
 
-		const whole = MatchNav.fromFirstAndLast(firstNav, fragmentNav);
-		const parentNav =
-			savedNavs.length === 0
-				? GroupMatchNav.fromLeaf(whole, this.#_groupName)
-				: GroupMatchNav.fromBranch(whole, this.#_groupName, savedNavs);
-		// parentNav.seal(MatchNav.fromFirstAndLast(firstNav, fragmentNav));
+		const parentNav = GroupMatchNav.fromBranch(
+			MatchNav.fromFirstAndLast(firstNav, fragmentNav),
+			this.#_groupName,
+			savedNavs
+		);
 
 		const validationResult = this.validate(parentNav);
 

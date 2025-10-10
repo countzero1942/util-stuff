@@ -128,25 +128,26 @@ export const convertGroupNavsToNodes = (
 	groupRoot: GroupMatchNav
 ): GroupMatchNavNode => {
 	const convertBranchToNodeRec = (
-		group: GroupMatchNav,
-		groupNode: GroupMatchNavNode
+		parentGroup: GroupMatchNav,
+		parentGroupNode: GroupMatchNavNode
 	): void => {
-		for (const child of group.children) {
-			if (child.isBranch) {
-				const newGroupNode = GroupMatchNavNode.fromConstructableBranch(
-					child.groupName,
-					groupNode
-				);
-				convertBranchToNodeRec(child, newGroupNode);
-				newGroupNode.seal(child.wholeMatchNav);
-				groupNode.addChild(newGroupNode);
+		for (const childGroup of parentGroup.children) {
+			if (childGroup.isBranch) {
+				const childGroupNode =
+					GroupMatchNavNode.fromConstructableBranch(
+						childGroup.groupName,
+						parentGroupNode
+					);
+				convertBranchToNodeRec(childGroup, childGroupNode);
+				childGroupNode.seal(childGroup.wholeMatchNav);
+				parentGroupNode.addChild(childGroupNode);
 			} else {
-				const newLeafNode = GroupMatchNavNode.fromLeaf(
-					child.groupName,
-					child.wholeMatchNav,
-					groupNode
+				const childLeafNode = GroupMatchNavNode.fromLeaf(
+					childGroup.groupName,
+					childGroup.wholeMatchNav,
+					parentGroupNode
 				);
-				groupNode.addChild(newLeafNode);
+				parentGroupNode.addChild(childLeafNode);
 			}
 		}
 	};

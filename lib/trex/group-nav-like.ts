@@ -32,6 +32,11 @@ export interface GroupNavLike<T> {
 	 */
 	isBranch: boolean;
 
+	/**
+	 * Whether the node has unnamed branches.
+	 */
+	hasUnnamedBranches: boolean;
+
 	[Symbol.iterator](): Generator<{
 		group: T;
 		index: number;

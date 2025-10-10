@@ -63,10 +63,6 @@ export class GroupMatchAll extends GroupMatchBase {
 		nav.assertNavIsNew();
 		const firstNav = nav;
 		const savedNavs: GroupMatchNav[] = [];
-		// const parentNav = GroupMatchNav.fromConstructableBranch(
-		// 	this.#_groupName,
-		// 	parent
-		// );
 
 		let curNav = nav;
 		const matchersLength = this.#_matchers.length;
@@ -81,14 +77,11 @@ export class GroupMatchAll extends GroupMatchBase {
 			curNav = result.wholeMatchNav.moveNext("OptMoveForward");
 		}
 
-		const whole = MatchNav.fromFirstAndLast(firstNav, curNav);
-		if (savedNavs.length === 0) {
-			return GroupMatchNav.fromLeaf(whole, this.#_groupName);
-		}
-		return GroupMatchNav.fromBranch(whole, this.#_groupName, savedNavs);
-
-		// parentNav.seal(MatchNav.fromFirstAndLast(firstNav, curNav));
-		// return parentNav;
+		return GroupMatchNav.fromBranch(
+			MatchNav.fromFirstAndLast(firstNav, curNav),
+			this.#_groupName,
+			savedNavs
+		);
 	}
 }
 

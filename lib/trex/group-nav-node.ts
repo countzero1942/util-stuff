@@ -77,9 +77,25 @@ export class GroupMatchNavNode implements GroupNavLike<GroupMatchNavNode> {
 			groupName,
 			MatchNav.fromString(""),
 			parent,
-			GroupMatchNavNode._defaultChildren,
+			[],
 			false
 		);
+	}
+
+	private assertIsConstructed(method: string) {
+		if (this.#isConstructed === false) {
+			throw new Error(
+				`'${method}': cannot mutate a constructed group match nav`
+			);
+		}
+	}
+
+	private assertIsConstructing(method: string) {
+		if (this.#isConstructed) {
+			throw new Error(
+				`'${method}': cannot read from a non-constructed group match nav`
+			);
+		}
 	}
 
 	/**
@@ -89,10 +105,12 @@ export class GroupMatchNavNode implements GroupNavLike<GroupMatchNavNode> {
 	 * @throws Error if called after {@link seal}.
 	 */
 	addChild(child: GroupMatchNavNode) {
-		if (this.#isConstructed) {
-			throw new Error(
-				"Cannot add children to a constructed group match nav"
-			);
+		this.assertIsConstructing("addChild");
+
+		// Ensure we don't mutate the shared empty children array.
+		// Constructable branches must own a unique children array.
+		if (this.#children === GroupMatchNavNode._defaultChildren) {
+			this.#children = [];
 		}
 		child.#parent = this;
 		this.#children.push(child);
@@ -106,9 +124,8 @@ export class GroupMatchNavNode implements GroupNavLike<GroupMatchNavNode> {
 	 * @throws Error if called more than once.
 	 */
 	seal(wholeMatchNav: MatchNav) {
-		if (this.#isConstructed) {
-			throw new Error("Cannot seal a constructed group match nav");
-		}
+		this.assertIsConstructing("seal");
+
 		this.#wholeMatchNav = wholeMatchNav;
 		this.#isConstructed = true;
 		// Canonicalize empty children to shared cached empty array
@@ -165,6 +182,7 @@ export class GroupMatchNavNode implements GroupNavLike<GroupMatchNavNode> {
 	 * Collects nodes that satisfy a predicate. Mirrors GroupMatchNav.filter.
 	 */
 	filter(fn: (group: GroupMatchNavNode) => boolean): GroupMatchNavNode[] {
+		this.assertIsConstructed("filter");
 		return filterNav<GroupMatchNavNode>(this, fn);
 	}
 
@@ -203,6 +221,7 @@ export class GroupMatchNavNode implements GroupNavLike<GroupMatchNavNode> {
 		index: number;
 		indent: number;
 	}> {
+		this.assertIsConstructed("[Symbol.iterator]");
 		yield* GroupMatchNavNode.genRec({
 			group: this,
 			index: 0,
@@ -238,38 +257,53 @@ export class GroupMatchNavNode implements GroupNavLike<GroupMatchNavNode> {
 
 	/**
 	 * Whether the node has no children.
+	 *
+	 * @throws Error if called on a non-constructed node.
 	 */
 	get isLeaf(): boolean {
+		this.assertIsConstructed("isLeaf");
 		return this.#children.length === 0;
 	}
 
 	/**
 	 * Whether the node has one or more children.
+	 *
+	 * @throws Error if called on a non-constructed node.
 	 */
 	get isBranch(): boolean {
+		this.assertIsConstructed("isBranch");
 		return this.#children.length > 0;
 	}
 
 	/**
 	 * Read-only list of child nodes. When empty, this is a shared
 	 * canonical empty array.
+	 *
+	 * @throws Error if called on a non-constructed node.
 	 */
 	get children(): readonly GroupMatchNavNode[] {
+		this.assertIsConstructed("children");
 		return this.#children;
 	}
 
 	/**
 	 * The contiguous match for this node. Set during {@link seal} for
 	 * constructable branches, or provided at creation for leaves.
+	 *
+	 * @throws Error if called on a non-constructed node.
 	 */
 	get wholeMatchNav(): MatchNav {
+		this.assertIsConstructed("wholeMatchNav");
 		return this.#wholeMatchNav;
 	}
 
 	/**
 	 * Whether this node has unnamed branches.
+	 *
+	 * @throws Error if called on a non-constructed node.
 	 */
 	get hasUnnamedBranches(): boolean {
+		this.assertIsConstructed("hasUnnamedBranches");
 		return hasUnnamedBranchesNav<GroupMatchNavNode>(this);
 	}
 
@@ -279,8 +313,11 @@ export class GroupMatchNavNode implements GroupNavLike<GroupMatchNavNode> {
 	 * - The captured match.
 	 * - The number of children.
 	 * - The parent group name (or :null for root).
+	 *
+	 * @throws Error if called on a non-constructed node.
 	 */
 	toString(): string {
+		this.assertIsConstructed("toString");
 		const parentName =
 			this.#parent === null
 				? chalk.blueBright(":null")

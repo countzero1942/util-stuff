@@ -1,6 +1,8 @@
 import {
+	convertGroupNavsToNodes,
 	GroupMatchBase,
 	GroupMatchNav,
+	GroupNavLike,
 	GroupValidatorError,
 	logGroupsRecNav,
 	MatchNav,
@@ -107,5 +109,70 @@ export const logResults = (
 			);
 		}
 		log();
+	}
+};
+
+export const logNodeResults = (
+	successStrings: string[],
+	matcher: GroupMatchBase,
+	options: LogResultsOptions = {
+		showPrunedTree: false,
+		autoPrune: false,
+	}
+) => {
+	function logHasUnnamedBranchesView<T extends GroupNavLike<T>>(
+		group: T
+	) {
+		const b = group.hasUnnamedBranches;
+		const bView = b ? chalk.yellow("true") : chalk.green("false");
+		log(chalk.cyan(`Has unnamed branches: ${bView}`));
+	}
+
+	logh("Success cases");
+
+	for (const navString of successStrings) {
+		const nav = MatchNav.fromString(navString);
+		const result = matcher.match(nav);
+		log();
+		ddiv();
+		if (result instanceof GroupValidatorError) {
+			log(
+				chalk.red(
+					`>>> FAILED TO MATCH SUCCESS CASE: ${getNavStringView(navString)} <<< `
+				)
+			);
+			continue;
+		}
+		logNavString(navString);
+		const modResult = options.autoPrune ? result.prune() : result;
+		const nodeResult = convertGroupNavsToNodes(modResult);
+		logGroupsRecNav(nodeResult);
+		div();
+		logHasUnnamedBranchesView(nodeResult);
+		if (options.autoPrune) {
+			log(
+				chalk.cyan(
+					`Auto-prune Result: was tree rebuilt?: ${chalk.green(
+						modResult !== result
+					)}`
+				)
+			);
+		}
+		div();
+		// if (options.showPrunedTree) {
+		// 	logNavString(navString);
+		// 	const prunedResult = result.prune();
+		// 	logGroupsRecNav(prunedResult);
+		// 	div();
+		// 	logHasUnnamedBranchesView(prunedResult);
+		// 	log(
+		// 		chalk.cyan(
+		// 			`Prune Result: was tree rebuilt?: ${chalk.green(
+		// 				prunedResult !== result
+		// 			)}`
+		// 		)
+		// 	);
+		// 	div();
+		// }
 	}
 };

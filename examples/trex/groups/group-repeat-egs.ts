@@ -18,7 +18,7 @@ import {
 } from "@/trex";
 import { ExamplesMenuItem, runExamplesMenu } from "@/utils/examples-menu";
 import { div, log } from "@/utils/log";
-import { logResults } from "./common";
+import { logNodeResults, logResults } from "./common";
 import chalk from "chalk";
 import { fixedRound } from "@/utils/math";
 import {
@@ -906,6 +906,34 @@ const doAutoPruneDeepFlattenedGroupRepeatMatcher = () => {
 	);
 };
 
+const doDeepFlattenedGroupNodeRepeatMatcher = () => {
+	logNodeResults(colonGroupSuccessStrings, colonGroupMatcher, {
+		showPrunedTree: false,
+		autoPrune: true,
+	});
+};
+
+const doDeepUnflattenedGroupNodeRepeatMatcher = () => {
+	logNodeResults(colonGroupSuccessStrings, colonGroupMatcher, {
+		showPrunedTree: false,
+		autoPrune: false,
+	});
+};
+
+const doDeepUnnamedRootUnflattenedGroupNodeRepeatMatcher = () => {
+	logNodeResults(colonGroupSuccessStrings, unnamedRootColonGroupMatcher, {
+		showPrunedTree: false,
+		autoPrune: false,
+	});
+};
+
+const doDeepUnnamedRootFlattenedGroupNodeRepeatMatcher = () => {
+	logNodeResults(colonGroupSuccessStrings, unnamedRootColonGroupMatcher, {
+		showPrunedTree: false,
+		autoPrune: true,
+	});
+};
+
 const logTime = (matchCount: number, time: number) => {
 	const timePerMatch = (time / matchCount) * 1000;
 	const opsPerSecond = fixedRound((matchCount / time) * 1000, -2);
@@ -1171,7 +1199,7 @@ const exampleItems: ExamplesMenuItem[] = [
 	},
 	{
 		func: doAutoFlattenedBNumberGroupRepeatMatchWithAltFirstLast,
-		name: "Auto Flattened Unnamed Root Number Group Repeat Match With AltFirstLast",
+		name: "Auto Flattened UNNAMED ROOT Number Group Repeat Match With AltFirstLast",
 		description: [
 			"Comma separated funky numbers.",
 			"Root is unnamed (but acts like a named group.)",
@@ -1205,7 +1233,7 @@ const exampleItems: ExamplesMenuItem[] = [
 	},
 	{
 		func: doDeepFlattenedUnnamedRootGroupRepeatMatcher,
-		name: "Deep Flattened Unnamed Root Group Repeat Matcher",
+		name: "Deep Flattened UNNAMED ROOT Group Repeat Matcher",
 		description: [
 			"Comma separated funky numbers separated by colons.",
 			"Root is unnamed (but acts like a named group.)",
@@ -1219,6 +1247,44 @@ const exampleItems: ExamplesMenuItem[] = [
 			"Comma separated funky numbers separated by colons.",
 			"Only root and digits are named.",
 			"Unnamed branches are automatically pruned.",
+		],
+	},
+	{
+		func: doDeepFlattenedGroupNodeRepeatMatcher,
+		name: "Deep Flattened Group NODE Repeat Matcher",
+		description: [
+			"Comma separated funky numbers separated by colons.",
+			"Only root and digits are named.",
+			"Coverts GroupNav to GroupNavNode.",
+		],
+	},
+	{
+		func: doDeepUnflattenedGroupNodeRepeatMatcher,
+		name: "Deep Group NODE Repeat Matcher: not flattened",
+		description: [
+			"Comma separated funky numbers separated by colons.",
+			"Only root and digits are named.",
+			"Coverts GroupNav to GroupNavNode.",
+		],
+	},
+	{
+		func: doDeepUnnamedRootUnflattenedGroupNodeRepeatMatcher,
+		name: "Deep UNNAMED ROOT Group NODE Repeat Matcher: not flattened",
+		description: [
+			"Comma separated funky numbers separated by colons.",
+			"Root is unnamed (but acts like a named group.)",
+			"Digits are named. All other groups are unnamed.",
+			"Coverts GroupNav to GroupNavNode.",
+		],
+	},
+	{
+		func: doDeepUnnamedRootFlattenedGroupNodeRepeatMatcher,
+		name: "Deep UNNAMED ROOT Group NODE Repeat Matcher: flattened",
+		description: [
+			"Comma separated funky numbers separated by colons.",
+			"Root is unnamed (but acts like a named group.)",
+			"Digits are named. All other groups are unnamed.",
+			"Coverts GroupNav to GroupNavNode.",
 		],
 	},
 	{
