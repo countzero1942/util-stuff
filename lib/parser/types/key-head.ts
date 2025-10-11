@@ -33,7 +33,7 @@ export class FlagParam extends ParamBase {
 
 	public static empty(): FlagParam {
 		return new FlagParam(
-			StrSlice.empty(),
+			StrSlice.empty,
 			undefined,
 			undefined,
 			undefined,
@@ -54,15 +54,11 @@ export class FlagParam extends ParamBase {
 		strs.push(nameStr);
 
 		if (this.dotParam) {
-			strs.push(
-				`${indentStr2}dotParam: ${this.dotParam.toString()}`
-			);
+			strs.push(`${indentStr2}dotParam: ${this.dotParam.toString()}`);
 		}
 
 		if (this.subParam) {
-			strs.push(
-				`${indentStr2}subParam: ${this.subParam.toString()}`
-			);
+			strs.push(`${indentStr2}subParam: ${this.subParam.toString()}`);
 		}
 
 		if (this.superParam) {
@@ -81,9 +77,7 @@ export class FlagParam extends ParamBase {
 		return strs;
 	}
 
-	public validate(
-		validator: FlagParamsValidator
-	): NumberErr[] {
+	public validate(validator: FlagParamsValidator): NumberErr[] {
 		const errs: NumberErr[] = [];
 		return errs;
 	}
@@ -117,10 +111,7 @@ export class TypeParams extends ParamBase {
 	}
 
 	public static empty(): TypeParams {
-		return new TypeParams(
-			StrSlice.empty(),
-			FlagParam.empty()
-		);
+		return new TypeParams(StrSlice.empty, FlagParam.empty());
 	}
 
 	public toReport(
@@ -132,13 +123,9 @@ export class TypeParams extends ParamBase {
 		const indentStr2 = indentStr.repeat(indents + 1);
 		const indentStr3 = indentStr.repeat(indents + 2);
 
-		strs.push(
-			`${indentStr1}Type: ${this.fullName.value}`
-		);
+		strs.push(`${indentStr1}Type: ${this.fullName.value}`);
 		strs.push(`${indentStr1}Name param: `);
-		strs.push(
-			...this.nameParams.toReport(indents + 1, indentStr)
-		);
+		strs.push(...this.nameParams.toReport(indents + 1, indentStr));
 		if (this.flagParams.length > 0) {
 			strs.push(`${indentStr1}Flags: `);
 			this.flagParams.forEach(p =>
@@ -147,14 +134,10 @@ export class TypeParams extends ParamBase {
 		}
 		if (this.stringParams.length > 0) {
 			strs.push(`${indentStr1}String params: `);
-			this.stringParams.forEach(p =>
-				strs.push(`${indentStr2}${p}`)
-			);
+			this.stringParams.forEach(p => strs.push(`${indentStr2}${p}`));
 		}
 		if (this.unitParam) {
-			strs.push(
-				`${indentStr1}Unit param: ${this.unitParam}`
-			);
+			strs.push(`${indentStr1}Unit param: ${this.unitParam}`);
 		}
 
 		return strs;
@@ -170,7 +153,7 @@ export class KeyParams extends ParamBase {
 	}
 
 	public static empty(): KeyParams {
-		return new KeyParams(StrSlice.empty());
+		return new KeyParams(StrSlice.empty);
 	}
 
 	public toReport(
@@ -186,9 +169,7 @@ export class KeyParams extends ParamBase {
 		if (this.typeParams) {
 			strs.push(`${indentStr1}Types: `);
 			this.typeParams.forEach(typeParam => {
-				strs.push(
-					...typeParam.toReport(indents + 1, indentStr)
-				);
+				strs.push(...typeParam.toReport(indents + 1, indentStr));
 				strs.push("");
 			});
 		}

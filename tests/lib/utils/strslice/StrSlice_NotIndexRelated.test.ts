@@ -151,27 +151,15 @@ describe("StrSlice Non-Index-related methods", () => {
 			});
 
 			it("returns false: startsWith value matches in bounds but also goes beyond bounds", () => {
-				const result = strSlice.startsWith(
-					"worldly",
-					6
-				);
+				const result = strSlice.startsWith("worldly", 6);
 				expect(result).toBe(false);
 			});
 
 			it("returns false: startsWith value goes beyond slice bounds but matches source", () => {
-				strSlice = StrSlice.from(
-					"hello worldly",
-					0,
-					-2
-				);
+				strSlice = StrSlice.from("hello worldly", 0, -2);
 				expect(strSlice.value).toBe("hello world");
-				expect(strSlice.startsWith("world", 6)).toBe(
-					true
-				);
-				const result = strSlice.startsWith(
-					"worldly",
-					6
-				);
+				expect(strSlice.startsWith("world", 6)).toBe(true);
+				const result = strSlice.startsWith("worldly", 6);
 				expect(result).toBe(false);
 			});
 		});
@@ -190,11 +178,7 @@ describe("StrSlice Non-Index-related methods", () => {
 			});
 
 			it("returns true: slice starts with value slice that's offset", () => {
-				const value = new StrSlice(
-					"abc hello abc",
-					4,
-					9
-				);
+				const value = new StrSlice("abc hello abc", 4, 9);
 				expect(value.value).toBe("hello");
 				const result = strSlice.startsWith(value);
 				expect(result).toBe(true);
@@ -207,11 +191,7 @@ describe("StrSlice Non-Index-related methods", () => {
 			});
 
 			it("returns false: slice does not start with value slice that's offset", () => {
-				const value = new StrSlice(
-					"abc world abc",
-					4,
-					9
-				);
+				const value = new StrSlice("abc world abc", 4, 9);
 				expect(value.value).toBe("world");
 				const result = strSlice.startsWith(value);
 				expect(result).toBe(false);
@@ -219,7 +199,7 @@ describe("StrSlice Non-Index-related methods", () => {
 
 			it("returns false: startsWith is called with an empty value", () => {
 				const value1 = new StrSlice("");
-				const value2 = StrSlice.empty();
+				const value2 = StrSlice.empty;
 				const result1 = strSlice.startsWith(value1);
 				expect(result1).toBe(false);
 				const result2 = strSlice.startsWith(value2);
@@ -227,15 +207,9 @@ describe("StrSlice Non-Index-related methods", () => {
 			});
 
 			it("returns false: startsWith value goes beyond slice bounds but matches source", () => {
-				strSlice = StrSlice.from(
-					"hello worldly",
-					0,
-					-2
-				);
+				strSlice = StrSlice.from("hello worldly", 0, -2);
 				expect(strSlice.value).toBe("hello world");
-				expect(strSlice.startsWith("world", 6)).toBe(
-					true
-				);
+				expect(strSlice.startsWith("world", 6)).toBe(true);
 				const value = new StrSlice("worldly");
 				const result = strSlice.startsWith(value, 6);
 				expect(result).toBe(false);
@@ -273,15 +247,9 @@ describe("StrSlice Non-Index-related methods", () => {
 
 			it("returns false: startsWith value goes beyond slice bounds but matches source", () => {
 				const value = new StrSlice("worldly");
-				strSlice = StrSlice.from(
-					"hello worldly",
-					0,
-					-2
-				);
+				strSlice = StrSlice.from("hello worldly", 0, -2);
 				expect(strSlice.value).toBe("hello world");
-				expect(strSlice.startsWith("world", 6)).toBe(
-					true
-				);
+				expect(strSlice.startsWith("world", 6)).toBe(true);
 				const result = strSlice.startsWith(value, 6);
 				expect(result).toBe(false);
 			});
@@ -318,15 +286,9 @@ describe("StrSlice Non-Index-related methods", () => {
 
 			it("returns false: startsWith value goes beyond slice bounds but matches source", () => {
 				const value = new StrSlice("worldly");
-				strSlice = StrSlice.from(
-					"hello worldly",
-					0,
-					-2
-				);
+				strSlice = StrSlice.from("hello worldly", 0, -2);
 				expect(strSlice.value).toBe("hello world");
-				expect(strSlice.startsWith("world", 6)).toBe(
-					true
-				);
+				expect(strSlice.startsWith("world", 6)).toBe(true);
 				const result = strSlice.startsWith(value, -5);
 				expect(result).toBe(false);
 			});
@@ -374,19 +336,13 @@ describe("StrSlice Non-Index-related methods", () => {
 
 			it("returns true: slice starts with value at start index", () => {
 				const value = "hello";
-				const result = strSlice.endsWith(
-					value,
-					value.length
-				);
+				const result = strSlice.endsWith(value, value.length);
 				expect(result).toBe(true);
 			});
 
 			it("returns false: slice does not start with value at index", () => {
 				const value = "world";
-				const result = strSlice.endsWith(
-					value,
-					value.length
-				);
+				const result = strSlice.endsWith(value, value.length);
 				expect(result).toBe(false);
 			});
 
@@ -395,10 +351,7 @@ describe("StrSlice Non-Index-related methods", () => {
 				expect(strSlice.value).toBe("world");
 				expect(strSlice.startsWith("world")).toBe(true);
 				const value = "worldly";
-				const result = strSlice.endsWith(
-					value,
-					value.length
-				);
+				const result = strSlice.endsWith(value, value.length);
 				expect(result).toBe(false);
 			});
 		});
@@ -424,10 +377,7 @@ describe("StrSlice Non-Index-related methods", () => {
 			});
 
 			it("returns true: endsWith 'hello' at index 5: 'hello'.length", () => {
-				const resultd = slice.endsWith(
-					value1,
-					value1.length
-				);
+				const resultd = slice.endsWith(value1, value1.length);
 				expect(resultd).toBe(true);
 			});
 		});
@@ -496,11 +446,7 @@ describe("StrSlice Non-Index-related methods", () => {
 
 			it("returns true: offset slices are equal", () => {
 				strSlice = new StrSlice("abc hello abc", 4, -4);
-				const value = new StrSlice(
-					"O hello world",
-					2,
-					7
-				);
+				const value = new StrSlice("O hello world", 2, 7);
 				expect(strSlice.value).toBe("hello");
 				expect(value.value).toBe("hello");
 				const result = strSlice.equals(value);
@@ -516,7 +462,7 @@ describe("StrSlice Non-Index-related methods", () => {
 			it("returns true: both strings are empty", () => {
 				strSlice = new StrSlice("");
 				const value1 = new StrSlice("");
-				const value2 = StrSlice.empty();
+				const value2 = StrSlice.empty;
 				const result1 = strSlice.equals(value1);
 				expect(result1).toBe(true);
 				const result2 = strSlice.equals(value2);

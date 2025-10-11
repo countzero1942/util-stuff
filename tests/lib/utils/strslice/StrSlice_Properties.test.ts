@@ -10,13 +10,13 @@ describe("StrSlice Properties", () => {
 	it("returns the correct slice length", () => {
 		expect(strSlice.length).toBe(5);
 		expect(new StrSlice("").length).toBe(0);
-		expect(StrSlice.empty().length).toBe(0);
+		expect(StrSlice.empty.length).toBe(0);
 	});
 
 	it("returns true if the slice isEmpty property", () => {
 		const emptyStrSlice = new StrSlice("");
 		expect(emptyStrSlice.isEmpty).toBe(true);
-		expect(StrSlice.empty().isEmpty).toBe(true);
+		expect(StrSlice.empty.isEmpty).toBe(true);
 	});
 
 	it("returns false if the slice is not empty", () => {
@@ -34,17 +34,11 @@ describe("StrSlice Properties", () => {
 
 	it("sets 'sliceCache' to 'source' if slices entire source string", () => {
 		// @ts-ignore
-		expect(StrSlice.from("hello").sliceCache).toBe(
-			"hello"
-		);
+		expect(StrSlice.from("hello").sliceCache).toBe("hello");
 		// @ts-ignore
-		expect(StrSlice.all("hello").sliceCache).toBe(
-			"hello"
-		);
+		expect(StrSlice.all("hello").sliceCache).toBe("hello");
 		// @ts-ignore
-		expect(StrSlice.from("hello", 0, 3).sliceCache).toBe(
-			undefined
-		);
+		expect(StrSlice.from("hello", 0, 3).sliceCache).toBe(undefined);
 	});
 
 	it("sets 'sliceCache' on call to 'value' computed property", () => {
@@ -71,12 +65,8 @@ describe("slice and sliceByLength methods", () => {
 			const originalSlice = StrSlice.from("hello");
 			const newSlice = originalSlice.slice();
 			expect(newSlice.source).toBe(originalSlice.source);
-			expect(newSlice.startIncl).toBe(
-				originalSlice.startIncl
-			);
-			expect(newSlice.endExcl).toBe(
-				originalSlice.endExcl
-			);
+			expect(newSlice.startIncl).toBe(originalSlice.startIncl);
+			expect(newSlice.endExcl).toBe(originalSlice.endExcl);
 			expect(newSlice.length).toBe(originalSlice.length);
 			expect(newSlice.value).toBe(originalSlice.value);
 		});

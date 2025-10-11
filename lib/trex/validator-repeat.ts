@@ -45,8 +45,8 @@ export class GroupRepeatValidator extends GroupValidatorBase {
 		const result = this.contentMatcher.match(validatorNav);
 		if (result instanceof GroupValidatorError) {
 			return GroupValidatorResult.FromError(
-				testNav,
-				parentNav,
+				testNav.captureMatch,
+				parentNav.captureMatch,
 				this.#_errorMessage
 			);
 		}

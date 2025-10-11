@@ -43,7 +43,7 @@ export class MatchNav {
 	 *
 	 * @param source The source text to navigate through
 	 */
-	public static fromNew(source: StrSlice): MatchNav {
+	static fromNew(source: StrSlice): MatchNav {
 		return new MatchNav(source, 0, 0);
 	}
 
@@ -55,10 +55,7 @@ export class MatchNav {
 	 * @param source The source text to navigate through
 	 * @param startIndex Starting position in the source
 	 */
-	public static fromStart(
-		source: StrSlice,
-		startIndex: number
-	): MatchNav {
+	static fromStart(source: StrSlice, startIndex: number): MatchNav {
 		return new MatchNav(source, startIndex, startIndex);
 	}
 
@@ -72,7 +69,7 @@ export class MatchNav {
 	 * @param startIndex Starting position in the source
 	 * @param captureIndex Capture position in the source
 	 */
-	public static fromCapture(
+	static fromCapture(
 		source: StrSlice,
 		startIndex: number,
 		captureIndex: number
@@ -90,10 +87,7 @@ export class MatchNav {
 	 * @param last The last navigator
 	 * @returns A new MatchNav with the same source and capture index as the first navigator
 	 */
-	public static fromFirstAndLast(
-		first: MatchNav,
-		last: MatchNav
-	): MatchNav {
+	static fromFirstAndLast(first: MatchNav, last: MatchNav): MatchNav {
 		if (first.source !== last.source) {
 			throw new Error(
 				"MatchNav.fromFirstAndLast: sources do not match"
@@ -112,7 +106,7 @@ export class MatchNav {
 	 * @param source The source text to navigate through
 	 * @param start Starting position in the source (default: 0)
 	 */
-	public static fromString(source: string, start: number = 0): MatchNav {
+	static fromString(source: string, start: number = 0): MatchNav {
 		return MatchNav.fromStart(StrSlice.from(source), start);
 	}
 
@@ -124,7 +118,7 @@ export class MatchNav {
 	 *
 	 * @returns A new MatchNav advanced by one code point
 	 */
-	public moveCaptureForwardOneCodePoint(): MatchNav {
+	moveCaptureForwardOneCodePoint(): MatchNav {
 		const currentCodePoint = this.peekCodePoint();
 		if (currentCodePoint === undefined) {
 			throw new Error(
@@ -149,7 +143,7 @@ export class MatchNav {
 	 * @param length Number of characters to advance
 	 * @returns A new MatchNav with advanced capture index
 	 */
-	public moveCaptureForward(length: number): MatchNav {
+	moveCaptureForward(length: number): MatchNav {
 		if (length < 0) {
 			throw new Error("moveCaptureForward: length cannot be negative");
 		}
@@ -171,7 +165,7 @@ export class MatchNav {
 	 *
 	 * @returns A new MatchNav at source end
 	 */
-	public moveCaptureToSourceEnd(): MatchNav {
+	moveCaptureToSourceEnd(): MatchNav {
 		return MatchNav.fromCapture(
 			this.source,
 			this.startIndex,
@@ -186,7 +180,7 @@ export class MatchNav {
 	 *
 	 * @returns A new MatchNav advanced by one code point for both indices
 	 */
-	public moveNextOneCodePoint(): MatchNav {
+	moveNextOneCodePoint(): MatchNav {
 		const currentCodePoint = this.peekCodePoint();
 		if (currentCodePoint === undefined) {
 			throw new Error("moveNextOneCodePoint: beyond end of source");
@@ -204,7 +198,7 @@ export class MatchNav {
 	 *
 	 * @returns A new MatchNav at source end
 	 */
-	public moveNextToSourceEnd(): MatchNav {
+	moveNextToSourceEnd(): MatchNav {
 		return MatchNav.fromCapture(
 			this.source,
 			this.source.length,
@@ -221,7 +215,7 @@ export class MatchNav {
 	 * @param moveMode Move mode (defaults to "MustMoveForward")
 	 * @returns A new MatchNav with start set to capture
 	 */
-	public moveNext(moveMode: NavMoveMode = "MustMoveForward"): MatchNav {
+	moveNext(moveMode: NavMoveMode = "MustMoveForward"): MatchNav {
 		this.assertIsMovable(moveMode);
 		return MatchNav.fromCapture(
 			this.source,
@@ -240,7 +234,7 @@ export class MatchNav {
 	 * @param length Number of characters to shrink the capture index by
 	 * @returns A new MatchNav with the capture index shrunk
 	 */
-	public shrinkCapture(length: number): MatchNav {
+	shrinkCapture(length: number): MatchNav {
 		if (length < 0) {
 			throw new Error(
 				"MatchNav.shrinkCapture: length cannot be negative"
@@ -268,7 +262,7 @@ export class MatchNav {
 	 *
 	 * @throws Error if the nav holds a capture
 	 */
-	public assertNavIsNew(): void {
+	assertNavIsNew(): void {
 		if (this.captureIndex !== this.startIndex) {
 			throw new Error("Navigator is not new: it contains a capture");
 		}
@@ -285,7 +279,7 @@ export class MatchNav {
 	 *
 	 * @throws Error if the navigation is caught in an infinite loop
 	 */
-	public assertIsMovable(moveMode: NavMoveMode): void {
+	assertIsMovable(moveMode: NavMoveMode): void {
 		switch (moveMode) {
 			case "MustMoveForward":
 				if (this.startIndex === this.captureIndex) {
@@ -325,7 +319,7 @@ export class MatchNav {
 	 *
 	 * @returns The code point at the current navigation position, or undefined if at end
 	 */
-	public peekCodePoint(): number | undefined {
+	peekCodePoint(): number | undefined {
 		return this.source.codePointAt(this.captureIndex);
 	}
 
@@ -335,7 +329,7 @@ export class MatchNav {
 	 *
 	 * @returns The code point before the current position, or undefined if at start
 	 */
-	public peekBehindCodePoint(): number | undefined {
+	peekBehindCodePoint(): number | undefined {
 		// this looks backwards to extract the code point
 		// before the current position; navigating back at most 2 times
 		let index = this.captureIndex - 1;
@@ -361,7 +355,7 @@ export class MatchNav {
 	 * @param length Number of characters to look behind
 	 * @returns A StrSlice containing the characters before the current position, or undefined if at start
 	 */
-	public peekBehindSliceByLength(length: number): StrSlice | undefined {
+	peekBehindSliceByLength(length: number): StrSlice | undefined {
 		const index = this.captureIndex - length;
 		if (index < 0) return undefined;
 		return this.source.slice(index, this.captureIndex);
@@ -373,43 +367,47 @@ export class MatchNav {
 	 *
 	 * @returns The code point after the current position, or undefined if at end
 	 */
-	public peekAheadCodePoint(): number | undefined {
+	peekAheadCodePoint(): number | undefined {
 		return this.source.codePointAt(this.captureIndex);
 	}
 
 	/**
 	 * Checks if nav index is at the beginning of the source slice
 	 */
-	public get isCaptureIndexAtSourceStart(): boolean {
+	get isCaptureIndexAtSourceStart(): boolean {
 		return this.captureIndex === 0;
 	}
 
 	/**
 	 * Checks if at the end of the source text
 	 */
-	public get isCaptureIndexAtSourceEnd(): boolean {
+	get isCaptureIndexAtSourceEnd(): boolean {
 		return this.captureIndex === this.source.length;
 	}
 
 	/**
 	 * Gets the length of the current match (from start to capture position)
 	 */
-	public get captureLength(): number {
+	get captureLength(): number {
 		return this.captureIndex - this.startIndex;
 	}
 
 	/**
 	 * Gets the successfully matched portion of the source text
 	 */
-	public get captureMatch(): StrSlice {
+	get captureMatch(): StrSlice {
 		return this.source.slice(this.startIndex, this.captureIndex);
 	}
 
 	/**
 	 * Checks if the current match is empty
 	 */
-	public get isEmptyMatch(): boolean {
+	get isEmptyMatch(): boolean {
 		return this.startIndex === this.captureIndex;
+	}
+
+	get fullView(): StrSlice {
+		return this.source.slice(this.startIndex);
 	}
 
 	static #_empty: MatchNav = MatchNav.fromString("");
@@ -431,7 +429,7 @@ export class MatchNav {
 	/**
 	 * Gets a string representation of the navigation state
 	 */
-	public toString(): string {
+	toString(): string {
 		const navStr = chalk.magentaBright("Nav");
 		return (
 			`${navStr}: [${chalk.cyan(this.startIndex)}` +

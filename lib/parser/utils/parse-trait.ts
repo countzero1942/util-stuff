@@ -25,9 +25,7 @@ import { getClassName } from "@/utils/types";
 import { Key } from "node:readline";
 import { parseKeyHead } from "@/parser/utils/parse-key-head";
 
-export const createRootHead = (
-	rootName: string = ":root"
-) => {
+export const createRootHead = (rootName: string = ":root") => {
 	if (rootName === "") {
 		throw new Error("Root name cannot be empty");
 	}
@@ -36,14 +34,12 @@ export const createRootHead = (
 	}
 	const root = new KeyBodyRequiredSource(
 		StrSlice.all(rootName),
-		new LineInfo(StrSlice.empty(), -1, 0)
+		new LineInfo(StrSlice.empty, -1, 0)
 	);
 	return root;
 };
 
-export const getValueIndex = (
-	head: KeyValueDefinedSource
-) => {
+export const getValueIndex = (head: KeyValueDefinedSource) => {
 	const { content } = head.lineInfo;
 	const valueIndex = content.indexOf(": ") + 2;
 	return valueIndex;
@@ -60,10 +56,7 @@ export const parseKeyValueDefinedHead = (
 		return keyParamsOrErr; // is ParserErrHead
 	}
 
-	const typeValuePairOrErr = parseDefaultValue(
-		head,
-		valueHead
-	);
+	const typeValuePairOrErr = parseDefaultValue(head, valueHead);
 
 	if (typeValuePairOrErr instanceof ParserErrNode) {
 		return typeValuePairOrErr; // is ParserErrHead
@@ -104,10 +97,7 @@ const getSelfTrait = (
 	nextIndex: number,
 	children: KeyValueBase[]
 ): ParseTraitResult => {
-	if (
-		children.length === 0 &&
-		!traitHead.keyHead.equals(":root")
-	) {
+	if (children.length === 0 && !traitHead.keyHead.equals(":root")) {
 		const err = getIndentError(
 			[],
 			Range.empty(),
@@ -198,12 +188,11 @@ export const parseTrait = (
 				);
 			// case: invalid children or over-indent
 			case indent > traitBodyIndent: {
-				const invalidChildren =
-					collectInvalidIndentChildren(
-						heads,
-						currentHeadIndex,
-						traitBodyIndent
-					);
+				const invalidChildren = collectInvalidIndentChildren(
+					heads,
+					currentHeadIndex,
+					traitBodyIndent
+				);
 				const rowErrorRange = Range.fromLength(
 					currentHeadIndex + 1,
 					invalidChildren.length

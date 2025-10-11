@@ -1,27 +1,28 @@
+import { StrSlice } from "@/utils/slice";
 import { MatchNav } from "./nav";
 
 export class GroupValidatorError {
 	private constructor(
-		public readonly errorNav: MatchNav,
-		public readonly parentNav: MatchNav,
+		public readonly errorView: StrSlice,
+		public readonly parentView: StrSlice,
 		public readonly message: string
 	) {}
 
 	static from(
-		errorNav: MatchNav,
-		parentNav: MatchNav,
+		errorView: StrSlice,
+		parentView: StrSlice,
 		message: string = "Unexpected"
 	): GroupValidatorError {
-		return new GroupValidatorError(errorNav, parentNav, message);
+		return new GroupValidatorError(errorView, parentView, message);
 	}
 
-	static fromDefault(errorNav: MatchNav): GroupValidatorError {
-		return GroupValidatorError.from(errorNav, errorNav, "Unexpected");
+	static fromDefault(errorView: StrSlice): GroupValidatorError {
+		return GroupValidatorError.from(errorView, errorView, "Unexpected");
 	}
 
 	static #_empty: GroupValidatorError = new GroupValidatorError(
-		MatchNav.fromString(""),
-		MatchNav.fromString(""),
+		StrSlice.empty,
+		StrSlice.empty,
 		"Unexpected"
 	);
 	static get empty(): GroupValidatorError {

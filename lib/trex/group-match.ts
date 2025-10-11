@@ -36,6 +36,6 @@ export class GroupMatch extends GroupMatchBase {
 		if (result) {
 			return GroupMatchNav.fromLeaf(result, this.groupName);
 		}
-		return GroupValidatorError.fromDefault(nav);
+		return GroupValidatorError.fromDefault(nav.captureMatch);
 	}
 }

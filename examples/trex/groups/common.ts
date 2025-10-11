@@ -107,6 +107,13 @@ export const logResults = (
 					`Failed to match: ${getNavStringView(navString)} ${msgView}`
 				)
 			);
+			log(chalk.yellow(`>>>  parent: '${result.parentView.value}'`));
+			log(
+				chalk.yellow(
+					`>>>   error: '${result.errorView.getErrorString()}'`
+				)
+			);
+			log(chalk.yellow(`>>> message: '${result.message}'`));
 		}
 		log();
 	}

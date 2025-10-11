@@ -6,6 +6,7 @@ import { MatchRepeat, NumberOfMatches } from "./match-repeat";
 import { MatchNav } from "./nav";
 import { addResultToParent } from "./group-helper";
 import { GroupValidatorError } from "./group-validator-error";
+import { isNativeError } from "util/types";
 
 export class AltFirstLastGroupMatchers {
 	protected constructor(
@@ -113,14 +114,10 @@ export class GroupMatchRepeat extends GroupMatchBase {
 			? max + 1
 			: max;
 
-		let firstNav = nav;
 		let currentNav = nav;
+		let lastNav = nav;
 
 		const savedNavs: GroupMatchNav[] = [];
-		// const parentNav = GroupMatchNav.fromConstructableBranch(
-		// 	this.groupName,
-		// 	parent
-		// );
 
 		const contentMatcher = this.matcher;
 
@@ -200,18 +197,47 @@ export class GroupMatchRepeat extends GroupMatchBase {
 			if (result instanceof GroupMatchNav) {
 				// addResultToChildrenGroupNavs(result, savedNavs);
 				addResultToParent(result, savedNavs);
-
+				lastNav = currentNav;
 				currentNav = result.wholeMatchNav.moveNext("OptMoveForward");
 			}
 		}
 
 		// case: successful match in range
-		if (isFailedMatch === false && count >= min && count <= max) {
-			return GroupMatchNav.fromBranch(
-				MatchNav.fromFirstAndLast(firstNav, currentNav),
-				this.groupName,
-				savedNavs
-			);
+		if (isFailedMatch === false) {
+			switch (true) {
+				// case: successful match in range
+				case count >= min && count <= max: {
+					// note: groupName is empty if count is 0: optional match
+					// otherwise groupName is this.groupName: successful match
+					const groupName =
+						count > 0 ? this.groupName : GroupName.empty;
+					return GroupMatchNav.fromBranch(
+						MatchNav.fromFirstAndLast(nav, currentNav),
+						groupName,
+						savedNavs
+					);
+				}
+				// case: not enough matches
+				case count < min: {
+					const errorView = currentNav.fullView;
+					return GroupValidatorError.from(
+						errorView,
+						nav.fullView,
+						"not enough matches"
+					);
+				}
+				// case: too many matches
+				case count > max: {
+					const errorView = lastNav.fullView;
+					return GroupValidatorError.from(
+						errorView,
+						nav.fullView,
+						"too many matches"
+					);
+				}
+				default:
+					throw "never";
+			}
 		}
 		// case: failed match with zero matches allowed: optional match
 		else if (isFailedMatch === true && count === 0 && min === 0) {
@@ -219,10 +245,8 @@ export class GroupMatchRepeat extends GroupMatchBase {
 		}
 		// case: failed match
 		else {
-			const error = GroupValidatorError.from(
-				nav,
-				MatchNav.fromFirstAndLast(firstNav, currentNav)
-			);
+			const errorView = currentNav.fullView;
+			const error = GroupValidatorError.from(errorView, nav.fullView);
 			return error;
 		}
 	}

@@ -29,7 +29,11 @@ export class GroupMatchAny extends GroupMatchBase {
 				return result;
 			}
 		}
-		return GroupValidatorError.from(nav, nav, "Unexpected");
+		return GroupValidatorError.from(
+			nav.captureMatch,
+			nav.captureMatch,
+			"Unexpected"
+		);
 	}
 }
 

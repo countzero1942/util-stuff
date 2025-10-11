@@ -1,3 +1,4 @@
+import { StrSlice } from "@/utils/slice";
 import { GroupValidatorError } from "./group-validator-error";
 import { MatchNav } from "./nav";
 
@@ -5,8 +6,8 @@ export class GroupValidatorResult {
 	private constructor(
 		public readonly isValid: boolean,
 		public readonly message: string,
-		public readonly errorNav: MatchNav | null = null,
-		public readonly parentNav: MatchNav | null = null
+		public readonly errorView: StrSlice | null = null,
+		public readonly parentView: StrSlice | null = null
 	) {}
 
 	get isError(): boolean {
@@ -19,23 +20,23 @@ export class GroupValidatorResult {
 	}
 
 	static FromError(
-		errorNav: MatchNav,
-		parentNav: MatchNav,
+		errorView: StrSlice,
+		parentView: StrSlice,
 		msg: string
 	): GroupValidatorResult {
-		return new GroupValidatorResult(false, msg, errorNav, parentNav);
+		return new GroupValidatorResult(false, msg, errorView, parentView);
 	}
 
 	toError(): GroupValidatorError {
 		if (this.isError === false) {
 			throw new Error("GroupValidatorResult.toError: not an error");
 		}
-		if (this.errorNav === null || this.parentNav === null) {
+		if (this.errorView === null || this.parentView === null) {
 			throw new Error("GroupValidatorResult.toError: null navs");
 		}
 		return GroupValidatorError.from(
-			this.errorNav,
-			this.parentNav,
+			this.errorView,
+			this.parentView,
 			this.message
 		);
 	}

@@ -125,8 +125,8 @@ export class GroupSplitter extends GroupMatchBase {
 		} else {
 			const error = validationResult.toError();
 			log(`>>> Validation failed: ${error.message}`);
-			log(`>>> '${error.parentNav.captureMatch.value}'`);
-			log(`>>> '${error.errorNav.captureMatch.value}'`);
+			log(`>>> '${error.errorView.value}'`);
+			log(`>>> '${error.parentView.value}'`);
 		}
 
 		return parentNav;

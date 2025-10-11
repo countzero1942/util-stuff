@@ -1,10 +1,5 @@
 import { clamp } from "@/utils/math";
-import {
-	StrGraphemeSeq,
-	StrSeq,
-	Seq,
-	Range,
-} from "@/utils/seq";
+import { StrGraphemeSeq, StrSeq, Seq, Range } from "@/utils/seq";
 import {
 	getCodePointCharLength,
 	isCodePointWhiteSpace,
@@ -53,11 +48,7 @@ export class ArraySlice<T> extends Seq<T> {
 	) {
 		super();
 
-		const range = normalizeStartEnd(
-			array.length,
-			startIncl,
-			endExcl
-		);
+		const range = normalizeStartEnd(array.length, startIncl, endExcl);
 		this.startIncl = range.startIncl;
 		this.endExcl = range.endExcl;
 	}
@@ -98,35 +89,29 @@ export class StrSlice {
 		);
 		this.startIncl = range.startIncl;
 		this.endExcl = range.endExcl;
-		if (
-			this.startIncl === 0 &&
-			this.endExcl === this.source.length
-		) {
+		if (this.startIncl === 0 && this.endExcl === this.source.length) {
 			this.sliceCache = this.source;
 		}
 	}
 
-	public get length(): number {
+	get length(): number {
 		return this.endExcl - this.startIncl;
 	}
 
-	public get isEmpty(): boolean {
+	get isEmpty(): boolean {
 		return this.length === 0;
 	}
 
 	private sliceCache: string | undefined = undefined;
 
-	public get value(): string {
+	get value(): string {
 		if (this.sliceCache === undefined) {
-			this.sliceCache = this.source.slice(
-				this.startIncl,
-				this.endExcl
-			);
+			this.sliceCache = this.source.slice(this.startIncl, this.endExcl);
 		}
 		return this.sliceCache;
 	}
 
-	public charCodeAt(index: number): number {
+	charCodeAt(index: number): number {
 		const charIndex = this.startIncl + index;
 		if (charIndex >= this.endExcl) {
 			return -1;
@@ -134,33 +119,29 @@ export class StrSlice {
 		return this.source.charCodeAt(charIndex);
 	}
 
-	public codePointAt(index: number): number | undefined {
+	codePointAt(index: number): number | undefined {
 		const codePointIndex = this.startIncl + index;
 		if (codePointIndex >= this.endExcl) {
 			return undefined;
 		}
 
-		const codePoint =
-			this.source.codePointAt(codePointIndex);
+		const codePoint = this.source.codePointAt(codePointIndex);
 		if (codePoint === undefined) {
 			return undefined;
 		}
 
-		const codePointLength =
-			getCodePointCharLength(codePoint);
+		const codePointLength = getCodePointCharLength(codePoint);
 		if (codePointIndex + codePointLength > this.endExcl) {
 			return undefined;
 		}
 		return codePoint;
 	}
 
-	public trimStart(): StrSlice {
+	trimStart(): StrSlice {
 		let start = this.startIncl;
 		while (
 			start < this.endExcl &&
-			isCodePointWhiteSpace(
-				this.source.charCodeAt(start)
-			)
+			isCodePointWhiteSpace(this.source.charCodeAt(start))
 		) {
 			start++;
 		}
@@ -169,30 +150,24 @@ export class StrSlice {
 			: new StrSlice(this.source, start, this.endExcl);
 	}
 
-	public trimEnd(): StrSlice {
+	trimEnd(): StrSlice {
 		let endIncl = this.endExcl - 1;
 		while (
 			endIncl >= this.startIncl &&
-			isCodePointWhiteSpace(
-				this.source.charCodeAt(endIncl)
-			)
+			isCodePointWhiteSpace(this.source.charCodeAt(endIncl))
 		) {
 			endIncl--;
 		}
 		return endIncl === this.endExcl - 1
 			? this
-			: new StrSlice(
-					this.source,
-					this.startIncl,
-					endIncl + 1
-				);
+			: new StrSlice(this.source, this.startIncl, endIncl + 1);
 	}
 
-	public trim(): StrSlice {
+	trim(): StrSlice {
 		return this.trimStart().trimEnd();
 	}
 
-	public countOccurencesOf = (
+	countOccurencesOf = (
 		match: string,
 		childStartIncl?: number
 	): number => {
@@ -200,10 +175,7 @@ export class StrSlice {
 			return 0;
 		}
 
-		const range = normalizeStartEnd(
-			this.length,
-			childStartIncl
-		);
+		const range = normalizeStartEnd(this.length, childStartIncl);
 
 		let i = range.startIncl;
 
@@ -220,10 +192,7 @@ export class StrSlice {
 		return count;
 	};
 
-	public indexOf(
-		value: string,
-		childStartIncl?: number
-	): number {
+	indexOf(value: string, childStartIncl?: number): number {
 		// abcde
 		// 012345
 		// length = 5
@@ -249,17 +218,10 @@ export class StrSlice {
 			return -1;
 		}
 
-		const range = normalizeStartEnd(
-			this.length,
-			childStartIncl
-		);
+		const range = normalizeStartEnd(this.length, childStartIncl);
 
 		const loopLength = this.endExcl - valueLength + 1;
-		for (
-			let i = this.startIncl + range.startIncl;
-			i < loopLength;
-			i++
-		) {
+		for (let i = this.startIncl + range.startIncl; i < loopLength; i++) {
 			if (this.source.startsWith(value, i)) {
 				return i - this.startIncl;
 			}
@@ -267,10 +229,7 @@ export class StrSlice {
 		return -1;
 	}
 
-	public lastIndexOf(
-		value: string,
-		childEndExcl?: number
-	): number {
+	lastIndexOf(value: string, childEndExcl?: number): number {
 		// hello world
 		// 012345678901
 
@@ -279,11 +238,7 @@ export class StrSlice {
 			return -1;
 		}
 
-		const range = normalizeStartEnd(
-			this.length,
-			0,
-			childEndExcl
-		);
+		const range = normalizeStartEnd(this.length, 0, childEndExcl);
 
 		for (
 			let i = this.startIncl + range.endExcl - l;
@@ -297,14 +252,8 @@ export class StrSlice {
 		return -1;
 	}
 
-	public startsWith(
-		value: string | StrSlice,
-		startIncl?: number
-	): boolean {
-		const range = normalizeStartEnd(
-			this.length,
-			startIncl
-		);
+	startsWith(value: string | StrSlice, startIncl?: number): boolean {
+		const range = normalizeStartEnd(this.length, startIncl);
 
 		if (
 			value.length === 0 ||
@@ -322,10 +271,7 @@ export class StrSlice {
 			let sourceIndex = this.startIncl + range.startIncl;
 			let valueStr = value.source;
 			let sourceStr = this.source;
-			while (
-				valueIndex < value.endExcl &&
-				sourceIndex < this.endExcl
-			) {
+			while (valueIndex < value.endExcl && sourceIndex < this.endExcl) {
 				if (
 					valueStr.charCodeAt(valueIndex) !==
 					sourceStr.charCodeAt(sourceIndex)
@@ -339,31 +285,21 @@ export class StrSlice {
 		}
 	}
 
-	public endsWith(
-		value: string | StrSlice,
-		endExcl?: number
-	): boolean {
+	endsWith(value: string | StrSlice, endExcl?: number): boolean {
 		// hello world
 		// 012345678901
 		// 11 -
 
-		const range = normalizeStartEnd(
-			this.length,
-			0,
-			endExcl
-		);
+		const range = normalizeStartEnd(this.length, 0, endExcl);
 
-		if (
-			value.length === 0 ||
-			value.length > this.length
-		) {
+		if (value.length === 0 || value.length > this.length) {
 			return false;
 		}
 		const startsWithIndex = range.endExcl - value.length;
 		return this.startsWith(value, startsWithIndex);
 	}
 
-	public equals(value: string | StrSlice): boolean {
+	equals(value: string | StrSlice): boolean {
 		// if (typeof value === "string") {
 		// 	return (
 		// 		this.length === value.length && this.startsWith(value)
@@ -378,23 +314,15 @@ export class StrSlice {
 			return true;
 		}
 
-		return (
-			this.length === value.length &&
-			this.startsWith(value)
-		);
+		return this.length === value.length && this.startsWith(value);
 	}
 
-	public split(
-		splitter: string,
-		maxSplits?: number
-	): StrSlice[] {
+	split(splitter: string, maxSplits?: number): StrSlice[] {
 		const strs: StrSlice[] = [];
 		let i = 0;
 		let splits = 0;
 		const safeMaxSplits =
-			maxSplits === undefined
-				? Number.MAX_SAFE_INTEGER
-				: maxSplits;
+			maxSplits === undefined ? Number.MAX_SAFE_INTEGER : maxSplits;
 		while (true) {
 			const j = this.indexOf(splitter, i);
 			if (j > -1) {
@@ -422,7 +350,7 @@ export class StrSlice {
 		return strs;
 	}
 
-	public indexOfMany(
+	indexOfMany(
 		values: readonly (string | StrSlice)[],
 		childStartIncl?: number
 	): [number, number] {
@@ -430,10 +358,7 @@ export class StrSlice {
 			return [-1, -1];
 		}
 
-		const range = normalizeStartEnd(
-			this.length,
-			childStartIncl
-		);
+		const range = normalizeStartEnd(this.length, childStartIncl);
 
 		for (let i = range.startIncl; i < this.length; i++) {
 			for (let j = 0; j < values.length; j++) {
@@ -447,7 +372,7 @@ export class StrSlice {
 		return [-1, -1];
 	}
 
-	public lastIndexOfMany(
+	lastIndexOfMany(
 		values: readonly (string | StrSlice)[],
 		childEndExcl?: number
 	): [number, number] {
@@ -462,10 +387,7 @@ export class StrSlice {
 		);
 
 		for (
-			let i = Math.min(
-				range.endExcl - 1,
-				this.length - 1
-			);
+			let i = Math.min(range.endExcl - 1, this.length - 1);
 			i >= 0;
 			i--
 		) {
@@ -480,10 +402,7 @@ export class StrSlice {
 		return [-1, -1];
 	}
 
-	public slice(
-		childStartIncl?: number,
-		childEndExcl?: number
-	): StrSlice {
+	slice(childStartIncl?: number, childEndExcl?: number): StrSlice {
 		const range = normalizeStartEnd(
 			this.length,
 			childStartIncl,
@@ -497,20 +416,14 @@ export class StrSlice {
 		);
 	}
 
-	public sliceByLength(
-		childStartIncl: number,
-		length: number
-	): StrSlice {
+	sliceByLength(childStartIncl: number, length: number): StrSlice {
 		const range = normalizeStartEnd(
 			this.length,
 			childStartIncl,
 			undefined
 		);
 
-		const end = Math.min(
-			this.length,
-			range.startIncl + length
-		);
+		const end = Math.min(this.length, range.startIncl + length);
 
 		return new StrSlice(
 			this.source,
@@ -519,7 +432,7 @@ export class StrSlice {
 		);
 	}
 
-	public sliceOf(value: string): StrSlice {
+	sliceOf(value: string): StrSlice {
 		const i = this.indexOf(value);
 		if (i === -1) {
 			return StrSlice.none(this.source);
@@ -527,9 +440,7 @@ export class StrSlice {
 		return this.slice(i, i + value.length);
 	}
 
-	public edgeSplitMany(
-		values: readonly string[]
-	): StrSlice[] {
+	edgeSplitMany(values: readonly string[]): StrSlice[] {
 		// note: 'values' can only have 'undefined' if out of bounds
 		const slices: StrSlice[] = [];
 		let start = 0;
@@ -570,15 +481,10 @@ export class StrSlice {
 		return slices;
 	}
 
-	public indexesOfOrdered(
-		orderedValues: readonly string[]
-	): readonly number[] {
+	indexesOfOrdered(orderedValues: readonly string[]): readonly number[] {
 		// note: 'orderedValues' can only be 'undefined' if indexed out of bounds
 		const valuesLength = orderedValues.length;
-		const indexes = Array.from(
-			{ length: valuesLength },
-			() => -1
-		);
+		const indexes = Array.from({ length: valuesLength }, () => -1);
 		let currentOrder = 0;
 		for (
 			let i = 0;
@@ -598,9 +504,7 @@ export class StrSlice {
 		return indexes;
 	}
 
-	public edgeSplitOrdered(
-		values: readonly string[]
-	): StrSlice[] {
+	edgeSplitOrdered(values: readonly string[]): StrSlice[] {
 		// 'indexes' will be same length as 'values'
 		const indexes = this.indexesOfOrdered(values);
 		const slices: StrSlice[] = [];
@@ -636,7 +540,7 @@ export class StrSlice {
 		return slices;
 	}
 
-	public keyWordSplitMany(
+	keyWordSplitMany(
 		keywords: readonly string[],
 		isForwardSearch: boolean = true
 	): {
@@ -647,9 +551,9 @@ export class StrSlice {
 	} {
 		const defaultReturn = {
 			startSlice: this,
-			keywordSlice: StrSlice.empty(),
+			keywordSlice: StrSlice.empty,
 			keywordIndex: -1,
-			endSlice: StrSlice.empty(),
+			endSlice: StrSlice.empty,
 		};
 		if (keywords.length === 0 || this.isEmpty) {
 			return defaultReturn;
@@ -669,9 +573,7 @@ export class StrSlice {
 			index + keyword.length
 		).trim();
 		const startSlice = this.slice(0, index).trim();
-		const endSlice = this.slice(
-			index + keyword.length
-		).trim();
+		const endSlice = this.slice(index + keyword.length).trim();
 
 		return {
 			startSlice,
@@ -681,18 +583,9 @@ export class StrSlice {
 		};
 	}
 
-	public expandSlice(
-		expandStart: number,
-		expandEnd: number = 0
-	): StrSlice {
-		const start = Math.max(
-			0,
-			this.startIncl - expandStart
-		);
-		const end = Math.min(
-			this.source.length,
-			this.endExcl + expandEnd
-		);
+	expandSlice(expandStart: number, expandEnd: number = 0): StrSlice {
+		const start = Math.max(0, this.startIncl - expandStart);
+		const end = Math.min(this.source.length, this.endExcl + expandEnd);
 		return new StrSlice(this.source, start, end);
 	}
 
@@ -702,19 +595,18 @@ export class StrSlice {
 	 *
 	 * @returns
 	 */
-	public getErrorString(): string {
+	getErrorString(): string {
 		return this.endExcl > this.startIncl
 			? `${" ".repeat(this.startIncl)}${"^".repeat(this.length)}`
 			: "";
 	}
 
-	public *codepoints(): Generator<number, any, any> {
+	*codepoints(): Generator<number, any, any> {
 		const endExcl = this.endExcl;
 		let charIndex = this.startIncl;
 
 		while (charIndex < endExcl) {
-			const codePoint =
-				this.source.codePointAt(charIndex);
+			const codePoint = this.source.codePointAt(charIndex);
 			if (codePoint === undefined) {
 				break;
 			}
@@ -724,7 +616,7 @@ export class StrSlice {
 		}
 	}
 
-	public *chars(): Generator<number, any, any> {
+	*chars(): Generator<number, any, any> {
 		const endExcl = this.endExcl;
 		let charIndex = this.startIncl;
 
@@ -736,11 +628,11 @@ export class StrSlice {
 		}
 	}
 
-	public toString(): string {
+	toString(): string {
 		return this.value;
 	}
 
-	public static from(
+	static from(
 		source: string,
 		startIncl?: number,
 		endExcl?: number
@@ -748,19 +640,15 @@ export class StrSlice {
 		return new StrSlice(source, startIncl, endExcl);
 	}
 
-	public static fromLength(
+	static fromLength(
 		source: string,
 		startIncl: number,
 		length: number
 	): StrSlice {
-		return new StrSlice(
-			source,
-			startIncl,
-			startIncl + length
-		);
+		return new StrSlice(source, startIncl, startIncl + length);
 	}
 
-	public static fromIndexOfDefaultAll(
+	static fromIndexOfDefaultAll(
 		source: string,
 		startIncl: number
 	): StrSlice {
@@ -778,7 +666,7 @@ export class StrSlice {
 			: StrSlice.none(source);
 	}
 
-	public static fromCodePointIndices(
+	static fromCodePointIndices(
 		source: string,
 		startIncl?: number,
 		endExcl?: number
@@ -786,14 +674,10 @@ export class StrSlice {
 		const seq = StrSeq.from(source);
 		const range = seq.getRange(startIncl, endExcl);
 
-		return new StrSlice(
-			source,
-			range.startIncl,
-			range.endExcl
-		);
+		return new StrSlice(source, range.startIncl, range.endExcl);
 	}
 
-	public static fromGraphemeIndices(
+	static fromGraphemeIndices(
 		source: string,
 		startIncl?: number,
 		endExcl?: number
@@ -801,17 +685,10 @@ export class StrSlice {
 		const seq = StrGraphemeSeq.from(source);
 		const range = seq.getRange(startIncl, endExcl);
 
-		return new StrSlice(
-			source,
-			range.startIncl,
-			range.endExcl
-		);
+		return new StrSlice(source, range.startIncl, range.endExcl);
 	}
 
-	public static to(
-		source: string,
-		endExcl: number
-	): StrSlice {
+	static to(source: string, endExcl: number): StrSlice {
 		return new StrSlice(source, 0, endExcl);
 	}
 
@@ -821,7 +698,7 @@ export class StrSlice {
 	 * @param source The string to create a StrSlice for.
 	 * @returns A StrSlice for the entire string.
 	 */
-	public static all(source: string): StrSlice {
+	static all(source: string): StrSlice {
 		return new StrSlice(source, 0);
 	}
 
@@ -831,7 +708,7 @@ export class StrSlice {
 	 * @param source The string to create an empty StrSlice for.
 	 * @returns An empty StrSlice.
 	 */
-	public static none(source: string): StrSlice {
+	static none(source: string): StrSlice {
 		return new StrSlice(source, 0, 0);
 	}
 
@@ -845,7 +722,7 @@ export class StrSlice {
 	 *
 	 * @returns An empty StrSlice.
 	 */
-	public static empty(): StrSlice {
+	static get empty(): StrSlice {
 		return StrSlice.EMPTY;
 	}
 
@@ -874,17 +751,12 @@ export class StrSlice {
 	 * @param sep The separator to use between StrSlices.
 	 * @returns The joined string.
 	 */
-	public static join(
-		slices: readonly StrSlice[],
-		sep: string = ""
-	) {
+	static join(slices: readonly StrSlice[], sep: string = "") {
 		const getBufferByteSize = (
 			slices: readonly StrSlice[],
 			sep: string
 		) => {
-			const getSlicesCharLength = (
-				slices: readonly StrSlice[]
-			) => {
+			const getSlicesCharLength = (slices: readonly StrSlice[]) => {
 				let totalBytes = 0;
 				for (const slice of slices) {
 					totalBytes += slice.length;
@@ -915,23 +787,13 @@ export class StrSlice {
 				i_slice < endExcl;
 				i_slice++
 			) {
-				buf.writeUInt16LE(
-					source.charCodeAt(i_slice),
-					offset
-				);
+				buf.writeUInt16LE(source.charCodeAt(i_slice), offset);
 				offset += 2;
 			}
 			if (sep && i < last) {
 				const sepLength = sep.length;
-				for (
-					let i_sep = 0;
-					i_sep < sepLength;
-					i_sep++
-				) {
-					buf.writeUInt16LE(
-						sep.charCodeAt(i_sep),
-						offset
-					);
+				for (let i_sep = 0; i_sep < sepLength; i_sep++) {
+					buf.writeUInt16LE(sep.charCodeAt(i_sep), offset);
 					offset += 2;
 				}
 			}
