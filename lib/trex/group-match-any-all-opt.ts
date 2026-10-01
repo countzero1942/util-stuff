@@ -65,7 +65,6 @@ export class GroupMatchAll extends GroupMatchBase {
 
 	public match(nav: MatchNav): GroupMatchNav | GroupValidatorError {
 		nav.assertNavIsNew();
-		const firstNav = nav;
 		const savedNavs: GroupMatchNav[] = [];
 
 		let curNav = nav;
@@ -73,16 +72,36 @@ export class GroupMatchAll extends GroupMatchBase {
 		for (let i = 0; i < matchersLength; i++) {
 			const matcher = this.#_matchers[i];
 			const result = matcher.match(curNav);
+			// case: failed match
 			if (result instanceof GroupValidatorError) {
-				return result;
+				switch (true) {
+					case i === 0:
+						return GroupValidatorError.from(
+							curNav.captureMatch,
+							nav.fullView,
+							"no matches"
+						);
+					default: {
+						const currentView = curNav.fullView;
+						const errorView =
+							currentView.length > 0 ? currentView : nav.fullView;
+
+						return GroupValidatorError.from(
+							errorView,
+							nav.fullView,
+							"not enough matches"
+						);
+					}
+				}
 			}
 
 			addResultToParent(result, savedNavs);
 			curNav = result.wholeMatchNav.moveNext("OptMoveForward");
 		}
 
+		// case: successful match
 		return GroupMatchNav.fromBranch(
-			MatchNav.fromFirstAndLast(firstNav, curNav),
+			MatchNav.fromFirstAndLast(nav, curNav),
 			this.#_groupName,
 			savedNavs
 		);

@@ -38,53 +38,63 @@ export const logResults = (
 		log(chalk.cyan(`Has unnamed branches: ${bView}`));
 	};
 
-	logh("Success cases");
+	const doSuccessCases = (bypass: boolean = false) => {
+		if (bypass) {
+			return;
+		}
 
-	for (const navString of successStrings) {
-		const nav = MatchNav.fromString(navString);
-		const result = matcher.match(nav);
-		log();
-		ddiv();
-		if (result instanceof GroupValidatorError) {
-			log(
-				chalk.red(
-					`>>> FAILED TO MATCH SUCCESS CASE: ${getNavStringView(navString)} <<< `
-				)
-			);
-			continue;
-		}
-		logNavString(navString);
-		const modResult = options.autoPrune ? result.prune() : result;
-		logGroupsRecNav(modResult);
-		div();
-		logHasUnnamedBranchesView(modResult);
-		if (options.autoPrune) {
-			log(
-				chalk.cyan(
-					`Auto-prune Result: was tree rebuilt?: ${chalk.green(
-						modResult !== result
-					)}`
-				)
-			);
-		}
-		div();
-		if (options.showPrunedTree) {
+		logh("Success cases");
+
+		for (const navString of successStrings) {
+			const nav = MatchNav.fromString(navString);
+			const result = matcher.match(nav);
+			log();
+			ddiv();
+			if (result instanceof GroupValidatorError) {
+				log(
+					chalk.red(
+						`>>> FAILED TO MATCH SUCCESS CASE: ${getNavStringView(navString)} <<< `
+					)
+				);
+				continue;
+			}
 			logNavString(navString);
-			const prunedResult = result.prune();
-			logGroupsRecNav(prunedResult);
+			const modResult = options.autoPrune ? result.prune() : result;
+			logGroupsRecNav(modResult);
 			div();
-			logHasUnnamedBranchesView(prunedResult);
-			log(
-				chalk.cyan(
-					`Prune Result: was tree rebuilt?: ${chalk.green(
-						prunedResult !== result
-					)}`
-				)
-			);
+			logHasUnnamedBranchesView(modResult);
+			if (options.autoPrune) {
+				log(
+					chalk.cyan(
+						`Auto-prune Result: was tree rebuilt?: ${chalk.green(
+							modResult !== result
+						)}`
+					)
+				);
+			}
 			div();
+			if (options.showPrunedTree) {
+				logNavString(navString);
+				const prunedResult = result.prune();
+				logGroupsRecNav(prunedResult);
+				div();
+				logHasUnnamedBranchesView(prunedResult);
+				log(
+					chalk.cyan(
+						`Prune Result: was tree rebuilt?: ${chalk.green(
+							prunedResult !== result
+						)}`
+					)
+				);
+				div();
+			}
 		}
-	}
-	if (failStrings.length > 0) {
+	};
+
+	const doFailCases = (bypass: boolean = false) => {
+		if (bypass || failStrings.length === 0) {
+			return;
+		}
 		logh("Fail cases");
 
 		for (const pair of failStrings) {
@@ -116,7 +126,10 @@ export const logResults = (
 			log(chalk.yellow(`>>> message: '${result.message}'`));
 		}
 		log();
-	}
+	};
+
+	doSuccessCases(true);
+	doFailCases(false);
 };
 
 export const logNodeResults = (

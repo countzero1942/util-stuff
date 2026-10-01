@@ -54,8 +54,7 @@ const doBasicOptRepeatMatcherWithOptAltFirst = () => {
 		)
 	);
 
-	// const succesfulNavStrs = ["BB", "AB", "BBB", "ABB", "BBBX", "ABBX"];
-	const succesfulNavStrs: string[] = [];
+	const succesfulNavStrs = ["BB", "AB", "BBB", "ABB", "BBBX", "ABBX"];
 	const failedNavStrs: string[] = [
 		"->no matches",
 		"X->no matches",
@@ -102,10 +101,12 @@ const doBasicOptRepeatMatcherWithOptAltLast = () => {
 		"BBCX",
 	];
 	const failedNavStrs = [
-		"B",
-		"C",
-		"CB",
-		"CBB",
+		"->no matches",
+		"X->no matches",
+		"B->not enough matches",
+		"C->not enough matches",
+		"CB->not enough matches",
+		"CBB->not enough matches",
 		"BBBB->over match",
 		"BBBC->over match",
 	];
@@ -154,11 +155,13 @@ const doBasicFullStringOptRepeatMatcherWithOptAltFirstOptAltLast = () => {
 		"BBC",
 	];
 	const failedNavStrs = [
-		"A",
-		"B",
-		"BA",
-		"AA",
-		"AAB",
+		"->no matches",
+		"X->no matches",
+		"A->not enough matches",
+		"B->not enough matches",
+		"BA->not enough matches",
+		"AA->not enough matches",
+		"AAB->not enough matches",
 		"BBX->not full string",
 		"ABX->not full string",
 		"BCX->not full string",

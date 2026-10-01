@@ -7,6 +7,8 @@ import { MatchNav } from "./nav";
 import { addResultToParent } from "./group-helper";
 import { GroupValidatorError } from "./group-validator-error";
 import { isNativeError } from "util/types";
+import { log } from "console";
+import chalk from "chalk";
 
 export class AltFirstLastGroupMatchers {
 	protected constructor(
@@ -202,7 +204,7 @@ export class GroupMatchRepeat extends GroupMatchBase {
 			}
 		}
 
-		// case: successful match in range
+		// case: successful match
 		if (isFailedMatch === false) {
 			switch (true) {
 				// case: successful match in range
@@ -217,9 +219,15 @@ export class GroupMatchRepeat extends GroupMatchBase {
 						savedNavs
 					);
 				}
+				// case: optional match
+				case count === 0 && min === 0: {
+					return GroupMatchNav.fromLeaf(nav, GroupName.empty);
+				}
 				// case: not enough matches
-				case count < min: {
-					const errorView = currentNav.fullView;
+				case count > 0 && count < min: {
+					const currentView = currentNav.fullView;
+					const errorView =
+						currentView.length > 0 ? currentView : nav.fullView;
 					return GroupValidatorError.from(
 						errorView,
 						nav.fullView,
@@ -235,20 +243,32 @@ export class GroupMatchRepeat extends GroupMatchBase {
 						"too many matches"
 					);
 				}
+				// case: no matches
+				case count === 0: {
+					return GroupValidatorError.from(
+						nav.fullView,
+						nav.fullView,
+						"no matches"
+					);
+				}
 				default:
 					throw "never";
 			}
 		}
 		// case: failed match with zero matches allowed: optional match
 		else if (isFailedMatch === true && count === 0 && min === 0) {
+			log(chalk.red(">>> optional match failed"));
 			return GroupMatchNav.fromLeaf(nav, GroupName.empty);
 		}
 		// case: failed match
-		else {
-			const errorView = currentNav.fullView;
-			const error = GroupValidatorError.from(errorView, nav.fullView);
-			return error;
-		}
+		log(chalk.red(">>> failed match: no other cases handled"));
+		const errorView = currentNav.fullView;
+		const error = GroupValidatorError.from(
+			errorView,
+			nav.fullView,
+			"no matches"
+		);
+		return error;
 	}
 
 	/**
